@@ -23,3 +23,9 @@ created a reusale components
 -----------------------------------=--------------------
 input and select components
 just look the code in component
+
+creater interceptor for unauthorized login
+ng g interceptor custom
+
+add the interceptor in app.config
+provideHttpClient( withInterceptors([customInterceptor])),

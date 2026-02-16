@@ -8,6 +8,8 @@ import {MatButtonModule} from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
 import { UserServices } from '../services/user-services';
 import { Router } from '@angular/router';
+import { Snackbar } from '../services/snackbar';
+import { globalConstants } from '../services/global-constants';
 @Component({
   selector: 'app-login',
   imports: [ MatCardModule, InputFormField, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule],
@@ -23,7 +25,8 @@ export class Login {
  constructor( 
   private fb: FormBuilder, 
   private http: HttpClient,
-  private userService : UserServices
+  private userService : UserServices,
+  private snackbarService : Snackbar
   )
   { }
  ngOnInit():void{
@@ -43,14 +46,19 @@ export class Login {
     userName: formData.userName,
     password: formData.password
   }
-  this.userService.login(data).subscribe((response:any)=>{
-    console.log(response.result);
-    if(response.result){
+  this.userService.login(data).subscribe({
+    next :(response:any)=>{
+      localStorage.setItem('token', response.token);
       this.router.navigateByUrl('/dashboard');
-      localStorage.setItem("token", response.token);
-    }else {
-     this.responseMessage  = response.message;
-    }
+    },
+    error: (error)=>{
+      if(error.error?.message){
+        this.responseMessage = error.error?.message;
+      }else {
+        this.responseMessage = globalConstants.genericError
+      }
+      this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex);
+      }
   })
 }
 }

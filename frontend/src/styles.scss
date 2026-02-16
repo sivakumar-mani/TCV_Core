@@ -256,3 +256,17 @@ body {
   grid-template-columns:  minmax(300px, 1fr);
   gap:10px;
 }
+
+---------
+
+.black-snackbar {
+  background: #000000;
+  color: white;
+  font-size: 12px;
+}
+
+.green-snackbar {
+  background: green;
+  color: white;
+  font-size: 12px;
+}
