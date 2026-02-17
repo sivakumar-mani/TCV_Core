@@ -10,6 +10,7 @@ import { UserServices } from '../services/user-services';
 import { Router } from '@angular/router';
 import { Snackbar } from '../services/snackbar';
 import { globalConstants } from '../services/global-constants';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
 @Component({
   selector: 'app-login',
   imports: [ MatCardModule, InputFormField, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule],
@@ -26,7 +27,8 @@ export class Login {
   private fb: FormBuilder, 
   private http: HttpClient,
   private userService : UserServices,
-  private snackbarService : Snackbar
+  private snackbarService : Snackbar,
+  private ngxLoader : NgxUiLoaderService
   )
   { }
  ngOnInit():void{
@@ -41,6 +43,7 @@ export class Login {
   
  }
  onLogin(){
+  this.ngxLoader.start();
   var formData = this.loginForm.value,
   data ={
     userName: formData.userName,
@@ -48,10 +51,12 @@ export class Login {
   }
   this.userService.login(data).subscribe({
     next :(response:any)=>{
+      this.ngxLoader.stop();
       localStorage.setItem('token', response.token);
       this.router.navigateByUrl('/dashboard');
     },
     error: (error)=>{
+       this.ngxLoader.stop();
       if(error.error?.message){
         this.responseMessage = error.error?.message;
       }else {

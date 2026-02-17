@@ -1,0 +1,6 @@
+npm i ngx-ui-loader
+tdev.app/ngx-ui-loader/demo/spinner // select the spinner from this site
+create ngx-loader.ts
+and follow the steps in ngx-loader.ts
+import this into app.html
+<ngx-ui-loader></ngx-ui-loader>
