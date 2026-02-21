@@ -11,6 +11,8 @@ import { Router } from '@angular/router';
 import { Snackbar } from '../services/snackbar';
 import { globalConstants } from '../services/global-constants';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { ForgotPassword } from '../forgot-password/forgot-password';
 @Component({
   selector: 'app-login',
   imports: [ MatCardModule, InputFormField, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule],
@@ -22,7 +24,7 @@ export class Login {
   loginForm:any= FormGroup;
   responseMessage : string='';
   router = inject(Router)
-
+ dialog = inject(MatDialog)
  constructor( 
   private fb: FormBuilder, 
   private http: HttpClient,
@@ -65,5 +67,11 @@ export class Login {
       this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex);
       }
   })
+}
+
+forgotPassword(){
+  const dialogConfig = new MatDialogConfig();
+  dialogConfig.width ="500px";
+  this.dialog.open(ForgotPassword, dialogConfig)
 }
 }
