@@ -1,0 +1,23 @@
+where we call the dialog need to do this.
+ dialog = inject(MatDialog) 
+
+forgotPassword(){
+  const dialogConfig = new MatDialogConfig();
+  dialogConfig.width ="500px";
+  this.dialog.open(ForgotPassword, dialogConfig)
+}
+
+ constructor( private dialogConfig : MatDialogRef<ForgotPassword>){}
+
+ <h2 mat-dialog-title>Hi </h2>
+<mat-dialog-content>
+  <p>What's your favorite animal?</p>
+  <mat-form-field>
+    <mat-label>Favorite Animal</mat-label>
+    <input matInput  />
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button matButton >No Thanks</button>
+  <button matButton  cdkFocusInitial>Ok</button>
+</mat-dialog-actions>

@@ -129,6 +129,7 @@ body {
 
 .mdc-list {
   padding: 0 !important;
+
   .mdc-list-item {
     padding: 0 10px !important;
     height: 40px !important;
@@ -153,19 +154,24 @@ body {
 .mat-expansion-panel {
   background-color: var(--bs-transparent) !important;
   box-shadow: var(--bs-transparent) !important;
+
   &-header {
-    padding:0 10px !important;
+    padding: 0 10px !important;
     height: 2.5rem !important;
+
     &-title {
       font-size: .8rem;
+
       span {
         padding-left: 5px;
       }
     }
   }
+
   &-body {
     padding: 0 10px !important;
   }
+
   &-spacing {
     margin: 0 !important;
   }
@@ -233,18 +239,20 @@ body {
 }
 
 // --------------- form fields -------------
-.mat-mdc-form-field{
+.mat-mdc-form-field {
 
   .mdc-text-field--outlined {
-  padding:0 12px  !important;
-  .mat-mdc-form-field-infix{
-    padding: 12px 0 !important;
-    min-height: 30px !important
-  }  
-}
-.mat-mdc-form-field-error-wrapper {
-  padding: 0 4px !important;
-}
+    padding: 0 12px !important;
+
+    .mat-mdc-form-field-infix {
+      padding: 12px 0 !important;
+      min-height: 30px !important
+    }
+  }
+
+  .mat-mdc-form-field-error-wrapper {
+    padding: 0 4px !important;
+  }
 }
 
 
@@ -253,13 +261,11 @@ body {
 
 .grid-1-col {
   display: grid;
-  grid-template-columns:  minmax(300px, 1fr);
-  gap:10px;
+  grid-template-columns: minmax(300px, 1fr);
+  gap: 10px;
 }
 
----------
-
-.black-snackbar {
+--------- .black-snackbar {
   background: #000000;
   color: white;
   font-size: 12px;
@@ -270,3 +276,66 @@ body {
   color: white;
   font-size: 12px;
 }
+
+
+// --------------- dialog value -------------
+
+.mat-mdc-dialog-container {
+  border-radius: 10px;
+
+  .mat-mdc-dialog-title {
+    display: flex;
+    align-items: center;
+    background: var(--bs-blue);
+    height: 40px;
+    line-height: 30px;
+    padding: 20px;
+    font-size: 18px !important;
+    text-shadow: 1px 1px 15px #ffffff;
+    &::before {
+      display: none;
+    }
+  }
+
+  .mat-mdc-dialog-surface {
+    border-radius: 10px !important;
+  }
+  .mat-mdc-dialog-actions { 
+    justify-content: space-between;
+   
+    
+  }
+}
+// --------------- Action area -------------
+
+.action-footer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+// ---------------button generic style -------------
+
+ button {
+      font-size: 1rem;
+      min-width: 150px !important;
+      padding: 8px 16px;
+      border-radius: 5px !important;
+      border: 0;
+      box-shadow: none;
+      outline: 0;
+      color: var(--bs-white);
+    }
+.btn-no {
+      background-color: var(--bs-gray);
+    }
+     .btn-yes {
+      background-color: var(--bs-primary);
+    }
+    
+    .btn-disabled {
+      opacity: .5;
+    }

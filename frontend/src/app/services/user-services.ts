@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment.development';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { loginData } from '../interfaces/user-interface'
+import { loginData, forgotPasswordData } from '../interfaces/user-interface'
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +14,12 @@ export class UserServices {
   login( data: loginData){
    return this.http.post(`${this.url}/user/login`, data,{
       headers: new HttpHeaders().set('content-type', "application/json")
+    })
+  }
+
+  forgotPassword(data:forgotPasswordData){
+    return this.http.post(`${this.url}/user/forgotPassword`, data,{
+      headers: new HttpHeaders().set('content-type',"application/json")
     })
   }
 }

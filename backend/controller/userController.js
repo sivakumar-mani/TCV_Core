@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer')
 
 const login = async (req, res) => {
     const user = req.body;
+      console.log('login:',user);
     query = "SELECT * FROM user WHERE userName=?";
     connection.query(query, [user.userName], (error, results) => {
         try {
@@ -21,7 +22,6 @@ const login = async (req, res) => {
             } else if (existing.password === user.password) {
                 const response = { userName: existing.userName, role: existing.role }
                 const accessToken = jwt.sign(response, process.env.ACCESS_TOKEN, { expiresIn: '8h' })
-                console.log('test');
                 return res.status(200).json({
                     result: true,
                     token: accessToken,
@@ -48,13 +48,15 @@ var transporter = nodemailer.createTransport({
 });
 
 const forgotPassword = async(req,res)=>{
+    
     const user = req.body;
-    query = "SELECT * FROM user WHERE userName=?";
-    connection.query(query, [user.userName], (error, results)=>{
+    console.log('forgot:',user);
+    query = "SELECT * FROM user WHERE userName=? or email=?";
+     connection.query(query, [user.userName, user.email], (error, results) => {
         try {
             if(results.length <=0){
             return res.status(401).json({
-                message: "User Name is not found, please register the email"
+                message: "User Name is not found, please register the User Name"
             })
         }else {
             var mailOptions ={
