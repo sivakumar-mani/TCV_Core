@@ -7,6 +7,6 @@
  <button matButton [matMenuTriggerFor]="menu">Menu</button>
 <mat-menu #menu="matMenu">
   <button mat-menu-item>Signup</button>
-  <button mat-menu-item>Logout</button>
+  <button mat-menu-item (click)="logout()">Logout</button>
 </mat-menu>
 </mat-toolbar>

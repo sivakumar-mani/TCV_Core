@@ -1,0 +1,27 @@
+import { Component, EventEmitter, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA ,MatDialogModule, MatDialogActions} from '@angular/material/dialog';
+
+in confirmation ts file
+onEmitStatusChange = new EventEmitter();
+  details: any
+  constructor(@Inject(MAT_DIALOG_DATA) public dialogData: any){}
+
+  ngOnInit(){
+    if(this.dialogData){
+      this.details = this.dialogData
+    }
+  }
+  handleSubmit(){
+    this.onEmitStatusChange.emit()
+  }
+
+  in html 
+  <mat-dialog-content>
+    <h5> Do you want to {{details.message}}?</h5>
+</mat-dialog-content>
+<mat-dialog-actions >
+    <div class="d-flex justify-content-between w-100">
+    <button mat-raised-button color="secondary" mat-dialog-close>No</button>
+    <button mat-raised-button color="primary" (click)="handleSubmit()">Yes</button>
+    </div>
+<mat-dialog-actions>

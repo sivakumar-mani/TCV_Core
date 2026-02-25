@@ -301,10 +301,16 @@ body {
     border-radius: 10px !important;
   }
   .mat-mdc-dialog-actions { 
+    color: var(--bs-white);
+    flex-wrap: nowrap !important;
     justify-content: space-between;
-   
-    
+   min-height: 20px !important;
+    padding:20px !important;
+    &::after, &::before{
+      display: none !important;
+    }
   }
+  
 }
 // --------------- Action area -------------
 
