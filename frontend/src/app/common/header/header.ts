@@ -7,6 +7,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ConfirmationPopup } from '../../dialog/confirmation-popup/confirmation-popup';
 import { Router } from '@angular/router';
 import { DialogRef } from '@angular/cdk/dialog';
+import { ChangePassword } from '../../dialog/change-password/change-password';
 @Component({
   selector: 'app-header',
   imports: [MatToolbarModule,
@@ -34,5 +35,11 @@ export class Header {
       this.router.navigateByUrl('/login')
     })
 
+  }
+
+  changePassword(){
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.width= "500px"
+    this.dialog.open(ChangePassword, dialogConfig)
   }
 }

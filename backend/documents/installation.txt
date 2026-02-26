@@ -90,3 +90,9 @@ front end
 ng g interceptor custom
 
 add provider in app.config
+
+
+while change password need to send user name for to update
+need to take token to pass the user name,
+
+include the authendication.js 
