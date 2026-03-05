@@ -19,5 +19,9 @@ export const routes: Routes = [
             loadComponent: ()=> import('./dashboard/dashboard').then(n => n.Dashboard)
         }
     ]
-    }
+    },
+     {
+        path:'**',
+        loadComponent: () => import('./login/login').then(n =>n.Login)
+    },
 ];
