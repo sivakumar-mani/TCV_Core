@@ -1,5 +1,5 @@
 <h5 mat-dialog-title>
-   Singup1
+   Singup
 </h5>
 <mat-dialog-content  >
  <form [formGroup]="signupForm">
@@ -46,9 +46,22 @@
       [type]="'text'"
       [formControl]="$any(signupForm.controls['contactNumber'])"
       ></app-input-form-field>
+      <app-select-form-field
+       [label]="'Role'"
+  [labelClass]="'form-label'"
+  [selectClass]="'form-control'"
+  [options]="roleList"
+  [formControl]="$any(signupForm.controls['role'])"></app-select-form-field>
        
-       
-
+  <app-select-form-field
+       [label]="'Status'"
+  [labelClass]="'form-label'"
+  [selectClass]="'form-control'"
+  [options]="[
+      {value: 1, label: 'Active'},
+      {value: 0, label: 'Inactive'}
+      ]"
+  [formControl]="$any(signupForm.controls['status'])"></app-select-form-field>
     </div>
     </form>
 </mat-dialog-content>
