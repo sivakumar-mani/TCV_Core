@@ -26,6 +26,7 @@ export class Header {
   logout() {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.width = "400px";
+    dialogConfig.disableClose = true;
     dialogConfig.data = {
       message: "Logout"
     }
@@ -40,19 +41,10 @@ export class Header {
 
   changePassword(){
     const dialogConfig = new MatDialogConfig();
-    dialogConfig.width= "500px"
+    dialogConfig.width= "500px";
+    dialogConfig.disableClose = true;
     this.dialog.open(ChangePassword, dialogConfig)
   }
 
-signup() {
-  const dialogConfig = this.dialog.open(Signup, {
-    width: '60%',
-    height: '70%',
-    maxWidth: '100vw',
-    maxHeight: '100vh',
-    position: {
-      top: 'calc(3vw + 20px)'
-    }
-  });
-}
+
 }

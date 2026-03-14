@@ -1,9 +1,14 @@
-import { Component } from '@angular/core';
-import {MatIconModule} from '@angular/material/icon';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import { UserInterface } from '../../interfaces/user-interface'
+import { Component, inject } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { AgGridModule } from 'ag-grid-angular';
 import { AllCommunityModule, ColDef, ICellRendererParams, ModuleRegistry, themeBalham } from 'ag-grid-community';
+import { UserServices } from '../../services/user-services';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { Router } from '@angular/router';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { Dialog } from '@angular/cdk/dialog';
+import { Signup } from '../../dialog/signup/signup';
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
   selector: 'app-user-list',
@@ -12,101 +17,71 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   styleUrl: './user-list.scss',
 })
 export class UserList {
+
   rowSelection: any;
   actionMenu: any;
   rowHeight = 20;
   pagination = true;
-  paginationPageSize = 5;
-  paginationPageSizeSelector = [5, 10, 25];
+  paginationPageSize = 10;
+  paginationPageSizeSelector = [10, 25, 50, 100];
   public theme = themeBalham;
-  constructor() {
+  // userList:any[]=[];
+  userList: any;
+  dialog = inject(MatDialog);
+  
+  constructor(private userService: UserServices,
+    private ngxUiLoader: NgxUiLoaderService,
+    private router: Router,
+    
+
+  ) {
     this.rowSelection = {
       mode: 'multiRow',
     };
   }
+
+  ngOnInit() {
+    this.ngxUiLoader.start();
+    this.getUsers();
+  }
+
+  getUsers() {
+    this.userService.getAllusers().subscribe((response: any) => {
+      this.ngxUiLoader.stop();
+      this.userList = response
+    })
+  }
+  addUser(){
+    const dialogConfig =  this.dialog.open(Signup,{
+      width: '60%',
+      height:'80%',
+      maxWidth: '100vw',
+      maxHeight:'100vh',
+       disableClose: true,
+      position:{
+         top: 'calc(1vw + 20px)'
+      }
+    });
+    
+  }
+
+  
   defaultColDef: ColDef = {
     flex: 1,
     filter: true,
     floatingFilter: true,
     headerClass: 'ag-header-style',
   }
-  rowData = [
-    {
-      ref: "PR-113",
-      Rfx: "R-283",
-      CreatedDate: '26-Nov-2025',
-      ApprovedDate: '29-Nov-2025',
-      ShortName: 'Computer Accessories',
-      PurchaseCategory: 'RFT',
-      Buyer: 'Karthick',
-      Status: 'PR Approved'
-    },
-    {
-      ref: "PR-114",
-      Rfx: "R-284",
-      CreatedDate: '26-Nov-2025',
-      ApprovedDate: '26-Dec-2025',
-      ShortName: 'Computer Accessories',
-      PurchaseCategory: 'RFT',
-      Buyer: 'Karthick',
-      Status: 'Initiated Workflow'
-    },
-    {
-      ref: "PR-115",
-      Rfx: "R-285",
-      CreatedDate: '01-Nov-2025',
-      ApprovedDate: '02-Dec-2025',
-      ShortName: 'Computer Accessories',
-      PurchaseCategory: 'RFQ',
-      Buyer: 'Karthick',
-      Status: 'Workflow Request for Information'
-    },
-
-  ];
 
   colDefs: ColDef[] = [
-    {
-      field: "ref",
-      headerName: 'Ref #',
-      maxWidth: 70,
-      cellClass: 'cellCenter'
-
-    },
-    {
-      field: "Rfx",
-      headerName: 'Rfx Ref# '
-    },
-    {
-      field: "CreatedDate",
-      headerName: 'Created Date'
-    },
-    {
-      field: "ApprovedDate",
-      headerName: 'Approved Date'
-    },
-    {
-      field: "ShortName",
-      headerName: 'Short Name'
-    },
-    {
-      field: "PurchaseCategory",
-      headerName: 'Purchase Category',
-      width: 270,
-    },
-    {
-      field: "Buyer",
-      headerName: 'Buyer',
-      maxWidth: 120,
-    },
-    {
-      field: "Status",
-      headerName: 'Status',
-      maxWidth: 120,
-    },
-    {
-      headerName: "Action", maxWidth: 120,
-      // cellRenderer: '', filter: false, sortable: false
-    },
+    { headerName: 'S.No', maxWidth: 70, valueGetter: (params: any) => params.node.rowIndex + 1 },
+    { field: "userName", headerName: 'User Name', maxWidth: 150 },
+    { headerName: 'Full Name', valueGetter: (params) => { return params.data.firstName + ' ' + params.data.lastName } },
+    { field: "email", headerName: 'Email' },
+    { field: "contactNumber", headerName: 'Contact #', maxWidth: 120, },
+    { field: "role", headerName: 'Role', maxWidth: 100, },
+    { field: "Status", headerName: 'Status', maxWidth: 70, },
+    { headerName: "Action", maxWidth: 120, cellRenderer: '', filter: false, sortable: false },
     // {
     //   field: "action",
     //   headerName: "Action", filter: false, floatingFilter: false,
@@ -127,5 +102,5 @@ export class UserList {
     // }
   ];
 
-  
+
 }

@@ -3,7 +3,7 @@
 </h5>
 <mat-dialog-content  >
  <form [formGroup]="signupForm">
-    <div class="grid-2-col mt-3">
+    <div class="grid-2-col mt-4">
         <app-input-form-field 
       [label]="'First Name'"
       [classLabel]="'form-label'"
@@ -58,10 +58,10 @@
   [labelClass]="'form-label'"
   [selectClass]="'form-control'"
   [options]="[
-      {value: 1, label: 'Active'},
-      {value: 0, label: 'Inactive'}
+      {value: 'true', label: 'Active'},
+      {value: 'false', label: 'Inactive'}
       ]"
-  [formControl]="$any(signupForm.controls['status'])"></app-select-form-field>
+  [formControl]="$any(signupForm.controls['Status'])"></app-select-form-field>
     </div>
     </form>
 </mat-dialog-content>
@@ -69,7 +69,12 @@
 <mat-dialog-actions>
   <div class="d-flex justify-content-between w-100">
     <button class="btn-no"  mat-raised-button mat-dialog-close>Close</button>
-    <!-- <button matButton  [class]="forgotForm.valid? 'btn-yes' : 'btn-no btn-disabled'" (click)="onForgotPassword()" [disabled]="!(forgotForm.valid) || !(forgotEmailForm.valid)">Submit</button> -->
-    
+    <!-- <button matButton  [ (click)="sigupSubmit()" >Submit</button> -->
+    <button  (click)="sigupSubmit()"
+  matButton
+  [class]="signupForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
+  [disabled]="!signupForm.valid">
+  Save
+</button> 
 </div>
 </mat-dialog-actions>

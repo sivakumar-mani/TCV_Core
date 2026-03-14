@@ -12,8 +12,7 @@ export  interface changePasswordData{
     newPassword: string,
     oldPassword:string
 }
-export interface UserInterface {
-  userId: number;
+export interface signupInterface {
   userName: string;
   password: string;
   email: string;
@@ -23,5 +22,5 @@ export interface UserInterface {
   dateRegistered: string;
   lastLogin: string;
   role: string;
-  status: string;
+  Status: string;
 }

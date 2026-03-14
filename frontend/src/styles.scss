@@ -53,6 +53,9 @@
   --bs-green-rgb: to-rgb(#69aa8a);
   --bs-teal-rgb: to-rgb(#20c997);
   --bs-cyan-rgb: to-rgb(#17a2b8);
+
+  --btn-primary-blue: #1689fe;
+  --ag-grid-header: #c5ebfe;
 }
 
 html {
@@ -249,17 +252,21 @@ body {
       min-height: 30px !important
     }
   }
+
   .mat-mdc-select {
     border: 0 !important;
     box-shadow: none !important;
   }
+
   .mat-mdc-form-field-error-wrapper {
     padding: 0 4px !important;
   }
+
   .form-control {
     padding: 0 !important;
   }
-  .mat-mdc-form-field-required-marker{
+
+  .mat-mdc-form-field-required-marker {
     color: red !important;
   }
 }
@@ -276,13 +283,13 @@ body {
 
 .grid-2-col {
   display: grid;
-  grid-template-columns:  repeat(2, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
   gap: 10px;
 }
 
 
 // ---------snack bar ----
- .black-snackbar {
+.black-snackbar {
   background: #000000;
   color: white;
   font-size: 12px;
@@ -336,7 +343,7 @@ body {
 
 // --------------- Action area -------------
 
-.action-footer {
+.action-btn {
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
@@ -364,7 +371,7 @@ button {
 }
 
 .btn-yes {
-  background-color: var(--bs-primary);
+  background-color: var(--btn-primary-blue);
 }
 
 .btn-disabled {
@@ -565,7 +572,7 @@ body {
 
 .grid-2-col {
   display: grid;
-  grid-template-columns:  repeat(2, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
   gap: 10px;
 }
 
@@ -635,30 +642,6 @@ body {
   padding: 20px;
 }
 
-// ---------------button generic style -------------
-
-button {
-  font-size: 1rem;
-  min-width: 150px !important;
-  padding: 8px 16px;
-  border-radius: 5px !important;
-  border: 0;
-  box-shadow: none;
-  outline: 0;
-  color: var(--bs-white);
-}
-
-.btn-no {
-  background-color: var(--bs-gray);
-}
-
-.btn-yes {
-  background-color: var(--bs-primary);
-}
-
-.btn-disabled {
-  opacity: .5;
-}
 
 // password show and hide style for eye icon
 .showHideIcon {
@@ -672,70 +655,50 @@ button {
 
 // mat tool bar of breadcrums
 .main-content {
-  .mat-toolbar{
-    height: 40px !important; 
-    background: var( --bs-light);
+  .mat-toolbar {
+    height: 40px !important;
+    background: var(--bs-light);
     font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0;
+
     .breadcrumb {
       margin-bottom: 0 !important;
     }
   }
-  
+
 }
 
 
 // For AG Grie table Field name
 
-    .ag-grid-wrapper {
-        width: 100% !important;
-        min-height: 400px !important;
-        overflow-x: auto !important;
-        /*  horizontal scroll */
-        -webkit-overflow-scrolling: touch;
-        /* smooth scroll on iOS */
-    }
+.ag-floating-filter-button {
+  display: none !important;
+}
 
-    .ag-root-wrapper {
-        min-width: 850px !important;
-        /* adjust the table field columns */
-    }
+.ag-header-cell {
+  padding: 0 5px !important;
+}
 
-    .ag-root-wrapper,
-    .ag-center-cols-container {
-        min-width: 900px !important;
-    }
+.ag-header-cell {
+  padding: 0 5px !important;
+  background: var(--ag-grid-header) !important;
+}
 
-    // AG Grid Pagination
+.ag-row:nth-child(even) {
+  background-color: var(--bs-gray-200) !important;
+}
 
-    .ag-label {
-        margin-right: var(--ag-spacing);
-        margin-right: 5px;
-        font-size: 13px;
-        letter-spacing: 0px !important;
-        font-weight: 500;
-        color: #5d5d5d;
-    }
+// content area styles
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 
-    .ag-picker-field-wrapper {
-        padding-left: calc(var(--ag-cell-horizontal-padding) / 2);
-        padding-right: var(--ag-spacing);
-        padding-left: 5px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #5d5d5d;
-        border: 1px solid #b5b5b5;
-        border-radius: 3px;
-    }
-
-    .ag-paging-panel {
-        justify-content: flex-start;
-    }
-
-    .ag-paging-row-summary-panel,
-    .ag-paging-description {
-        font-weight: 500;
-        color: #5d5d5d;
-        font-size: 13px;
-    }
+  .page-title {
+    font-size: 1.5rem;
+    line-height: 60px;
+    margin-bottom: 0;
+  }
+}

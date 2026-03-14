@@ -6,13 +6,12 @@ const nodemailer = require('nodemailer');
 
 const signup = async(req, res)=>{
     const user = req.body;
-       console.log("signup",user)
+    console.log("sign", user);
     query = "SELECT * FROM user where userName=? or email=?";
     connection.query( query, [ user.userName, user.email],(error, results )=>{
         try {
             if(results.length > 0){
                 const existing = results[0];
-                //   console.log("existing",existing)
                 if(existing.userName === user.userName && existing.email === user.email){
                     return res.status(400).json({
                         message: "User Name and Email is already exists"
@@ -50,16 +49,16 @@ const signup = async(req, res)=>{
 }
 
 const getAllUser = async(req, res)=>{
-    const user = req.body;
-    query ="SELECT * FROM user WHERE role='admin'";
+    query ="SELECT * FROM user";
     connection.query(query,(error, results)=>{
         try {
-          if(results <=0){
+            // console.log("result", results)
+          if(results.length <=0){
             return res.status(400).json({
                 message:"No records found"
             })
           }
-          return res.Status(200).json(results)
+          return res.status(200).json(results)
         } catch (error) {
             return res.status(500).json(error);
         }
