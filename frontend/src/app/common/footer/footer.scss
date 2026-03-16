@@ -1,0 +1,11 @@
+.footer {
+    width: 100%;
+    border-top: 2px solid var( --bs-gray-400);;
+    position: absolute;
+    bottom: 0;
+    height: auto;
+      background: var( --bs-gray-200);
+    p {
+        margin: 5px 15px !important;
+    }
+}

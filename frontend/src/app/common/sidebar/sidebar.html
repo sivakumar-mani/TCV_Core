@@ -1,0 +1,42 @@
+<mat-nav-list aria-label="Main navigation">
+  <a mat-list-item [routerLink]="['/home']" routerLinkActive="active-link">
+    <mat-icon matListIcon>home</mat-icon>
+    <span matLine>Home</span>
+  </a>
+   <a mat-list-item [routerLink]="['/users']" routerLinkActive="active-link">
+    <mat-icon matListIcon>people</mat-icon>
+    <span matLine>User List</span>
+  </a>
+  <!-- <a mat-list-item [routerLink]="['/settings']" routerLinkActive="active-link">
+    <mat-icon matListIcon>settings</mat-icon>
+    <span matLine>Settings</span>
+  </a> -->
+  <mat-accordion class="app-nav-accordion" [multi]="false">
+  <!-- Section 1 -->
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+          <mat-icon matListIcon>home</mat-icon> <span matLine>Level 1</span>
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/users">User List</a>
+      <a mat-list-item routerLink="/item-two">Item Two</a>
+    </mat-nav-list>
+  </mat-expansion-panel>
+
+  <!-- Section 2 -->
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+         <mat-icon matListIcon>home</mat-icon> <span matLine>Leve2</span>
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/item-three">Item Three</a>
+      <a mat-list-item routerLink="/item-four">Item Four</a>
+    </mat-nav-list>
+  </mat-expansion-panel>
+</mat-accordion>
+</mat-nav-list>
+

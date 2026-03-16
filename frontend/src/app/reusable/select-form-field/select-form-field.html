@@ -1,0 +1,11 @@
+ <mat-form-field appearance="outline" floatLabel="always" style="width: 100%;">
+    <mat-label>{{ label | titlecase}}</mat-label>
+    <mat-select [class]="selectClass" [formControl]="control">
+      <mat-option *ngFor="let option of options" [value]="option.value">{{ option.label }}</mat-option>
+    </mat-select>
+    <mat-error class="error-message" *ngIf="control.touched && control.invalid">
+         <span *ngIf="control?.errors?.['required']">
+            This {{ label }} is mandatory
+         </span>
+      </mat-error>
+  </mat-form-field>
