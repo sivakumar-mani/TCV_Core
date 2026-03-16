@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { MatCard, MatCardModule } from '@angular/material/card';
-import { InputFormField } from '../reusable/input-form-field/input-form-field';
+import { InputFormField } from '../shared/input-form-field/input-form-field';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';

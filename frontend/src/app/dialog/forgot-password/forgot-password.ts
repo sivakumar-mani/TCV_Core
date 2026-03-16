@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup,  ReactiveFormsModule, Validators } from '@angular/forms';
-import { InputFormField } from '../../reusable/input-form-field/input-form-field';
+import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import {
   MAT_DIALOG_DATA,
  MatDialogModule, MatDialogRef

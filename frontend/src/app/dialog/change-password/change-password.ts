@@ -2,7 +2,7 @@ import { DialogRef } from '@angular/cdk/dialog';
 import { Component, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MatDialog, MatDialogActions, MatDialogModule } from '@angular/material/dialog';
-import { InputFormField } from '../../reusable/input-form-field/input-form-field';
+import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { globalConstants } from '../../services/global-constants';
 import { NgxUiLoaderModule, NgxUiLoaderService } from 'ngx-ui-loader';
 import { Snackbar } from '../../services/snackbar';

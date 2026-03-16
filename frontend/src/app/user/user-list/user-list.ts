@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Dialog } from '@angular/cdk/dialog';
 import { Signup } from '../../dialog/signup/signup';
-import { ActionMenu } from '../../reusable/list-action-menu';
+import { ActionMenu } from '../../shared/list-action-menu';
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
   selector: 'app-user-list',

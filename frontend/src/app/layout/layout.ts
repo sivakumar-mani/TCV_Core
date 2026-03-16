@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
-import { Header } from '../common/header/header';
-import { Footer } from '../common/footer/footer';
+import { Header } from '../shared/header/header';
+import { Footer } from '../shared/footer/footer';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { Sidebar } from '../common/sidebar/sidebar';
+import { Sidebar } from '../shared/sidebar/sidebar';
 import { RouterOutlet } from '@angular/router';
 
 @Component({

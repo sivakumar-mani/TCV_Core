@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MatDialogActions, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { InputFormField } from '../../reusable/input-form-field/input-form-field';
-import { SelectFormField } from '../../reusable/select-form-field/select-form-field';
+import { InputFormField } from '../../shared/input-form-field/input-form-field';
+import { SelectFormField } from '../../shared/select-form-field/select-form-field';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { globalConstants } from '../../services/global-constants';
