@@ -18,10 +18,10 @@ export interface ActionItem {
 <mat-menu #menu="matMenu">
   <button
     mat-menu-item
-    *ngFor="let action of params.actions"
-    (click)="execute(action.action)"
+    *ngFor="let actionMenu of params.dropdownMenu"
+    (click)="execute(actionMenu.action)"
   >
-    {{ action.label }}
+    {{ actionMenu.label }}
   </button>
 </mat-menu>`,
  

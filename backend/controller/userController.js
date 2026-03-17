@@ -4,42 +4,42 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 
-const signup = async(req, res)=>{
+const signup = async (req, res) => {
     const user = req.body;
-    console.log("sign", user);
+    // console.log("sign", user);
     query = "SELECT * FROM user where userName=? or email=?";
-    connection.query( query, [ user.userName, user.email],(error, results )=>{
+    connection.query(query, [user.userName, user.email], (error, results) => {
         try {
-            if(results.length > 0){
+            if (results.length > 0) {
                 const existing = results[0];
-                if(existing.userName === user.userName && existing.email === user.email){
+                if (existing.userName === user.userName && existing.email === user.email) {
                     return res.status(400).json({
                         message: "User Name and Email is already exists"
                     })
-                }else if(existing.userName === user.userName){
+                } else if (existing.userName === user.userName) {
                     return res.status(400).json({
-                        message:"User Name is already exists"
+                        message: "User Name is already exists"
                     })
-                }else if( existing.email === user.email){
+                } else if (existing.email === user.email) {
                     return res.status(400).json({
-                        message:"Email is already exists"
+                        message: "Email is already exists"
                     })
                 }
             }
-            if(results.length <=0){
+            if (results.length <= 0) {
                 query = "INSERT INTO user (userName, password, email, contactNumber, firstName, lastName, dateRegistered, lastLogin, role, Status) VALUES (?,?,?,?,?,?,?,?,?,?)";
-                connection.query(query,[user.userName, user.password, user.email, user.contactNumber, user.firstName, user.lastName, user.dateRegistered, user.lastLogin, user.role, user.Status],(error, results)=>{
+                connection.query(query, [user.userName, user.password, user.email, user.contactNumber, user.firstName, user.lastName, user.dateRegistered, user.lastLogin, user.role, user.Status], (error, results) => {
                     try {
                         return res.status(200).json({
-                            message:"User details registered Successfully"
+                            message: "User details registered Successfully"
                         })
                     } catch (error) {
                         return res.status(500).json();
                     }
                 })
-            }else {
+            } else {
                 return res.status(400).json({
-                     message: "Email or User Name already exists"
+                    message: "Email or User Name already exists"
                 })
             }
         } catch (error) {
@@ -48,17 +48,17 @@ const signup = async(req, res)=>{
     })
 }
 
-const getAllUser = async(req, res)=>{
-    query ="SELECT * FROM user";
-    connection.query(query,(error, results)=>{
+const getAllUser = async (req, res) => {
+    query = "SELECT * FROM user";
+    connection.query(query, (error, results) => {
         try {
             // console.log("result", results)
-          if(results.length <=0){
-            return res.status(400).json({
-                message:"No records found"
-            })
-          }
-          return res.status(200).json(results)
+            if (results.length <= 0) {
+                return res.status(400).json({
+                    message: "No records found"
+                })
+            }
+            return res.status(200).json(results)
         } catch (error) {
             return res.status(500).json(error);
         }
@@ -67,7 +67,7 @@ const getAllUser = async(req, res)=>{
 
 const login = async (req, res) => {
     const user = req.body;
-    console.log('login:', user);
+    // console.log('login:', user);
     query = "SELECT * FROM user WHERE userName=?";
     connection.query(query, [user.userName], (error, results) => {
         try {
@@ -81,7 +81,7 @@ const login = async (req, res) => {
                     message: "Waiting for admin approval"
                 })
             } else if (existing.password === user.password) {
-                const response = { userName: existing.userName, role: existing.role }
+                const response = { userId: existing.userId, userName: existing.userName, role: existing.role }
                 const accessToken = jwt.sign(response, process.env.ACCESS_TOKEN, { expiresIn: '8h' })
                 return res.status(200).json({
                     result: true,
@@ -110,7 +110,7 @@ var transporter = nodemailer.createTransport({
 
 const forgotPassword = async (req, res) => {
     const user = req.body;
-    console.log('forgot:', user);
+    // console.log('forgot:', user);
     query = "SELECT * FROM user WHERE userName=? or email=?";
     connection.query(query, [user.userName, user.email], (error, results) => {
         try {
@@ -144,9 +144,9 @@ const forgotPassword = async (req, res) => {
 const changePassword = async (req, res) => {
     const user = req.body;
     const userName = res.locals.userName;
-   
+
     query = "SELECT * FROM user where userName=? and password=?"
-    connection.query(query, [userName,user.oldPassword], (error, results) => {
+    connection.query(query, [userName, user.oldPassword], (error, results) => {
         try {
             if (results.length <= 0) {
                 return res.status(401).json({
@@ -174,4 +174,44 @@ const changePassword = async (req, res) => {
         }
     })
 }
-module.exports = { login, forgotPassword,changePassword, signup, getAllUser }
+
+const editUser = async (req, res) => {
+    const user = req.body;
+    const userId = user.userId;
+    //console.log("edit user", userId);
+    query = "SELECT * FROM user where userId =?";
+    connection.query(query, [userId], (error, results) => {
+        try {
+            const existing = results[0];
+
+            if (existing.userId === userId) {
+                if (existing.userName === user.userName) {
+                    return res.status(409).json({
+                        message: "User Name is already exists, please try some other"
+                    })
+                } else if (existing.email === user.email) {
+                    return res.status(409).json({
+                        message: "Email is already exists, please try some other"
+                    })
+                } else {
+                    query = "UPDATE user SET  userName=?, password=?, email=?, contactNumber=?,firstName=?,lastName=?, dateRegistered=?,lastLogin=?, role=?, Status=? WHERE userId=?";
+                    connection.query(query, [user.userName, user.password, user.email, user.contactNumber, user.firstName, user.lastName, user.dateRegistered, user.lastLogin, user.role, user.Status, userId], (error, results) => {
+                        try {
+                            return res.status(200).json({
+                                message: "User record updated successfully"
+                            })
+                        } catch (error) {
+                            return res.status(500).json(error)
+                        }
+                    });
+                }
+
+            } else {
+                return res.status(403).json({ message: "Unauthorized to edit this user" });
+            }
+        } catch (error) {
+            return res.status(500).json(error);
+        }
+    })
+}
+module.exports = { login, forgotPassword, changePassword, signup, getAllUser, editUser }

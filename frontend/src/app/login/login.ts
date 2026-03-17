@@ -12,7 +12,7 @@ import { Snackbar } from '../services/snackbar';
 import { globalConstants } from '../services/global-constants';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { ForgotPassword } from '../dialog/forgot-password/forgot-password';
+import { ForgotPassword } from '../user/dialog/forgot-password/forgot-password';
 @Component({
   selector: 'app-login',
   imports: [MatCardModule, InputFormField, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule],

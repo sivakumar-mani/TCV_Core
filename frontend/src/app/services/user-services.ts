@@ -23,6 +23,12 @@ export class UserServices {
   })
  }
 
+ userEdit( data: signupInterface){
+  return this.http.patch(`${this.url}/user/editUser`, data,{
+    headers : new HttpHeaders().set('content-type',"application/json")
+  })
+ }
+
   getAllusers(){
     return this.http.get(`${this.url}/user/get`);
   }
@@ -32,6 +38,7 @@ export class UserServices {
       headers: new HttpHeaders().set('content-type',"application/json")
     })
   }
+
   changePassword(data:changePasswordData){
     return this.http.post(`${this.url}/user/changePassword`,data,{
       headers: new HttpHeaders().set('content-type',"application/json")

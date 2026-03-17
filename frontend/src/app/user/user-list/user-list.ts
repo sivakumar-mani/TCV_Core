@@ -8,7 +8,7 @@ import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Dialog } from '@angular/cdk/dialog';
-import { Signup } from '../../dialog/signup/signup';
+import { Signup } from '../dialog/signup/signup';
 import { ActionMenu } from '../../shared/list-action-menu';
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
@@ -63,9 +63,38 @@ export class UserList {
          top: 'calc(1vw + 20px)'
       }
     });
-    
+    dialogConfig.afterClosed().subscribe(result => {
+    if (result === 'success') {
+      this.getUsers();   
+    }
+  });
   }
+view(userData:any){
+  console.log("View", userData);
+}
 
+editUser(userData:any){
+  const dialogConfig =  this.dialog.open(Signup,{
+      data: userData,
+      width: '60%',
+      height:'80%',
+      maxWidth: '100vw',
+      maxHeight:'100vh',
+       disableClose: true,
+      position:{
+         top: 'calc(1vw + 20px)'
+      }
+    });
+    dialogConfig.afterClosed().subscribe(result => {
+    if (result === 'success') {
+      this.getUsers();   
+    }
+  });
+}
+
+delete(userData:any){
+  console.log("Delete", userData);
+}
   
   defaultColDef: ColDef = {
     flex: 1,
@@ -87,26 +116,16 @@ export class UserList {
   maxWidth: 120,
   cellRenderer: ActionMenu,
   cellRendererParams: {
-    actions: [
-      { label: 'View', action: (row:any) => this.view(row) },
-      { label: 'Edit', action: (row:any) => this.edit(row) },
-      { label: 'Delete', action: (row:any) => this.delete(row) }
+    dropdownMenu: [
+      { label: 'View', action: (userData:any) => this.view(userData) },
+      { label: 'Edit', action: (userData:any) => this.editUser(userData) },
+      { label: 'Delete', action: (userData:any) => this.delete(userData) }
     ]
   },
   filter: false,
   sortable: false
 }
   ];
-view(row:any){
-  console.log("View", row);
-}
 
-edit(row:any){
-  console.log("Edit", row);
-}
-
-delete(row:any){
-  console.log("Delete", row);
-}
 
 }

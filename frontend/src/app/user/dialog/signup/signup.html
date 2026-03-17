@@ -1,5 +1,5 @@
 <h5 mat-dialog-title>
-   Singup
+   {{ data ? 'Edit User' : 'Signup' }}
 </h5>
 <mat-dialog-content  >
  <form [formGroup]="signupForm">
@@ -74,7 +74,7 @@
   matButton
   [class]="signupForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
   [disabled]="!signupForm.valid">
-  Save
+ {{ data? 'Update' : 'Save'}}
 </button> 
 </div>
 </mat-dialog-actions>

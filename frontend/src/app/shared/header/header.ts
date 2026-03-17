@@ -4,11 +4,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { ConfirmationPopup } from '../../dialog/confirmation-popup/confirmation-popup';
+import { ConfirmationPopup } from '../confirmation-popup/confirmation-popup';
 import { Router } from '@angular/router';
 import { DialogRef } from '@angular/cdk/dialog';
-import { ChangePassword } from '../../dialog/change-password/change-password';
-import { Signup } from '../../dialog/signup/signup';
+import { ChangePassword } from '../../user/dialog/change-password/change-password';
+import { Signup } from '../../user/dialog/signup/signup';
 @Component({
   selector: 'app-header',
   imports: [MatToolbarModule,
