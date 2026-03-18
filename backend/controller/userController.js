@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 
 const signup = async (req, res) => {
     const user = req.body;
-    // console.log("sign", user);
+    console.log("sign", user);
     query = "SELECT * FROM user where userName=? or email=?";
     connection.query(query, [user.userName, user.email], (error, results) => {
         try {

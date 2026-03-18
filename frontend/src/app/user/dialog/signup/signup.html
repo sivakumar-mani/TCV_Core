@@ -70,11 +70,17 @@
   <div class="d-flex justify-content-between w-100">
     <button class="btn-no"  mat-raised-button mat-dialog-close>Close</button>
     <!-- <button matButton  [ (click)="sigupSubmit()" >Submit</button> -->
-    <button  (click)="sigupSubmit()"
+    <button *ngIf="!data" (click)="sigupSubmit()"
   matButton
   [class]="signupForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
   [disabled]="!signupForm.valid">
- {{ data? 'Update' : 'Save'}}
+ Save
 </button> 
+  <button  *ngIf="data" (click)="userEditSubmit()"
+  matButton
+  [class]="signupForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
+  [disabled]="!signupForm.valid">
+ Update
+</button>
 </div>
 </mat-dialog-actions>
