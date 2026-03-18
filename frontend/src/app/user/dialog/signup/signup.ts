@@ -129,7 +129,7 @@ export class Signup {
       }, error: (error) => {
         this.ngxLoader.stop();
         if (error.error?.message) {
-          this.responseMessage == error.error?.message
+          this.responseMessage = error.error?.message
         } else {
           this.responseMessage = globalConstants.genericError
         }

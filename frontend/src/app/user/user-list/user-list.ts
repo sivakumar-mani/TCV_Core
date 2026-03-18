@@ -2,14 +2,14 @@ import { Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { AgGridModule } from 'ag-grid-angular';
-import { AllCommunityModule, ColDef, ICellRendererParams, ModuleRegistry, themeBalham } from 'ag-grid-community';
+import { AllCommunityModule, ColDef, ModuleRegistry, themeBalham } from 'ag-grid-community';
 import { UserServices } from '../../services/user-services';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Router } from '@angular/router';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { Dialog } from '@angular/cdk/dialog';
+import { MatDialog,  } from '@angular/material/dialog';
 import { Signup } from '../dialog/signup/signup';
 import { ActionMenu } from '../../shared/list-action-menu';
+import { ViewUser } from '../dialog/view-user/view-user';
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
   selector: 'app-user-list',
@@ -69,8 +69,18 @@ export class UserList {
     }
   });
   }
-view(userData:any){
-  console.log("View", userData);
+viewUser(userData:any){
+   const dialogConfig =  this.dialog.open(ViewUser,{
+      data: userData,
+      width: '60%',
+      height:'70%',
+      maxWidth: '100vw',
+      maxHeight:'100vh',
+       disableClose: true,
+      position:{
+         top: '20px'
+      }
+    });
 }
 
 editUser(userData:any){
@@ -102,11 +112,15 @@ delete(userData:any){
     floatingFilter: true,
     headerClass: 'ag-header-style',
   }
+  titleCaseFormatter = (params: any) => {
+    if (!params.value) return '';
+    return params.value.toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase());
+  };
 
   colDefs: ColDef[] = [
-    { headerName: 'S.No', maxWidth: 70, valueGetter: (params: any) => params.node.rowIndex + 1 },
+    { headerName: 'S.No', maxWidth: 70, valueGetter: (params: any) => params.node.rowIndex + 1,  },
     { field: "userName", headerName: 'User Name', maxWidth: 150 },
-    { headerName: 'Full Name', valueGetter: (params) => { return params.data.firstName + ' ' + params.data.lastName } },
+    { headerName: 'Full Name', valueGetter: (params) => { return params.data.firstName + ' ' + params.data.lastName }, valueFormatter: this.titleCaseFormatter },
     { field: "email", headerName: 'Email' },
     { field: "contactNumber", headerName: 'Contact #', maxWidth: 120, },
     { field: "role", headerName: 'Role', maxWidth: 100, },
@@ -117,7 +131,7 @@ delete(userData:any){
   cellRenderer: ActionMenu,
   cellRendererParams: {
     dropdownMenu: [
-      { label: 'View', action: (userData:any) => this.view(userData) },
+      { label: 'View', action: (userData:any) => this.viewUser(userData) },
       { label: 'Edit', action: (userData:any) => this.editUser(userData) },
       { label: 'Delete', action: (userData:any) => this.delete(userData) }
     ]

@@ -1,11 +1,13 @@
 <mat-nav-list aria-label="Main navigation">
   <a mat-list-item [routerLink]="['/home']" routerLinkActive="active-link">
-    <mat-icon matListIcon>home</mat-icon>
-    <span matLine>Home</span>
+   <mat-panel-title>
+          <mat-icon matListIcon>home</mat-icon> <span matLine>Home</span>
+      </mat-panel-title>
   </a>
    <a mat-list-item [routerLink]="['/users']" routerLinkActive="active-link">
-    <mat-icon matListIcon>people</mat-icon>
-    <span matLine>User List</span>
+    <mat-panel-title>
+          <mat-icon matListIcon>people</mat-icon> <span matLine>Users</span>
+      </mat-panel-title>
   </a>
   <!-- <a mat-list-item [routerLink]="['/settings']" routerLinkActive="active-link">
     <mat-icon matListIcon>settings</mat-icon>

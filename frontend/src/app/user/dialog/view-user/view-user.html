@@ -1,0 +1,52 @@
+<h5 mat-dialog-title>
+  View User
+</h5>
+<mat-dialog-content  >
+ <div class="profile-card">
+        <div class="header">
+            <!-- <div class="user-avatar">M</div> -->
+            <div class="full-name">{{data.firstName | titlecase   }} {{data.lastName}}</div>
+            <span class="role-badge">{{data.role}}</span>
+        </div>
+
+        <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">User Name</div>
+                <div class="info-value">{{data.userName}}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value">{{data.email}}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Contact</div>
+                <div class="info-value">{{data.contactNumber}}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Status</div>
+                <div class="info-value">
+                    <span class="status-active">
+                        <span class="status-dot"></span>
+                       {{data.Status}}
+                    </span>
+                </div>
+            </div>
+      
+            <div class="info-item">
+                <div class="info-label">Date Registered</div>
+                <div class="info-value">2026-10-11 18:30:00</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Last Login</div>
+                <div class="info-value">2026-10-12 04:30:00</div>
+            </div>
+        </div>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <div class="d-flex justify-content-between w-100">
+    <button class="btn-no"  mat-raised-button mat-dialog-close>Close</button>
+
+</div>
+</mat-dialog-actions>
