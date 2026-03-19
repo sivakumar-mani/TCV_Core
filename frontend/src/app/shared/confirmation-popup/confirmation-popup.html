@@ -1,9 +1,15 @@
 <mat-dialog-content>
-    <div class="diaglog-content">
- <h5> Do you want to {{details.message}}?</h5>
-    </div>
+   <div class="diaglog-content">
+      <div class="user-details">
+         @if(details.data){
+         <h6>User Name: {{details.data.userName}}</h6>
+         <h6>Full Name: {{details.data.firstName}} {{details.data.lastName}}</h6>
+         }
+         <h5> Do you want to {{details.message}}?</h5>
+      </div>
+   </div>
 </mat-dialog-content>
 <mat-dialog-actions>
-   <button mat-raised-button color="secondary" class="btn-no"  mat-dialog-close>No</button>
-    <button mat-raised-button color="primary" class="btn-yes" (click)="handleSubmit()">Yes</button>
-    <mat-dialog-actions>
+   <button mat-raised-button color="secondary" class="btn-no" mat-dialog-close>No</button>
+   <button mat-raised-button color="primary" class="btn-yes" (click)="handleSubmit()">Yes</button>
+</mat-dialog-actions>

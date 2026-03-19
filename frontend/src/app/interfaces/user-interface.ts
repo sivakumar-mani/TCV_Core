@@ -12,6 +12,9 @@ export  interface changePasswordData{
     newPassword: string,
     oldPassword:string
 }
+export  interface deleteUserData{
+    userId: number
+}
 export interface signupInterface {
   userName: string;
   password: string;

@@ -287,6 +287,19 @@ body {
   gap: 10px;
 }
 
+/* Tablet */
+@media (max-width: 992px) {
+  .grid-2-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .grid-2-col {
+    grid-template-columns: 1fr !important;
+  }
+}
 
 // ---------snack bar ----
 .black-snackbar {

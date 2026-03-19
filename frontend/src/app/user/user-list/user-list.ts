@@ -10,6 +10,9 @@ import { MatDialog,  } from '@angular/material/dialog';
 import { Signup } from '../dialog/signup/signup';
 import { ActionMenu } from '../../shared/list-action-menu';
 import { ViewUser } from '../dialog/view-user/view-user';
+import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-popup';
+import { Snackbar } from '../../services/snackbar';
+import { globalConstants } from '../../services/global-constants';
 ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
   selector: 'app-user-list',
@@ -18,7 +21,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   styleUrl: './user-list.scss',
 })
 export class UserList {
-
+  
+  isMobile = window.innerWidth < 768;
   rowSelection: any;
   actionMenu: any;
   rowHeight = 20;
@@ -29,12 +33,12 @@ export class UserList {
   // userList:any[]=[];
   userList: any;
   dialog = inject(MatDialog);
+  responseMessage: any;
   
   constructor(private userService: UserServices,
-    private ngxUiLoader: NgxUiLoaderService,
+    private ngxLoader: NgxUiLoaderService,
     private router: Router,
-    
-
+    private snackBarService :Snackbar
   ) {
     this.rowSelection = {
       mode: 'multiRow',
@@ -42,20 +46,20 @@ export class UserList {
   }
 
   ngOnInit() {
-    this.ngxUiLoader.start();
+    this.ngxLoader.start();
     this.getUsers();
   }
 
   getUsers() {
     this.userService.getAllusers().subscribe((response: any) => {
-      this.ngxUiLoader.stop();
+      this.ngxLoader.stop();
       this.userList = response
     })
   }
   addUser(){
     const dialogConfig =  this.dialog.open(Signup,{
-      width: '60%',
-      height:'80%',
+      width: this.isMobile ? '96%' : '60%',
+      height: this.isMobile ? '90%' : '80%',
       maxWidth: '100vw',
       maxHeight:'100vh',
        disableClose: true,
@@ -72,8 +76,8 @@ export class UserList {
 viewUser(userData:any){
    const dialogConfig =  this.dialog.open(ViewUser,{
       data: userData,
-      width: '60%',
-      height:'70%',
+       width: this.isMobile ? '96%' : '60%',
+      height: this.isMobile ? '90%' : '80%',
       maxWidth: '100vw',
       maxHeight:'100vh',
        disableClose: true,
@@ -86,8 +90,8 @@ viewUser(userData:any){
 editUser(userData:any){
   const dialogConfig =  this.dialog.open(Signup,{
       data: userData,
-      width: '60%',
-      height:'80%',
+      width: this.isMobile ? '96%' : '60%',
+      height: this.isMobile ? '90%' : '80%',
       maxWidth: '100vw',
       maxHeight:'100vh',
        disableClose: true,
@@ -102,16 +106,63 @@ editUser(userData:any){
   });
 }
 
-delete(userData:any){
-  console.log("Delete", userData);
+delete(userData:any){  
+   const dialogConfig =  this.dialog.open(ConfirmationPopup,{
+    data : {
+      data: userData,
+      message: "Delete"
+    },
+      width: '40%',
+      height:'40%',
+      maxWidth: '100vw',
+      maxHeight:'100vh',
+       disableClose: true,
+      position:{
+         top: 'calc(1vw + 20px)'
+      }
+    });
+     const sub = dialogConfig.componentInstance.onEmitStatusChange.subscribe(() => {
+      this.userService.userDelete(userData).subscribe({
+           next: (response: any) => {
+             this.ngxLoader.stop();
+            if (response?.token) {
+               localStorage.setItem('token', response.token);
+             }
+             this.responseMessage = response.message;
+             this.snackBarService.openSnackbar(this.responseMessage, "");
+             if (response) {
+               dialogConfig.close('success');
+             }
+             this.router.navigateByUrl('/users');
+           },
+           error: (error) => {
+             this.ngxLoader.stop();
+             if (error.error?.message) {
+               this.responseMessage = error.error?.message;
+             } else {
+               this.responseMessage = globalConstants.genericError;
+             }
+             this.snackBarService.openSnackbar(this.responseMessage, globalConstants.errorRegex)
+           }
+         });
+    })
+    dialogConfig.afterClosed().subscribe(result => {
+    if (result === 'success') {
+      sub.unsubscribe();
+      this.getUsers();   
+    }
+  });
 }
   
   defaultColDef: ColDef = {
+    resizable: true,
+    minWidth: 120,
     flex: 1,
     filter: true,
     floatingFilter: true,
     headerClass: 'ag-header-style',
   }
+  
   titleCaseFormatter = (params: any) => {
     if (!params.value) return '';
     return params.value.toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase());

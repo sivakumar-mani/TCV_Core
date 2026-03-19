@@ -1,7 +1,7 @@
 import { DialogRef } from '@angular/cdk/dialog';
 import { Component, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { MatDialog, MatDialogActions, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogActions, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { InputFormField } from '../../../shared/input-form-field/input-form-field';
 import { globalConstants } from '../../../services/global-constants';
 import { NgxUiLoaderModule, NgxUiLoaderService } from 'ngx-ui-loader';
@@ -20,18 +20,20 @@ export class ChangePassword {
   changePasswordForm:any = FormGroup;
   responseMessage: any
   
+  
   hideConfirmPassword:boolean = true
  hide = signal(true);
   clickEvent(event: MouseEvent) {
     this.hide.set(!this.hide());
     event.stopPropagation();
   }
-  constructor(private dialog: DialogRef<ChangePassword>,
+  constructor(private dialogConfig: MatDialogRef<ChangePassword>,
     private fb : FormBuilder,
     private ngxLoader: NgxUiLoaderService, 
     private snackbarService: Snackbar,
     private userService: UserServices, 
-    private router : Router
+    private router : Router,
+    private dialog : MatDialog,
   ){}
 
   ngOnInit(){
@@ -66,7 +68,7 @@ changePassword(){
   this.userService.changePassword(data).subscribe({
     next: (response:any)=>{
       this.ngxLoader.stop();
-      this.dialog.close();
+      this.dialogConfig.close();
       this.responseMessage = response?.message;
       this.snackbarService.openSnackbar(this.responseMessage, "");
       this.router.navigateByUrl('/login')

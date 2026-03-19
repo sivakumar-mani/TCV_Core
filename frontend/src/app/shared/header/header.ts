@@ -6,9 +6,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ConfirmationPopup } from '../confirmation-popup/confirmation-popup';
 import { Router } from '@angular/router';
-import { DialogRef } from '@angular/cdk/dialog';
 import { ChangePassword } from '../../user/dialog/change-password/change-password';
-import { Signup } from '../../user/dialog/signup/signup';
+
 @Component({
   selector: 'app-header',
   imports: [MatToolbarModule,
@@ -23,9 +22,11 @@ export class Header {
 
   dialog = inject(MatDialog);
   router = inject(Router)
+  isMobile = window.innerWidth < 768;
+
   logout() {
     const dialogConfig = new MatDialogConfig();
-    dialogConfig.width = "400px";
+    dialogConfig.width = "this.isMobile?'95%' : '400px'";
     dialogConfig.disableClose = true;
     dialogConfig.data = {
       message: "Logout"

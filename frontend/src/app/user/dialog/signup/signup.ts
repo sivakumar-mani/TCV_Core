@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
 export class Signup {
   signupForm: any = FormGroup;
   responseMessage: string = '';
-
+   
   constructor(private dialog: MatDialogRef<Signup>,
     private fb: FormBuilder,
     @Inject(MAT_DIALOG_DATA) public data: any,

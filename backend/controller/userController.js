@@ -161,6 +161,9 @@ const changePassword = async (req, res) => {
             if (results[0].password === user.oldPassword) {
                 query = "UPDATE user SET password=? WHERE userName=?";
                 connection.query(query, [user.newPassword, userName], (error, results) => {
+                    if(error){
+                        return res.status(500).json(error);
+                    }
                     try {
                         return res.status(200).json({
                             message: "Password updated successfully"
@@ -227,4 +230,32 @@ const editUser = async (req, res) => {
 
     })
 }
-module.exports = { login, forgotPassword, changePassword, signup, getAllUser, editUser }
+
+const deleteUser = async(req, res)=>{
+  const user = req.body;
+  query = "SELECT * FROM user WHERE userId=?";
+  connection.query(query,[user.userId], (error,results)=>{
+    if(error){
+        return res.status(400).json(error);
+    }
+      if(results.length <= 0){
+        return res.status(404).json({
+            message: "User Details not found"
+        })
+      }
+    if(results.length > 0){
+        query ="DELETE  FROM user WHERE userId =?";
+        connection.query(query,[user.userId],(error, results)=>{
+            if(error){
+                return res.status(500).json(error);
+            }else{
+                return res.status(200).json({
+                    message :'User details deleted successfully'
+                })
+            }
+        })
+    }
+  })
+}
+
+module.exports = { login, forgotPassword, changePassword, signup, getAllUser, editUser, deleteUser }

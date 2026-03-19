@@ -25,3 +25,73 @@ onEmitStatusChange = new EventEmitter();
     <button mat-raised-button color="primary" (click)="handleSubmit()">Yes</button>
     </div>
 <mat-dialog-actions>
+
+insert the data from parent componentes
+this is passing logout message to confirmation dialog
+  dialog = inject(MatDialog);
+logout() {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.width = "400px";
+    dialogConfig.disableClose = true;
+    dialogConfig.data = {
+      message: "Logout"
+    }
+    const dialogRef = this.dialog.open(ConfirmationPopup, dialogConfig);
+    const sub = dialogRef.componentInstance.onEmitStatusChange.subscribe((user) => {
+      dialogRef.close();
+      localStorage.clear();
+      this.router.navigateByUrl('/login')
+    })
+
+  }
+
+  this is delete function of user list from ag grid
+
+  
+delete(userData:any){  
+   const dialogConfig =  this.dialog.open(ConfirmationPopup,{
+    data : {
+      data: userData,
+      message: "Delete"
+    },
+      width: '40%',
+      height:'40%',
+      maxWidth: '100vw',
+      maxHeight:'100vh',
+       disableClose: true,
+      position:{
+         top: 'calc(1vw + 20px)'
+      }
+    });
+     const sub = dialogConfig.componentInstance.onEmitStatusChange.subscribe(() => {
+      this.userService.userDelete(userData).subscribe({
+           next: (response: any) => {
+             this.ngxLoader.stop();
+            if (response?.token) {
+               localStorage.setItem('token', response.token);
+             }
+             this.responseMessage = response.message;
+             this.snackBarService.openSnackbar(this.responseMessage, "");
+             if (response) {
+               dialogConfig.close('success');
+             }
+             this.router.navigateByUrl('/users');
+           },
+           error: (error) => {
+             this.ngxLoader.stop();
+             if (error.error?.message) {
+               this.responseMessage = error.error?.message;
+             } else {
+               this.responseMessage = globalConstants.genericError;
+             }
+             this.snackBarService.openSnackbar(this.responseMessage, globalConstants.errorRegex)
+           }
+         });
+    })
+    dialogConfig.afterClosed().subscribe(result => {
+    if (result === 'success') {
+      sub.unsubscribe();
+      this.getUsers();   
+    }
+  });
+}

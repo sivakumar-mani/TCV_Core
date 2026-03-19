@@ -158,3 +158,76 @@ CREATE TABLE sales_items (
     FOREIGN KEY (sales_id) REFERENCES sales_master(sales_id),
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
+
+
+1. Item Brands Table (Master Table)
+
+This table stores all brand details.
+
+CREATE TABLE item_brands (
+    brand_id INT AUTO_INCREMENT PRIMARY KEY,
+    brand_name VARCHAR(100) NOT NULL UNIQUE,
+    brand_code VARCHAR(50),
+    description TEXT,
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+🔑 Required Fields
+
+brand_id → Primary key (used for mapping)
+
+brand_name → Required & unique (e.g., Nike, Samsung)
+
+🟡 Optional Fields
+
+brand_code → Short code (useful for internal reference)
+
+description → Brand details
+
+status → Active/Inactive control
+
+✅ 2. Products Table (Child Table)
+
+This table references the brand.
+
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(150) NOT NULL,
+    brand_id INT NOT NULL,
+    category_id INT,
+    price DECIMAL(10,2),
+    stock INT DEFAULT 0,
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT fk_brand
+        FOREIGN KEY (brand_id)
+        REFERENCES item_brands(brand_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
+🔗 Relationship
+
+One Brand → Many Products
+
+Mapping:
+
+item_brands.brand_id  →  products.brand_id
+✅ 3. Example Data
+Brands
+INSERT INTO item_brands (brand_name) VALUES
+('Apple'),
+('Samsung'),
+('Nike');
+Products
+INSERT INTO products (product_name, brand_id, price) VALUES
+('iPhone 15', 1, 79999),
+('Galaxy S24', 2, 69999),
+('Nike Shoes', 3, 4999);
+✅ 4. Best Practices
+
+✔ Always use brand_id (not brand_name) in products
+✔ Keep brand_name unique
+✔ Use foreign key constraint to maintain integrity
+✔ Add index on brand_id for performance

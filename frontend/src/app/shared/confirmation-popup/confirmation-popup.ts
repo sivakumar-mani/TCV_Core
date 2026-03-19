@@ -1,3 +1,4 @@
+import { NgIf } from '@angular/common';
 import { Component, EventEmitter, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA ,MatDialogModule, MatDialogActions, MatDialogRef} from '@angular/material/dialog';
 
