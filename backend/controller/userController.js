@@ -183,43 +183,46 @@ const changePassword = async (req, res) => {
 const editUser = async (req, res) => {
     const user = req.body;
     const userId = user.userId;
-    query = "SELECT * FROM user where userId =?";
-    connection.query(query, [userId], (error, results) => {
+    query = `SELECT * FROM user WHERE (userName = ? OR email = ?)  AND userId != ?`;
+    connection.query(query, [user.userName, user.email, userId], (error, results) => {
         if (error) {
             return res.status(500).json({
                 message: 'User not found'
             })
-        } else {
-            try {
-                if (results.length > 0) {
+        }
+        try {
+            // if (results.length > 0) {
+            if (results.length > 0) {
                 const existing = results[0];
-                    if (existing.userName === user.userName && existing.userId === userId) {
-                        return res.status(409).json({
-                            message: "User Name is already exists, please try some other"
-                        })
-                    } else if (existing.email === user.email && existing.userId === userId) {
-                        return res.status(409).json({
-                            message: "Email is already exists, please try some other"
-                        })
-                    } else {
-                        query = "UPDATE user SET  userName=?, password=?, email=?, contactNumber=?,firstName=?,lastName=?, dateRegistered=?,lastLogin=?, role=?, Status=? WHERE userId=?";
-                        connection.query(query, [user.userName, user.password, user.email, user.contactNumber, user.firstName, user.lastName, user.dateRegistered, user.lastLogin, user.role, user.Status, userId], (error, results) => {
-                            try {
-                                return res.status(200).json({
-                                    message: "User record updated successfully"
-                                })
-                            } catch (error) {
-                                return res.status(500).json(error)
-                            }
-                        });
+
+                if (existing.userName === user.userName) {
+                    return res.status(409).json({
+                        message: "User Name already exists, try another"
+                    });
+                }
+
+                if (existing.email === user.email) {
+                    return res.status(409).json({
+                        message: "Email already exists, try another"
+                    });
+                }
+            }
+             query = "UPDATE user SET  userName=?, password=?, email=?, contactNumber=?,firstName=?,lastName=?, dateRegistered=?,lastLogin=?, role=?, Status=? WHERE userId=?";
+                connection.query(query, [user.userName, user.password, user.email, user.contactNumber, user.firstName, user.lastName, user.dateRegistered, user.lastLogin, user.role, user.Status, userId], (error, results) => {
+                    if (error) {
+                        return res.status(500).json(error);
                     }
 
-                } else {
-                    return res.status(403).json({ message: "Unauthorized to edit this user" });
-                }
-            } catch (error) {
-                return res.status(500).json(error);
-            }
+                    return res.status(200).json({
+                        message: "User record updated successfully"
+                    });
+                });
+
+            // } else {
+            //     return res.status(403).json({ message: "Unauthorized to edit this user" });
+            // }
+        } catch (error) {
+            return res.status(500).json(error);
         }
 
     })
