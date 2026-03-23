@@ -10,6 +10,7 @@ import { MAT_DIALOG_DATA ,MatDialogModule, MatDialogActions, MatDialogRef} from 
 })
 export class ConfirmationPopup {
   onEmitStatusChange = new EventEmitter();
+
   details: any
   constructor(@Inject(MAT_DIALOG_DATA) public dialogData: any, 
 private dialogConfig : MatDialogRef<ConfirmationPopup>){}

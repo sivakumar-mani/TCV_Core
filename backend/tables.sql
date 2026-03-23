@@ -164,12 +164,12 @@ CREATE TABLE sales_items (
 
 This table stores all brand details.
 
-CREATE TABLE item_brands (
+CREATE TABLE brands (
     brand_id INT AUTO_INCREMENT PRIMARY KEY,
-    brand_name VARCHAR(100) NOT NULL UNIQUE,
-    brand_code VARCHAR(50),
+    brand_name VARCHAR(100) NOT NULL,
+    brand_code VARCHAR(50)  UNIQUE,
     description TEXT,
-    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',  //(restricted not accept other words except ACTIVE AND INACTIVE)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
