@@ -1,0 +1,257 @@
+200 – OK
+201 – Created
+400 – Bad Request
+401 – Unauthorized
+404 – Not Found
+500 – Internal Server Error
+
+
+Search by code or description…
+100
+Continue
+Client should continue sending the request body
+Info
+101
+Switching Protocols
+Server agrees to switch protocols (e.g. WebSocket)
+Info
+102
+Processing
+Server received and is processing (WebDAV)
+Info
+103
+Early Hints
+Returns headers before final response for preloading
+Info
+200
+OK
+Request succeeded. Response body contains result
+Success
+201
+Created
+Resource created. Location header points to new resource
+Saved
+202
+Accepted
+Request accepted for async processing, not yet done
+Async
+203
+Non-Authoritative Info
+Transformed proxy response, not from origin server
+Info
+204
+No Content
+Success, but no body to return (DELETE, PUT without body)
+Empty
+205
+Reset Content
+Client should reset the document view
+Reset
+206
+Partial Content
+Range request fulfilled (chunked downloads, video streaming)
+Partial
+207
+Multi-Status
+Multiple status codes in XML body (WebDAV)
+Batch
+208
+Already Reported
+DAV bindings already listed in previous reply
+WebDAV
+226
+IM Used
+GET fulfilled with instance manipulation
+Rare
+300
+Multiple Choices
+Multiple options for the resource
+Redirect
+301
+Moved Permanently
+URL permanently changed. Browsers cache this redirect
+Redirect
+302
+Found
+Temporary redirect. Original URL still valid
+Redirect
+303
+See Other
+Redirect to a GET after POST/PUT/DELETE
+Redirect
+304
+Not Modified
+Client cache is fresh; use cached version
+Cache
+305
+Use Proxy
+Deprecated. Must use proxy for access
+Deprecated
+307
+Temporary Redirect
+Temporary redirect; method must not change
+Redirect
+308
+Permanent Redirect
+Permanent redirect; method must not change
+Redirect
+400
+Bad Request
+Malformed syntax, invalid params, or validation failure
+Error
+401
+Unauthorized
+Authentication required or credentials invalid
+Auth
+402
+Payment Required
+Reserved for payment gateways and quota limits
+Payment
+403
+Forbidden
+Authenticated but not authorized to access this resource
+Auth
+404
+Not Found
+Resource does not exist or URL is wrong
+Not Found
+405
+Method Not Allowed
+HTTP method not supported (e.g. POST on read-only)
+Error
+406
+Not Acceptable
+No content type matches Accept header
+Content
+407
+Proxy Auth Required
+Must authenticate with proxy first
+Auth
+408
+Request Timeout
+Client took too long to send request
+Timeout
+409
+Conflict
+State conflict — duplicate resource, edit conflict, etc.
+Conflict
+410
+Gone
+Resource permanently deleted; no forwarding address
+Not Found
+411
+Length Required
+Content-Length header required but missing
+Error
+412
+Precondition Failed
+Conditional request (If-Match) evaluated to false
+Condition
+413
+Content Too Large
+Request body exceeds server limit
+Error
+414
+URI Too Long
+URL exceeds server-allowed length
+Error
+415
+Unsupported Media Type
+Content-Type not supported by this endpoint
+Content
+416
+Range Not Satisfiable
+Range header out of bounds for the resource
+Error
+417
+Expectation Failed
+Expect header requirement could not be met
+Error
+418
+I'm a Teapot
+April Fools RFC 2324. Often used to block bots
+Fun
+421
+Misdirected Request
+Request sent to wrong server or virtual host
+Error
+422
+Unprocessable Content
+Validation error — data well-formed but semantically invalid
+Validation
+423
+Locked
+Resource is locked (WebDAV)
+Lock
+424
+Failed Dependency
+Previous WebDAV action failed, making this one fail too
+WebDAV
+425
+Too Early
+Server won't process possible replay request (TLS)
+Security
+426
+Upgrade Required
+Client must switch to TLS or newer protocol
+Upgrade
+428
+Precondition Required
+Conditional header (If-Match) is required
+Condition
+429
+Too Many Requests
+Rate limit exceeded. Check Retry-After header
+Rate Limit
+431
+Headers Too Large
+Request headers exceed server size limit
+Error
+451
+Unavailable for Legal Reasons
+Blocked by court order, GDPR, or DMCA takedown
+Legal
+500
+Internal Server Error
+Unhandled exception or crash on the server
+Server
+501
+Not Implemented
+HTTP method not supported by this server
+Server
+502
+Bad Gateway
+Upstream server returned invalid response
+Gateway
+503
+Service Unavailable
+Server overloaded or down for maintenance
+Down
+504
+Gateway Timeout
+Upstream server didn't respond in time
+Timeout
+505
+HTTP Version Not Supported
+Server doesn't support requested HTTP version
+Server
+506
+Variant Also Negotiates
+Content negotiation config error
+Rare
+507
+Insufficient Storage
+No storage left to complete the request (WebDAV)
+Storage
+508
+Loop Detected
+Infinite loop detected while processing (WebDAV)
+WebDAV
+510
+Not Extended
+Further extension required for the server to fulfil
+Rare
+511
+Network Auth Required
+Must authenticate to use this network (captive portals)
+Auth
