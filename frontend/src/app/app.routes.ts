@@ -30,6 +30,14 @@ export const routes: Routes = [
             data:{
                 expectedRole:['admin']
             }
+        },
+         {
+            path:'brands',
+            loadComponent: ()=> import('./products/brands-list/brands-list').then(n => n.BrandsList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
         }
     ]
     },
