@@ -1,0 +1,32 @@
+<mat-form-field appearance="outline" floatLabel="always" style="width: 100%;">
+  
+  <mat-label>{{ label | titlecase }}</mat-label>
+
+  <textarea 
+    matInput 
+    [formControl]="control"
+    [rows]="rows"
+    [placeholder]="placeholder"
+    [attr.maxlength]="maxLength"
+    [disabled]="disabled">
+  </textarea>
+
+  <!-- Character Count -->
+
+
+  <!-- Error Messages -->
+  <mat-error *ngIf="control.touched && control.invalid">
+
+    <span *ngIf="control.hasError('required')">
+      This {{ label }} is mandatory.
+    </span>
+
+    <span *ngIf="control.hasError('maxlength')">
+      Maximum {{ maxLength }} characters allowed.
+    </span>
+
+  </mat-error>
+  <div class="char-count" *ngIf="maxLength">
+    {{ control.value?.length || 0 }} / {{ maxLength }}
+  </div>
+</mat-form-field>

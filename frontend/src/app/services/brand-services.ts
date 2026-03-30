@@ -12,4 +12,9 @@ export class BrandServices {
       return this.http.get(`${this.url}/brand/get`);
     }
 
+    addBrands(data:any){
+      return this.http.post(`${this.url}/brand/add`, data,{
+        headers : new HttpHeaders().set('content-type',"application/json")
+      })
+    }
 }

@@ -1,0 +1,27 @@
+
+step 1:
+//reusable components imported
+import { InputFormField } from '../../../shared/input-form-field/input-form-field';
+import { SelectFormField } from '../../../shared/select-form-field/select-form-field';
+//import formgroup related
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
+step 2:
+//add formgroup variable
+  exampleForm: any = FormGroup;
+
+Step 3:
+map the FormBuilder
+ constructor( private fb: FormBuilder){}
+
+ step 4 
+ Create the Validators of fields in ngOnInit or separate function
+ ngOnInit(){
+  this.brandFormInitiate();
+ }
+
+ brandFormInitiate(){
+  this.brandForm = this.fb.group({
+    brandName:['',[Validators.required]]
+  })
+ }

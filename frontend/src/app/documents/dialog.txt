@@ -1,23 +1,78 @@
-where we call the dialog need to do this.
- dialog = inject(MatDialog) 
+step 1: import { MatDialog } from '@angular/material/dialog';  // in parent components
 
-forgotPassword(){
-  const dialogConfig = new MatDialogConfig();
-  dialogConfig.width ="500px";
-  this.dialog.open(ForgotPassword, dialogConfig)
+step 2: inject the dialog in 2 way 
+  Method 1. dialog = inject(MatDialog)
+  Method 2. constructor( private dialog : MatDialog)
+
+step 3 : create a function to call the dialog in function which is 2 methods
+
+method 1:  function(){
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.width = "this.isMobile?'95%' : '400px'"; 0r ='400px';
+    dialogConfig.disableClose = true // this prevent close dialog while click outside
+    
+    const dialogRef = this.dialog.open( dialogComponentName, dialogConfig)'
 }
 
- constructor( private dialogConfig : MatDialogRef<ForgotPassword>){}
+method 2 : function(){
+    const dialogConfig = this.dialog.open(dialogComponentName, {
+        data : {
+          data: userData,
+          message: "Delete"   // this is used to map the data
+        },
+        or 
+           data: userData,
+       width: '40%',
+      height:'40%',
+      maxWidth: '100vw',
+      maxHeight:'100vh',
+       disableClose: true,
+      position:{
+         top: 'calc(1vw + 20px)'
+      }
+    });
+    /// after close the dialog call the refresh function to load data
+    dialogConfig.afterClosed().subscribe(result => {
+    if (result === 'success') {
+      this.getUsers();   
+    }
+}
+
+/// this is in dialog components 
+
+step 1: import { MatDialogActions, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+
+MAT_DIALOG_DATA -- this one is for map the data
+
+step 2 : ref the dialog
+ constructor( private dialogConfig : MatDialogRef<dialogComponentName>){}
+
+step 3 : add html codes
 
  <h2 mat-dialog-title>Hi </h2>
+
 <mat-dialog-content>
+
   <p>What's your favorite animal?</p>
   <mat-form-field>
     <mat-label>Favorite Animal</mat-label>
     <input matInput  />
   </mat-form-field>
+
 </mat-dialog-content>
+
 <mat-dialog-actions>
+
   <button matButton >No Thanks</button>
   <button matButton  cdkFocusInitial>Ok</button>
+
 </mat-dialog-actions>
+
+
+### data  map example
+  getUsers() {
+    this.userService.getAllusers().subscribe((response: any) => {
+      this.ngxLoader.stop();
+      this.userList = response // this is the data mapping 
+    })
+  }

@@ -7,43 +7,86 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import {MatInputModule} from '@angular/material/input';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
-export interface PeriodicElement {
-  name: string;
-  position: number;
-  weight: number;
-  symbol: string;
-}
-
-const ELEMENT_DATA: PeriodicElement[] = [
-  {position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H'},
-  {position: 2, name: 'Helium', weight: 4.0026, symbol: 'He'},
-  {position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li'},
-  {position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be'},
-  {position: 5, name: 'Boron', weight: 10.811, symbol: 'B'},
-  {position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C'},
-  {position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N'},
-  {position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O'},
-  {position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F'},
-  {position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne'},
-];
-
+import { HttpClient } from '@angular/common/http';
+import { BrandServices } from '../../services/brand-services';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { Snackbar } from '../../services/snackbar';
+import { Router } from '@angular/router';
+import { globalConstants } from '../../services/global-constants';
+import { ActionMenu } from '../../shared/list-action-menu';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatButtonModule} from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
+import { Brands } from './dialog/brands/brands';
 
 @Component({
   selector: 'app-brands-list',
   imports: [MatIconModule, MatToolbarModule,
-     MatTableModule,MatPaginatorModule,
-    MatInputModule, MatFormFieldModule, ReactiveFormsModule
+     MatTableModule,MatPaginatorModule,MatMenuModule,MatMenuModule,
+    MatInputModule, MatFormFieldModule, ReactiveFormsModule, 
   ],
   templateUrl: './brands-list.html',
   styleUrl: './brands-list.scss',
 })
 export class BrandsList {
-  
-displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-  dataSource = new MatTableDataSource(ELEMENT_DATA);
+ displayedColumns: string[] = ['serial','brand_code', 'brand_name','description', 'status', 'created_at', 'updated_at','action'];
+  dataSource:any;
+  responseMessage: any;
+
+ constructor(private http: HttpClient,
+  private brandServices : BrandServices,
+   private ngxLoader : NgxUiLoaderService,
+   private snackbarService : Snackbar,
+   private router: Router,
+   private dialog: MatDialog
+ ){}
+
+  ngOnInit(){
+    this.ngxLoader.start();
+    this.brandData();
+  }
+
+  brandData(){
+      this.brandServices.getBrands().subscribe( (response:any)=>{
+        this.ngxLoader.stop();
+        this.dataSource  = new MatTableDataSource(response);
+      },
+      (error:any)=>{
+        this.ngxLoader.stop();
+        if(error.error?.message){
+          this.responseMessage = error.error?.message;
+        }else {
+          this.responseMessage = globalConstants.genericError;
+        }
+        this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex)
+      }
+    )
+  }
+
+  addBrand(){
+    const dialogConfig = this.dialog.open(Brands, {
+      width:'40%',
+      height:'60%',
+      maxHeight: '100vh',
+      maxWidth: '100vw',
+       disableClose: true,
+      position:{
+         top: 'calc(1vw + 20px)'
+      },
+    });
+    dialogConfig.afterClosed().subscribe((results)=>{
+      if(results == 'success'){
+        this.brandData();
+      }
+    })
+  }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
+  editBrand(value:any){
+    console.log("edit", value)
+  }
+    edit(value:any){}
 }

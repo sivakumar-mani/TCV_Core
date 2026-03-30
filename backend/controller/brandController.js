@@ -50,8 +50,12 @@ const addBrand = async (req, res) => {
                 } else {
                     maxCode = data[0].maxId;
                     const brandCode = getShortCode(brand.brand_name, maxCode);
+                    const status = 'ACTIVE';
+                    const createdAt = new Date();
+                    const updatedAt = new Date();
+                    console.log(brand, brandCode, status, createdAt, updatedAt);
                     query = "INSERT INTO brands (brand_name, brand_code, description, status, created_at, updated_at) VALUES (?,?,?,?,?,?)";
-                    connection.query(query, [brand.brand_name, brandCode, brand.description, brand.status, brand.created_at, brand.updated_at], (error, results) => {
+                    connection.query(query, [brand.brand_name, brandCode, brand.description, status, createdAt, updatedAt], (error, results) => {
                         if (error) {
                             return res.status(500).json(error);
                         } else {
