@@ -154,13 +154,15 @@ const deleteBrand = async (req, res) => {
 // };
 
 const editBrand = async(req, res)=>{
+    const brand = req.body;
+    console.log("test",brand )
     try {
         const { brand_id, brand_name, brand_code, description, status } = req.body;
         const [results] = await connection.promise().query(
             "SELECT * FROM brands where brand_id = ?",[brand_id]
         )
 
-        console.log("results.length", results.length);
+        // console.log("results.length", results.length);
         if( results.length === 0 ){
             return res.status(400).json({
                 message: "Brand not found"

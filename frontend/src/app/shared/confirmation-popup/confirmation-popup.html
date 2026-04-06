@@ -2,8 +2,9 @@
    <div class="diaglog-content">
       <div class="user-details">
          @if(details.data){
-         <h6>User Name: {{details.data.userName}}</h6>
-         <h6>Full Name: {{details.data.firstName}} {{details.data.lastName}}</h6>
+         <h6>{{details?.userName}} {{details.data.userName}}</h6>
+         <h6>{{details?.fullName}} {{details.data.lastName}}</h6>
+          <h2>{{details?.brandName}} {{details.data.brand_name}}</h2>
          }
          <h5> Do you want to {{details.message}}?</h5>
       </div>

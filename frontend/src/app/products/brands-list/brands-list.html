@@ -64,7 +64,7 @@
             <a [matMenuTriggerFor]="menu">Action</a>
             <mat-menu #menu="matMenu">
               <button mat-menu-item (click)="editBrand(element)">Edit</button>
-              <button mat-menu-item>Delete</button>
+              <button mat-menu-item (click)="deleteBrand(element)">Delete</button>
             </mat-menu>
           </td>
         </ng-container>

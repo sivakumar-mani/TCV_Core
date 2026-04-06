@@ -17,4 +17,17 @@ export class BrandServices {
         headers : new HttpHeaders().set('content-type',"application/json")
       })
     }
+
+    updateBrand(data:any){
+      return this.http.patch(`${this.url}/brand/edit`,data,{
+        headers: new HttpHeaders().set('content-type',"application/json")
+      } )
+    }
+
+    deleteBrand(data:any){
+      return this.http.delete(`${this.url}/brand/delete`,{
+        body: data,
+         headers: new HttpHeaders().set('content-type',"application/json")
+      })
+    }
 }

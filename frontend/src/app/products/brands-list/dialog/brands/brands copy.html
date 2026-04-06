@@ -1,0 +1,69 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Brand' : 'Add Brand' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="brandForm">
+    <div class="grid-1-col mt-4">
+
+      <app-input-form-field
+        [label]="'Brand Name'"
+        [classLabel]="'form-label'"
+        [inputClass]="'form-control'"
+        [type]="'text'"
+        [formControl]="$any(brandForm.controls['brand_name'])">
+      </app-input-form-field>
+
+      <app-input-form-field
+        [label]="'Brand Code'"
+        [classLabel]="'form-label'"
+        [inputClass]="'form-control'"
+        [type]="'text'"
+        [formControl]="$any(brandForm.controls['brand_code'])">
+      </app-input-form-field>
+
+      <app-textarea-form-field
+        [label]="'Description'"
+        [classLabel]="'form-label'"
+        [rows]="2"
+        [maxLength]="20"
+        [placeholder]="'Enter the description'"
+        [control]="$any(brandForm.controls['description'])">
+      </app-textarea-form-field>
+
+      <!-- Status only shown in Edit mode -->
+      <app-select-form-field
+        *ngIf="isEditMode"
+        [label]="'Status'"
+        [labelClass]="'form-label'"
+        [selectClass]="'form-control'"
+        [options]="statusList"
+        [formControl]="$any(brandForm.controls['status'])">
+      </app-select-form-field>
+
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+
+  <!-- Cancel -->
+  <button class="btn-no" mat-raised-button mat-dialog-close>Cancel</button>
+
+  <!-- Delete (Edit mode only) -->
+  <button
+    *ngIf="isEditMode"
+    mat-raised-button
+    class="btn-delete"
+    (click)="deleteSubmit()">
+    Delete
+  </button>
+
+  <!-- Save / Update -->
+  <button
+    mat-raised-button
+    (click)="onSubmit()"
+    [class]="brandForm.valid ? 'btn-yes' : 'btn-no btn-disabled'"
+    [disabled]="!brandForm.valid">
+    {{ isEditMode ? 'Update' : 'Save' }}
+  </button>
+
+</mat-dialog-actions>

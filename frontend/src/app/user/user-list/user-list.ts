@@ -110,7 +110,9 @@ delete(userData:any){
    const dialogConfig =  this.dialog.open(ConfirmationPopup,{
     data : {
       data: userData,
-      message: "Delete"
+      message: "Delete",
+      userName :"User Name",
+      fullName: "Full Name"
     },
       width: '40%',
       height:'40%',
