@@ -17,28 +17,7 @@ create table user (
 insert into user ( username, password, email,contactNumber, firstName, lastName, dateRegistered,lastLogin,role,Status )
 values ('tcvadmin','Tcv@1234','timecablevision@gmail.com','sivakumar','m','2025-11-10', '2025-11-10', 'admin','true' );
 
--- create table brand {
---     brandid int primary key AUTO_INCREMENT,
---     brandName varchar(100),
---     brandCode varchar(100),
---     desription varchar(1000),
---      UNIQUE(brandName)
--- }
 
--- CREATE TABLE product_brand (
---     brand_id INT AUTO_INCREMENT PRIMARY KEY,
---     brand_code VARCHAR(50),
---     brand_name VARCHAR(150) NOT NULL,
---     manufacturer VARCHAR(150),
---     country_origin VARCHAR(100),
---     description TEXT,
---     website VARCHAR(255),
---     status TINYINT(1) DEFAULT 1,
---     created_by INT,
---     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
---     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
---     UNIQUE(brandName)
--- );
 -- Brand Master
 CREATE TABLE brands (
     brand_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -48,6 +27,113 @@ CREATE TABLE brands (
      status TINYINT(1) DEFAULT 1,
      UNIQUE(brand_name)
 );
+
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(100) UNIQUE,  -- For SEO-friendly URLs, e.g., 'cctv', 'ahd-camera'
+    parent_id INT NULL DEFAULT NULL,
+    status TINYINT(1) DEFAULT 1,
+    sort_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_parent (parent_id),
+    FOREIGN KEY (parent_id) REFERENCES categories(category_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- slug VARCHAR(100) UNIQUE,  -- For SEO-friendly URLs, e.g., 'cctv', 'ahd-camera'
+CREATE TABLE categories (
+    category_id   INT AUTO_INCREMENT PRIMARY KEY,
+    parent_id     INT NULL,                        
+    name          VARCHAR(100) NOT NULL,
+    slug          VARCHAR(100) NOT NULL UNIQUE,     
+    level         TINYINT UNSIGNED NOT NULL DEFAULT 0, 
+    sort_order    INT NOT NULL DEFAULT 0,
+    status        TINYINT(1) NOT NULL DEFAULT 1,
+    created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_category_parent
+        FOREIGN KEY (parent_id) REFERENCES categories(category_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+    UNIQUE KEY uq_name_per_parent (parent_id, name)
+);
+-- https://claude.ai/share/bb14ef7f-5aa9-4777-8c9d-de131f258068
+CREATE TABLE categories (
+    category_id   INT AUTO_INCREMENT PRIMARY KEY,
+    parent_id     INT NULL,                          -- NULL = top-level category
+    name          VARCHAR(100) NOT NULL,
+    slug          VARCHAR(100) NOT NULL UNIQUE,      -- URL-friendly name
+    level         TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 0=parent, 1=sub, 2=child
+    sort_order    INT NOT NULL DEFAULT 0,
+    status        TINYINT(1) NOT NULL DEFAULT 1,
+    created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_category_parent
+        FOREIGN KEY (parent_id) REFERENCES categories(category_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    -- Same name is allowed under DIFFERENT parents, but not the same parent
+    UNIQUE KEY uq_name_per_parent (parent_id, name)
+);
+
+sql-- Level 0: Top-level (parent_id = NULL)
+INSERT INTO categories (parent_id, name, slug, level) VALUES
+(NULL, 'CCTV', 'cctv', 0);
+
+-- Level 1: Sub-category under CCTV (parent_id = 1)
+INSERT INTO categories (parent_id, name, slug, level) VALUES
+(1, 'Camera', 'cctv-camera', 1);
+
+-- Level 2: Child categories under Camera (parent_id = 2)
+INSERT INTO categories (parent_id, name, slug, level) VALUES
+(2, 'AHD',  'cctv-camera-ahd',  2),
+(2, 'IP',   'cctv-camera-ip',   2),
+(2, 'WiFi', 'cctv-camera-wifi', 2);
+
+-- Fetching the full tree (MySQL 8+)
+sqlWITH RECURSIVE category_tree AS (
+    -- Anchor: start from top-level
+    SELECT category_id, parent_id, name, level,
+           CAST(name AS CHAR(500)) AS full_path
+    FROM categories
+    WHERE parent_id IS NULL
+
+    UNION ALL
+
+    -- Recursive: join children
+    SELECT c.category_id, c.parent_id, c.name, c.level,
+           CONCAT(ct.full_path, ' > ', c.name)
+    FROM categories c
+    JOIN category_tree ct ON c.parent_id = ct.category_id
+)
+
+CCTV
+CCTV > Camera
+CCTV > Camera > AHD
+CCTV > Camera > IP
+CCTV > Camera > WiFi
+
+SELECT * FROM category_tree ORDER BY full_path;
+CREATE TABLE categories (
+    category_id   INT AUTO_INCREMENT PRIMARY KEY,
+    parent_id     INT NULL,                          -- NULL = top-level category
+    name          VARCHAR(100) NOT NULL,
+    slug          VARCHAR(100) NOT NULL UNIQUE,      -- URL-friendly name
+    level         TINYINT UNSIGNED NOT NULL DEFAULT 0, -- 0=parent, 1=sub, 2=child
+    sort_order    INT NOT NULL DEFAULT 0,
+    status        TINYINT(1) NOT NULL DEFAULT 1,
+    created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_category_parent
+        FOREIGN KEY (parent_id) REFERENCES categories(category_id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    -- Same name is allowed under DIFFERENT parents, but not the same parent
+    UNIQUE KEY uq_name_per_parent (parent_id, name)
+);
+
+
 -- Category Master (Recommended)
 CREATE TABLE categories (
     category_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -231,3 +317,26 @@ INSERT INTO products (product_name, brand_id, price) VALUES
 ✔ Keep brand_name unique
 ✔ Use foreign key constraint to maintain integrity
 ✔ Add index on brand_id for performance
+
+-- create table brand {
+--     brandid int primary key AUTO_INCREMENT,
+--     brandName varchar(100),
+--     brandCode varchar(100),
+--     desription varchar(1000),
+--      UNIQUE(brandName)
+-- }
+
+-- CREATE TABLE product_brand (
+--     brand_id INT AUTO_INCREMENT PRIMARY KEY,
+--     brand_code VARCHAR(50),
+--     brand_name VARCHAR(150) NOT NULL,
+--     manufacturer VARCHAR(150),
+--     country_origin VARCHAR(100),
+--     description TEXT,
+--     website VARCHAR(255),
+--     status TINYINT(1) DEFAULT 1,
+--     created_by INT,
+--     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+--     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+--     UNIQUE(brandName)
+-- );

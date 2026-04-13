@@ -155,7 +155,7 @@ const deleteBrand = async (req, res) => {
 
 const editBrand = async(req, res)=>{
     const brand = req.body;
-    console.log("test",brand )
+    // console.log("test",brand )
     try {
         const { brand_id, brand_name, brand_code, description, status } = req.body;
         const [results] = await connection.promise().query(
