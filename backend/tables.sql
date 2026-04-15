@@ -27,11 +27,84 @@ CREATE TABLE brands (
      status TINYINT(1) DEFAULT 1,
      UNIQUE(brand_name)
 );
+-- ============================================
+-- Category hierarchy table (3-level deep)
+-- Supports: CCTV, CATV, Internet, Solar, Other
+-- ============================================
+
+CREATE TABLE categories (
+  category_id            INT UNSIGNED        NOT NULL AUTO_INCREMENT,
+  category_name          VARCHAR(100)        NOT NULL,
+  slug          VARCHAR(120)        NOT NULL,
+  description   TEXT               DEFAULT NULL,
+  parent_id     INT UNSIGNED        DEFAULT NULL,
+  top_parent_id INT UNSIGNED        DEFAULT NULL,
+  level         TINYINT UNSIGNED    NOT NULL DEFAULT 1,
+  sort_order    SMALLINT UNSIGNED   NOT NULL DEFAULT 0,
+  status     TINYINT(1)          NOT NULL DEFAULT 1,
+  created_at    TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY  uq_slug (slug),
+  KEY         idx_parent   (parent_id),
+  KEY         idx_top      (top_parent_id),
+  KEY         idx_level    (level),
+
+  CONSTRAINT fk_cat_parent
+    FOREIGN KEY (parent_id)
+    REFERENCES categories (id)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================
+-- Seed: Level 1 — top-level categories
+-- top_parent_id = own id for root nodes
+-- ============================================
+
+INSERT INTO categories (name, slug, level, parent_id, top_parent_id, sort_order) VALUES
+  ('CCTV',     'cctv',     1, NULL, NULL, 1),
+  ('CATV',     'catv',     1, NULL, NULL, 2),
+  ('Internet', 'internet', 1, NULL, NULL, 3),
+  ('Solar',    'solar',    1, NULL, NULL, 4),
+  ('Other',    'other',    1, NULL, NULL, 5);
+
+-- After insert, set top_parent_id = own id for root rows
+UPDATE categories SET top_parent_id = id WHERE parent_id IS NULL;
+
+
+-- ============================================
+-- Trigger: auto-fill top_parent_id on INSERT
+-- ============================================
+
+DELIMITER $$
+CREATE TRIGGER trg_cat_before_insert
+BEFORE INSERT ON categories
+FOR EACH ROW
+BEGIN
+  IF NEW.parent_id IS NULL THEN
+    -- root node: top_parent_id set after insert via UPDATE
+    SET NEW.level = 1;
+    SET NEW.top_parent_id = NULL;
+  ELSE
+    SET NEW.level = (
+      SELECT level + 1 FROM categories WHERE id = NEW.parent_id
+    );
+    SET NEW.top_parent_id = (
+      SELECT COALESCE(top_parent_id, id)
+      FROM   categories
+      WHERE  id = NEW.parent_id
+    );
+  END IF;
+END$$
+DELIMITER ;
+
 
 CREATE TABLE categories (
     category_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    slug VARCHAR(100) UNIQUE,  -- For SEO-friendly URLs, e.g., 'cctv', 'ahd-camera'
+    category_name VARCHAR(100) NOT NULL,
+    category_slug VARCHAR(100) UNIQUE,  -- For SEO-friendly URLs, e.g., 'cctv', 'ahd-camera'
     parent_id INT NULL DEFAULT NULL,
     status TINYINT(1) DEFAULT 1,
     sort_order INT DEFAULT 0,
