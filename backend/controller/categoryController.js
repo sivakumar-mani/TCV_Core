@@ -24,9 +24,9 @@ const addCategory = async (req, res)=>{
 
         await connection.promise().query(
             `INSERT INTO categories 
-        (category_name, parent_id, level, status, sort_order, created_at) 
-        VALUES (?, ?, ?, ?, ?, NOW())`,
-            [category_name, parent_id, level, status, sort_order]
+        (category_name, parent_id, level,slug, status, sort_order, created_at, updated_at) 
+        VALUES (?, ?, ?, ?, ?,?, NOW(),NOW())`,
+            [category_name, parent_id, level, category_name, status, sort_order]
         );
 
         return res.status(201).json({
