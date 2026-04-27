@@ -32,11 +32,13 @@
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@popperjs/core": "^2.11.8",
+    "@primeng/themes": "^21.0.4",
     "ag-grid-angular": "^35.1.0",
     "ag-grid-community": "^35.1.0",
     "bootstrap": "^5.3.8",
     "jwt-decode": "^4.0.0",
     "ngx-ui-loader": "^19.0.0",
+    "primeng": "^20.4.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

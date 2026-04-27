@@ -47,6 +47,22 @@ export const routes: Routes = [
                 expectedRole:['admin']
             }
         },
+        {
+            path:'categoryLists',
+            loadComponent: ()=> import('./products/category-lists/category-lists').then(n => n.CategoryLists),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'categoriesLists',
+            loadComponent: ()=> import('./products/categories-list/categories-list').then(n => n.CategoriesList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
         
     ]
     },

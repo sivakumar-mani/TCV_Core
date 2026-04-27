@@ -1,0 +1,59 @@
+<p-accordion>
+
+  <!-- LEVEL 1 -->
+  <p-accordion-panel *ngFor="let parent of categories">
+
+    <ng-template pTemplate="header">
+      {{ parent.category_name }}
+    </ng-template>
+
+    <!-- LEVEL 2 -->
+    <p-accordion>
+
+      <p-accordion-panel *ngFor="let child of parent.children">
+
+        <ng-template pTemplate="header">
+          {{ child.category_name }}
+        </ng-template>
+
+        <!-- TABLE -->
+        <p-table [value]="getFlattened(child.category_id)">
+
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Category</th>
+              <th>Actions</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-row>
+            <tr>
+              <td>
+                <span [style.paddingLeft.px]="(row.level - 2) * 20">
+                  {{ row.category_name }}
+                </span>
+              </td>
+
+              <td>
+                <button pButton icon="pi pi-pencil"
+                        class="p-button-text"
+                        (click)="edit(row)">
+                </button>
+
+                <button pButton icon="pi pi-refresh"
+                        class="p-button-text"
+                        (click)="update(row)">
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+
+        </p-table>
+
+      </p-accordion-panel>
+
+    </p-accordion>
+
+  </p-accordion-panel>
+
+</p-accordion>

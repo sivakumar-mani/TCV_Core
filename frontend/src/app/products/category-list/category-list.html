@@ -97,13 +97,16 @@
 
     <div class="field mb-3">
       <label class="font-medium">Status</label>
-      <p-dropdown
-        [options]="[{ label: 'Active', value: 1 }, { label: 'Inactive', value: 0 }]"
-        [(ngModel)]="selectedCategory.status"
-        optionLabel="label"
-        optionValue="value"
-        styleClass="w-full">
-      </p-dropdown>
+  <p-select
+  [options]="[
+    { label: 'Active', value: 1 },
+    { label: 'Inactive', value: 0 }
+  ]"
+  [(ngModel)]="selectedCategory.status"
+  optionLabel="label"
+  optionValue="value"
+  class="w-full">
+</p-select>
     </div>
 
   </div>

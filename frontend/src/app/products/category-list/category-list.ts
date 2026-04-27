@@ -7,10 +7,12 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CategoryServices } from '../../services/category-services';
 import { NgClass, NgIf } from '@angular/common';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
+
+
 @Component({
   selector: 'app-category-list',
-  imports: [TableModule,  ButtonModule, DropdownModule, NgClass, NgIf,   DialogModule,  FormsModule,
+  imports: [TableModule,  ButtonModule, SelectModule, NgClass, NgIf,   DialogModule,  FormsModule,
    ],
   templateUrl: './category-list.html',
   providers: [ConfirmationService, MessageService],
