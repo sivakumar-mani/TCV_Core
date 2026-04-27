@@ -1,52 +1,97 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-
+import { Component } from '@angular/core';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { CategoryServices } from '../../services/category-services';
+import { NgClass, NgIf } from '@angular/common';
+import { DropdownModule } from 'primeng/dropdown';
 @Component({
   selector: 'app-category-list',
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatCardModule, MatSlideToggleModule],
+  imports: [TableModule,  ButtonModule, DropdownModule, NgClass, NgIf,   DialogModule,  FormsModule,
+   ],
   templateUrl: './category-list.html',
+  providers: [ConfirmationService, MessageService],
   styleUrl: './category-list.scss',
 })
 export class CategoryList {
- fb = inject(FormBuilder);
-  // service = inject(CategoryService);
-  categories = signal<any[]>([]);
+ 
+   flatCategories: any[] = [];
+  displayDialog = false;
+  selectedCategory: any = {};
+  loading = false;
 
-  categoryForm: FormGroup;
-  isEdit = signal(false);
+  constructor(
+    private categoryService: CategoryServices,
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService
+  ) {}
 
-  constructor() {
-    this.categoryForm = this.fb.group({
-      name: ['', Validators.required],
-      slug: [''],
-      parentId: [null],
-      status: [1],
-      sortOrder: [0]
-    });
-    // this.loadCategories();
+  ngOnInit() {
+    this.loadCategories();
   }
 
-  // loadCategories() {
-  //   this.service.getCategories().subscribe(cats => this.categories.set(cats));
-  // }
+  loadCategories() {
+    this.loading = true;
+    this.categoryService.getCategory().subscribe({
+      next: (res: any) => {
+        const data = res.data ?? res;
+        this.flatCategories = [];
+        this.flattenCategories(data);
+        this.loading = false;
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load categories' });
+        this.loading = false;
+      }
+    });
+  }
 
-  // save() {
-  //   if (this.categoryForm.valid) {
-  //     const data = this.categoryForm.value;
-  //     if (this.isEdit()) {
-  //       this.service.update(data.category_id, data).subscribe();
-  //     } else {
-  //       this.service.create(data).subscribe(() => this.loadCategories());
-  //     }
-  //   }
-  // }
+  private flattenCategories(nodes: any[]) {
+    for (const node of nodes) {
+      this.flatCategories.push({ ...node, children: undefined });
+      if (node.children?.length) {
+        this.flattenCategories(node.children);
+      }
+    }
+  }
 
-  reset() { this.categoryForm.reset(); this.isEdit.set(false); }
+  editCategory(cat: any) {
+    this.selectedCategory = { ...cat };
+    this.displayDialog = true;
+  }
+
+  updateCategory() {
+    // this.categoryService.updateCategory(this.selectedCategory.category_id, this.selectedCategory).subscribe({
+    //   next: () => {
+    //     this.messageService.add({ severity: 'success', summary: 'Updated', detail: 'Category updated successfully' });
+    //     this.displayDialog = false;
+    //     this.loadCategories(); // refresh list
+    //   },
+    //   error: () => {
+    //     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Update failed' });
+    //   }
+    // });
+  }
+
+  deleteCategory(cat: any) {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete <b>${cat.category_name}</b>?`,
+      header: 'Confirm Delete',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.categoryService.deleteCategory(cat.category_id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Category deleted successfully' });
+            this.loadCategories();
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Delete failed' });
+          }
+        });
+      }
+    });
+  }
 }

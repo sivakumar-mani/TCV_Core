@@ -3,45 +3,69 @@ const connection = require('../connection');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
+const addCategory = async (req, res) => {
+  try {
+    const { category_name, parent_id } = req.body;
 
-const addCategory = async (req, res)=>{
-    try {
-        const { category_name, parent_id, level, status, sort_order } = req.body;
+    // calculate level automatically
+    let level = 1;
 
-        const [results] = await connection.promise().query(
-            `SELECT * FROM categories 
-         WHERE category_name = ? 
-         AND (parent_id = ? OR (parent_id IS NULL AND ? IS NULL))`,
-            [category_name, parent_id, parent_id]
-        );
+    if (parent_id ) {
+      const [parent] = await connection.promise().query(
+        "SELECT level FROM categories WHERE category_id = ?",
+        [parent_id]
+      );
 
-        if (results.length > 0) {
-            return res.status(409).json({
-                success: false,
-                message: "Category already exists under this parent"
-            });
-        }
+      if (parent.length === 0) {
+        return res.status(400).json({ message: "Invalid parent_id" });
+      }
 
-        await connection.promise().query(
-            `INSERT INTO categories 
-        (category_name, parent_id, level,slug, status, sort_order, created_at, updated_at) 
-        VALUES (?, ?, ?, ?, ?,?, NOW(),NOW())`,
-            [category_name, parent_id, level, category_name, status, sort_order]
-        );
-
-        return res.status(201).json({
-            success: true,
-            message: "Category created successfully"
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error
-        });
+      level = parent[0].level + 1;
     }
 
-}
+    const slug = category_name.toLowerCase().replace(/\s+/g, '-');
+    const status ='Active';
+   await connection.promise().query(
+  `INSERT INTO categories 
+   (category_name, parent_id, level, slug, status, sort_order, created_at, updated_at) 
+   VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+  [
+    category_name,
+    parent_id || null,
+    level,
+    slug,
+    1,
+    0
+  ]
+);
 
-module.exports = { addCategory }
+    res.json({ message: "Category added successfully" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const getCategoriesTree = async (req, res) => {
+  try {
+    const [rows] = await connection.promise().query(
+      "SELECT * FROM categories WHERE status = 1 ORDER BY sort_order"
+    );
+
+    const buildTree = (data, parentId = null) => {
+      return data
+        .filter(item => item.parent_id === parentId)
+        .map(item => ({
+          ...item,
+          children: buildTree(data, item.category_id)
+        }));
+    };
+
+    const tree = buildTree(rows);
+    res.json(tree);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+module.exports = { addCategory, getCategoriesTree }

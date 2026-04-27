@@ -27,6 +27,19 @@ CREATE TABLE brands (
      status TINYINT(1) DEFAULT 1,
      UNIQUE(brand_name)
 );
+
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    category_name VARCHAR(150) NOT NULL,
+    parent_id INT NULL,
+    level INT DEFAULT 1,
+    slug VARCHAR(200),
+    status TINYINT DEFAULT 1,
+    sort_order    SMALLINT UNSIGNED   NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,    
+    FOREIGN KEY (parent_id) REFERENCES categories(category_id)
+);
 -- ============================================
 -- Category hierarchy table (3-level deep)
 -- Supports: CCTV, CATV, Internet, Solar, Other

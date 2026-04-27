@@ -1,0 +1,244 @@
+-- Level 1
+INSERT INTO categories (category_name, parent_id, level, slug)
+VALUES ('CCTV', NULL, 1, 'cctv');
+
+-- Level 2
+INSERT INTO categories (category_name, parent_id, level, slug)
+VALUES ('Cameras', 1, 2, 'cameras');
+
+-- Level 3
+INSERT INTO categories (category_name, parent_id, level, slug)
+VALUES ('IP Camera', 2, 3, 'ip-camera');
+
+-- Level 4
+INSERT INTO categories (category_name, parent_id, level, slug)
+VALUES ('5MP', 3, 4, '5mp');
+
+-- Level 5
+INSERT INTO categories (category_name, parent_id, level, slug)
+VALUES ('Dome', 4, 5, 'dome');
+
+
+const getCategoriesTree = async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(
+      "SELECT * FROM categories WHERE status = 1 ORDER BY sort_order"
+    );
+
+    const buildTree = (data, parentId = null) => {
+      return data
+        .filter(item => item.parent_id === parentId)
+        .map(item => ({
+          ...item,
+          children: buildTree(data, item.category_id)
+        }));
+    };
+
+    const tree = buildTree(rows);
+    res.json(tree);
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const addCategory = async (req, res) => {
+  try {
+    const { category_name, parent_id } = req.body;
+
+    // calculate level automatically
+    let level = 1;
+
+    if (parent_id) {
+      const [parent] = await db.promise().query(
+        "SELECT level FROM categories WHERE category_id = ?",
+        [parent_id]
+      );
+
+      if (parent.length === 0) {
+        return res.status(400).json({ message: "Invalid parent_id" });
+      }
+
+      level = parent[0].level + 1;
+    }
+
+    const slug = category_name.toLowerCase().replace(/\s+/g, '-');
+
+    await db.promise().query(
+      `INSERT INTO categories 
+       (category_name, parent_id, level, slug) 
+       VALUES (?, ?, ?, ?)`,
+      [category_name, parent_id || null, level, slug]
+    );
+
+    res.json({ message: "Category added successfully" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+-- Get Children by Parent (for dropdowns)
+const getByParent = async (req, res) => {
+  const { parent_id } = req.params;
+
+  const [rows] = await db.promise().query(
+    "SELECT * FROM categories WHERE parent_id = ?",
+    [parent_id]
+  );
+
+  res.json(rows);
+};
+
+-- Category Model
+export interface Category {
+  category_id: number;
+  category_name: string;
+  parent_id: number | null;
+  level: number;
+  children?: Category[];
+}
+
+-- Service
+getCategoryTree() {
+  return this.http.get<Category[]>('/api/categories/tree');
+}
+
+getByParent(parentId: number) {
+  return this.http.get<Category[]>(`/api/categories/${parentId}`);
+}
+
+-- UI – Multi-Level Dropdown (Dynamic)
+<div class="row">
+  <div class="col" *ngFor="let level of levels; let i = index">
+    <select (change)="onSelect($event, i)">
+      <option value="">Select</option>
+      <option *ngFor="let cat of level" [value]="cat.category_id">
+        {{ cat.category_name }}
+      </option>
+    </select>
+  </div>
+</div>
+
+-- TS Logic
+levels: any[] = [];
+
+ngOnInit() {
+  this.loadRoot();
+}
+
+loadRoot() {
+  this.api.getByParent(null).subscribe(res => {
+    this.levels[0] = res;
+  });
+}
+
+onSelect(event: any, index: number) {
+  const parentId = event.target.value;
+
+  // remove next levels
+  this.levels = this.levels.slice(0, index + 1);
+
+  if (parentId) {
+    this.api.getByParent(parentId).subscribe(res => {
+      if (res.length > 0) {
+        this.levels[index + 1] = res;
+      }
+    });
+  }
+}
+
+1. Add Root Categories (Level 1)
+
+{
+  "category_name": "CCTV",
+  "parent_id": null
+}
+{
+  "category_name": "CATV",
+  "parent_id": null
+}
+{
+  "category_name": "INTERNET",
+  "parent_id": null
+}
+{
+  "category_name": "SOLAR",
+  "parent_id": null
+}
+2. Add Level 2 (Child of CCTV)
+{
+  "category_name": "Cameras",
+  "parent_id": 1
+}
+{
+  "category_name": "DVR",
+  "parent_id": 1
+}
+3. Add Level 3 (Child of Cameras)
+{
+  "category_name": "IP Camera",
+  "parent_id": 5
+}
+{
+  "category_name": "AHD Camera",
+  "parent_id": 5
+}
+
+4. Add Level 4 (Child of IP Camera)
+{
+  "category_name": "5MP",
+  "parent_id": 8
+}
+{
+  "category_name": "3MP",
+  "parent_id": 8
+}
+5. Add Level 5 (Child of 5MP)
+{
+  "category_name": "Dome",
+  "parent_id": 10
+}
+{
+  "category_name": "Bullet",
+  "parent_id": 10
+}
+
+6. Important Notes
+
+✔ parent_id = null → root category
+✔ parent_id = X → child of that category
+✔ DO NOT send level from Postman → backend should calculate it
+7. Sample Response (Tree API)
+
+[
+  {
+    "category_id": 1,
+    "category_name": "CCTV",
+    "children": [
+      {
+        "category_id": 5,
+        "category_name": "Cameras",
+        "children": [
+          {
+            "category_id": 8,
+            "category_name": "IP Camera",
+            "children": [
+              {
+                "category_id": 10,
+                "category_name": "5MP",
+                "children": [
+                  {
+                    "category_id": 12,
+                    "category_name": "Dome",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

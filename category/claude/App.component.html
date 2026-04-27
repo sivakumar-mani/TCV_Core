@@ -1,0 +1,130 @@
+<!-- app.component.html -->
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-icon">⚡</span>
+      <div>
+        <div class="brand-name">Category</div>
+        <div class="brand-sub">Management</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-block" *ngIf="stats">
+      <div class="stat-main">
+        <div class="stat-number">{{ stats.total }}</div>
+        <div class="stat-label">Total Categories</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-pill green">{{ stats.active }} Active</div>
+        <div class="stat-pill grey">{{ stats.inactive }} Inactive</div>
+      </div>
+
+      <div class="level-stats">
+        <div class="level-stat" *ngFor="let l of STAT_LEVELS"
+             [style.--clr]="l.color">
+          <span class="l-icon">{{ l.icon }}</span>
+          <span class="l-label">{{ l.label }}</span>
+          <span class="l-count">{{ statValue(l.key) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-sep"></div>
+
+    <!-- Level legend -->
+    <div class="legend">
+      <div class="legend-title">DEPTH LEVELS</div>
+      <div class="legend-item">
+        <span class="leg-dot" style="background:#6366f1"></span>
+        <span>L1 — Root (CCTV, CATV…)</span>
+      </div>
+      <div class="legend-item">
+        <span class="leg-dot" style="background:#0ea5e9"></span>
+        <span>L2 — Category</span>
+      </div>
+      <div class="legend-item">
+        <span class="leg-dot" style="background:#10b981"></span>
+        <span>L3 — Sub-Category</span>
+      </div>
+      <div class="legend-item">
+        <span class="leg-dot" style="background:#f59e0b"></span>
+        <span>L4 — Variant</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+    <div class="top-bar">
+      <div>
+        <h1 class="page-title">Categories</h1>
+        <p class="page-sub">Manage your product category hierarchy</p>
+      </div>
+      <button class="btn-primary" (click)="openCreate()">
+        + New Category
+      </button>
+    </div>
+
+    <!-- Tree + Form columns -->
+    <div class="content-layout">
+      <!-- Tree panel -->
+      <div class="tree-panel">
+        <div class="panel-header">
+          <span class="panel-title">Category Tree</span>
+        </div>
+        <div class="panel-body">
+          <app-category-tree
+            [refreshTrigger]="refreshTrigger"
+            (editCategory)="onEdit($event)"
+            (addChild)="onAddChild($event)"
+            (deleteCategory)="onDeleteRequest($event)">
+          </app-category-tree>
+        </div>
+      </div>
+
+      <!-- Form panel -->
+      <div class="form-panel" *ngIf="showForm">
+        <app-category-form
+          [editData]="editData"
+          [parentPreset]="parentPreset"
+          (saved)="onSaved()"
+          (cancelled)="onCancelled()">
+        </app-category-form>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" *ngIf="!showForm">
+        <div class="empty-icon">🗂</div>
+        <div class="empty-title">Click <strong>+ New Category</strong> to create</div>
+        <div class="empty-sub">Or click ✏ on any node to edit it</div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- ── Delete Confirm Modal ───────────────────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="deleteTarget" (click)="cancelDelete()"></div>
+<div class="modal" *ngIf="deleteTarget">
+  <div class="modal-icon">⚠</div>
+  <h3 class="modal-title">Delete "{{ deleteTarget.category_name }}"?</h3>
+  <p class="modal-body">
+    This is a permanent action. Categories with sub-categories cannot be deleted.
+  </p>
+  <div *ngIf="deleteError" class="modal-error">{{ deleteError }}</div>
+  <div class="modal-actions">
+    <button class="btn-cancel-sm" (click)="cancelDelete()">Cancel</button>
+    <button class="btn-danger" [disabled]="deleting" (click)="confirmDelete()">
+      {{ deleting ? 'Deleting…' : 'Delete' }}
+    </button>
+  </div>
+</div>
+
+<!-- ── Toast ──────────────────────────────────────────────────────────────── -->
+<div class="toast" *ngIf="toast" [class.toast-success]="toast.type === 'success'"
+     [class.toast-error]="toast.type === 'error'">
+  {{ toast.msg }}
+</div>

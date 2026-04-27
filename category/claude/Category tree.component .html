@@ -1,0 +1,74 @@
+<!-- category-tree.component.html -->
+<div class="tree-wrap">
+  <!-- Toolbar -->
+  <div class="tree-toolbar">
+    <button class="btn-ghost" (click)="expandAll()">⊞ Expand All</button>
+    <button class="btn-ghost" (click)="collapseAll()">⊟ Collapse All</button>
+    <button class="btn-ghost" (click)="load()">↻ Refresh</button>
+  </div>
+
+  <div *ngIf="loading" class="tree-loader">Loading tree…</div>
+  <div *ngIf="error"   class="tree-error">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <ng-container *ngTemplateOutlet="treeNodes; context: { nodes: tree, depth: 0 }"></ng-container>
+  </ng-container>
+</div>
+
+<!-- Recursive tree node template -->
+<ng-template #treeNodes let-nodes="nodes" let-depth="depth">
+  <ul class="tree-list" [class.root-list]="depth === 0">
+    <li *ngFor="let node of nodes" class="tree-item" [class.has-children]="node.children?.length">
+
+      <!-- Node row -->
+      <div class="tree-node" [style.--level-color]="levelColor(node.level)">
+
+        <!-- Toggle arrow -->
+        <button class="toggle-btn"
+          *ngIf="node.children?.length; else spacer"
+          (click)="toggle(node)"
+          [attr.aria-label]="node.expanded ? 'Collapse' : 'Expand'">
+          <span class="arrow" [class.open]="node.expanded">›</span>
+        </button>
+        <ng-template #spacer><span class="spacer"></span></ng-template>
+
+        <!-- Icon by level -->
+        <span class="node-icon">
+          <ng-container [ngSwitch]="node.level">
+            <span *ngSwitchCase="1">🏷</span>
+            <span *ngSwitchCase="2">📁</span>
+            <span *ngSwitchCase="3">📂</span>
+            <span *ngSwitchCase="4">🔖</span>
+          </ng-container>
+        </span>
+
+        <!-- Name + badge -->
+        <span class="node-name">{{ node.category_name }}</span>
+        <span class="level-badge" [style.background]="levelColor(node.level)">
+          {{ levelLabel(node.level) }}
+        </span>
+
+        <!-- Status indicator -->
+        <span class="status-dot" [class.active]="node.status === 1" [title]="node.status ? 'Active' : 'Inactive'"></span>
+
+        <!-- Sort order -->
+        <span class="sort-chip">{{ node.sort_order }}</span>
+
+        <!-- Actions -->
+        <div class="node-actions">
+          <button class="act-btn edit"   title="Edit"         (click)="editCategory.emit(node)">✏</button>
+          <button class="act-btn add"    title="Add child"    (click)="addChild.emit(node)"
+                  *ngIf="canAddChild(node)">＋</button>
+          <button class="act-btn delete" title="Delete"       (click)="deleteCategory.emit(node)">✕</button>
+        </div>
+      </div>
+
+      <!-- Children (recursive) -->
+      <div class="tree-children" *ngIf="node.expanded && node.children?.length">
+        <ng-container *ngTemplateOutlet="treeNodes; context: { nodes: node.children, depth: depth + 1 }">
+        </ng-container>
+      </div>
+
+    </li>
+  </ul>
+</ng-template>

@@ -1,39 +1,116 @@
-<mat-card>
-      <mat-card-header>
-        <mat-card-title>{{ isEdit() ? 'Edit Category' : 'New Category' }}</mat-card-title>
-      </mat-card-header>
-      <mat-card-content>
-        <form >
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Name</mat-label>
-            <input matInput formControlName="name" required>
-            <mat-error *ngIf="categoryForm.get('name')?.hasError('required')">Name is required</mat-error>
-          </mat-form-field>
+<!-- <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog> -->
 
-          <mat-form-field appearance="outline" floatLabel="always" class="full-width">
-            <mat-label>Slug</mat-label>
-            <input matInput formControlName="slug">
-            <mat-hint>SEO-friendly URL (auto-generated if empty)</mat-hint>
-          </mat-form-field>
+<p-table
+  [value]="flatCategories"
+  [loading]="loading"
+  [paginator]="true"
+  [rows]="10"
+  [rowsPerPageOptions]="[10, 25, 50]"
+  responsiveLayout="scroll"
+  class="p-datatable-sm">
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Parent Category</mat-label>
-            <mat-select formControlName="parentId">
-              <mat-option [value]="null">None (Top Level)</mat-option>
-              <mat-option *ngFor="let cat of categories()" [value]="cat.category_id">{{ cat.name }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+  <ng-template pTemplate="caption">
+    <div class="flex justify-content-between align-items-center">
+      <span class="text-xl font-semibold">Categories</span>
+    </div>
+  </ng-template>
 
-          <mat-slide-toggle formControlName="status" class="full-width">Active</mat-slide-toggle>
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="category_id">ID <p-sortIcon field="category_id"></p-sortIcon></th>
+      <th pSortableColumn="category_name">Name <p-sortIcon field="category_name"></p-sortIcon></th>
+      <th pSortableColumn="parent_id">Parent ID <p-sortIcon field="parent_id"></p-sortIcon></th>
+      <th pSortableColumn="level">Level <p-sortIcon field="level"></p-sortIcon></th>
+      <th pSortableColumn="slug">Slug <p-sortIcon field="slug"></p-sortIcon></th>
+      <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+      <th>Actions</th>
+    </tr>
+  </ng-template>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Sort Order</mat-label>
-            <input matInput type="number" formControlName="sortOrder">
-          </mat-form-field>
-        </form>
-      </mat-card-content>
-      <mat-card-actions>
-        <button mat-raised-button color="primary" type="submit" [disabled]="categoryForm.invalid">Save</button>
-        <button mat-button type="button" (click)="reset()">Reset</button>
-      </mat-card-actions>
-    </mat-card>
+  <ng-template pTemplate="body" let-row>
+    <tr>
+      <td>{{ row.category_id }}</td>
+
+      <td [style.paddingLeft]="((row.level - 1) * 16) + 'px'">
+        <span *ngIf="row.level > 1" class="text-color-secondary mr-1">└</span>
+        {{ row.category_name }}
+      </td>
+
+      <td>{{ row.parent_id ?? '—' }}</td>
+      <td>{{ row.level }}</td>
+      <td>{{ row.slug }}</td>
+
+     <td>
+  <span [ngClass]="row.status == 1 ? 'text-success' : 'text-danger'">
+    {{ row.status == 1 ? 'Active' : 'Inactive' }}
+  </span>
+</td>
+
+      <td>
+        <button pButton icon="pi pi-pencil"
+                class="p-button-sm p-button-warning mr-2"
+                pTooltip="Edit"
+                (click)="editCategory(row)">
+        </button>
+        <button pButton icon="pi pi-trash"
+                class="p-button-sm p-button-danger"
+                pTooltip="Delete"
+                (click)="deleteCategory(row)">
+        </button>
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="7" class="text-center">No categories found.</td>
+    </tr>
+  </ng-template>
+
+</p-table>
+
+<!-- Edit Dialog -->
+<p-dialog
+  header="Edit Category"
+  [(visible)]="displayDialog"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [draggable]="false">
+
+  <div class="p-fluid" *ngIf="selectedCategory">
+
+    <div class="field mb-3">
+      <label class="font-medium">Category ID</label>
+      <input pInputText [value]="selectedCategory.category_id" disabled />
+    </div>
+
+    <div class="field mb-3">
+      <label class="font-medium">Name</label>
+      <input pInputText [(ngModel)]="selectedCategory.category_name" />
+    </div>
+
+    <div class="field mb-3">
+      <label class="font-medium">Slug</label>
+      <input pInputText [(ngModel)]="selectedCategory.slug" />
+    </div>
+
+    <div class="field mb-3">
+      <label class="font-medium">Status</label>
+      <p-dropdown
+        [options]="[{ label: 'Active', value: 1 }, { label: 'Inactive', value: 0 }]"
+        [(ngModel)]="selectedCategory.status"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full">
+      </p-dropdown>
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancel" class="p-button-text" (click)="displayDialog = false"></button>
+    <button pButton label="Update" icon="pi pi-check" (click)="updateCategory()"></button>
+  </ng-template>
+
+</p-dialog>

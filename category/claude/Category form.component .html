@@ -1,0 +1,71 @@
+<!-- category-form.component.html -->
+<div class="form-card">
+  <div class="form-header">
+    <h3>{{ title }}</h3>
+    <button class="close-btn" (click)="cancel()">✕</button>
+  </div>
+
+  <div *ngIf="error" class="form-error">{{ error }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+    <!-- Category Name -->
+    <div class="field-group">
+      <label class="field-label" for="category_name">
+        Category Name <span class="req">*</span>
+      </label>
+      <input id="category_name" formControlName="category_name" type="text"
+             class="field-input" [class.field-error]="invalid('category_name')"
+             placeholder="e.g. IP Cameras" autocomplete="off">
+      <span class="error-msg" *ngIf="invalid('category_name')">
+        Name is required (max 150 chars)
+      </span>
+    </div>
+
+    <!-- Parent Category -->
+    <div class="field-group">
+      <label class="field-label" for="parent_id">Parent Category</label>
+      <select id="parent_id" formControlName="parent_id" class="field-input">
+        <option *ngFor="let opt of parentOptions"
+                [ngValue]="opt.value"
+                [disabled]="opt.level === 0 && opt.value !== null">
+          {{ opt.label }}
+        </option>
+      </select>
+      <span class="help-text">Max depth: 4 levels (Root → Category → Sub-Cat → Variant)</span>
+    </div>
+
+    <!-- Slug -->
+    <div class="field-group">
+      <label class="field-label" for="slug">URL Slug</label>
+      <input id="slug" formControlName="slug" type="text"
+             class="field-input" placeholder="auto-generated">
+    </div>
+
+    <!-- Status + Sort Order side by side -->
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label" for="status">Status</label>
+        <select id="status" formControlName="status" class="field-input">
+          <option [ngValue]="1">Active</option>
+          <option [ngValue]="0">Inactive</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="sort_order">Sort Order</label>
+        <input id="sort_order" formControlName="sort_order" type="number"
+               min="0" class="field-input" [class.field-error]="invalid('sort_order')">
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="cancel()">Cancel</button>
+      <button type="submit" class="btn-save" [disabled]="saving">
+        <span *ngIf="saving" class="spinner"></span>
+        {{ saving ? 'Saving…' : (isEdit ? 'Update' : 'Create') }}
+      </button>
+    </div>
+
+  </form>
+</div>
