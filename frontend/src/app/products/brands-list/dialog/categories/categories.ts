@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-categories',
@@ -8,4 +9,5 @@ import { Component } from '@angular/core';
 })
 export class Categories {
 
+  constructor( private dialog : MatDialogRef<Categories>){}
 }
