@@ -12,111 +12,51 @@
         <h1 class="page-title">Categories List</h1>
         <button matButton="filled" (click)="addCategory()" class="btn-yes">Add Category</button>
     </div>
-    <div class="prime-table">
-            <p-table #dt [value]="flatCategories" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10,20,50,100]"
-                [tableStyle]="{ 'min-width': '60rem' }"
-                [globalFilterFields]="['category_name','parent_id','level','slug','status']">
+    <div class="card flex justify-center">    
+    <p-treeTable [value]="treeData" [paginator]="true" [rows]="10">
 
-                <!-- ✅ HEADER -->
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Name</th>
-                        <th>Parent ID</th>
-                        <th>Level</th>
-                        <th>Short Name</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
+        <!-- HEADER -->
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Parent ID</th>
+                <th>Level</th>
+                <th>Short Name</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </ng-template>
 
-                    <!-- 🔍 COLUMN FILTERS -->
-                    <tr>
-                        <th>
-                            <p-columnFilter field="category_name" [showMenu]="false">
-                                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                    <input type="text" pInputText [ngModel]="value"
-                                        (input)="onSingleFilter($event.target.value, filter)" placeholder="Search Name" />
-                                </ng-template>
-                            </p-columnFilter>
-                        </th>
-                        <th>
-                            <p-columnFilter field="parent_id" [showMenu]="false">
-                                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                    <input pInputText [ngModel]="value" (input)="onSingleFilter($event.target.value, filter)"
-                                        placeholder="Search Parent" />
-                                </ng-template>
-                            </p-columnFilter>
-                        </th>
-                        <!-- Level -->
-                         <th>
-                            <p-columnFilter field="level" matchMode="equals" [showMenu]="false">
-                                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                    <p-select [ngModel]="value" [options]="levelOptions"
-                                        (onChange)="onSingleFilter($event.value, filter)" placeholder="Select Level" [showClear]="true"
-                                        optionLabel="label" optionValue="value">
-                                    </p-select>
-                                </ng-template>
-                            </p-columnFilter>
-                        </th>
+        <!-- BODY -->
+        <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+            <tr>
 
-                        <!-- Slug -->
-                      <th>
-                            <p-columnFilter field="slug" [showMenu]="false">
-                                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                    <input pInputText [ngModel]="value" (input)="onSingleFilter($event.target.value, filter)"
-                                        placeholder="Search Slug" />
-                                </ng-template>
-                            </p-columnFilter>
-                        </th>
+                <!-- TREE COLUMN -->
+                <td>
+                    <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+                    {{ rowData.category_name }}
+                </td>
 
-                        <!-- Status Dropdown -->
-                        <th>
-                            <p-columnFilter field="status" matchMode="equals" [showMenu]="false">
-                                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                    <p-select [ngModel]="value" [options]="statusOptions"
-                                        (onChange)="onSingleFilter($event.value, filter)" placeholder="Select Status" [showClear]="true"
-                                        optionLabel="label" optionValue="value">
-                                    </p-select>
-                                </ng-template>
-                            </p-columnFilter>
-                        </th>
+                <td>{{ rowData.parent_id }}</td>
+                <td>{{ rowData.level }}</td>
+                <td>{{ rowData.slug }}</td>
 
-                        <th></th>
-                    </tr>
-                </ng-template>
+                <td>
+                    <p-tag [value]="rowData.status == 1 ? 'Active' : 'Inactive'"
+                        [severity]="rowData.status == 1 ? 'success' : 'danger'">
+                    </p-tag>
+                </td>
 
-                <!-- ✅ BODY -->
-                <ng-template pTemplate="body" let-category>
-                    <tr>
-                        <td>{{ category.category_name }}</td>
-                        <td>{{ category.parent_id }}</td>
-                        <td>{{ category.level }}</td>
-                        <td>{{ category.slug }}</td>
+                <td>
+                    <button mat-button [matMenuTriggerFor]="menu">Action</button>
+                    <mat-menu #menu="matMenu">
+                        <button mat-menu-item (click)="editCategory(rowData)">Edit</button>
+                        <button mat-menu-item (click)="deleteCategory(rowData)">Delete</button>
+                    </mat-menu>
+                </td>
 
-                        <!-- Status Tag -->
-                        <td>
-                            <p-tag [value]="category.status == 1 ? 'Active' : 'Inactive'"
-                                [severity]="category.status == 1 ? 'success' : 'danger'">
-                            </p-tag>
-                        </td>
+            </tr>
+        </ng-template>
 
-                        <!-- Actions -->
-                        <td>
-                            <button mat-button [matMenuTriggerFor]="menu">
-                                Action
-                            </button>
-
-                            <mat-menu #menu="matMenu">
-                                <button mat-menu-item (click)="editCategory(category)">
-                                    Edit
-                                </button>
-                                <button mat-menu-item (click)="deleteCategory(category)">
-                                    Delete
-                                </button>
-                            </mat-menu>
-                        </td>
-                    </tr>
-                </ng-template>
-
-            </p-table>
-    </div>
+    </p-treeTable>
 </div>

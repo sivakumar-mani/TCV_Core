@@ -105,7 +105,7 @@ const updateCategory = async (req, res)=>{
 
     level = parent[0].level + 1;
     if(level == null){
-       sort_order = 0;
+       sort_order = 0;NaN.toExponential.apply
     }else {
         sort_order = level
     }

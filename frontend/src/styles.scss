@@ -121,6 +121,14 @@ body {
   padding: 15px;
 }
 
+// --------------- Header -------------
+.header {
+  .mat-toolbar{
+    background-color: var(--bs-red-rgb) !important;
+    box-shadow: 0 5px 5px -5px #000000 !important;
+  }    
+}
+
 // --------------- Sidebar and  menu -------------
 
 .mat-drawer-side {
@@ -129,7 +137,6 @@ body {
   border-radius: 0 !important;
   // padding: 5px 0px 10px;
 }
-
 .mdc-list {
   padding: 0 !important;
 
@@ -323,7 +330,7 @@ body {
   .mat-mdc-dialog-title {
     display: flex;
     align-items: center;
-    background: var(--bs-blue);
+    background: var(--bs-white);
     height: 40px;
     line-height: 30px;
     padding: 20px;
@@ -370,7 +377,7 @@ body {
 
 button {
   font-size: 1rem;
-  min-width: 150px !important;
+  // min-width: 150px !important;
   padding: 8px 16px;
   border-radius: 5px !important;
   border: 0;
@@ -612,7 +619,7 @@ body {
   .mat-mdc-dialog-title {
     display: flex;
     align-items: center;
-    background: var(--bs-blue);
+    background: var(--bs-white);
     height: 40px;
     line-height: 30px;
     padding: 20px;
@@ -674,9 +681,12 @@ body {
     font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0;
-
+    
     .breadcrumb {
       margin-bottom: 0 !important;
+    }
+    .mat-toolbar-single-row {
+    box-shadow: none !important;
     }
   }
 

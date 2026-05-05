@@ -5,25 +5,25 @@ import { CategoryServices } from '../../services/category-services';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
-import { JsonPipe } from '@angular/common';
+import { JsonPipe, NgFor, NgIf } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-
+import { TreeTableModule } from 'primeng/treetable';
 import { InputTextModule } from 'primeng/inputtext';
 
 import { TagModule } from 'primeng/tag';
 
 import { FormsModule } from '@angular/forms';
-
+import { AccordionModule } from 'primeng/accordion';
 import { MatButtonModule } from '@angular/material/button';
 import { SelectModule } from 'primeng/select';
 import { Category } from '../dialog/category/category';
 @Component({
   selector: 'app-categories-list',
-  imports: [TableModule, MatToolbar, MatIcon, SelectModule,  InputTextModule,TagModule,MatButtonModule,
-    FormsModule, MatMenuModule, MatMenuModule,],
+  imports: [TableModule, MatToolbar, MatIcon, AccordionModule, SelectModule,  InputTextModule,TagModule,MatButtonModule,
+    FormsModule, MatMenuModule, MatMenuModule,TreeTableModule],
   templateUrl: './categories-list.html',
   styleUrl: './categories-list.scss',
 })
@@ -36,6 +36,7 @@ export class CategoriesList {
     isMobile:boolean = false;
     levelOptions: any[] = [];
     @ViewChild('dt') dt: any;
+  treeData: any[] = [];
 
  constructor( private snackBarService: Snackbar,
   private categoryService : CategoryServices,
@@ -44,14 +45,21 @@ export class CategoriesList {
  ){}
 
  ngOnInit(){
-  this.getCategoriesList();
-  // this.levelFilter()
+  this.getCategoriesList();   
  }
+convertToTreeNodes(data: any[]): any[] {
+  return data.map(item => ({
+    key: item.category_id,
+    data: item,
+    children: item.children ? this.convertToTreeNodes(item.children) : []
+  }));
+}
 
  getCategoriesList(){
   this.categoryService.getCategory().subscribe(( response:any)=>{
     this.ngxLoader.stop();
       // this.categories = response;
+        this.treeData = this.convertToTreeNodes(response);
       this.flatCategories = this.flattenCategories(response);
        this.levelFilter();
       
