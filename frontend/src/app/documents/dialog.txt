@@ -2,9 +2,12 @@ step 1: import { MatDialog } from '@angular/material/dialog';  // in parent comp
 
 step 2: inject the dialog in 2 way 
   Method 1. dialog = inject(MatDialog)
+  or
   Method 2. constructor( private dialog : MatDialog)
 
 step 3 : create a function to call the dialog in function which is 2 methods
+
+to call add new data by calling dialog data
 
 method 1:  function(){
     const dialogConfig = new MatDialogConfig();
@@ -13,6 +16,8 @@ method 1:  function(){
     
     const dialogRef = this.dialog.open( dialogComponentName, dialogConfig)'
 }
+
+this one is edit method 
 
 method 2 : function(){
     const dialogConfig = this.dialog.open(dialogComponentName, {

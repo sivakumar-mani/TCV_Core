@@ -16,8 +16,16 @@ export class CategoryServices {
     return this.http.delete(`${this.url}/category/delete/${id}`);
   }
 
-  updateCategory(data: any) {
-    return this.http.put(`${this.url}/category/update/${data.category_id}`, data);
+  addCategory(data: any) {
+    return this.http.post(`${this.url}/category/add`, data,{
+      headers : new HttpHeaders().set('content-type', "application/json")
+     })
+  }
+
+  updateCategory(data:any){
+    return this.http.patch(`${this.url}/category/update`, data, {
+      headers: new HttpHeaders().set('content-type', "application/json")
+    })
   }
   // claude
   // updateCategory(id: number, payload: any): Observable<any> {

@@ -1,0 +1,46 @@
+1. ng generate service services/common
+
+2. import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CommonService {
+
+  handleTokenAndMessage(response: any) {
+    if (response?.token) {
+      localStorage.setItem('token', response.token);
+    }
+
+    if (response?.message) {
+      console.log(response.message);
+    }
+  }
+}
+
+3. import { CommonService } from '../services/common.service';
+
+constructor(private commonService: CommonService) {}
+
+someMethod() {
+  this.commonService.handleTokenAndMessage(response);
+}
+
+second method to use globally
+1. Create base class
+export class BaseComponent {
+
+  handleTokenAndMessage(response: any) {
+    if (response?.token) {
+      localStorage.setItem('token', response.token);
+    }
+  }
+}
+
+2. Extend it
+export class DashboardComponent extends BaseComponent {
+
+  someMethod() {
+    this.handleTokenAndMessage(response);
+  }
+}

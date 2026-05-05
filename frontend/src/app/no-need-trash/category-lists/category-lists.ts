@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { AccordionModule } from 'primeng/accordion';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { CategoryServices } from '../../services/category-services';
+import { CategoryServices } from '../../../app/services/category-services';
 import { NgFor, NgStyle } from '@angular/common';
 
 interface Category {

@@ -7,7 +7,6 @@ import { Router } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { JsonPipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { Categories } from '../brands-list/dialog/categories/categories';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -20,22 +19,23 @@ import { FormsModule } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
 import { SelectModule } from 'primeng/select';
+import { Category } from '../dialog/category/category';
 @Component({
   selector: 'app-categories-list',
-  imports: [TableModule, MatToolbar, MatIcon, SelectModule, InputTextModule,TagModule,MatButtonModule,
+  imports: [TableModule, MatToolbar, MatIcon, SelectModule,  InputTextModule,TagModule,MatButtonModule,
     FormsModule, MatMenuModule, MatMenuModule,],
   templateUrl: './categories-list.html',
   styleUrl: './categories-list.scss',
 })
 export class CategoriesList {
 
- categories:any;
- http = inject(HttpClient);
-  flatCategories: any[]=[];
-  dialog = inject(MatDialog)
- isMobile:boolean = false;
- levelOptions: any[] = [];
-@ViewChild('dt') dt: any;
+    categories:any;
+    http = inject(HttpClient);
+    flatCategories: any[]=[];
+    dialog = inject(MatDialog)
+    isMobile:boolean = false;
+    levelOptions: any[] = [];
+    @ViewChild('dt') dt: any;
 
  constructor( private snackBarService: Snackbar,
   private categoryService : CategoryServices,
@@ -77,8 +77,8 @@ export class CategoriesList {
 }
 
 addCategory(){
-  const dialogConfig = this.dialog.open(Categories,{
-  width: this.isMobile ? '96%' : '60%',
+  const dialogConfig = this.dialog.open(Category,{
+      width: this.isMobile ? '96%' : '60%',
       height: this.isMobile ? '90%' : '80%',
       maxWidth: '100vw',
       maxHeight:'100vh',
@@ -87,7 +87,29 @@ addCategory(){
          top: 'calc(1vw + 20px)'
       }
   });
- 
+  dialogConfig.afterClosed().subscribe((results)=>{
+    if(results =='success'){
+       this.getCategoriesList();
+    }
+  }); 
+}
+editCategory(categoryValue: any) {
+ const dialogConfig = this.dialog.open(Category, {
+    data : categoryValue,
+      width: this.isMobile ? '96%' : '60%',
+      height: this.isMobile ? '90%' : '80%',
+      maxWidth: '100vw',
+      maxHeight:'100vh',
+       disableClose: true,
+      position:{
+         top: 'calc(1vw + 20px)'
+      }
+ });
+  dialogConfig.afterClosed().subscribe((results)=>{
+    if(results == 'success'){
+      this.getCategoriesList();
+    }
+  })
 }
 
 levelFilter(){
@@ -115,9 +137,7 @@ onSingleFilter(value: any, filterCallback: Function) {
   }
 }
 
-editCategory(category: any) {
-  console.log('Edit:', category);
-}
+
 
 deleteCategory(category: any) {
   console.log('Delete:', category);

@@ -1,0 +1,89 @@
+<h2 mat-dialog-title>
+  {{ isEditData ? 'Update Category' : 'Add Category' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="categoryForm">
+
+    <div class="grid-2-col mt-4">
+
+      <!-- Category Name -->
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Category Name</mat-label>
+        <input matInput formControlName="category_name" />
+      </mat-form-field>
+
+      <!-- Status -->
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option [value]="1">Active</mat-option>
+          <mat-option [value]="0">Inactive</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- 🔥 Dynamic Parent Levels -->
+      <div class="w-100" formArrayName="levelControls">
+
+        <div *ngFor="let ctrl of levelControls.controls; let i = index">
+
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Level {{ i + 1 }}</mat-label>
+
+            <!-- ✅ IMPORTANT: use [formControlName]="i" -->
+            <mat-select [formControlName]="i"
+                        (selectionChange)="onLevelChange(i)">
+
+              <mat-option *ngFor="let item of levels[i]" [value]="item">
+                {{ item.category_name }}
+              </mat-option>
+
+            </mat-select>
+          </mat-form-field>
+
+        </div>
+
+      </div>
+
+      <!-- Add Root Level Button -->
+      <!-- <div class="w-100">
+        <button mat-stroked-button color="primary" type="button"
+                (click)="addRootLevel()">
+          + Add Parent Level
+        </button>
+      </div> -->
+
+      <!-- Sort Order -->
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Sort Order</mat-label>
+        <input matInput type="number" formControlName="sort_order" />
+      </mat-form-field>
+
+    </div>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button class="btn-no" mat-raised-button mat-dialog-close>
+    Cancel
+  </button>
+
+  <!-- Save -->
+  <button *ngIf="!isEditData"
+          mat-raised-button
+          (click)="saveSubmit()"
+          [disabled]="categoryForm.invalid"
+          [class]="categoryForm.valid ? 'btn-yes' : 'btn-no btn-disabled'">
+    Save
+  </button>
+
+  <!-- Update -->
+  <button *ngIf="isEditData"
+          mat-raised-button
+          (click)="editSubmit()"
+          [disabled]="categoryForm.invalid"
+          [class]="categoryForm.valid ? 'btn-yes' : 'btn-no btn-disabled'">
+    Update
+  </button>
+</mat-dialog-actions>
