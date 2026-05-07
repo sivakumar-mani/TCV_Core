@@ -40,6 +40,24 @@ CREATE TABLE categories (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,    
     FOREIGN KEY (parent_id) REFERENCES categories(category_id)
 );
+
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_name VARCHAR(200) NOT NULL,
+    brand_id INT,
+    category_id INT, -- store LAST LEVEL category
+    product_code VARCHAR(100) UNIQUE,
+    description TEXT,
+    price DECIMAL(10,2) DEFAULT 0,
+    stock_qty INT DEFAULT 0,
+    status ENUM('ACTIVE','INACTIVE') DEFAULT 'ACTIVE',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (brand_id) REFERENCES brands(brand_id),
+    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+);
 -- ============================================
 -- Category hierarchy table (3-level deep)
 -- Supports: CCTV, CATV, Internet, Solar, Other

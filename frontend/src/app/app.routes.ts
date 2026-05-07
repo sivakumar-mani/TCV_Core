@@ -50,6 +50,15 @@ export const routes: Routes = [
             }
         },
         
+         {
+            path:'productList',
+            loadComponent: ()=> import('./products/product-list/product-list').then(n => n.ProductList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+        
     ]
     },
      {

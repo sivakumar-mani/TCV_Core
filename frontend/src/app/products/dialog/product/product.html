@@ -1,0 +1,53 @@
+<form [formGroup]="productForm">
+
+  <!-- Product Name -->
+  <mat-form-field appearance="outline">
+    <mat-label>Product Name</mat-label>
+    <input matInput formControlName="product_name">
+  </mat-form-field>
+
+  <!-- Brand -->
+  <mat-form-field appearance="outline">
+    <mat-label>Brand</mat-label>
+    <mat-select formControlName="brand_id">
+      <mat-option *ngFor="let b of brands" [value]="b.brand_id">
+        {{b.brand_name}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- CATEGORY LEVELS -->
+<div *ngFor="let level of levels; let i = index">
+  <mat-form-field appearance="outline">
+    <mat-label>Level {{i + 1}}</mat-label>
+
+    <mat-select
+      [value]="selectedLevels[i]"
+      (selectionChange)="onSelectLevel(i, $event.value)">
+
+      <mat-option *ngFor="let c of level" [value]="c">
+        {{c.category_name}}
+      </mat-option>
+
+    </mat-select>
+  </mat-form-field>
+</div>
+
+  <!-- Price -->
+  <mat-form-field appearance="outline">
+    <mat-label>Price</mat-label>
+    <input matInput type="number" formControlName="price">
+  </mat-form-field>
+
+  <!-- Stock -->
+  <mat-form-field appearance="outline">
+    <mat-label>Stock</mat-label>
+    <input matInput type="number" formControlName="stock_qty">
+  </mat-form-field>
+
+  <!-- Submit -->
+  <button mat-raised-button color="primary" (click)="submit()">
+    Save Product
+  </button>
+
+</form>

@@ -27,6 +27,10 @@ export class CategoryServices {
       headers: new HttpHeaders().set('content-type', "application/json")
     })
   }
+
+    getCategoryById(parentId:any){
+    return this.http.get(`${this.url}/category/get?${parentId}`)
+  }
   // claude
   // updateCategory(id: number, payload: any): Observable<any> {
   //   return this.http.put(`${this.apiUrl}/${id}`, payload);

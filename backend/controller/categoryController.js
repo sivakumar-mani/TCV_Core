@@ -71,6 +71,32 @@ const getCategoriesTree = async (req, res) => {
   }
 };
 
+const getCatById = async (req, res) => {
+  try {
+    const categoryId = req.params.id; // or req.query.id
+    console.log(categoryId);
+    const [rows] = await connection.promise().query(
+      "SELECT * FROM categories WHERE category_id = ?",
+      [categoryId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      data: rows[0]
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 const updateCategory = async (req, res)=>{
   try {
   const { category_id, category_name, parent_id, status } = req.body;
@@ -143,4 +169,4 @@ const updateCategory = async (req, res)=>{
   res.status(500).json({ error: err.message });
 }
 }
-module.exports = { addCategory,updateCategory, getCategoriesTree }
+module.exports = { addCategory,updateCategory,getCatById, getCategoriesTree }
