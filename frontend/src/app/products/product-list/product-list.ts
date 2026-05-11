@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
+import { ProductService } from '../../services/product-service';
 
 @Component({
   selector: 'app-product-list',
@@ -14,37 +15,18 @@ import { InputTextModule } from 'primeng/inputtext';
 })
 export class ProductList {
 
-  products: any[] = [];
+  products: any;
+
+  constructor( private productService : ProductService){}
 
   ngOnInit(): void {
     this.loadProducts();
   }
 
   loadProducts() {
-
-    // API RESPONSE SAMPLE
-    this.products = [
-      {
-        product_id: 1,
-        product_name: 'Hikvision Dome Camera',
-        product_code: 'HK-DM-001',
-        brand_name: 'Hikvision',
-        category_path: 'CCTV > IP Camera > 5MP',
-        price: 3500,
-        stock_qty: 20,
-        status: 'ACTIVE'
-      },
-      {
-        product_id: 2,
-        product_name: 'CP Plus AHD Camera',
-        product_code: 'CPP-AHD-002',
-        brand_name: 'CP Plus',
-        category_path: 'CCTV > AHD Camera > 3 MP',
-        price: 2200,
-        stock_qty: 10,
-        status: 'INACTIVE'
-      }
-    ];
+    this.productService.getProduct().subscribe((response)=>{
+      this.products = response
+    })
   }
 
   getMenuItems(row: any): MenuItem[] {
