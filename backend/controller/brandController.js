@@ -23,7 +23,7 @@ const addBrand = async (req, res) => {
             function getShortCode(brandName, maxId) {
                 const shortCode = brandName.trim().split(/\s+/).filter(Boolean);
                 let prefix = '';
-                console.log("shortCode", shortCode, "-prefix", prefix);
+                // console.log("shortCode", shortCode, "-prefix", prefix);
                 if (shortCode.length === 1) {
                     const sCode = shortCode[0];
                     if (sCode.length <= 4) {

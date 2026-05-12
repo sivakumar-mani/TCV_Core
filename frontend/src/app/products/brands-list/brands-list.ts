@@ -17,7 +17,7 @@ import { ActionMenu } from '../../shared/list-action-menu';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { Brands } from './dialog/brands/brands';
+import { Brands } from '../dialog/brands/brands';
 import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-popup';
 
 @Component({

@@ -1,27 +1,37 @@
-<form [formGroup]="productForm">
+<h2 mat-dialog-title>Products</h2>
+<mat-dialog-content>
+
+ <form [formGroup]="productForm">
+        <div class="grid-2-col mt-4">
+         
 
   <!-- Product Name -->
   <mat-form-field appearance="outline">
     <mat-label>Product Name</mat-label>
-    <input matInput formControlName="product_name">
+    <input matInput formControlName="product_name" placeholder="Auto generate"  readonly>
   </mat-form-field>
 
   <!-- Brand -->
-  <mat-form-field appearance="outline">
-    <mat-label>Brand</mat-label>
-    <mat-select formControlName="brand_id">
-      <mat-option *ngFor="let b of brands" [value]="b.brand_id">
-        {{b.brand_name}}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
+<!-- Brand -->
+<mat-form-field appearance="outline">
+  <mat-label>Brand</mat-label>
+  <mat-select
+    formControlName="brand_id"
+    (selectionChange)="generateProductName()">
+    <mat-option
+      *ngFor="let b of brands"
+      [value]="b.brand_id">
+      {{b.brand_name}}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
 
   <!-- CATEGORY LEVELS -->
 <div *ngFor="let level of levels; let i = index">
-  <mat-form-field appearance="outline">
+  <mat-form-field appearance="outline" class="w-100">
     <mat-label>Level {{i + 1}}</mat-label>
 
-    <mat-select
+    <mat-select required
       [value]="selectedLevels[i]"
       (selectionChange)="onSelectLevel(i, $event.value)">
 
@@ -46,8 +56,19 @@
   </mat-form-field>
 
   <!-- Submit -->
-  <button mat-raised-button color="primary" (click)="submit()">
+  <!-- <button mat-raised-button color="primary" (click)="submit()">
     Save Product
-  </button>
+  </button> -->
 
-</form>
+
+        </div>
+    </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button class="btn-no"  mat-raised-button   mat-dialog-close>Cancel</button>
+    <button *ngIf="!isEditMode"   mat-raised-button (click)="addSubmit()"  [class]="productForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
+    [disabled]="!productForm.valid">Save</button>
+    <button *ngIf="isEditMode"   mat-raised-button (click)="editSubmit()"  [class]="productForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
+    [disabled]="!productForm.valid">Update</button>
+</mat-dialog-actions>
+

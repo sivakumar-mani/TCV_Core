@@ -2,15 +2,16 @@ import { Component, Inject } from '@angular/core';
 import { MatDialog, MatDialogActions, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { InputFormField } from '../../../../shared/input-form-field/input-form-field';
-import { TextareaFormField } from '../../../../shared/textarea-form-field/textarea-form-field';
 import { CommonModule, NgIf } from '@angular/common';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
-import { BrandServices } from '../../../../services/brand-services';
-import { Snackbar } from '../../../../services/snackbar';
 import { Router } from '@angular/router';
-import { globalConstants } from '../../../../services/global-constants';
-import { SelectFormField } from '../../../../shared/select-form-field/select-form-field';
+import { SelectFormField } from '../../../shared/select-form-field/select-form-field';
+import { InputFormField } from '../../../shared/input-form-field/input-form-field';
+import { TextareaFormField } from '../../../shared/textarea-form-field/textarea-form-field';
+import { BrandServices } from '../../../services/brand-services';
+import { Snackbar } from '../../../services/snackbar';
+import { globalConstants } from '../../../services/global-constants';
+
 @Component({
   selector: 'app-brands',
   imports: [ MatDialogModule, MatDialogActions, SelectFormField, CommonModule,

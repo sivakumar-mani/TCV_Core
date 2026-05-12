@@ -1,3 +1,20 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Products</li>
+      <li class="breadcrumb-item active" aria-current="page">Brands</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">Brands List</h1>
+    <button matButton="filled" (click)="addProduct()" class="btn-yes">Add Product</button>
+  </div>
+
+  <div class="ag-grid-wrapper">
+  
 <p-table #dt
     [value]="products"
     [paginator]="true"
@@ -161,3 +178,6 @@
     </ng-template>
 
 </p-table>
+  </div>
+
+</div>
