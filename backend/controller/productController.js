@@ -65,8 +65,8 @@ const getProducts = async (req, res) => {
     });
 };
 
-const addProduct = async(req, res)=>{
-     try {
+const addProduct = async (req, res) => {
+    try {
 
         const {
             product_name,
@@ -191,6 +191,64 @@ const addProduct = async(req, res)=>{
     }
 
 }
+const updateProduct = async (req, res) => {
+    try {
+        const {
+            product_id,
+            product_name,
+            brand_id,
+            category_id,
+            product_code,
+            description,
+            price,
+            stock_qty,
+            status
+        } = req.body;
+
+        const [existing] = await connection.promise().query(
+            "select * from Products where product_id=?", [product_id]
+        )
+
+        if (existing.length === 0) {
+            return res.status(404).json({
+                message: "Product not found"
+            });
+        }
+        // Update query
+        await connection.promise().query(
+            `UPDATE products 
+ SET  product_name = ?,
+      brand_id = ?,
+      category_id = ?,
+      product_code = ?,
+      description = ?,
+      price = ?,
+      stock_qty = ?,
+      status = ?,
+      updated_at = NOW()
+      WHERE product_id = ?`,
+            [
+                product_name,
+                brand_id,
+                category_id,
+                product_code,
+                description,
+                price,
+                stock_qty,
+                status,
+                product_id
+            ]
+        );
+
+        res.json({ message: "Product updated successfully" });
+
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message
+        })
+    }
 
 
-module.exports = { getProducts, addProduct };
+}
+
+module.exports = { getProducts, addProduct, updateProduct };

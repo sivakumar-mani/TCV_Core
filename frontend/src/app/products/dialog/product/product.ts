@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, Inject, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
@@ -45,7 +45,7 @@ export class Product {
     private ngxUiLoader: NgxUiLoaderService,
     private comMethodService: CommonMethods,
     private dialog: MatDialogRef<Product>,
-    @inject(MAT_DIALOG_DATA) public dialogData: any
+    @Inject(MAT_DIALOG_DATA) public dialogData: any
     ) { }
 
   ngOnInit() {
