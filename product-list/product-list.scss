@@ -1,0 +1,56 @@
+::ng-deep .p-datatable {
+  width: 100%;
+  overflow-x: auto;
+}
+
+::ng-deep .p-datatable table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+::ng-deep .p-column-filter {
+  width: 100%;
+}
+
+.text-wrap {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.edit-btn {
+  cursor: pointer;
+  color: #f97316;
+  font-size: 16px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.w-full {
+  width: 300px;
+}
+
+.active-badge {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.inactive-badge {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+:host ::ng-deep .p-column-filter-menu-button {
+  margin-left: 6px;
+}

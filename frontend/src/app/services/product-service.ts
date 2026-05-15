@@ -18,4 +18,9 @@ export class ProductService {
       headers : new HttpHeaders().set('content-type', "application/json")
     })
   }
+  updateProduct(data:any){
+    return this.http.patch(`${this.url}/product/update`, data,{
+      headers: new HttpHeaders().set('content-type', "application/json")
+    })
+  }
 }

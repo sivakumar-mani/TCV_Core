@@ -1,0 +1,51 @@
+.content-container {
+  padding: 16px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.edit-btn {
+  color: #f59e0b;
+  font-size: 13px;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  i {
+    font-size: 12px;
+  }
+}
+
+.text-wrap {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.text-center {
+  text-align: center;
+}
+.p-column-filter {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 12px;
+}

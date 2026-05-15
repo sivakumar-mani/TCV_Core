@@ -3,181 +3,182 @@
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
       <li class="breadcrumb-item active" aria-current="page">Products</li>
-      <li class="breadcrumb-item active" aria-current="page">Brands</li>
+      <li class="breadcrumb-item active" aria-current="page">Products List</li>
     </ol>
   </nav>
 </mat-toolbar>
+
 <div class="content-container">
   <div class="page-header">
-    <h1 class="page-title">Brands List</h1>
+    <h1 class="page-title">Product List</h1>
     <button matButton="filled" (click)="addProduct()" class="btn-yes">Add Product</button>
   </div>
 
   <div class="ag-grid-wrapper">
-  
-<p-table #dt
-    [value]="products"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[10,20,50,100]"
-    responsiveLayout="scroll"
-    [globalFilterFields]="[
-      'product_name',
-      'product_code',
-      'brand_name',
-      'category_path',
-      'price',
-      'stock_qty',
-      'status'
-    ]"
-    styleClass="p-datatable-sm p-datatable-gridlines">
+    <div class="card">
 
-    <!-- HEADER -->
-    <ng-template pTemplate="header">
+      <p-table
+        #dt
+        [value]="products"
+        [paginator]="true"
+        [rows]="10"
+         [filterDelay]="0"
+        [rowsPerPageOptions]="[10, 20, 50, 100]"
+        responsiveLayout="scroll"
+        sortMode="single"
+        [globalFilterFields]="[
+          'product_name',
+          'product_code',
+          'brand_name',
+          'category_path',
+          'price',
+          'stock_qty',
+          'status'
+        ]"
+        styleClass="p-datatable-sm p-datatable-gridlines"
+        [tableStyle]="{ 'min-width': '100%', 'table-layout': 'fixed' }">
 
-        <!-- SEARCH ROW -->
-        <tr>
-            <th>
-                <p-columnFilter
-                    type="text"
-                    field="product_name"
-                    placeholder="Search Product">
-                </p-columnFilter>
+        <!-- CAPTION: Global Search -->
+        <ng-template pTemplate="caption">
+          <div class="d-flex justify-content-end">
+            <span class="p-input-icon-left">
+              <i class="pi pi-search"></i>
+              <input
+                pInputText
+                type="text"
+                (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                placeholder="Global search..." />
+            </span>
+          </div>
+        </ng-template>
+
+        <!-- HEADER -->
+        <ng-template pTemplate="header">
+
+          <!-- COLUMN HEADERS WITH SORT -->
+          <tr>
+            <th pSortableColumn="product_name">
+              Product <p-sortIcon field="product_name" />
             </th>
-
-            <th>
-                <p-columnFilter
-                    type="text"
-                    field="product_code"
-                    placeholder="Search Code">
-                </p-columnFilter>
+            <th pSortableColumn="product_code">
+              Code <p-sortIcon field="product_code" />
             </th>
-
-            <th>
-                <p-columnFilter
-                    type="text"
-                    field="brand_name"
-                    placeholder="Search Brand">
-                </p-columnFilter>
+            <th pSortableColumn="brand_name">
+              Brand <p-sortIcon field="brand_name" />
             </th>
-
-            <th>
-                <p-columnFilter
-                    type="text"
-                    field="category_path"
-                    placeholder="Search Category">
-                </p-columnFilter>
+            <th pSortableColumn="category_path">
+              Category <p-sortIcon field="category_path" />
             </th>
-
-            <th>
-                <p-columnFilter
-                    type="numeric"
-                    field="price"
-                    placeholder="Search Price">
-                </p-columnFilter>
+            <th pSortableColumn="price">
+              Price <p-sortIcon field="price" />
             </th>
-
-            <th>
-                <p-columnFilter
-                    type="numeric"
-                    field="stock_qty"
-                    placeholder="Search Stock">
-                </p-columnFilter>
+            <th pSortableColumn="stock_qty">
+              Stock <p-sortIcon field="stock_qty" />
             </th>
-
-            <th>
-                <p-columnFilter
-                    type="text"
-                    field="status"
-                    placeholder="Search Status">
-                </p-columnFilter>
+            <th pSortableColumn="status">
+              Status <p-sortIcon field="status" />
             </th>
+            <th style="width: 80px">Action</th>
+          </tr>
 
-            <th style="width:70px">
-                Action
-            </th>
-        </tr>
+          <!-- FILTER ROW -->
+         <!-- FILTER ROW -->
+<tr>
+  <th>
+    <input 
+      pInputText 
+      type="text" 
+      (input)="dt.filter($any($event.target).value, 'product_name', 'contains')"
+      placeholder="Search..."
+      class="p-column-filter" />
+  </th>
+  <th>
+    <input 
+      pInputText 
+      type="text" 
+      (input)="dt.filter($any($event.target).value, 'product_code', 'contains')"
+      placeholder="Search..."
+      class="p-column-filter" />
+  </th>
+  <th>
+    <input 
+      pInputText 
+      type="text" 
+      (input)="dt.filter($any($event.target).value, 'brand_name', 'contains')"
+      placeholder="Search..."
+      class="p-column-filter" />
+  </th>
+  <th>
+    <input 
+      pInputText 
+      type="text" 
+      (input)="dt.filter($any($event.target).value, 'category_path', 'contains')"
+      placeholder="Search..."
+      class="p-column-filter" />
+  </th>
+  <th>
+    <input 
+      pInputText 
+      type="text" 
+      (input)="dt.filter($any($event.target).value, 'price', 'contains')"
+      placeholder="Search..."
+      class="p-column-filter" />
+  </th>
+  <th>
+    <input 
+      pInputText 
+      type="text" 
+      (input)="dt.filter($any($event.target).value, 'stock_qty', 'contains')"
+      placeholder="Search..."
+      class="p-column-filter" />
+  </th>
+  <th>
+    <input 
+      pInputText 
+      type="text" 
+      (input)="dt.filter($any($event.target).value, 'status', 'contains')"
+      placeholder="Search..."
+      class="p-column-filter" />
+  </th>
+  <th></th>
+</tr>
 
-        <!-- COLUMN HEADER -->
-        <tr>
-            <th>Product</th>
-            <th>Code</th>
-            <th>Brand</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
+        </ng-template>
 
-    </ng-template>
-
-    <!-- BODY -->
-    <ng-template pTemplate="body" let-row>
-
-        <tr>
-
+        <!-- BODY -->
+        <ng-template pTemplate="body" let-row>
+          <tr>
+            <td class="text-wrap">{{ row.product_name }}</td>
+            <td>{{ row.product_code }}</td>
+            <td>{{ row.brand_name }}</td>
+            <td class="text-wrap">{{ row.category_path }}</td>
+            <td>₹ {{ row.price }}</td>
+            <td>{{ row.stock_qty }}</td>
             <td>
-                {{ row.product_name }}
+              <p-tag
+                [value]="row.status"
+                [severity]="row.status === 'ACTIVE' ? 'success' : 'danger'">
+              </p-tag>
             </td>
-
             <td>
-                {{ row.product_code }}
+              <a (click)="editProduct(row)" class="edit-btn" style="cursor:pointer">
+                <i class="pi pi-pencil"></i> edit
+              </a>
             </td>
+          </tr>
+        </ng-template>
 
-            <td>
-                {{ row.brand_name }}
-            </td>
-
-            <td>
-                {{ row.category_path }}
-            </td>
-
-            <td>
-                ₹ {{ row.price }}
-            </td>
-
-            <td>
-                {{ row.stock_qty }}
-            </td>
-
-            <td>
-                <p-tag
-                    [value]="row.status"
-                    [severity]="row.status === 'ACTIVE' ? 'success' : 'danger'">
-                </p-tag>
-            </td>
-
-            <td>
-
-                <p-menu #menu
-                    [popup]="true"
-                    [model]="getMenuItems(row)">
-                </p-menu>
-
-                <button pButton
-                    type="button"
-                    icon="pi pi-ellipsis-v"
-                    class="p-button-text p-button-sm"
-                    (click)="menu.toggle($event)">
-                </button>
-
-            </td>
-
-        </tr>
-
-    </ng-template>
-
-    <!-- EMPTY -->
-    <ng-template pTemplate="emptymessage">
-        <tr>
+        <!-- EMPTY -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
             <td colspan="8" class="text-center p-3">
-                No Products Found
+              No Products Found
             </td>
-        </tr>
-    </ng-template>
+          </tr>
+        </ng-template>
 
-</p-table>
+      </p-table>
+
+    </div>
   </div>
-
 </div>

@@ -55,10 +55,24 @@
     <input matInput type="number" formControlName="stock_qty">
   </mat-form-field>
 
-  <!-- Submit -->
-  <!-- <button mat-raised-button color="primary" (click)="submit()">
-    Save Product
-  </button> -->
+<mat-form-field appearance="outline" class="w-100" *ngIf="dialogData">
+
+  <mat-label>Status</mat-label>
+
+  <mat-select formControlName="status">
+
+    <mat-option [value]="'ACTIVE'">
+      Active
+    </mat-option>
+
+    <mat-option [value]="'INACTIVE'">
+      Inactive
+    </mat-option>
+
+  </mat-select>
+
+</mat-form-field>
+
 
 
         </div>
@@ -66,9 +80,9 @@
 </mat-dialog-content>
 <mat-dialog-actions>
     <button class="btn-no"  mat-raised-button   mat-dialog-close>Cancel</button>
-    <button *ngIf="!isEditMode"   mat-raised-button (click)="addSubmit()"  [class]="productForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
+    <button *ngIf="!dialogData"   mat-raised-button (click)="addSubmit()"  [class]="productForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
     [disabled]="!productForm.valid">Save</button>
-    <button *ngIf="isEditMode"   mat-raised-button (click)="editSubmit()"  [class]="productForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
+    <button *ngIf="dialogData"   mat-raised-button (click)="editSubmit()"  [class]="productForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
     [disabled]="!productForm.valid">Update</button>
 </mat-dialog-actions>
 

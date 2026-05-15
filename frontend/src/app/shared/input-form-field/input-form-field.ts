@@ -18,6 +18,7 @@ export class InputFormField implements ControlValueAccessor{
   @Input() classLabel: string='';
   @Input()  inputClass: string='';
   @Input() formControl!: FormControl;
+  
 
   constructor( @Self() public ngControl: NgControl){
      this.ngControl.valueAccessor = this;
