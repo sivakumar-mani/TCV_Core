@@ -1,0 +1,445 @@
+Inventory, Purchase & Sales Management System Architecture
+1. Supplier Management
+•	Functions: Add, Update, Delete, Search, Supplier Purchase History, Outstanding Reports
+•	Recommended additional columns: address, city, state, pincode, created_at, updated_at
+2. Customer Management (Required)
+•	Customer table is recommended for repeat customers, GST billing, credit sales, quotations, payment tracking, and service history.
+•	Suggested columns: customer_name, phone, email, gst_no, address, customer_type, credit_limit, status
+3. Purchase Module
+•	Tables: purchase_master, purchase_items
+•	Recommended additions: discount_amount, tax_amount, net_amount, purchase_status, remarks
+•	Functions: Create/Edit/Delete Purchase, Reports, Auto stock update
+4. Stock Management
+•	Tables: stock_master, stock_ledger
+•	Recommended additions: minimum_stock, maximum_stock, remarks, reference_no
+•	Functions: Low stock report, stock movement, stock adjustment
+5. Sales Module
+•	Use customer_id instead of customer_name
+•	Recommended additions: payment_status, sales_status, remarks
+•	Functions: Invoice generation, stock validation, payment tracking
+6. Product Module
+•	Recommended columns: purchase_price, selling_price, hsn_code, gst_percent, barcode, reorder_level
+7. Payment Tables
+•	supplier_payments and customer_payments tables recommended for credit management
+8. Reports
+•	Purchase Reports
+•	Sales Reports
+•	Stock Reports
+•	Profit/Loss Reports
+•	GST Reports
+9. Recommended Workflow
+•	Purchase → Stock Ledger IN → Stock Master Update
+•	Sales → Stock Ledger OUT → Stock Master Reduction
+10. Recommended Extra Tables
+•	quotation_master
+•	quotation_items
+•	installation_master
+•	service_tickets
+•	warranty_master
+Important Recommendation
+Maintain both stock_master (current stock) and stock_ledger (history/audit trail). This provides better performance and complete transaction tracking.
+Recommended Core Modules
+1.	Brands
+2.	Categories
+3.	Products
+4.	Suppliers
+5.	Customers
+6.	Purchase
+7.	Sales
+8.	Stock
+9.	Payments
+10.	Reports
+11.	Quotations
+12.	Installation
+13.	Service
+
+-- =========================================
+-- BRANDS
+-- =========================================
+
+CREATE TABLE brands (
+    brand_id INT AUTO_INCREMENT PRIMARY KEY,
+    brand_name VARCHAR(100) NOT NULL UNIQUE,
+    brand_code VARCHAR(20),
+    description VARCHAR(255),
+    status TINYINT(1) DEFAULT 1,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- =========================================
+-- CATEGORIES
+-- =========================================
+
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    category_name VARCHAR(150) NOT NULL,
+
+    parent_id INT NULL,
+
+    level INT DEFAULT 1,
+
+    slug VARCHAR(200),
+
+    sort_order SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+
+    status TINYINT(1) DEFAULT 1,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (parent_id)
+    REFERENCES categories(category_id)
+    ON DELETE CASCADE
+);
+
+-- =========================================
+-- PRODUCTS
+-- =========================================
+
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    product_name VARCHAR(200) NOT NULL,
+
+    brand_id INT,
+
+    category_id INT,
+
+    product_code VARCHAR(100) UNIQUE,
+
+    barcode VARCHAR(100),
+
+    description TEXT,
+
+    purchase_price DECIMAL(12,2) DEFAULT 0,
+
+    selling_price DECIMAL(12,2) DEFAULT 0,
+
+    gst_percent DECIMAL(5,2) DEFAULT 0,
+
+    hsn_code VARCHAR(50),
+
+    unit VARCHAR(20) DEFAULT 'PCS',
+
+    reorder_level DECIMAL(10,2) DEFAULT 0,
+
+    status ENUM('ACTIVE','INACTIVE')
+    DEFAULT 'ACTIVE',
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (brand_id)
+    REFERENCES brands(brand_id),
+
+    FOREIGN KEY (category_id)
+    REFERENCES categories(category_id)
+);
+
+-- =========================================
+-- SUPPLIERS
+-- =========================================
+
+CREATE TABLE suppliers (
+    supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+    supplier_name VARCHAR(150) NOT NULL,
+    contact_person VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    gst_no VARCHAR(20),
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    pincode VARCHAR(20),
+    status TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+);
+
+-- =========================================
+-- CUSTOMERS
+-- =========================================
+
+CREATE TABLE customers (
+    customer_id INT AUTO_INCREMENT PRIMARY KEY,
+    customer_name VARCHAR(150) NOT NULL,
+    contact_person VARCHAR(100),
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    gst_no VARCHAR(20),
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(100),
+    pincode VARCHAR(20),
+    customer_type ENUM(
+        'RETAIL',
+        'WHOLESALE',
+        'DEALER'
+    ) DEFAULT 'RETAIL',
+
+    credit_limit DECIMAL(12,2) DEFAULT 0,
+
+    status TINYINT(1) DEFAULT 1,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================
+-- PURCHASE MASTER
+-- =========================================
+
+CREATE TABLE purchase_master (
+    purchase_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    supplier_id INT NOT NULL,
+
+    invoice_no VARCHAR(50),
+
+    invoice_date DATE,
+
+    total_amount DECIMAL(12,2) DEFAULT 0,
+
+    discount_amount DECIMAL(12,2) DEFAULT 0,
+
+    tax_amount DECIMAL(12,2) DEFAULT 0,
+
+    net_amount DECIMAL(12,2) DEFAULT 0,
+
+    purchase_status ENUM(
+        'DRAFT',
+        'COMPLETED',
+        'CANCELLED'
+    ) DEFAULT 'COMPLETED',
+
+    remarks TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (supplier_id)
+    REFERENCES suppliers(supplier_id)
+);
+
+-- =========================================
+-- PURCHASE ITEMS
+-- =========================================
+
+CREATE TABLE purchase_items (
+    purchase_item_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    purchase_id INT NOT NULL,
+
+    product_id INT NOT NULL,
+
+    qty DECIMAL(10,2) NOT NULL,
+
+    rate DECIMAL(12,2) NOT NULL,
+
+    discount DECIMAL(12,2) DEFAULT 0,
+
+    tax DECIMAL(12,2) DEFAULT 0,
+
+    amount DECIMAL(12,2) NOT NULL,
+
+    FOREIGN KEY (purchase_id)
+    REFERENCES purchase_master(purchase_id)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (product_id)
+    REFERENCES products(product_id)
+);
+
+-- =========================================
+-- STOCK MASTER
+-- =========================================
+
+CREATE TABLE stock_master (
+    product_id INT PRIMARY KEY,
+
+    available_qty DECIMAL(10,2) DEFAULT 0,
+
+    minimum_stock DECIMAL(10,2) DEFAULT 0,
+
+    maximum_stock DECIMAL(10,2) DEFAULT 0,
+
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (product_id)
+    REFERENCES products(product_id)
+);
+
+-- =========================================
+-- STOCK LEDGER
+-- =========================================
+
+CREATE TABLE stock_ledger (
+    stock_ledger_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    product_id INT NOT NULL,
+
+    transaction_type ENUM(
+        'PURCHASE',
+        'SALE',
+        'RETURN',
+        'ADJUSTMENT'
+    ),
+
+    transaction_id INT,
+
+    reference_no VARCHAR(100),
+
+    qty_in DECIMAL(10,2) DEFAULT 0,
+
+    qty_out DECIMAL(10,2) DEFAULT 0,
+
+    balance_qty DECIMAL(10,2) DEFAULT 0,
+
+    remarks TEXT,
+
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (product_id)
+    REFERENCES products(product_id)
+);
+
+-- =========================================
+-- SALES MASTER
+-- =========================================
+
+CREATE TABLE sales_master (
+    sales_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    invoice_no VARCHAR(50) UNIQUE NOT NULL,
+
+    invoice_date DATE NOT NULL,
+
+    customer_id INT,
+
+    total_amount DECIMAL(12,2) DEFAULT 0,
+
+    discount_amount DECIMAL(12,2) DEFAULT 0,
+
+    tax_amount DECIMAL(12,2) DEFAULT 0,
+
+    net_amount DECIMAL(12,2) DEFAULT 0,
+
+    payment_mode ENUM(
+        'CASH',
+        'CARD',
+        'UPI',
+        'BANK',
+        'CREDIT'
+    ),
+
+    payment_status ENUM(
+        'PENDING',
+        'PARTIAL',
+        'PAID'
+    ) DEFAULT 'PAID',
+
+    sales_status ENUM(
+        'DRAFT',
+        'COMPLETED',
+        'CANCELLED'
+    ) DEFAULT 'COMPLETED',
+
+    remarks TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (customer_id)
+    REFERENCES customers(customer_id)
+);
+
+-- =========================================
+-- SALES ITEMS
+-- =========================================
+
+CREATE TABLE sales_items (
+    sales_item_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    sales_id INT NOT NULL,
+
+    product_id INT NOT NULL,
+
+    qty DECIMAL(10,2) NOT NULL,
+
+    rate DECIMAL(12,2) NOT NULL,
+
+    discount DECIMAL(12,2) DEFAULT 0,
+
+    tax DECIMAL(12,2) DEFAULT 0,
+
+    amount DECIMAL(12,2) NOT NULL,
+
+    FOREIGN KEY (sales_id)
+    REFERENCES sales_master(sales_id)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (product_id)
+    REFERENCES products(product_id)
+);
+
+-- =========================================
+-- CUSTOMER PAYMENTS
+-- =========================================
+
+CREATE TABLE customer_payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    customer_id INT,
+
+    sales_id INT,
+
+    amount DECIMAL(12,2),
+
+    payment_date DATE,
+
+    payment_mode VARCHAR(50),
+
+    remarks TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (customer_id)
+    REFERENCES customers(customer_id),
+
+    FOREIGN KEY (sales_id)
+    REFERENCES sales_master(sales_id)
+);
+
+-- =========================================
+-- SUPPLIER PAYMENTS
+-- =========================================
+
+CREATE TABLE supplier_payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    supplier_id INT,
+
+    purchase_id INT,
+
+    amount DECIMAL(12,2),
+
+    payment_date DATE,
+
+    payment_mode VARCHAR(50),
+
+    remarks TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (supplier_id)
+    REFERENCES suppliers(supplier_id),
+
+    FOREIGN KEY (purchase_id)
+    REFERENCES purchase_master(purchase_id)
+);
