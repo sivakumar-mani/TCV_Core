@@ -1,0 +1,46 @@
+<h2 mat-dialog-title>{{ isEditMode ? 'Edit Supplier' : 'Add Supplier' }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="supplierForm">
+    <div class="grid-2-col mt-4">
+      <app-input-form-field [label]="'Supplier Name'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(supplierForm.controls['supplier_name'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Contact Person'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(supplierForm.controls['contact_person'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Phone'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(supplierForm.controls['phone'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Email'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'email'" [formControl]="$any(supplierForm.controls['email'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'GST No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(supplierForm.controls['gst_no'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'City'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(supplierForm.controls['city'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'State'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(supplierForm.controls['state'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Pincode'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(supplierForm.controls['pincode'])"></app-input-form-field>
+
+      <app-select-form-field [label]="'Status'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="statusList" [formControl]="$any(supplierForm.controls['status'])"></app-select-form-field>
+    </div>
+
+    <div class="grid-1-col mt-2">
+      <app-textarea-form-field [label]="'Address'" [classLabel]="'form-label'" [rows]="3"
+        [placeholder]="'Enter address'" [control]="$any(supplierForm.controls['address'])">
+      </app-textarea-form-field>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button class="btn-no" mat-raised-button mat-dialog-close>Cancel</button>
+  <button *ngIf="!isEditMode" mat-raised-button (click)="addSubmit()"
+    [class]="supplierForm.valid ? 'btn-yes' : 'btn-no btn-disabled'" [disabled]="!supplierForm.valid">Save</button>
+  <button *ngIf="isEditMode" mat-raised-button (click)="editSubmit()"
+    [class]="supplierForm.valid ? 'btn-yes' : 'btn-no btn-disabled'" [disabled]="!supplierForm.valid">Update</button>
+</mat-dialog-actions>

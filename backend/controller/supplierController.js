@@ -1,5 +1,19 @@
 const connection = require('../connection');
 
+const getSuppliers = async (req, res) => {
+    try {
+        const [rows] = await connection.promise().query(
+            'SELECT supplier_id, supplier_name, contact_person, phone, email, gst_no, address, city, state, pincode, status, created_at, updated_at FROM suppliers ORDER BY supplier_id DESC'
+        );
+
+        return res.json(rows);
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
 const addSupplier = async (req, res) => {
     try {
         const {
@@ -172,4 +186,4 @@ const getSupplierById = async (req, res) => {
     }
 };
 
-module.exports = { addSupplier, updateSupplier, deleteSupplier, getSupplierById };
+module.exports = { addSupplier, updateSupplier, deleteSupplier, getSupplierById, getSuppliers };
