@@ -1,0 +1,28 @@
+<!-- form-select.component.html -->
+
+<div class="floating-field">
+
+  <select
+    class="form-select custom-control"
+    [value]="value"
+    (change)="change($event)"
+  >
+
+    <option value="" disabled selected></option>
+
+    <option
+      *ngFor="let item of options"
+      [value]="item.value"
+    >
+      {{ item.label }}
+    </option>
+
+  </select>
+
+  <label>{{ label }} <sup *ngIf="required" style="color:red">*</sup></label>
+
+</div>
+<app-error 
+  [control]="control"
+  [label]="label">
+</app-error>

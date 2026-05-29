@@ -1,0 +1,16 @@
+<div class="floating-field textarea-field">
+
+  <textarea
+    class="form-control custom-textarea"
+    placeholder=" "
+    [value]="value"
+    (input)="change($event)"
+  ></textarea>
+
+  <label>{{ label }}</label>
+
+</div>
+<app-error
+  
+  [label]="label">
+</app-error>

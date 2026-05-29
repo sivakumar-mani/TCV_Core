@@ -1,0 +1,38 @@
+<!-- form-input.component.html -->
+
+<div class="floating-field">
+
+  <input
+    [type]="inputType"
+    class="form-control custom-control"
+    [placeholder]="placeholder"
+    [value]="value"
+    [disabled]="disabled"
+    (input)="change($event)"
+    (blur)="onTouched()"
+  />
+ <i
+      *ngIf="icon"
+      class="input-icon {{ icon }}">
+    </i>
+  <label>{{ label }} <sup *ngIf="required" style="color:red">*</sup></label>
+
+
+    <!-- Password Toggle -->
+    <button
+      *ngIf="type === 'password'"
+      type="button"
+      class="password-toggle"
+      (click)="togglePassword()">
+
+      <i
+        class="bi"
+        [ngClass]="showPassword ? 'bi-eye' : 'bi-eye-slash'">
+      </i>
+
+    </button>
+</div>
+<app-error
+  [control]="control"
+  [label]="label">
+</app-error>

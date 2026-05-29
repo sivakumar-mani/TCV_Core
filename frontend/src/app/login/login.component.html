@@ -1,0 +1,76 @@
+<div class="login-shell">
+
+  <!-- Left panel -->
+  <div class="left-panel">
+    <div class="left-content">
+      <div class="logo-wrap">
+        <div class="logo-mark"><i class="bi bi-hexagon-fill"></i></div>
+        <span class="logo-name">Assurezen</span>
+      </div>
+      <h2 class="welcome-title">WELCOME</h2>
+      <div class="welcome-sub">YOUR ENTERPRISE SUITE</div>
+      <p class="welcome-para">
+        A unified platform for supplier management, employee directories, document uploads, and contract lifecycles -
+        built for modern enterprises.
+      </p>
+      <div class="left-features">
+        <div class="feat"><i class="bi bi-building-fill-gear"></i> Supplier Management</div>
+        <div class="feat"><i class="bi bi-people-fill"></i> Employee Directory</div>
+        <div class="feat"><i class="bi bi-cloud-arrow-up-fill"></i> Upload Center</div>
+        <div class="feat"><i class="bi bi-file-earmark-text-fill"></i> Contract Management</div>
+      </div>
+    </div>
+    <div class="left-orb orb-1"></div>
+    <div class="left-orb orb-2"></div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="right-panel">
+    <div class="form-card">
+      <h1 class="sign-title">Sign in</h1>
+      <p class="sign-sub">Access your enterprise dashboard</p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+        <app-input-component
+          [label]="'User Name'"
+          [type]="'text'"
+          [icon]="'bi bi-person'"
+          [required]="true"
+          [submitted]="submitted"
+          [control]="loginForm.controls['userName']"
+          [formControl]="$any(loginForm.controls['userName'])">
+        </app-input-component>
+
+        <app-input-component
+          [label]="'Password'"
+          [type]="'password'"
+          [icon]="'bi bi-lock'"
+          [required]="true"
+          [submitted]="submitted"
+          [control]="loginForm.controls['password']"
+          [formControl]="$any(loginForm.controls['password'])">
+        </app-input-component>
+
+        <div class="check-row">
+          <label class="check-label">
+            <input type="checkbox" name="remember" [(ngModel)]="remember" [ngModelOptions]="{standalone: true}" />
+            <span>Remember me</span>
+          </label>
+          <a type="button" class="forgot-link" (click)="forgotPassword()">Forgot password?</a>
+        </div>
+
+        <div class="response-message" *ngIf="responseMessage">{{ responseMessage }}</div>
+
+        <button type="submit" class="common-blue-btn">
+          <span><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</span>
+        </button>
+      </form>
+
+      <div class="signup-row">
+        Don't have an account?
+        <a class="ms-1" (click)="openSignupModal()">Signup</a>
+      </div>
+    </div>
+  </div>
+  <app-signup-dialog #signupModal></app-signup-dialog>
+</div>

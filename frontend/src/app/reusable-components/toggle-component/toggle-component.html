@@ -1,0 +1,61 @@
+<div [ngClass]="wrapperClasses">
+
+  <!-- Label on LEFT -->
+  <div class="toggle-label-group" *ngIf="labelPosition === 'left' && (label || subLabel)">
+    <label
+      class="toggle-label"
+      [id]="uid + '-label'"
+      [for]="uid"
+      [class.is-disabled]="disabled"
+    >
+      {{ label }}
+    </label>
+    <span class="toggle-sub-label" *ngIf="subLabel">{{ subLabel }}</span>
+  </div>
+
+  <!-- Toggle track + knob -->
+  <div
+    [id]="uid"
+    [ngClass]="trackClasses"
+    role="switch"
+    [attr.aria-checked]="checked"
+    [attr.aria-labelledby]="uid + '-label'"
+    [attr.aria-disabled]="disabled || readonly"
+    [tabindex]="disabled ? -1 : 0"
+    (click)="toggle()"
+    (keydown)="onKeydown($event)"
+  >
+    <!-- State text: OFF (left) -->
+    <span class="state-text off-text" *ngIf="showStateText && !checked">OFF</span>
+
+    <!-- Knob -->
+    <span class="toggle-knob">
+      <!-- Optional icon inside knob -->
+      <i class="bi bi-check knob-icon check-icon" *ngIf="checked && !showStateText"></i>
+      <i class="bi bi-x knob-icon x-icon" *ngIf="!checked && !showStateText"></i>
+    </span>
+
+    <!-- State text: ON (right) -->
+    <span class="state-text on-text" *ngIf="showStateText && checked">ON</span>
+  </div>
+
+  <!-- Label on RIGHT (default) -->
+  <div class="toggle-label-group" *ngIf="labelPosition === 'right' && (label || subLabel)">
+    <label
+      class="toggle-label"
+      [id]="uid + '-label'"
+      [for]="uid"
+      [class.is-disabled]="disabled"
+    >
+      {{ label }}
+    </label>
+    <span class="toggle-sub-label" *ngIf="subLabel">{{ subLabel }}</span>
+  </div>
+
+</div>
+
+<!-- Validation error -->
+<div class="toggle-error-msg" *ngIf="isInvalid">
+  <i class="bi bi-exclamation-triangle-fill me-1"></i>
+  This field is required.
+</div>

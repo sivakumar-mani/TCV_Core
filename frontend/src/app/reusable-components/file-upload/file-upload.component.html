@@ -1,0 +1,167 @@
+<div class="file-upload-wrapper" [class.disabled]="disabled">
+
+  <!-- ── BUTTON-ONLY MODE (showDropZone = false) ── -->
+  <ng-container *ngIf="!showDropZone">
+
+    <div class="file-upload-inline">
+
+      <!-- Trigger button -->
+      <label class="btn-upload" [class.disabled]="disabled">
+        <i class="bi bi-paperclip me-1"></i>
+        {{ label }}
+        <input
+          type="file"
+          class="file-input-hidden"
+          [accept]="accept"
+          [multiple]="multiple"
+          [disabled]="disabled"
+          (change)="onFileSelected($event)"
+        />
+      </label>
+
+      <!-- Uploaded file chips (inline) -->
+      <div class="file-chips" *ngIf="uploadedFiles.length > 0">
+        <div
+          class="file-chip"
+          *ngFor="let f of uploadedFiles; let i = index"
+          [class.chip-uploading]="f.status === 'uploading'"
+          [class.chip-success]="f.status === 'success'"
+          [class.chip-error]="f.status === 'error'"
+        >
+          <i class="bi {{ getFileIcon(f.name) }} chip-icon"></i>
+          <span class="chip-name" [title]="f.name">{{ f.name }}</span>
+          <span class="chip-size">{{ f.sizeLabel }}</span>
+
+          <!-- Progress bar while uploading -->
+          <div class="chip-progress" *ngIf="f.status === 'uploading'">
+            <div class="chip-progress-bar" [style.width.%]="f.progress"></div>
+          </div>
+
+          <!-- Success tick -->
+          <i class="bi bi-check-circle-fill chip-status-icon success-icon"
+             *ngIf="f.status === 'success'"></i>
+
+          <!-- Error icon -->
+          <i class="bi bi-exclamation-circle-fill chip-status-icon error-icon"
+             *ngIf="f.status === 'error'"></i>
+
+          <!-- Remove -->
+          <button class="chip-remove" type="button" (click)="removeFile(i)" [disabled]="disabled">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+
+  <!-- ── DROP-ZONE MODE (showDropZone = true) ── -->
+  <ng-container *ngIf="showDropZone">
+
+    <div
+      class="drop-zone"
+      [class.drag-over]="isDragging"
+      [class.has-files]="uploadedFiles.length > 0"
+      [class.disabled]="disabled"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      <label class="drop-zone-inner" [class.disabled]="disabled">
+        <input
+          type="file"
+          class="file-input-hidden"
+          [accept]="accept"
+          [multiple]="multiple"
+          [disabled]="disabled"
+          (change)="onFileSelected($event)"
+        />
+
+        <!-- Idle state (no files yet) -->
+        <ng-container *ngIf="uploadedFiles.length === 0">
+          <i class="bi bi-cloud-arrow-up drop-zone-icon"></i>
+          <p class="drop-zone-primary">
+            Drag &amp; drop files here, or <span class="drop-zone-link">browse</span>
+          </p>
+          <p class="drop-zone-secondary" *ngIf="hint">{{ hint }}</p>
+          <p class="drop-zone-secondary" *ngIf="!hint">
+            Accepted: {{ accept }} &nbsp;·&nbsp; Max {{ maxSizeMB }} MB
+          </p>
+        </ng-container>
+
+        <!-- Files uploaded state -->
+        <ng-container *ngIf="uploadedFiles.length > 0">
+          <i class="bi bi-folder2-open drop-zone-icon small-icon"></i>
+          <p class="drop-zone-secondary">
+            {{ uploadedFiles.length }} file{{ uploadedFiles.length > 1 ? 's' : '' }} selected
+            &nbsp;·&nbsp;
+            <span class="drop-zone-link">Add more</span>
+          </p>
+        </ng-container>
+
+      </label>
+    </div>
+
+    <!-- File list (drop-zone mode) -->
+    <div class="file-list" *ngIf="uploadedFiles.length > 0">
+      <div
+        class="file-list-row"
+        *ngFor="let f of uploadedFiles; let i = index"
+        [class.row-uploading]="f.status === 'uploading'"
+        [class.row-success]="f.status === 'success'"
+        [class.row-error]="f.status === 'error'"
+      >
+        <!-- File icon / image preview -->
+        <div class="file-list-icon">
+          <img *ngIf="f.previewUrl" [src]="f.previewUrl" alt="preview" class="file-thumb" />
+          <i *ngIf="!f.previewUrl" class="bi {{ getFileIcon(f.name) }}"></i>
+        </div>
+
+        <!-- Name & size -->
+        <div class="file-list-info">
+          <span class="file-list-name" [title]="f.name">{{ f.name }}</span>
+          <span class="file-list-size">{{ f.sizeLabel }}</span>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="file-list-progress" *ngIf="f.status === 'uploading'">
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="f.progress"></div>
+          </div>
+          <span class="progress-pct">{{ f.progress }}%</span>
+        </div>
+
+        <!-- Status icons -->
+        <div class="file-list-status">
+          <i class="bi bi-check-circle-fill text-success"
+             *ngIf="f.status === 'success'"></i>
+          <i class="bi bi-exclamation-circle-fill text-danger"
+             *ngIf="f.status === 'error'" [title]="f.errorMessage"></i>
+        </div>
+
+        <!-- Remove button -->
+        <button class="file-list-remove" type="button" (click)="removeFile(i)" [disabled]="disabled">
+          <i class="bi bi-trash3"></i>
+        </button>
+      </div>
+    </div>
+
+  </ng-container>
+
+
+  <!-- ── SHARED: validation & error messages ── -->
+  <div class="upload-error-msg" *ngIf="hasError">
+    <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ errorMessage }}
+  </div>
+
+  <div class="upload-error-msg" *ngIf="showValidationError && !hasError">
+    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+    This field is required.
+  </div>
+
+  <!-- ── SHARED: hint text ── -->
+  <p class="upload-hint" *ngIf="hint && !showDropZone">{{ hint }}</p>
+
+</div>

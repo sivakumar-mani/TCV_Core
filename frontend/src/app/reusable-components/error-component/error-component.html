@@ -1,0 +1,32 @@
+<!-- form-error.component.html -->
+<div class="error-msg"> 
+  
+<div 
+  *ngIf="control && control.touched && control.errors"
+>
+
+  <div *ngIf="control.errors['required']">
+    {{ label }} is required
+  </div>
+
+  <div *ngIf="control.errors['email']">
+    Invalid email address
+  </div>
+
+  <div *ngIf="control.errors['minlength']">
+    Minimum
+    {{ control.errors['minlength'].requiredLength }}
+    characters required
+  </div>
+
+  <div *ngIf="control.errors['maxlength']">
+    Maximum
+    {{ control.errors['maxlength'].requiredLength }}
+    characters allowed
+  </div>
+
+  <div *ngIf="control.errors['pattern']">
+    Invalid format
+  </div>
+</div>
+</div>

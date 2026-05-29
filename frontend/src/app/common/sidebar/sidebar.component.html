@@ -1,0 +1,154 @@
+<nav id="sidebar"
+     [class.collapsed]="sidebarService.isCollapsed$ | async"
+     [class.mobile-open]="sidebarService.mobileOpen$ | async">
+
+  <!-- Brand -->
+  <a href="#" class="sidebar-brand" (click)="$event.preventDefault()">
+    <div class="brand-icon">
+      <i class="bi bi-hexagon-fill"></i>
+    </div>
+
+    <div class="brand-text">
+      Assurezen
+    </div>
+  </a>
+
+  <!-- Navigation -->
+  <div class="sidebar-nav">
+
+    <ng-container *ngFor="let item of navSections; trackBy: trackByLabel">
+
+      <div class="nav-item-wrap">
+
+        <!-- ================================================= -->
+        <!-- LEVEL 1 : SINGLE MENU -->
+        <!-- ================================================= -->
+
+        <a *ngIf="!hasChildren(item)"
+           class="nav-link-item"
+           [class.active]="activeLabel === item.label"
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           (click)="setActive(item.label)"
+           [attr.title]="item.label">
+
+          <i class="nav-icon bi {{ item.icon }}"></i>
+
+          <span class="nav-label">
+            {{ item.label }}
+          </span>
+
+        </a>
+
+        <!-- ================================================= -->
+        <!-- LEVEL 1 : PARENT MENU -->
+        <!-- ================================================= -->
+
+        <a *ngIf="hasChildren(item)"
+           class="nav-link-item"
+           [class.active]="isOpen(item.label)"
+           (click)="toggleMenu(item.label)" 
+            [attr.title]="item.label">
+          
+          <i class="nav-icon bi {{ item.icon }}"></i>
+
+          <span class="nav-label">
+            {{ item.label }}
+          </span>
+
+          <i class="bi bi-chevron-right nav-chevron"
+             [class.rotated]="isOpen(item.label)">
+          </i>
+
+        </a>
+
+        <!-- ================================================= -->
+        <!-- LEVEL 2 SUBMENU -->
+        <!-- ================================================= -->
+
+        <ul class="submenu"
+            *ngIf="hasChildren(item) && isOpen(item.label)">
+
+          <li *ngFor="let child of item.children; trackBy: trackByLabel">
+
+            <!-- ============================================= -->
+            <!-- LEVEL 2 : SINGLE MENU -->
+            <!-- ============================================= -->
+
+            <a *ngIf="!hasChildren(child)"
+               class="nav-link-item"
+               [class.active]="activeLabel === child.label"
+               [routerLink]="child.route"
+               routerLinkActive="active"
+               (click)="setActive(child.label)"
+               [attr.title]="child.label">
+
+              <i class="nav-icon bi {{ child.icon }}"></i>
+
+              <span class="nav-label">
+                {{ child.label }}
+              </span>
+
+            </a>
+
+            <!-- ============================================= -->
+            <!-- LEVEL 2 : PARENT MENU -->
+            <!-- ============================================= -->
+
+            <a *ngIf="hasChildren(child)"
+               class="nav-link-item"
+               [class.active]="isOpen(child.label)"
+               (click)="toggleMenu(child.label)"
+               [attr.title]="child.label">
+
+              <i class="nav-icon bi {{ child.icon }}"></i>
+
+              <span class="nav-label">
+                {{ child.label }}
+              </span>
+
+              <i class="bi bi-chevron-right nav-chevron"
+                 [class.rotated]="isOpen(child.label)">
+              </i>
+
+            </a>
+
+            <!-- ============================================= -->
+            <!-- LEVEL 3 SUBMENU -->
+            <!-- ============================================= -->
+
+            <ul class="sub-submenu"
+                *ngIf="hasChildren(child) && isOpen(child.label)">
+
+              <li *ngFor="let grandchild of child.children; trackBy: trackByLabel">
+
+                <a class="nav-link-item"
+                   [class.active]="activeLabel === grandchild.label"
+                   [routerLink]="grandchild.route"
+                   routerLinkActive="active"
+                   (click)="setActive(grandchild.label)"
+                   [attr.title]="grandchild.label">
+
+                  <i class="nav-icon bi {{ grandchild.icon }}"></i>
+
+                  <span class="nav-label">
+                    {{ grandchild.label }}
+                  </span>
+
+                </a>
+
+              </li>
+
+            </ul>
+
+          </li>
+
+        </ul>
+
+      </div>
+
+    </ng-container>
+
+  </div>
+
+</nav>

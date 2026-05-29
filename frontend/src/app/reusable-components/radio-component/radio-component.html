@@ -1,0 +1,21 @@
+
+
+  <div
+    class="custom-radio"
+  >
+
+ <input
+  type="radio"
+  [value]="value"
+   [name]="groupName"
+  [checked]="modelValue === value"
+  (change)="onChange(value)"
+/>
+
+    <label class="ps-2">{{ label }}</label>
+
+  </div>
+  <app-error
+  
+  [label]="label">
+</app-error>

@@ -1,0 +1,9 @@
+<div id="sidebar-overlay" [class.show]="(sidebarService.mobileOpen$ | async)" (click)="sidebarService.closeMobile()">
+</div>
+<app-sidebar></app-sidebar>
+<app-topbar></app-topbar>
+<main id="main" [class.sidebar-collapsed]="sidebarService.isCollapsed$ | async">
+  <app-breadcrumb></app-breadcrumb>
+  <app-stat-cards></app-stat-cards>
+  <router-outlet></router-outlet>
+</main>

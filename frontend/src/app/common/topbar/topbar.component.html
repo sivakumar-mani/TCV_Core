@@ -1,0 +1,58 @@
+<header id="topbar" [class.sidebar-collapsed]="sidebarService.isCollapsed$ | async">
+
+  <button class="toggle-btn" (click)="sidebarService.toggle()" title="Toggle sidebar">
+    <i class="bi bi-layout-sidebar-inset"></i>
+  </button>
+
+  <nav class="top-nav d-none d-md-flex">
+    <a *ngFor="let link of topNavLinks"
+       class="top-nav-link"
+       [class.active]="link.active"
+       href="#"
+       (click)="setActiveLink(link); $event.preventDefault()">
+      <i class="bi {{ link.icon }}"></i> {{ link.label }}
+    </a>
+  </nav>
+
+  <div class="topbar-right">
+    <button class="topbar-icon-btn" title="Search"><i class="bi bi-search"></i></button>
+    <button class="topbar-icon-btn" title="Notifications">
+      <i class="bi bi-bell"></i>
+      <span class="notif-badge"></span>
+    </button>
+    <button class="topbar-icon-btn" title="Messages"><i class="bi bi-chat-dots"></i></button>
+    <div class="topbar-divider"></div>
+
+    <button
+      *ngIf="isLoggedIn && userDetails; else loginAction"
+      type="button"
+      class="topbar-user"
+      (click)="toggleUserMenu()">
+      <div class="topbar-avatar">{{ userDetails.initials }}</div>
+      <span class="topbar-user-meta d-none d-sm-flex">
+        <span class="topbar-username">{{ userDetails.fullName }}</span>
+        <span class="topbar-role" *ngIf="userDetails.role">{{ userDetails.role }}</span>
+      </span>
+      <i class="bi bi-chevron-down user-chevron"></i>
+    </button>
+
+    <ng-template #loginAction>
+      <button type="button" class="topbar-login-btn" (click)="login()">
+        <i class="bi bi-box-arrow-in-right"></i>
+        <span>Login</span>
+      </button>
+    </ng-template>
+
+    <div class="topbar-user-menu" *ngIf="isUserMenuOpen">
+      <button type="button" class="topbar-user-menu-item" (click)="changePassword()">
+        <i class="bi bi-shield-lock me-2"></i>
+        <span>Change Password</span>
+      </button>
+      <button type="button" class="topbar-user-menu-item" (click)="logout()">
+        <i class="bi bi-box-arrow-right me-2"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+
+</header>

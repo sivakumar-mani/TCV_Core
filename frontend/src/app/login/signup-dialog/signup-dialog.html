@@ -1,0 +1,162 @@
+
+
+<div #signupModal class="modal fade" id="supplierModal" data-bs-backdrop="static">
+
+  <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered ">
+    <div class="modal-content custom-modal">
+      <!-- Header -->
+      <div class="modal-header-custom">
+        <div class="modal-title-group">
+          <div class="modal-icon"><i class="bi bi-grid-3x3-gap-fill"></i></div>
+          <div>
+            <h5 class="modal-title-text" id="modalTitle">Supplier User Creation</h5>
+          </div>
+        </div>
+        <button class="btn-close-custom" data-bs-dismiss="modal" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <div class="modal-body-custom accord-forms" id="modalBody">
+
+        <div class="form-card">
+
+          <!-- CARD HEADER -->
+          <div class="form-card-header" (click)="expanded = !expanded">
+
+            <div class="header-left">
+              <i class="bi bi-building me-2"></i>
+              <span class="title">Company Details</span>
+            </div>
+
+            <div class="header-right">
+
+              <button class="icon-btn expand-btn">
+                <i class="bi" [ngClass]="expanded ? 'bi bi-dash' : 'bi-plus'"></i>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- CARD BODY -->
+          <div class="form-card-body" *ngIf="expanded">
+            <div class="grid-5col">
+
+              <app-select-component [label]="'Supplier Classification'" [options]="companyOptions"
+                [control]="supplierForm.controls['supplier_classification']" [required]="true">
+              </app-select-component>
+
+              <app-input-component [label]="'Company Name'" [type]="'text'"></app-input-component>
+              <app-input-component [label]="'Comp Name in Native Lang'" [type]="'text'"></app-input-component>
+              <app-input-component [label]="'Trade License'" [type]="'text'"></app-input-component>
+              <app-input-component [label]="'Tax Registration #'" [type]="'text'"></app-input-component>
+            </div>
+
+          </div>
+
+        </div>
+        <div class="grid-10-3col">
+          <div class="form-card">
+
+            <!-- CARD HEADER -->
+            <div class="form-card-header" (click)="expanded = !expanded">
+
+              <div class="header-left">
+                <i class="bi bi-person-lines-fill me-2"></i>
+                <span class="title">Primary Contact Details</span>
+              </div>
+
+              <div class="header-right">
+
+                <button class="icon-btn expand-btn">
+                  <i class="bi" [ngClass]="expanded ? 'bi bi-dash' : 'bi-plus'"></i>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- CARD BODY -->
+            <div class="form-card-body" *ngIf="expanded">
+              <div class="grid-4col">
+                <app-select-component [label]="'Salutation '" [options]="companyOptions"
+                  [control]="supplierForm.controls['salutation']" [required]="true">
+                </app-select-component>
+                <app-input-component [label]="'First Name'" [type]="'text'" [required]="true"></app-input-component>
+                <app-input-component [label]="'Middle Name'" [type]="'text'"></app-input-component>
+                <app-input-component [label]="'Last Name'" [type]="'text'" [required]="true"></app-input-component>
+              </div>
+              <div class="grid-10-5col">
+                <app-input-component [label]="'Designation'" [type]="'text'" [required]="true"></app-input-component>
+                <app-select-component [label]="'Role '" [options]="companyOptions"
+                  [control]="supplierForm.controls['salutation']" [required]="true">
+                </app-select-component>
+                <app-input-component [label]="'Email ID'" [type]="'email'" [required]="true"></app-input-component>
+              </div>
+              <div class="grid-2col">
+                <div class="grid-2col gap-0">
+                  <app-select-component [label]="'Country Code '" [options]="companyOptions"
+                    [control]="supplierForm.controls['salutation']" [required]="true">
+                  </app-select-component>
+                  <app-input-component [label]="'Mobile #'" [type]="'number'" [required]="true"></app-input-component>
+                </div>
+                <div class="grid-2col gap-0">
+                  <app-select-component [label]="'Country Code '" [options]="companyOptions"
+                    [control]="supplierForm.controls['salutation']">
+                  </app-select-component>
+                  <app-input-component [label]="'Landline #'" [type]="'number'"></app-input-component>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="form-card">
+
+            <!-- CARD HEADER -->
+            <div class="form-card-header" (click)="expanded = !expanded">
+
+              <div class="header-left">
+                <i class="bi bi-key me-2"></i>
+                <span class="title">Supplier Login Credentials</span>
+              </div>
+
+              <div class="header-right">
+
+                <button class="icon-btn expand-btn">
+                  <i class="bi" [ngClass]="expanded ? 'bi bi-dash' : 'bi-plus'"></i>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- CARD BODY -->
+            <div class="form-card-body credential-box" *ngIf="expanded">
+              <div class="grid-1col">
+                <app-input-component [label]="'User Name'" [type]="'text'" [icon]="'bi bi-person'" [required]="true">
+                </app-input-component>
+
+                <app-input-component [label]="'Password'" [type]="'password'" [icon]="'bi bi-lock'" [required]="true">
+                </app-input-component>
+
+                <app-input-component [label]="'Confirm Password'" [type]="'password'" [icon]="'bi bi-shield-lock'"
+                  [required]="true">
+                </app-input-component>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer-custom">
+        <button class="btn-cancel" data-bs-dismiss="modal"><i class="bi bi-x-circle me-2"></i>Cancel</button>
+        <button class="common-blue-btn" onclick="submitForm()">
+          <i class="bi bi-check2-circle"></i>
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

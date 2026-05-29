@@ -1,0 +1,756 @@
+@use '@angular/material' as mat;
+// @use './responsive.scss' as *;
+
+:root {
+  --bs-transparent: none;
+  --bs-blue: #007bff;
+  --bs-indigo: #6610f2;
+  --bs-purple: #6f42c1;
+  --bs-pink: #e83e8c;
+  --bs-red: #ff7851;
+  --bs-orange: #fd7e14;
+  --bs-yellow: #ffc107;
+  --bs-green: #69aa8a;
+  --bs-teal: #20c997;
+  --bs-cyan: #17a2b8;
+  --bs-black: #000;
+  --bs-white: #fff;
+  --bs-gray: #888;
+  --bs-gray-dark: #343a40;
+  --bs-gray-100: #f8f9fa;
+  --bs-gray-200: #f7f7f9;
+  --bs-gray-300: #eceeef;
+  --bs-gray-400: #ced4da;
+  --bs-gray-500: #aaa;
+  --bs-gray-600: #888;
+  --bs-gray-700: #5a5a5a;
+  --bs-gray-800: #343a40;
+  --bs-gray-900: #212529;
+  --bs-primary: #69aa8a;
+  --bs-secondary: #6c757d;
+  --bs-success: #69aa8a;
+  --bs-info: #17a2b8;
+  --bs-warning: #ffc107;
+  --bs-danger: #ff7851;
+  --bs-light: #f8f9fa;
+  --bs-dark: #343a40;
+  --bs-primary-rgb: to-rgb(#69aa8a);
+  --bs-secondary-rgb: to-rgb(#6c757d);
+  --bs-success-rgb: to-rgb(#69aa8a);
+  --bs-info-rgb: to-rgb(#17a2b8);
+  --bs-warning-rgb: to-rgb(#ffc107);
+  --bs-danger-rgb: to-rgb(#ff7851);
+  --bs-light-rgb: to-rgb(#f8f9fa);
+  --bs-dark-rgb: to-rgb(#343a40);
+  --bs-brand-rgb: to-rgb(#69aa8a);
+  --bs-blue-rgb: to-rgb(#007bff);
+  --bs-indigo-rgb: to-rgb(#6610f2);
+  --bs-purple-rgb: to-rgb(#6f42c1);
+  --bs-pink-rgb: to-rgb(#e83e8c);
+  --bs-red-rgb: to-rgb(#ff7851);
+  --bs-orange-rgb: to-rgb(#fd7e14);
+  --bs-yellow-rgb: to-rgb(#ffc107);
+  --bs-green-rgb: to-rgb(#69aa8a);
+  --bs-teal-rgb: to-rgb(#20c997);
+  --bs-cyan-rgb: to-rgb(#17a2b8);
+
+  --btn-primary-blue: #1689fe;
+  --ag-grid-header: #c5ebfe;
+}
+
+html {
+  @include mat.theme((color: (primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    ));
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+}
+
+/* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: 14px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+//  ----------------- common styles ------------------------
+.mid-spacer {
+  flex-grow: 1;
+}
+
+.footer,
+.mat-toolbar-single-row {
+  z-index: 100;
+}
+
+//  ----------------- Layout ------------------------
+.mat-drawer-container {
+  height: calc(100% - 90px);
+}
+
+.mat-drawer-content {
+  padding: 15px;
+}
+
+// --------------- Header -------------
+.header {
+  .mat-toolbar{
+    background-color: var(--bs-red-rgb) !important;
+    box-shadow: 0 5px 5px -5px #000000 !important;
+  }    
+}
+
+// --------------- Sidebar and  menu -------------
+
+.mat-drawer-side {
+  background: var(--bs-primary);
+  width: 230px;
+  border-radius: 0 !important;
+  // padding: 5px 0px 10px;
+}
+.mdc-list {
+  padding: 0 !important;
+
+  .mdc-list-item {
+    padding: 0 10px !important;
+    height: 40px !important;
+
+    &__primary-text {
+      display: flex !important;
+      align-items: center !important;
+      font-size: .9rem !important;
+
+      .mat-icon {
+        padding-right: 6px;
+      }
+
+    }
+
+    &:hover {
+      border-radius: 0 !important;
+    }
+  }
+}
+
+.mat-expansion-panel {
+  background-color: var(--bs-transparent) !important;
+  box-shadow: var(--bs-transparent) !important;
+
+  &-header {
+    padding: 0 10px !important;
+    height: 2.5rem !important;
+
+    &-title {
+      font-size: .8rem;
+
+      span {
+        padding-left: 5px;
+      }
+    }
+  }
+
+  &-body {
+    padding: 0 10px !important;
+  }
+
+  &-spacing {
+    margin: 0 !important;
+  }
+}
+
+
+
+// --------------- login -------------
+.login-page {
+  height: 100vh;
+  width: 100%;
+  background: var(--bs-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  h2 {
+    font-size: 24px;
+  }
+
+  .mat-mdc-raised-button {
+    background: var(--bs-blue) !important;
+    width: 100%;
+    border-radius: 5px;
+    color: var(--bs-white) !important;
+  }
+
+  a {
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  mat-card {
+    min-width: 400px;
+    max-width: 400px;
+    margin: 2em auto;
+    text-align: center;
+    border-radius: 5px !important;
+    background-color: var(--bs-white);
+    box-shadow: 0px 8px 8px var(--bs-dark);
+  }
+
+  .mat-mdc-card-header {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    flex-direction: column;
+
+    h2 {
+      color: var(--bs-blue);
+      font-weight: 500;
+      display: block;
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
+    p {
+      margin-bottom: 20px;
+    }
+  }
+}
+
+// --------------- form fields -------------
+.mat-mdc-form-field {
+
+  .mdc-text-field--outlined {
+    padding: 0 12px !important;
+
+    .mat-mdc-form-field-infix {
+      padding: 12px 0 !important;
+      min-height: 30px !important
+    }
+  }
+
+  .mat-mdc-select {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .mat-mdc-form-field-error-wrapper {
+    padding: 0 4px !important;
+  }
+
+  .form-control {
+    padding: 0 !important;
+  }
+
+  .mat-mdc-form-field-required-marker {
+    color: red !important;
+  }
+}
+
+
+
+// --------------- Grid value -------------
+
+.grid-1-col {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr);
+  gap: 10px;
+}
+
+.grid-2-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
+  gap: 10px;
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+  .grid-2-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .grid-2-col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+// ---------snack bar ----
+.black-snackbar {
+  background: #000000;
+  color: white;
+  font-size: 12px;
+}
+
+.green-snackbar {
+  background: green;
+  color: white;
+  font-size: 12px;
+}
+
+
+// --------------- dialog value -------------
+
+.mat-mdc-dialog-container {
+  border-radius: 10px;
+
+  .mat-mdc-dialog-title {
+    display: flex;
+    align-items: center;
+    background: var(--bs-white);
+    height: 40px;
+    line-height: 30px;
+    padding: 20px;
+    font-size: 18px !important;
+    text-shadow: 1px 1px 15px #ffffff;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .mat-mdc-dialog-surface {
+    border-radius: 10px !important;
+  }
+
+  .mat-mdc-dialog-actions {
+    color: var(--bs-white);
+    flex-wrap: nowrap !important;
+    justify-content: space-between;
+    min-height: 20px !important;
+    padding: 20px !important;
+
+    &::after,
+    &::before {
+      display: none !important;
+    }
+  }
+
+}
+
+// --------------- Action area -------------
+
+.action-btn {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+// ---------------button generic style -------------
+
+button {
+  font-size: 1rem;
+  // min-width: 150px !important;
+  padding: 8px 16px;
+  border-radius: 5px !important;
+  border: 0;
+  box-shadow: none;
+  outline: 0;
+  color: var(--bs-white);
+}
+
+.btn-no {
+  background-color: var(--bs-gray);
+}
+
+.btn-yes {
+  background-color: var(--btn-primary-blue);
+}
+
+.btn-disabled {
+  opacity: .5;
+}
+
+// password show and hide style for eye icon
+.showHideIcon {
+  position: absolute;
+  right: 0px;
+  top: 10px;
+  color: var(--bs-gray);
+  background: transparent;
+  border: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: 14px;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+//  ----------------- common styles ------------------------
+.mid-spacer {
+  flex-grow: 1;
+}
+
+.footer,
+.mat-toolbar-single-row {
+  z-index: 100;
+}
+
+//  ----------------- Layout ------------------------
+.mat-drawer-container {
+  height: calc(100% - 90px);
+}
+
+.mat-drawer-content {
+  padding: 15px;
+}
+
+// --------------- Sidebar and  menu -------------
+
+.mat-drawer-side {
+  background: var(--bs-primary);
+  width: 230px;
+  border-radius: 0 !important;
+  // padding: 5px 0px 10px;
+}
+
+.mdc-list {
+  padding: 0 !important;
+
+  .mdc-list-item {
+    padding: 0 10px !important;
+    height: 40px !important;
+
+    &__primary-text {
+      display: flex !important;
+      align-items: center !important;
+      font-size: .9rem !important;
+
+      .mat-icon {
+        padding-right: 6px;
+      }
+
+    }
+
+    &:hover {
+      border-radius: 0 !important;
+    }
+  }
+}
+
+.mat-expansion-panel {
+  background-color: var(--bs-transparent) !important;
+  box-shadow: var(--bs-transparent) !important;
+
+  &-header {
+    padding: 0 10px !important;
+    height: 2.5rem !important;
+
+    &-title {
+      font-size: .8rem;
+
+      span {
+        padding-left: 5px;
+      }
+    }
+  }
+
+  &-body {
+    padding: 0 10px !important;
+  }
+
+  &-spacing {
+    margin: 0 !important;
+  }
+}
+
+
+
+// --------------- login -------------
+.login-page {
+  height: 100vh;
+  width: 100%;
+  background: var(--bs-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  h2 {
+    font-size: 24px;
+  }
+
+  .mat-mdc-raised-button {
+    background: var(--bs-blue) !important;
+    width: 100%;
+    border-radius: 5px;
+    color: var(--bs-white) !important;
+  }
+
+  a {
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  mat-card {
+    min-width: 400px;
+    max-width: 400px;
+    margin: 2em auto;
+    text-align: center;
+    border-radius: 5px !important;
+    background-color: var(--bs-white);
+    box-shadow: 0px 8px 8px var(--bs-dark);
+  }
+
+  .mat-mdc-card-header {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    flex-direction: column;
+
+    h2 {
+      color: var(--bs-blue);
+      font-weight: 500;
+      display: block;
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
+    p {
+      margin-bottom: 20px;
+    }
+  }
+}
+
+// --------------- form fields -------------
+.mat-mdc-form-field {
+
+  .mdc-text-field--outlined {
+    padding: 0 12px !important;
+
+    .mat-mdc-form-field-infix {
+      padding: 12px 0 !important;
+      min-height: 30px !important
+    }
+  }
+
+  .mat-mdc-form-field-error-wrapper {
+    padding: 0 4px !important;
+  }
+}
+
+
+
+// --------------- Grid value -------------
+
+.grid-1-col {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr);
+  gap: 10px;
+}
+
+.grid-2-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
+  gap: 10px;
+}
+
+
+// --------- snackbar ----
+.black-snackbar {
+  background: #000000;
+  color: white;
+  font-size: 12px;
+}
+
+.green-snackbar {
+  background: green;
+  color: white;
+  font-size: 12px;
+}
+
+
+// --------------- dialog value -------------
+
+.mat-mdc-dialog-container {
+  border-radius: 10px;
+
+  .mat-mdc-dialog-title {
+    display: flex;
+    align-items: center;
+    background: var(--bs-white);
+    height: 40px;
+    line-height: 30px;
+    padding: 20px;
+    font-size: 18px !important;
+    text-shadow: 1px 1px 15px #ffffff;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .mat-mdc-dialog-surface {
+    border-radius: 10px !important;
+  }
+
+  .mat-mdc-dialog-actions {
+    color: var(--bs-white);
+    flex-wrap: nowrap !important;
+    justify-content: space-between;
+    min-height: 20px !important;
+    padding: 20px !important;
+
+    &::after,
+    &::before {
+      display: none !important;
+    }
+  }
+
+}
+
+// --------------- Action area -------------
+
+.action-footer {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+
+// password show and hide style for eye icon
+.showHideIcon {
+  position: absolute;
+  right: 0px;
+  top: 10px;
+  color: var(--bs-gray);
+  background: transparent;
+  border: 0;
+}
+
+// mat tool bar of breadcrums
+.main-content {
+  .mat-toolbar {
+    height: 40px !important;
+    background: var(--bs-light);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    
+    .breadcrumb {
+      margin-bottom: 0 !important;
+    }
+    .mat-toolbar-single-row {
+    box-shadow: none !important;
+    }
+  }
+
+}
+
+
+// For AG Grie table Field name
+
+.ag-floating-filter-button {
+  display: none !important;
+}
+
+.ag-header-cell {
+  padding: 0 5px !important;
+}
+
+.ag-header-cell {
+  padding: 0 5px !important;
+  background: var(--ag-grid-header) !important;
+}
+
+.ag-row:nth-child(even) {
+  background-color: var(--bs-gray-200) !important;
+}
+
+// content area styles
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  .page-title {
+    font-size: 1.5rem;
+    line-height: 60px;
+    margin-bottom: 0;
+  }
+}
+
+
+// -------------- prime ng tabl -----------
+
+.prime-table {
+  width: 100% ;
+   .p-datatable {
+.p-inputtext, .p-select-label { 
+    font-size: 13px !important;
+     padding: 4px 8px;
+  }
+.p-tag-label{
+  font-size: 12px;
+  font-weight: 400;
+}
+   }
+  .p-datatable-thead > tr > th { 
+    background: var(--ag-grid-header) !important;
+   padding: 8px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .p-datatable-tbody > tr > td {
+     padding: 8px 4px;
+  }
+  .mat-mdc-button {
+    height: 20px !important;
+    }
+}
