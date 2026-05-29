@@ -13,7 +13,6 @@ import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { SupplierServices } from '../../services/supplier-services';
 import { CommonMethods } from '../../shared/common-methods';
 import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-popup';
-import { AddSupplier } from '../add-supplier/add-supplier';
 
 @Component({
   selector: 'app-supplier-list',
@@ -74,42 +73,11 @@ export class SupplierList {
   }
 
   addSupplier() {
-    const dialogRef = this.dialog.open(AddSupplier, {
-      width: '60%',
-      height: '75%',
-      maxHeight: '100vh',
-      maxWidth: '100vw',
-      disableClose: true,
-      position: {
-        top: 'calc(1vw + 20px)'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'success') {
-        this.loadSuppliers();
-      }
-    });
+    this.router.navigateByUrl('/suppliers/add');
   }
 
   editSupplier(row: any) {
-    const dialogRef = this.dialog.open(AddSupplier, {
-      data: row,
-      width: '60%',
-      height: '75%',
-      maxHeight: '100vh',
-      maxWidth: '100vw',
-      disableClose: true,
-      position: {
-        top: 'calc(1vw + 20px)'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'success') {
-        this.loadSuppliers();
-      }
-    });
+    this.router.navigate(['/suppliers/edit', row.supplier_id]);
   }
 
   deleteSupplier(row: any) {

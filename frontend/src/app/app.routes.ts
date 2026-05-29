@@ -66,6 +66,22 @@ export const routes: Routes = [
                 expectedRole:['admin']
             }
         },
+         {
+            path:'suppliers/add',
+            loadComponent: ()=> import('./suppliers/add-supplier/add-supplier').then(n => n.AddSupplier),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'suppliers/edit/:id',
+            loadComponent: ()=> import('./suppliers/add-supplier/add-supplier').then(n => n.AddSupplier),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
         
     ]
     },

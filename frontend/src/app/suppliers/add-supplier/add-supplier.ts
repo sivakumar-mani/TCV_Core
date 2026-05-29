@@ -1,9 +1,11 @@
 import { CommonModule, NgIf } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogActions, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { Router } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { SupplierServices } from '../../services/supplier-services';
 import { CommonMethods } from '../../shared/common-methods';
@@ -16,8 +18,9 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
   imports: [
     CommonModule,
     NgIf,
-    MatDialogModule,
-    MatDialogActions,
+    MatButtonModule,
+    MatIconModule,
+    MatToolbarModule,
     MatFormFieldModule,
     ReactiveFormsModule,
     InputFormField,
@@ -30,6 +33,7 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
 export class AddSupplier {
   supplierForm!: FormGroup;
   isEditMode = false;
+  supplierId!: number;
 
   statusList = [
     { label: 'Active', value: 1 },
@@ -41,13 +45,17 @@ export class AddSupplier {
     private supplierService: SupplierServices,
     private ngxUiLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
-    private dialog: MatDialogRef<AddSupplier>,
     private router: Router,
-    @Inject(MAT_DIALOG_DATA) public dialogData: any
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit() {
     this.supplierFormInitiate();
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.supplierId = Number(id);
+      this.loadSupplierDetails(this.supplierId);
+    }
   }
 
   supplierFormInitiate() {
@@ -64,12 +72,24 @@ export class AddSupplier {
       status: [1]
     });
 
-    if (this.dialogData) {
-      this.isEditMode = true;
-      this.supplierForm.patchValue(this.dialogData);
-      this.supplierForm.get('status')?.setValidators([Validators.required]);
-      this.supplierForm.get('status')?.updateValueAndValidity();
-    }
+  }
+
+  loadSupplierDetails(supplierId: number) {
+    this.isEditMode = true;
+    this.ngxUiLoader.start();
+    this.supplierService.getSupplierById(supplierId).subscribe({
+      next: (response: any) => {
+        this.ngxUiLoader.stop();
+        const supplierData = response?.data ?? response;
+        this.supplierForm.patchValue(supplierData);
+        this.supplierForm.get('status')?.setValidators([Validators.required]);
+        this.supplierForm.get('status')?.updateValueAndValidity();
+      },
+      error: (error: any) => {
+        this.ngxUiLoader.stop();
+        this.commonMethods.handleError(error);
+      }
+    });
   }
 
   addSubmit() {
@@ -80,9 +100,6 @@ export class AddSupplier {
       next: (response: any) => {
         this.ngxUiLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
-        if (response) {
-          this.dialog.close('success');
-        }
         this.router.navigateByUrl('/suppliers');
       },
       error: (error: any) => {
@@ -96,7 +113,7 @@ export class AddSupplier {
     this.ngxUiLoader.start();
     const formData = this.supplierForm.getRawValue();
     const data = {
-      supplier_id: this.dialogData.supplier_id,
+      supplier_id: this.supplierId,
       ...formData
     };
 
@@ -104,9 +121,6 @@ export class AddSupplier {
       next: (response: any) => {
         this.ngxUiLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
-        if (response) {
-          this.dialog.close('success');
-        }
         this.router.navigateByUrl('/suppliers');
       },
       error: (error: any) => {
@@ -114,5 +128,9 @@ export class AddSupplier {
         this.commonMethods.handleError(error);
       }
     });
+  }
+
+  cancel() {
+    this.router.navigateByUrl('/suppliers');
   }
 }
