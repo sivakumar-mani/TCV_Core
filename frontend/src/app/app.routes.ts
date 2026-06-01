@@ -23,7 +23,7 @@ export const routes: Routes = [
             loadComponent: ()=> import('./dashboard/dashboard').then(n => n.Dashboard),
             canActivate:[RouteGuard],
             data:{
-                expectedRole:['admin','user']
+                expectedRole:['ADMIN','MANAGER']
             }
         },
     ]

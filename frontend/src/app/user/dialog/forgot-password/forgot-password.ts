@@ -1,20 +1,15 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup,  ReactiveFormsModule, Validators } from '@angular/forms';
-import { InputFormField } from '../../../shared/input-form-field/input-form-field';
-import {
-  MAT_DIALOG_DATA,
- MatDialogModule, MatDialogRef
-} from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
-import { UserServices } from '../../..//services/user-services';
+import { UserServices } from '../../../services/user-services';
 import { globalConstants } from '../../../services/global-constants';
 import { Snackbar } from '../../../services/snackbar';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { InputComponent } from '../../../reusable-components/input-component/input-component';
+
 @Component({
   selector: 'app-forgot-password',
-  imports: [  MatFormFieldModule, ReactiveFormsModule,InputFormField, MatToolbarModule,
-  MatDialogModule],
+  imports: [ReactiveFormsModule, InputComponent, MatDialogModule],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.scss',
 })

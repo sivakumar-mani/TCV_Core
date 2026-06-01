@@ -172,12 +172,12 @@ delete(userData:any){
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 70, valueGetter: (params: any) => params.node.rowIndex + 1,  },
-    { field: "userName", headerName: 'User Name', maxWidth: 150 },
-    { headerName: 'Full Name', valueGetter: (params) => { return params.data.firstName + ' ' + params.data.lastName }, valueFormatter: this.titleCaseFormatter },
+    { field: "username", headerName: 'User Name', maxWidth: 150 },
+    { headerName: 'Full Name', valueGetter: (params) => { return params.data.first_name + ' ' + params.data.last_name }, valueFormatter: this.titleCaseFormatter },
     { field: "email", headerName: 'Email' },
-    { field: "contactNumber", headerName: 'Contact #', maxWidth: 120, },
+    { field: "contact_number", headerName: 'Contact #', maxWidth: 120, },
     { field: "role", headerName: 'Role', maxWidth: 100, },
-    { field: "Status", headerName: 'Status', maxWidth: 70, },
+    { field: "status", headerName: 'Status', maxWidth: 70, },
     {
   headerName: "Action",
   maxWidth: 120,

@@ -1,0 +1,121 @@
+<div #signupModal class="modal fade" id="signupModal" data-bs-backdrop="static">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+    <div class="modal-content custom-modal">
+      <div class="modal-header-custom">
+        <div class="modal-title-group">
+          <div class="modal-icon"><i class="bi bi-person-plus-fill"></i></div>
+          <div>
+            <h5 class="modal-title-text" id="modalTitle">Signup</h5>
+          </div>
+        </div>
+        <button class="btn-close-custom" type="button" (click)="closeModal()" aria-label="Close">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+
+      <form [formGroup]="signupForm" (ngSubmit)="sigupSubmit()">
+        <div class="modal-body-custom accord-forms" id="modalBody">
+          <div class="form-card">
+            <div class="form-card-header" (click)="expanded = !expanded">
+              <div class="header-left">
+                <i class="bi bi-person-lines-fill me-2"></i>
+                <span class="title">User Details</span>
+              </div>
+
+              <div class="header-right">
+                <button class="icon-btn expand-btn" type="button">
+                  <i class="bi" [ngClass]="expanded ? 'bi-dash' : 'bi-plus'"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-card-body" *ngIf="expanded">
+              <div class="grid-2col">
+                <app-input-component
+                  [label]="'First Name'"
+                  [type]="'text'"
+                  [required]="true"
+                  [control]="signupForm.controls['firstName']"
+                  [formControl]="$any(signupForm.controls['firstName'])">
+                </app-input-component>
+
+                <app-input-component
+                  [label]="'Last Name'"
+                  [type]="'text'"
+                  [required]="true"
+                  [control]="signupForm.controls['lastName']"
+                  [formControl]="$any(signupForm.controls['lastName'])">
+                </app-input-component>
+
+                <app-input-component
+                  [label]="'User Name'"
+                  [type]="'text'"
+                  [icon]="'bi bi-person'"
+                  [required]="true"
+                  [control]="signupForm.controls['userName']"
+                  [formControl]="$any(signupForm.controls['userName'])">
+                </app-input-component>
+
+                <app-input-component
+                  [label]="'Password'"
+                  [type]="'password'"
+                  [icon]="'bi bi-lock'"
+                  [required]="true"
+                  [control]="signupForm.controls['password']"
+                  [formControl]="$any(signupForm.controls['password'])">
+                </app-input-component>
+
+                <app-input-component
+                  [label]="'Email'"
+                  [type]="'email'"
+                  [required]="true"
+                  [control]="signupForm.controls['email']"
+                  [formControl]="$any(signupForm.controls['email'])">
+                </app-input-component>
+
+                <app-input-component
+                  [label]="'Contact #'"
+                  [type]="'text'"
+                  [required]="true"
+                  [control]="signupForm.controls['contactNumber']"
+                  [formControl]="$any(signupForm.controls['contactNumber'])">
+                </app-input-component>
+
+                <app-select-component
+                  [label]="'Role'"
+                  [options]="roleList"
+                  [required]="true"
+                  [control]="signupForm.controls['role']"
+                  [formControl]="$any(signupForm.controls['role'])">
+                </app-select-component>
+
+                <app-select-component
+                  [label]="'Status'"
+                  [options]="statusList"
+                  [required]="true"
+                  [control]="signupForm.controls['Status']"
+                  [formControl]="$any(signupForm.controls['Status'])">
+                </app-select-component>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="responseMessage">{{ responseMessage }}</div>
+        </div>
+
+        <div class="modal-footer-custom">
+          <button class="btn-cancel" type="button" (click)="closeModal()">
+            <i class="bi bi-x-circle me-2"></i>Cancel
+          </button>
+          <button
+            type="submit"
+            [class]="signupForm.valid ? 'common-blue-btn' : 'btn-no btn-disabled'"
+            [disabled]="!signupForm.valid">
+            <i class="bi bi-check2-circle"></i>
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,75 @@
+:host {
+  display: block;
+}
+
+.floating-field {
+  position: relative;
+}
+
+.custom-control {
+  height: 36px;
+  min-height: 36px;
+  padding: 2px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  box-shadow: none !important;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.input-icon ~ label {
+  left: 38px;
+}
+
+.custom-control.has-icon {
+  padding-left: 42px;
+}
+
+.custom-control.has-password-toggle {
+  padding-right: 44px;
+}
+
+.custom-control:focus {
+  border-color: #0d6efd;
+}
+
+.floating-field label {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 14px;
+  background: #fff;
+  padding: 0 4px;
+  color: #6c757d;
+  transition: 0.2s;
+  pointer-events: none;
+}
+
+.custom-control:focus ~ label,
+.custom-control:not(:placeholder-shown) ~ label {
+  top: -8px;
+  left: 14px;
+  font-size: 12px;
+  color: #0d6efd;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  padding: 0;
+  cursor: pointer;
+}

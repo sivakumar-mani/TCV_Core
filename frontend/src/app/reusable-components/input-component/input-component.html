@@ -1,10 +1,13 @@
 <!-- form-input.component.html -->
 
+<div class="static-height">
 <div class="floating-field">
 
   <input
     [type]="inputType"
     class="form-control custom-control"
+    [class.has-icon]="icon"
+    [class.has-password-toggle]="type === 'password'"
     [placeholder]="placeholder"
     [value]="value"
     [disabled]="disabled"
@@ -36,3 +39,4 @@
   [control]="control"
   [label]="label">
 </app-error>
+</div>

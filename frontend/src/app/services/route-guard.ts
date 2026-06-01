@@ -15,8 +15,7 @@ export class RouteGuard {
   ){}
 
   canActivate(route:ActivatedRouteSnapshot):boolean{
-    let expectedRoleArray = route.data;
-    expectedRoleArray = expectedRoleArray['expectedRole'];
+    const expectedRoleArray = route.data['expectedRole'] || [];
 
     const token:any  = localStorage.getItem('token');
     var tokenPayload :any
@@ -24,26 +23,27 @@ export class RouteGuard {
         tokenPayload = jwtDecode(token);
     } catch (error) {
         localStorage.clear();
-        this.router.navigate(['/']);
+        this.router.navigate(['/login']);
+        return false;
     }
-    let checkRole = false;
 
-    for (let i =0;  i< expectedRoleArray['length']; i++){
-      if(expectedRoleArray[i]== tokenPayload.role){
-        checkRole = true
-      }
+    const userRole = tokenPayload?.role?.toString().toUpperCase();
+    const checkRole = expectedRoleArray
+      .map((role: string) => role.toUpperCase())
+      .includes(userRole);
+
+    if (this.authService.isAuthendicated() && checkRole) {
+      return true;
     }
-    if(tokenPayload.role == 'admin' || tokenPayload.role == 'user'){
-      if(this.authService.isAuthendicated() && checkRole){
-        return true;
-      }
+
+    if (tokenPayload?.role) {
       this.snackbarService.openSnackbar(globalConstants.unauthorized, globalConstants.errorRegex);
-      this.router.navigate(['/dashboard']);
-      return false;
-    }else {
-      this.router.navigate(['/']);
-      localStorage.clear();
+      this.router.navigate(['/login']);
       return false;
     }
+
+    this.router.navigate(['/login']);
+    localStorage.clear();
+    return false;
   }
 }

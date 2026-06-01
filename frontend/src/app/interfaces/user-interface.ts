@@ -13,17 +13,18 @@ export  interface changePasswordData{
     oldPassword:string
 }
 export  interface deleteUserData{
-    userId: number
+    user_id: number
 }
 export interface signupInterface {
-  userName: string;
+  user_id?: number;
+  username: string;
   password: string;
   email: string;
-  contactNumber: string;
-  firstName: string;
-  lastName: string;
-  dateRegistered: string;
-  lastLogin: string;
+  contact_number: string;
+  first_name: string;
+  last_name: string;
+  date_registered?: string | null;
+  last_login?: string | null;
   role: string;
-  Status: string;
+  status: number;
 }

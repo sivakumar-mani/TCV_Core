@@ -30,9 +30,11 @@ export class Signup {
   ) { }
 
   roleList = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'user', label: 'User' },
-    { value: 'staff', label: 'Staff' }
+    { value: 'ADMIN', label: 'Admin' },
+    { value: 'MANAGER', label: 'Manager' },
+    { value: 'EMPLOYEE', label: 'Employee' },
+    { value: 'SALES', label: 'Sales' },
+    { value: 'SERVICE', label: 'Service' }
   ];
 
   ngOnInit() {
@@ -44,10 +46,19 @@ export class Signup {
       email: ['', [Validators.required, Validators.pattern(globalConstants.emailRegex)]],
       contactNumber: ['', Validators.required],
       role: ['', Validators.required],
-      Status: ['', Validators.required],
+      Status: [1, Validators.required],
     });
     if (this.data) {
-      this.signupForm.patchValue(this.data);
+      this.signupForm.patchValue({
+        firstName: this.data.first_name ?? this.data.firstName,
+        lastName: this.data.last_name ?? this.data.lastName,
+        userName: this.data.username ?? this.data.userName,
+        password: this.data.password,
+        email: this.data.email,
+        contactNumber: this.data.contact_number ?? this.data.contactNumber,
+        role: this.data.role,
+        Status: this.data.status ?? this.data.Status
+      });
     }
   }
 
@@ -58,18 +69,15 @@ export class Signup {
     this.ngxLoader.start();
     var formData = this.signupForm.value,
       data = {
-        userName: formData.userName,
+        username: formData.userName,
         password: formData.password,
         email: formData.email,
-        contactNumber: formData.contactNumber,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        // dateRegistered: this.registeredDate.toString(),
-        // lastLogin: this.loginDate.toString(),
-        dateRegistered: "2026-10-12",
-        lastLogin: "2026-10-12 10:00:00",
+        contact_number: formData.contactNumber,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        last_login: null,
         role: formData.role,
-        Status: formData.Status
+        status: Number(formData.Status)
       }
     this.userService.signup(data).subscribe({
       next: (response: any) => {
@@ -99,19 +107,16 @@ export class Signup {
     this.ngxLoader.start();
     var formData = this.signupForm.value,
       data = {
-        userId: this.data.userId,
-        userName: formData.userName,
+        user_id: this.data.user_id ?? this.data.userId,
+        username: formData.userName,
         password: formData.password,
         email: formData.email,
-        contactNumber: formData.contactNumber,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        // dateRegistered: this.registeredDate.toString(),
-        // lastLogin: this.loginDate.toString(),
-        dateRegistered: "2026-10-12",
-        lastLogin: "2026-10-12 10:00:00",
+        contact_number: formData.contactNumber,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        last_login: this.data.last_login ?? this.data.lastLogin ?? null,
         role: formData.role,
-        Status: formData.Status
+        status: Number(formData.Status)
       }
 
     this.userService.userEdit(data).subscribe({

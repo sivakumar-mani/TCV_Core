@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { Router } from '@angular/router';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
-import { SignupDialog } from './signup-dialog/signup-dialog';
+import { SignupDialog } from '../user/dialog/signup-dialog/signup-dialog';
 import { InputComponent } from '../reusable-components/input-component/input-component';
 import { ForgotPassword } from '../user/dialog/forgot-password/forgot-password';
 import { UserServices } from '../services/user-services';
@@ -19,6 +19,7 @@ import { globalConstants } from '../services/global-constants';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
+  private readonly rememberedUserNameKey = 'rememberedUserName';
   remember = false;
   loginForm!: FormGroup;
   responseMessage = '';
@@ -39,6 +40,7 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.initLoginForm();
+    this.loadRememberedUser();
   }
 
   initLoginForm(): void {
@@ -46,6 +48,26 @@ export class LoginComponent implements OnInit {
       userName: [null, Validators.required],
       password: ['', Validators.required]
     });
+  }
+
+  private loadRememberedUser(): void {
+    const rememberedUserName = localStorage.getItem(this.rememberedUserNameKey);
+    console.log("test",rememberedUserName );
+    if (rememberedUserName) {
+      this.remember = true;
+      this.loginForm.patchValue({
+        userName: rememberedUserName
+      });
+    }
+  }
+
+  private updateRememberedUser(userName: string): void {
+    if (this.remember) {
+      localStorage.setItem(this.rememberedUserNameKey, userName);
+      return;
+    }
+
+    localStorage.removeItem(this.rememberedUserNameKey);
   }
 
   openSignupModal(): void {
@@ -72,6 +94,7 @@ export class LoginComponent implements OnInit {
       next: (response: any) => {
         this.ngxLoader.stop();
         localStorage.setItem('token', response.token);
+        this.updateRememberedUser(formData.userName);
         this.router.navigateByUrl('/dashboard');
       },
       error: (error) => {

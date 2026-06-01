@@ -5,14 +5,14 @@
  <div class="profile-card">
         <div class="header">
             <!-- <div class="user-avatar">M</div> -->
-            <div class="full-name">{{data.firstName | titlecase   }} {{data.lastName}}</div>
+            <div class="full-name">{{data.first_name | titlecase   }} {{data.last_name}}</div>
             <span class="role-badge">{{data.role}}</span>
         </div>
 
         <div class="info-grid">
               <div class="info-item">
                 <div class="info-label">User Name</div>
-                <div class="info-value">{{data.userName}}</div>
+                <div class="info-value">{{data.username}}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Email</div>
@@ -20,25 +20,25 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Contact</div>
-                <div class="info-value">{{data.contactNumber}}</div>
+                <div class="info-value">{{data.contact_number}}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Status</div>
                 <div class="info-value">
                     <span class="status-active">
                         <span class="status-dot"></span>
-                       {{data.Status}}
+                       {{data.status ? 'Active' : 'Inactive'}}
                     </span>
                 </div>
             </div>
       
             <div class="info-item">
                 <div class="info-label">Date Registered</div>
-                <div class="info-value">2026-10-11 18:30:00</div>
+                <div class="info-value">{{data.date_registered}}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Last Login</div>
-                <div class="info-value">2026-10-12 04:30:00</div>
+                <div class="info-value">{{data.last_login}}</div>
             </div>
         </div>
     </div>

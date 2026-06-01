@@ -1,39 +1,29 @@
-import { DialogRef } from '@angular/cdk/dialog';
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { MatDialog, MatDialogActions, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { InputFormField } from '../../../shared/input-form-field/input-form-field';
+import { MatDialogActions, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { globalConstants } from '../../../services/global-constants';
-import { NgxUiLoaderModule, NgxUiLoaderService } from 'ngx-ui-loader';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Snackbar } from '../../../services/snackbar';
 import { UserServices } from '../../../services/user-services';
 import { Router } from '@angular/router';
-import { MatIcon } from '@angular/material/icon';
+import { InputComponent } from '../../../reusable-components/input-component/input-component';
 
 @Component({
   selector: 'app-change-password',
-  imports: [ MatDialogActions, MatDialogModule,InputFormField, MatIcon,  ReactiveFormsModule],
+  imports: [ MatDialogActions, MatDialogModule, InputComponent, ReactiveFormsModule],
   templateUrl: './change-password.html',
   styleUrl: './change-password.scss',
 })
 export class ChangePassword {
   changePasswordForm:any = FormGroup;
   responseMessage: any
-  
-  
-  hideConfirmPassword:boolean = true
- hide = signal(true);
-  clickEvent(event: MouseEvent) {
-    this.hide.set(!this.hide());
-    event.stopPropagation();
-  }
+
   constructor(private dialogConfig: MatDialogRef<ChangePassword>,
     private fb : FormBuilder,
     private ngxLoader: NgxUiLoaderService, 
     private snackbarService: Snackbar,
     private userService: UserServices, 
     private router : Router,
-    private dialog : MatDialog,
   ){}
 
   ngOnInit(){
@@ -46,17 +36,19 @@ export class ChangePassword {
       
     })
   }
-    passwordMatchValidator(control: AbstractControl): void {
+    passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
   const newPassword = control.get('newPassword');
   const confirmPassword = control.get('confirmPassword');
 
-  if (!newPassword || !confirmPassword) return;
+  if (!newPassword || !confirmPassword) return null;
 
   if (newPassword.value !== confirmPassword.value) {
     confirmPassword.setErrors({ mismatch: true });
   } else {
     confirmPassword.setErrors(null);
   }
+
+  return null;
 }
 changePassword(){
   this.ngxLoader.start()

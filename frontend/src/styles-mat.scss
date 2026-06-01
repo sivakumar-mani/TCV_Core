@@ -308,18 +308,7 @@ body {
   }
 }
 
-// ---------snack bar ----
-.black-snackbar {
-  background: #000000;
-  color: white;
-  font-size: 12px;
-}
 
-.green-snackbar {
-  background: green;
-  color: white;
-  font-size: 12px;
-}
 
 
 // --------------- dialog value -------------
@@ -361,52 +350,7 @@ body {
 
 }
 
-// --------------- Action area -------------
 
-.action-btn {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
-  flex-grow: 1;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-}
-
-// ---------------button generic style -------------
-
-button {
-  font-size: 1rem;
-  // min-width: 150px !important;
-  padding: 8px 16px;
-  border-radius: 5px !important;
-  border: 0;
-  box-shadow: none;
-  outline: 0;
-  color: var(--bs-white);
-}
-
-.btn-no {
-  background-color: var(--bs-gray);
-}
-
-.btn-yes {
-  background-color: var(--btn-primary-blue);
-}
-
-.btn-disabled {
-  opacity: .5;
-}
-
-// password show and hide style for eye icon
-.showHideIcon {
-  position: absolute;
-  right: 0px;
-  top: 10px;
-  color: var(--bs-gray);
-  background: transparent;
-  border: 0;
-}
 
 html,
 body {
@@ -693,64 +637,3 @@ body {
 }
 
 
-// For AG Grie table Field name
-
-.ag-floating-filter-button {
-  display: none !important;
-}
-
-.ag-header-cell {
-  padding: 0 5px !important;
-}
-
-.ag-header-cell {
-  padding: 0 5px !important;
-  background: var(--ag-grid-header) !important;
-}
-
-.ag-row:nth-child(even) {
-  background-color: var(--bs-gray-200) !important;
-}
-
-// content area styles
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-
-  .page-title {
-    font-size: 1.5rem;
-    line-height: 60px;
-    margin-bottom: 0;
-  }
-}
-
-
-// -------------- prime ng tabl -----------
-
-.prime-table {
-  width: 100% ;
-   .p-datatable {
-.p-inputtext, .p-select-label { 
-    font-size: 13px !important;
-     padding: 4px 8px;
-  }
-.p-tag-label{
-  font-size: 12px;
-  font-weight: 400;
-}
-   }
-  .p-datatable-thead > tr > th { 
-    background: var(--ag-grid-header) !important;
-   padding: 8px;
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .p-datatable-tbody > tr > td {
-     padding: 8px 4px;
-  }
-  .mat-mdc-button {
-    height: 20px !important;
-    }
-}
