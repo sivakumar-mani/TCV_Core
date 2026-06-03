@@ -12,7 +12,7 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent {
-activeLabel = 'Home';
+activeLabel = 'Dashboard';
 
 openMenus: string[] = [];
 
@@ -22,116 +22,80 @@ constructor(
 
 navSections: NavItem[] = [
   {
-    label: 'Home',
-    icon: 'bi-house-fill',
-    route: '/home'
-  },
-  {
     label: 'Dashboard',
-    icon: 'bi-grid-1x2-fill',
+    icon: 'bi-house-fill',
     route: '/dashboard'
   },
 
-  // =====================================================
-  // Supplier Management
-  // =====================================================
-
   {
-    label: 'Supplier Management',
+    label: 'Administration',
     icon: 'bi-people-fill',
     children: [
       {
-        label: 'Supplier Dashboard',
-        icon: 'bi-speedometer2',
-        route: '/supplierDashboard'
+        label: 'Users',
+        icon: 'bi-list-ul',
+        route: '/users'
+      }
+    ]
+  },
+
+  {
+    label: 'Inventory',
+    icon: 'bi-box-seam-fill',
+    children: [
+      {
+        label: 'Brands',
+        icon: 'bi-tags-fill',
+        route: '/brands'
       },
       {
-        label: 'Supplier List',
-        icon: 'bi-list-ul',
-        route: '/listSupplier'
+        label: 'Categories',
+        icon: 'bi-diagram-3-fill',
+        route: '/categoriesLists'
+      },
+      {
+        label: 'Products',
+        icon: 'bi-box-fill',
+        route: '/productList'
+      }
+    ]
+  },
+
+  {
+    label: 'Purchase',
+    icon: 'bi-cart-check-fill',
+    children: [
+      {
+        label: 'Suppliers',
+        icon: 'bi-building-fill',
+        route: '/suppliers'
       },
       {
         label: 'New Supplier',
         icon: 'bi-person-plus-fill',
-        route: '/newSupplier'
+        route: '/suppliers/add'
       }
     ]
   },
 
-  // =====================================================
-  // Employee Management
-  // =====================================================
-
   {
-    label: 'Employee Management',
-    icon: 'bi-person-workspace',
+    label: 'Workflow',
+    icon: 'bi-check2-square',
     children: [
       {
-        label: 'Employee Dashboard',
-        icon: 'bi-speedometer2',
-        route: '/employeeDashboard'
+        label: 'Approvals',
+        icon: 'bi-patch-check-fill',
+        route: '/dashboard'
       },
       {
-        label: 'Employee List',
-        icon: 'bi-list-ul',
-        route: '/listEmployee'
+        label: 'Material Issue',
+        icon: 'bi-box-arrow-up',
+        route: '/dashboard'
       },
       {
-        label: 'New Employee',
-        icon: 'bi-person-plus-fill',
-        route: '/newEmployee'
-      }
-    ]
-  },
-
-  // =====================================================
-  // Upload Center
-  // =====================================================
-
-  {
-    label: 'Upload Center',
-    icon: 'bi-cloud-upload-fill',
-    children: [
-      {
-        label: 'Documents',
-        icon: 'bi-file-earmark-text',
-        route: '/documents'
-      },
-      {
-        label: 'Images',
-        icon: 'bi-image-fill',
-        route: '/images'
-      },
-      {
-        label: 'Bulk Upload',
-        icon: 'bi-upload',
-        route: '/bulkUpload'
-      }
-    ]
-  },
-
-  // =====================================================
-  // Contract Management
-  // =====================================================
-
-  {
-    label: 'Contract Management',
-    icon: 'bi-file-earmark-lock-fill',
-    children: [
-      {
-        label: 'Contract Dashboard',
-        icon: 'bi-speedometer2',
-        route: '/contractDashboard'
-      },
-      {
-        label: 'Contract List',
-        icon: 'bi-file-earmark-text-fill',
-        route: '/contractList'
-      },
-      {
-        label: 'New Contract',
-        icon: 'bi-file-earmark-plus-fill',
-        route: '/newContract'
+        label: 'Material Return',
+        icon: 'bi-box-arrow-in-down',
+        route: '/dashboard'
       }
     ]
   }

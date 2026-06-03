@@ -5,6 +5,9 @@ const brandRoute = require('./routes/brandRouter')
 const categoryRoute = require('./routes/categoryRouter');
 const productRoute = require('./routes/productRouter')
 const supplierRoute = require('./routes/supplierRouter')
+const approvalRoute = require('./routes/approvalRouter')
+const purchaseRoute = require('./routes/purchaseRouter')
+const materialRoute = require('./routes/materialRouter')
 const app = express()
 
 app.use(cors());
@@ -16,4 +19,7 @@ app.use('/api/brand', brandRoute);
 app.use('/api/category', categoryRoute);
 app.use('/api/product', productRoute);
 app.use('/api/supplier', supplierRoute);
+app.use('/api/approval', approvalRoute);
+app.use('/api/purchase', purchaseRoute);
+app.use('/api/material', materialRoute);
 module.exports = app;
