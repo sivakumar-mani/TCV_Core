@@ -1,0 +1,72 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Purchase</li>
+      <li class="breadcrumb-item active" aria-current="page">Purchase List</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">Purchase List</h1>
+    <button matButton="filled" (click)="addPurchase()" class="btn-yes">Add Purchase</button>
+  </div>
+
+  <div class="ag-grid-wrapper">
+    <div class="mat-elevation-z8 module-table">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Search purchases">
+      </mat-form-field>
+
+      <table mat-table [dataSource]="dataSource">
+        <ng-container matColumnDef="serial">
+          <th mat-header-cell *matHeaderCellDef>Serial</th>
+          <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+        <ng-container matColumnDef="purchase_no">
+          <th mat-header-cell *matHeaderCellDef>Purchase No</th>
+          <td mat-cell *matCellDef="let element">{{ element.purchase_no }}</td>
+        </ng-container>
+        <ng-container matColumnDef="supplier_name">
+          <th mat-header-cell *matHeaderCellDef>Supplier</th>
+          <td mat-cell *matCellDef="let element">{{ element.supplier_name }}</td>
+        </ng-container>
+        <ng-container matColumnDef="invoice_no">
+          <th mat-header-cell *matHeaderCellDef>Invoice No</th>
+          <td mat-cell *matCellDef="let element">{{ element.invoice_no }}</td>
+        </ng-container>
+        <ng-container matColumnDef="invoice_date">
+          <th mat-header-cell *matHeaderCellDef>Invoice Date</th>
+          <td mat-cell *matCellDef="let element">{{ element.invoice_date }}</td>
+        </ng-container>
+        <ng-container matColumnDef="net_amount">
+          <th mat-header-cell *matHeaderCellDef>Net Amount</th>
+          <td mat-cell *matCellDef="let element">{{ element.net_amount }}</td>
+        </ng-container>
+        <ng-container matColumnDef="purchase_status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let element">{{ element.purchase_status }}</td>
+        </ng-container>
+        <ng-container matColumnDef="payment_status">
+          <th mat-header-cell *matHeaderCellDef>Payment</th>
+          <td mat-cell *matCellDef="let element">{{ element.payment_status }}</td>
+        </ng-container>
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>Action</th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-raised-button class="btn-yes" type="button" (click)="submitForApproval(element)"
+              [disabled]="element.purchase_status !== 'DRAFT'">Submit</button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+  </div>
+</div>

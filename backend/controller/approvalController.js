@@ -5,6 +5,11 @@ const {
     normalizeModule
 } = require('../services/workflowService');
 
+const getProductColumnNames = async () => {
+    const [columns] = await db.query('SHOW COLUMNS FROM products');
+    return columns.map((column) => column.Field);
+};
+
 const getApprovalRequests = async (req, res) => {
     try {
         const status = req.query.status;
@@ -188,10 +193,31 @@ const approveRequest = async (req, res) => {
                  WHERE price_history_id = ?`,
                 [userId, approvalRequest.record_id]
             );
-            await db.query(
-                'UPDATE products SET purchase_price = ?, selling_price = ? WHERE product_id = ?',
-                [price.new_purchase_price, price.approved_selling_price, price.product_id]
-            );
+
+            const productColumns = await getProductColumnNames();
+            const updates = [];
+            const values = [];
+
+            if (productColumns.includes('purchase_price')) {
+                updates.push('purchase_price = ?');
+                values.push(price.new_purchase_price);
+            }
+
+            if (productColumns.includes('selling_price')) {
+                updates.push('selling_price = ?');
+                values.push(price.approved_selling_price);
+            } else if (productColumns.includes('price')) {
+                updates.push('price = ?');
+                values.push(price.approved_selling_price);
+            }
+
+            if (updates.length > 0) {
+                values.push(price.product_id);
+                await db.query(
+                    `UPDATE products SET ${updates.join(', ')} WHERE product_id = ?`,
+                    values
+                );
+            }
         } else {
             await db.query(
                 `UPDATE ${config.table}

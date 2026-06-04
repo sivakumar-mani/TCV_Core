@@ -1,0 +1,48 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Material</li>
+      <li class="breadcrumb-item active" aria-current="page">Return List</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">Material Return List</h1>
+    <button matButton="filled" (click)="addReturn()" class="btn-yes">Add Return</button>
+  </div>
+
+  <div class="ag-grid-wrapper">
+    <div class="mat-elevation-z8 module-table">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Search returns">
+      </mat-form-field>
+
+      <table mat-table [dataSource]="dataSource">
+        <ng-container matColumnDef="serial"><th mat-header-cell *matHeaderCellDef>Serial</th><td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td></ng-container>
+        <ng-container matColumnDef="return_no"><th mat-header-cell *matHeaderCellDef>Return No</th><td mat-cell *matCellDef="let element">{{ element.return_no }}</td></ng-container>
+        <ng-container matColumnDef="return_date"><th mat-header-cell *matHeaderCellDef>Date</th><td mat-cell *matCellDef="let element">{{ element.return_date }}</td></ng-container>
+        <ng-container matColumnDef="work_order_no"><th mat-header-cell *matHeaderCellDef>Work Order</th><td mat-cell *matCellDef="let element">{{ element.work_order_no }}</td></ng-container>
+        <ng-container matColumnDef="returned_by_employee_name"><th mat-header-cell *matHeaderCellDef>Returned By</th><td mat-cell *matCellDef="let element">{{ element.returned_by_employee_name }}</td></ng-container>
+        <ng-container matColumnDef="received_by_name"><th mat-header-cell *matHeaderCellDef>Received By</th><td mat-cell *matCellDef="let element">{{ element.received_by_name }}</td></ng-container>
+        <ng-container matColumnDef="return_status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let element">{{ element.return_status }}</td></ng-container>
+        <ng-container matColumnDef="remarks"><th mat-header-cell *matHeaderCellDef>Remarks</th><td mat-cell *matCellDef="let element">{{ element.remarks }}</td></ng-container>
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>Action</th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-raised-button class="btn-yes" type="button" (click)="markReturned(element)"
+              [disabled]="element.return_status === 'RETURNED' || element.return_status === 'CANCELLED'">Mark Returned</button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+  </div>
+</div>

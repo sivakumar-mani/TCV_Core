@@ -1,0 +1,58 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Material</li>
+      <li class="breadcrumb-item active" aria-current="page">Add Return</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">Add Material Return</h1>
+    <button class="btn-no" mat-raised-button type="button" (click)="cancel()">Cancel</button>
+  </div>
+
+  <form [formGroup]="returnForm">
+    <div class="grid-2-col mt-4">
+      <app-input-form-field [label]="'Return Date'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'date'" [formControl]="$any(returnForm.controls['return_date'])"></app-input-form-field>
+
+      <app-select-form-field [label]="'Work Order'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="workOrders" [formControl]="$any(returnForm.controls['work_order_id'])"></app-select-form-field>
+
+      <app-select-form-field [label]="'Material Issue'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="materialIssues" [formControl]="$any(returnForm.controls['material_issue_id'])"></app-select-form-field>
+
+      <app-select-form-field [label]="'Returned By'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="employees" [formControl]="$any(returnForm.controls['returned_by_employee_id'])"></app-select-form-field>
+
+      <app-select-form-field [label]="'Product'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="products" [formControl]="$any(returnForm.controls['product_id'])"></app-select-form-field>
+
+      <app-input-form-field [label]="'Returned Qty'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'number'" [formControl]="$any(returnForm.controls['returned_qty'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Damaged Qty'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'number'" [formControl]="$any(returnForm.controls['damaged_qty'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Consumed Qty'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'number'" [formControl]="$any(returnForm.controls['consumed_qty'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Unit'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(returnForm.controls['unit'])"></app-input-form-field>
+    </div>
+
+    <div class="grid-1-col mt-2">
+      <app-textarea-form-field [label]="'Remarks'" [classLabel]="'form-label'" [rows]="3"
+        [control]="$any(returnForm.controls['remarks'])"></app-textarea-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-no" mat-raised-button type="button" (click)="cancel()">Cancel</button>
+      <button mat-raised-button type="button" (click)="save()"
+        [class]="returnForm.valid ? 'btn-yes' : 'btn-no btn-disabled'" [disabled]="!returnForm.valid">Save</button>
+    </div>
+  </form>
+</div>

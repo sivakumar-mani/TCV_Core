@@ -279,10 +279,8 @@ CREATE TABLE purchase_master (
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_purchase_supplier
-        FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
-    CONSTRAINT fk_purchase_approval
-        FOREIGN KEY (approval_request_id) REFERENCES approval_requests(approval_request_id)
+    CONSTRAINT fk_purchase_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
+    CONSTRAINT fk_purchase_approval FOREIGN KEY (approval_request_id) REFERENCES approval_requests(approval_request_id)
 );
 
 -- =====================================================
@@ -299,11 +297,8 @@ CREATE TABLE purchase_items (
     tax_percent DECIMAL(5,2) DEFAULT 0,
     tax_amount DECIMAL(12,2) DEFAULT 0,
     amount DECIMAL(12,2) NOT NULL,
-    CONSTRAINT fk_purchase_items_purchase
-        FOREIGN KEY (purchase_id) REFERENCES purchase_master(purchase_id)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_purchase_items_product
-        FOREIGN KEY (product_id) REFERENCES products(product_id)
+    CONSTRAINT fk_purchase_items_purchase FOREIGN KEY (purchase_id) REFERENCES purchase_master(purchase_id) ON DELETE CASCADE,
+    CONSTRAINT fk_purchase_items_product FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
 -- =====================================================

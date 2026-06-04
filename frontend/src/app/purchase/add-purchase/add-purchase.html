@@ -1,0 +1,61 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Purchase</li>
+      <li class="breadcrumb-item active" aria-current="page">Add Purchase</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">Add Purchase</h1>
+    <button class="btn-no" mat-raised-button type="button" (click)="cancel()">Cancel</button>
+  </div>
+
+  <form [formGroup]="purchaseForm">
+    <div class="grid-2-col mt-4">
+      <app-select-form-field [label]="'Supplier'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="suppliers" [formControl]="$any(purchaseForm.controls['supplier_id'])"></app-select-form-field>
+
+      <app-input-form-field [label]="'Invoice No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'text'" [formControl]="$any(purchaseForm.controls['invoice_no'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Invoice Date'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'date'" [formControl]="$any(purchaseForm.controls['invoice_date'])"></app-input-form-field>
+
+      <app-select-form-field [label]="'Payment Status'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="paymentStatusList" [formControl]="$any(purchaseForm.controls['payment_status'])"></app-select-form-field>
+
+      <app-select-form-field [label]="'Product'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="products" [formControl]="$any(purchaseForm.controls['product_id'])"></app-select-form-field>
+
+      <app-input-form-field [label]="'Quantity'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'number'" [formControl]="$any(purchaseForm.controls['qty'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Purchase Price'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'number'" [formControl]="$any(purchaseForm.controls['purchase_price'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Selling Price'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'number'" [formControl]="$any(purchaseForm.controls['selling_price'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Discount Amount'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'number'" [formControl]="$any(purchaseForm.controls['discount_amount'])"></app-input-form-field>
+
+      <app-input-form-field [label]="'Tax Amount'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+        [type]="'number'" [formControl]="$any(purchaseForm.controls['tax_amount'])"></app-input-form-field>
+    </div>
+
+    <div class="grid-1-col mt-2">
+      <app-textarea-form-field [label]="'Remarks'" [classLabel]="'form-label'" [rows]="3"
+        [control]="$any(purchaseForm.controls['remarks'])"></app-textarea-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-no" mat-raised-button type="button" (click)="cancel()">Cancel</button>
+      <button mat-raised-button type="button" (click)="save()"
+        [class]="purchaseForm.valid ? 'btn-yes' : 'btn-no btn-disabled'" [disabled]="!purchaseForm.valid">Save</button>
+    </div>
+  </form>
+</div>

@@ -8,6 +8,8 @@ const supplierRoute = require('./routes/supplierRouter')
 const approvalRoute = require('./routes/approvalRouter')
 const purchaseRoute = require('./routes/purchaseRouter')
 const materialRoute = require('./routes/materialRouter')
+const stockRoute = require('./routes/stockRouter')
+const lookupRoute = require('./routes/lookupRouter')
 const app = express()
 
 app.use(cors());
@@ -22,4 +24,6 @@ app.use('/api/supplier', supplierRoute);
 app.use('/api/approval', approvalRoute);
 app.use('/api/purchase', purchaseRoute);
 app.use('/api/material', materialRoute);
+app.use('/api/stock', stockRoute);
+app.use('/api/lookup', lookupRoute);
 module.exports = app;

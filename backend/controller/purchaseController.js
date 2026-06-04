@@ -4,6 +4,17 @@ const {
     updateStock
 } = require('../services/workflowService');
 
+const getProductColumnInfo = async () => {
+    const [columns] = await db.query('SHOW COLUMNS FROM products');
+    const columnNames = columns.map((column) => column.Field);
+    return {
+        hasProductCode: columnNames.includes('product_code'),
+        hasPurchasePrice: columnNames.includes('purchase_price'),
+        hasSellingPrice: columnNames.includes('selling_price'),
+        hasPrice: columnNames.includes('price')
+    };
+};
+
 const getPurchases = async (req, res) => {
     try {
         const [rows] = await db.query(
@@ -20,8 +31,16 @@ const getPurchases = async (req, res) => {
 
 const getPurchaseItems = async (req, res) => {
     try {
+        const productColumns = await getProductColumnInfo();
+        const productCodeSelect = productColumns.hasProductCode ? 'p.product_code' : 'NULL AS product_code';
+        const sellingPriceSelect = productColumns.hasSellingPrice
+            ? 'p.selling_price'
+            : productColumns.hasPrice
+                ? 'p.price AS selling_price'
+                : '0 AS selling_price';
+
         const [rows] = await db.query(
-            `SELECT pi.*, p.product_name, p.product_code, p.selling_price
+            `SELECT pi.*, p.product_name, ${productCodeSelect}, ${sellingPriceSelect}
              FROM purchase_items pi
              LEFT JOIN products p ON p.product_id = pi.product_id
              WHERE pi.purchase_id = ?
@@ -90,6 +109,13 @@ const addPurchaseItem = async (req, res) => {
 
     try {
         await db.beginTransaction();
+        const productColumns = await getProductColumnInfo();
+        const purchasePriceSelect = productColumns.hasPurchasePrice ? 'purchase_price' : '0 AS purchase_price';
+        const sellingPriceSelect = productColumns.hasSellingPrice
+            ? 'selling_price'
+            : productColumns.hasPrice
+                ? 'price AS selling_price'
+                : '0 AS selling_price';
 
         const [purchases] = await db.query(
             'SELECT purchase_id, purchase_no FROM purchase_master WHERE purchase_id = ? FOR UPDATE',
@@ -102,7 +128,7 @@ const addPurchaseItem = async (req, res) => {
         }
 
         const [products] = await db.query(
-            'SELECT product_id, purchase_price, selling_price FROM products WHERE product_id = ? FOR UPDATE',
+            `SELECT product_id, ${purchasePriceSelect}, ${sellingPriceSelect} FROM products WHERE product_id = ? FOR UPDATE`,
             [product_id]
         );
 

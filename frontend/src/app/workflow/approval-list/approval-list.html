@@ -1,0 +1,81 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Workflow</li>
+      <li class="breadcrumb-item active" aria-current="page">Approvals</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">Approval Requests</h1>
+  </div>
+
+  <div class="ag-grid-wrapper">
+    <div class="mat-elevation-z8 module-table">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Search approvals">
+      </mat-form-field>
+
+      <table mat-table [dataSource]="dataSource">
+        <ng-container matColumnDef="serial">
+          <th mat-header-cell *matHeaderCellDef>Serial</th>
+          <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="request_no">
+          <th mat-header-cell *matHeaderCellDef>Request No</th>
+          <td mat-cell *matCellDef="let element">{{ element.request_no }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="module_name">
+          <th mat-header-cell *matHeaderCellDef>Module</th>
+          <td mat-cell *matCellDef="let element">{{ element.module_name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="record_id">
+          <th mat-header-cell *matHeaderCellDef>Record ID</th>
+          <td mat-cell *matCellDef="let element">{{ element.record_id }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="approval_status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let element">{{ element.approval_status }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="requested_by_name">
+          <th mat-header-cell *matHeaderCellDef>Requested By</th>
+          <td mat-cell *matCellDef="let element">{{ element.requested_by_name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="requested_at">
+          <th mat-header-cell *matHeaderCellDef>Requested At</th>
+          <td mat-cell *matCellDef="let element">{{ element.requested_at }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="remarks">
+          <th mat-header-cell *matHeaderCellDef>Remarks</th>
+          <td mat-cell *matCellDef="let element">{{ element.remarks }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>Action</th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-raised-button class="btn-yes" type="button" (click)="approve(element)"
+              [disabled]="element.approval_status !== 'SUBMITTED'">Approve</button>
+            <button mat-raised-button class="btn-no" type="button" (click)="reject(element)"
+              [disabled]="element.approval_status !== 'SUBMITTED'">Reject</button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+  </div>
+</div>

@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router } from '@angular/router';
@@ -30,6 +30,8 @@ import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-
   styleUrl: './supplier-list.scss',
 })
 export class SupplierList {
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   displayedColumns: string[] = [
     'serial',
     'supplier_name',
@@ -64,6 +66,7 @@ export class SupplierList {
         this.ngxLoader.stop();
         const data = Array.isArray(response) ? response : response.data ?? [];
         this.dataSource = new MatTableDataSource(data);
+        this.dataSource.paginator = this.paginator;
       },
       error: (error: any) => {
         this.ngxLoader.stop();
@@ -97,13 +100,7 @@ export class SupplierList {
       }
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'success') {
-        this.loadSuppliers();
-      }
-    });
-
-    dialogRef.componentInstance.onEmitStatusChange.subscribe(() => {
+    const confirmSub = dialogRef.componentInstance.onEmitStatusChange.subscribe(() => {
       this.ngxLoader.start();
       this.supplierService.deleteSupplier({ supplier_id: row.supplier_id }).subscribe({
         next: (response: any) => {
@@ -112,13 +109,19 @@ export class SupplierList {
           if (response) {
             dialogRef.close('success');
           }
-          this.router.navigateByUrl('/suppliers');
         },
         error: (error: any) => {
           this.ngxLoader.stop();
           this.commonMethods.handleError(error);
         }
       });
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      confirmSub.unsubscribe();
+      if (result === 'success') {
+        this.loadSuppliers();
+      }
     });
   }
 

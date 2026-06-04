@@ -87,6 +87,78 @@ export const routes: Routes = [
                 expectedRole:['ADMIN']
             }
         },
+        {
+            path:'approvals',
+            loadComponent: ()=> import('./workflow/approval-list/approval-list').then(n => n.ApprovalList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'purchases',
+            loadComponent: ()=> import('./purchase/purchase-list/purchase-list').then(n => n.PurchaseList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'purchases/add',
+            loadComponent: ()=> import('./purchase/add-purchase/add-purchase').then(n => n.AddPurchase),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'material-issues',
+            loadComponent: ()=> import('./material/material-issue-list/material-issue-list').then(n => n.MaterialIssueList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'material-issues/add',
+            loadComponent: ()=> import('./material/add-material-issue/add-material-issue').then(n => n.AddMaterialIssue),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'material-returns',
+            loadComponent: ()=> import('./material/material-return-list/material-return-list').then(n => n.MaterialReturnList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'material-returns/add',
+            loadComponent: ()=> import('./material/add-material-return/add-material-return').then(n => n.AddMaterialReturn),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'stock',
+            loadComponent: ()=> import('./stock/stock-list/stock-list').then(n => n.StockList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'stock-ledger',
+            loadComponent: ()=> import('./stock/stock-ledger-list/stock-ledger-list').then(n => n.StockLedgerList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
     ]
             
             

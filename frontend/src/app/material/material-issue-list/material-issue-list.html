@@ -1,0 +1,48 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Material</li>
+      <li class="breadcrumb-item active" aria-current="page">Issue List</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">Material Issue List</h1>
+    <button matButton="filled" (click)="addIssue()" class="btn-yes">Add Issue</button>
+  </div>
+
+  <div class="ag-grid-wrapper">
+    <div class="mat-elevation-z8 module-table">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Search issues">
+      </mat-form-field>
+
+      <table mat-table [dataSource]="dataSource">
+        <ng-container matColumnDef="serial"><th mat-header-cell *matHeaderCellDef>Serial</th><td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td></ng-container>
+        <ng-container matColumnDef="issue_no"><th mat-header-cell *matHeaderCellDef>Issue No</th><td mat-cell *matCellDef="let element">{{ element.issue_no }}</td></ng-container>
+        <ng-container matColumnDef="issue_date"><th mat-header-cell *matHeaderCellDef>Date</th><td mat-cell *matCellDef="let element">{{ element.issue_date }}</td></ng-container>
+        <ng-container matColumnDef="work_order_no"><th mat-header-cell *matHeaderCellDef>Work Order</th><td mat-cell *matCellDef="let element">{{ element.work_order_no }}</td></ng-container>
+        <ng-container matColumnDef="issued_by_name"><th mat-header-cell *matHeaderCellDef>Issued By</th><td mat-cell *matCellDef="let element">{{ element.issued_by_name }}</td></ng-container>
+        <ng-container matColumnDef="received_by_employee_name"><th mat-header-cell *matHeaderCellDef>Received By</th><td mat-cell *matCellDef="let element">{{ element.received_by_employee_name }}</td></ng-container>
+        <ng-container matColumnDef="issue_status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let element">{{ element.issue_status }}</td></ng-container>
+        <ng-container matColumnDef="remarks"><th mat-header-cell *matHeaderCellDef>Remarks</th><td mat-cell *matCellDef="let element">{{ element.remarks }}</td></ng-container>
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef>Action</th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-raised-button class="btn-yes" type="button" (click)="markIssued(element)"
+              [disabled]="element.issue_status === 'ISSUED' || element.issue_status === 'CANCELLED'">Mark Issued</button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+  </div>
+</div>

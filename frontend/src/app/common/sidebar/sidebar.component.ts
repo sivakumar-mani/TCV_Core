@@ -57,6 +57,16 @@ navSections: NavItem[] = [
         label: 'Products',
         icon: 'bi-box-fill',
         route: '/productList'
+      },
+      {
+        label: 'Stock Summary',
+        icon: 'bi-clipboard-data-fill',
+        route: '/stock'
+      },
+      {
+        label: 'Stock Ledger',
+        icon: 'bi-journal-text',
+        route: '/stock-ledger'
       }
     ]
   },
@@ -74,6 +84,16 @@ navSections: NavItem[] = [
         label: 'New Supplier',
         icon: 'bi-person-plus-fill',
         route: '/suppliers/add'
+      },
+      {
+        label: 'Purchase List',
+        icon: 'bi-receipt',
+        route: '/purchases'
+      },
+      {
+        label: 'New Purchase',
+        icon: 'bi-cart-plus-fill',
+        route: '/purchases/add'
       }
     ]
   },
@@ -85,17 +105,27 @@ navSections: NavItem[] = [
       {
         label: 'Approvals',
         icon: 'bi-patch-check-fill',
-        route: '/dashboard'
+        route: '/approvals'
       },
       {
         label: 'Material Issue',
         icon: 'bi-box-arrow-up',
-        route: '/dashboard'
+        route: '/material-issues'
+      },
+      {
+        label: 'New Issue',
+        icon: 'bi-plus-square-fill',
+        route: '/material-issues/add'
       },
       {
         label: 'Material Return',
         icon: 'bi-box-arrow-in-down',
-        route: '/dashboard'
+        route: '/material-returns'
+      },
+      {
+        label: 'New Return',
+        icon: 'bi-plus-square-fill',
+        route: '/material-returns/add'
       }
     ]
   }

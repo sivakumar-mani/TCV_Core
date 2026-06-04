@@ -147,6 +147,23 @@ const deleteSupplier = async (req, res) => {
     }
 };
 
+const getAllSuppliers = async (req, res) => {
+    try {
+        const [rows] = await connection.promise().query(
+            `SELECT supplier_id, supplier_name, contact_person, phone, email, gst_no,
+                    address, city, state, pincode,  status, created_at, updated_at
+             FROM suppliers
+             ORDER BY supplier_id DESC`
+        );
+
+        return res.json({ success: true, data: rows });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
 const getSupplierById = async (req, res) => {
     try {
         const supplier_id = req.params.supplier_id;
@@ -172,4 +189,4 @@ const getSupplierById = async (req, res) => {
     }
 };
 
-module.exports = { addSupplier, updateSupplier, deleteSupplier, getSupplierById };
+module.exports = { addSupplier, updateSupplier, deleteSupplier, getAllSuppliers, getSupplierById };

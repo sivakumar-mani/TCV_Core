@@ -1,0 +1,41 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Inventory</li>
+      <li class="breadcrumb-item active" aria-current="page">Stock Summary</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">Stock Summary</h1>
+  </div>
+
+  <div class="ag-grid-wrapper">
+    <div class="mat-elevation-z8 module-table">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Search stock">
+      </mat-form-field>
+
+      <table mat-table [dataSource]="dataSource">
+        <ng-container matColumnDef="serial"><th mat-header-cell *matHeaderCellDef>Serial</th><td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td></ng-container>
+        <ng-container matColumnDef="product_code"><th mat-header-cell *matHeaderCellDef>Code</th><td mat-cell *matCellDef="let element">{{ element.product_code }}</td></ng-container>
+        <ng-container matColumnDef="product_name"><th mat-header-cell *matHeaderCellDef>Product</th><td mat-cell *matCellDef="let element">{{ element.product_name }}</td></ng-container>
+        <ng-container matColumnDef="unit"><th mat-header-cell *matHeaderCellDef>Unit</th><td mat-cell *matCellDef="let element">{{ element.unit }}</td></ng-container>
+        <ng-container matColumnDef="purchase_price"><th mat-header-cell *matHeaderCellDef>Purchase</th><td mat-cell *matCellDef="let element">{{ element.purchase_price }}</td></ng-container>
+        <ng-container matColumnDef="selling_price"><th mat-header-cell *matHeaderCellDef>Selling</th><td mat-cell *matCellDef="let element">{{ element.selling_price }}</td></ng-container>
+        <ng-container matColumnDef="available_qty"><th mat-header-cell *matHeaderCellDef>Available</th><td mat-cell *matCellDef="let element">{{ element.available_qty }}</td></ng-container>
+        <ng-container matColumnDef="minimum_stock"><th mat-header-cell *matHeaderCellDef>Minimum</th><td mat-cell *matCellDef="let element">{{ element.minimum_stock }}</td></ng-container>
+        <ng-container matColumnDef="last_updated"><th mat-header-cell *matHeaderCellDef>Updated</th><td mat-cell *matCellDef="let element">{{ element.last_updated }}</td></ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+  </div>
+</div>
