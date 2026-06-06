@@ -1,8 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -13,7 +11,7 @@ import { CommonMethods } from '../../shared/common-methods';
 
 @Component({
   selector: 'app-material-return-list',
-  imports: [MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatTableModule, MatToolbarModule],
+  imports: [MatButtonModule, MatIconModule, MatPaginatorModule, MatTableModule, MatToolbarModule],
   templateUrl: './material-return-list.html',
   styleUrl: './material-return-list.scss',
 })
@@ -82,3 +80,4 @@ export class MaterialReturnList {
     this.dataSource.filter = (event.target as HTMLInputElement).value.trim().toLowerCase();
   }
 }
+

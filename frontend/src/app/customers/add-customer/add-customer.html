@@ -1,0 +1,46 @@
+<div class="content-container">
+  <section class="tcv-form-panel">
+    <div class="tcv-panel-titlebar">
+      <div class="tcv-panel-title">
+        <span class="tcv-title-icon"><i class="bi bi-person-lines-fill"></i></span>
+        <span>{{ isEditMode ? 'Edit Customer' : 'Customer Details' }}</span>
+      </div>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancel()">Cancel</button>
+    </div>
+
+    <form [formGroup]="customerForm" class="tcv-form-body">
+      <div class="tcv-form-grid">
+        <app-input-form-field [label]="'Customer Name'" [type]="'text'" [formControl]="$any(customerForm.controls['customer_name'])"></app-input-form-field>
+        <app-input-form-field [label]="'Contact Person'" [type]="'text'" [formControl]="$any(customerForm.controls['contact_person'])"></app-input-form-field>
+        <app-input-form-field [label]="'Phone'" [type]="'text'" [formControl]="$any(customerForm.controls['phone'])"></app-input-form-field>
+        <app-input-form-field [label]="'Alternate Phone'" [type]="'text'" [formControl]="$any(customerForm.controls['alternate_phone'])"></app-input-form-field>
+        <app-input-form-field [label]="'Email'" [type]="'email'" [formControl]="$any(customerForm.controls['email'])"></app-input-form-field>
+        <app-input-form-field [label]="'GST No'" [type]="'text'" [formControl]="$any(customerForm.controls['gst_no'])"></app-input-form-field>
+        <app-select-form-field [label]="'Customer Type'" [options]="customerTypes" [formControl]="$any(customerForm.controls['customer_type'])"></app-select-form-field>
+        <app-select-form-field [label]="'Status'" [options]="statusList" [formControl]="$any(customerForm.controls['status'])"></app-select-form-field>
+      </div>
+
+      <section class="tcv-form-section">
+        <div class="tcv-section-title">
+          <span class="tcv-title-icon"><i class="bi bi-geo-alt-fill"></i></span>
+          <span>Address Details</span>
+        </div>
+        <div class="tcv-form-grid">
+          <app-input-form-field [label]="'City'" [type]="'text'" [formControl]="$any(customerForm.controls['city'])"></app-input-form-field>
+          <app-input-form-field [label]="'State'" [type]="'text'" [formControl]="$any(customerForm.controls['state'])"></app-input-form-field>
+          <app-input-form-field [label]="'Pincode'" [type]="'text'" [formControl]="$any(customerForm.controls['pincode'])"></app-input-form-field>
+          <app-input-form-field [label]="'Credit Limit'" [type]="'number'" [formControl]="$any(customerForm.controls['credit_limit'])"></app-input-form-field>
+          <app-input-form-field [label]="'Opening Balance'" [type]="'number'" [formControl]="$any(customerForm.controls['opening_balance'])"></app-input-form-field>
+        </div>
+        <app-textarea-form-field [label]="'Address'" [rows]="3" [control]="$any(customerForm.controls['address'])"></app-textarea-form-field>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="customerForm.invalid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

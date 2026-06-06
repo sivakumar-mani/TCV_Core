@@ -1,25 +1,12 @@
-<mat-toolbar class="p-0 border-bottom">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
-      <li class="breadcrumb-item active" aria-current="page">Suppliers</li>
-      <li class="breadcrumb-item active" aria-current="page">Supplier List</li>
-    </ol>
-  </nav>
-</mat-toolbar>
-
 <div class="content-container">
-  <div class="page-header">
+  <div class="screen-toolbar">
     <h1 class="page-title">Supplier List</h1>
     <button matButton="filled" (click)="addSupplier()" class="btn-yes">Add Supplier</button>
   </div>
 
   <div class="ag-grid-wrapper">
     <div class="mat-elevation-z8 supplier-table">
-      <mat-form-field>
-        <mat-label>Filter</mat-label>
-        <input matInput (keyup)="applyFilter($event)" placeholder="Search suppliers">
-      </mat-form-field>
+      <div class="table-tools mb-3"><div class="input-group input-group-sm"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" (keyup)="applyFilter($event)" placeholder="Search suppliers"></div></div>
 
       <table mat-table [dataSource]="dataSource">
         <ng-container matColumnDef="serial">
@@ -92,3 +79,6 @@
     </div>
   </div>
 </div>
+
+
+

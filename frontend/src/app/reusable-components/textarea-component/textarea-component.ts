@@ -3,6 +3,7 @@ import {
   Input,
   forwardRef
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import {
   ControlValueAccessor,
@@ -14,7 +15,7 @@ import { ErrorComponent } from '../error-component/error-component';
   selector: 'app-textarea-component',
   templateUrl: './textarea-component.html',
   styleUrls: ['./textarea-component.scss'],
-  imports:[ ErrorComponent],
+  imports:[CommonModule, ErrorComponent],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -88,6 +88,54 @@ export const routes: Routes = [
             }
         },
         {
+            path:'customers',
+            loadComponent: ()=> import('./customers/customer-list/customer-list').then(n => n.CustomerList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'customers/add',
+            loadComponent: ()=> import('./customers/add-customer/add-customer').then(n => n.AddCustomer),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'customers/edit/:id',
+            loadComponent: ()=> import('./customers/add-customer/add-customer').then(n => n.AddCustomer),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'quotations',
+            loadComponent: ()=> import('./quotations/quotation-list/quotation-list').then(n => n.QuotationList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'quotations/add',
+            loadComponent: ()=> import('./quotations/add-quotation/add-quotation').then(n => n.AddQuotation),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
+            path:'quotations/edit/:id',
+            loadComponent: ()=> import('./quotations/add-quotation/add-quotation').then(n => n.AddQuotation),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['ADMIN']
+            }
+        },
+        {
             path:'approvals',
             loadComponent: ()=> import('./workflow/approval-list/approval-list').then(n => n.ApprovalList),
             canActivate:[RouteGuard],

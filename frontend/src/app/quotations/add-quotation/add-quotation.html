@@ -1,0 +1,172 @@
+<div class="content-container">
+  <section class="tcv-form-panel">
+    <div class="tcv-panel-titlebar">
+      <div class="tcv-panel-title">
+        <span class="tcv-title-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
+        <span>{{ isEditMode ? 'Edit Quotation' : 'Quotation Details' }}</span>
+      </div>
+      <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancel()">Cancel</button>
+    </div>
+
+    <form [formGroup]="quotationForm" class="tcv-form-body">
+      <div class="tcv-form-grid">
+        <app-input-form-field [label]="'Quotation Date'" [type]="'date'" [formControl]="$any(quotationForm.controls['quotation_date'])"></app-input-form-field>
+        <app-input-form-field [label]="'Valid Until'" [type]="'date'" [formControl]="$any(quotationForm.controls['valid_until'])"></app-input-form-field>
+        <app-select-form-field [label]="'Customer'" [options]="customers" [formControl]="$any(quotationForm.controls['customer_id'])"></app-select-form-field>
+      </div>
+
+      <section class="tcv-form-section">
+        <div class="tcv-section-title justify-content-between">
+          <span>
+            <span class="tcv-title-icon"><i class="bi bi-list-check"></i></span>
+            <span>Item Details</span>
+          </span>
+          <button type="button" class="btn btn-primary btn-sm" (click)="addItem()">
+            <i class="bi bi-plus-lg me-1"></i>Add Row
+          </button>
+        </div>
+
+        <div class="quotation-items table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th class="serial-col">S.No</th>
+                <th>Item</th>
+                <th>Item Name</th>
+                <th class="number-col">Qty</th>
+                <th class="number-col">Price</th>
+                <th class="number-col">Discount</th>
+                <th class="number-col">Tax %</th>
+                <th class="number-col">Amount</th>
+                <th class="action-col">Action</th>
+              </tr>
+            </thead>
+            <tbody formArrayName="items">
+              <tr *ngFor="let itemGroup of items.controls; let i = index" [formGroupName]="i">
+                <td>{{ i + 1 }}</td>
+                <td>
+                  <select class="form-select form-select-sm" formControlName="product_id" (change)="onProductChange(i)">
+                    <option value="">Select Item</option>
+                    <option *ngFor="let product of products" [value]="product.value">{{ product.label }}</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="text" class="form-control form-control-sm" formControlName="item_name" />
+                </td>
+                <td>
+                  <input type="number" class="form-control form-control-sm text-end" formControlName="qty" (input)="calculateItem(i)" />
+                </td>
+                <td>
+                  <input type="number" class="form-control form-control-sm text-end" formControlName="selling_price" (input)="calculateItem(i)" />
+                </td>
+                <td>
+                  <input type="number" class="form-control form-control-sm text-end" formControlName="discount_amount" (input)="calculateItem(i)" />
+                </td>
+                <td>
+                  <input type="number" class="form-control form-control-sm text-end" formControlName="tax_percent" (input)="calculateItem(i)" />
+                </td>
+                <td>
+                  <input type="number" class="form-control form-control-sm text-end" formControlName="amount" readonly />
+                </td>
+                <td>
+                  <button type="button" class="btn btn-outline-danger btn-sm icon-btn" title="Remove row" (click)="removeItem(i)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="quotation-summary">
+          <div><span>Subtotal</span><strong>{{ subtotal() | number:'1.2-2' }}</strong></div>
+          <div><span>Discount</span><strong>{{ discountTotal() | number:'1.2-2' }}</strong></div>
+          <div><span>Tax</span><strong>{{ taxTotal() | number:'1.2-2' }}</strong></div>
+          <div class="grand-total"><span>Total</span><strong>{{ netTotal() | number:'1.2-2' }}</strong></div>
+        </div>
+      </section>
+
+      <section class="tcv-form-section">
+        <div class="tcv-section-title">
+          <span class="tcv-title-icon"><i class="bi bi-card-text"></i></span>
+          <span>Requirement Details</span>
+        </div>
+        <app-textarea-form-field [label]="'Requirement Details'" [rows]="3" [control]="$any(quotationForm.controls['requirement_details'])"></app-textarea-form-field>
+        <app-textarea-form-field [label]="'Remarks'" [rows]="3" [control]="$any(quotationForm.controls['remarks'])"></app-textarea-form-field>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Cancel</button>
+        <button type="button" class="btn btn-outline-primary" (click)="preview()" [disabled]="quotationForm.invalid">
+          <i class="bi bi-eye me-1"></i>Preview
+        </button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="quotationForm.invalid">
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="quotation-preview-backdrop" *ngIf="showPreview && previewData">
+  <section class="quotation-preview">
+    <div class="preview-toolbar">
+      <div>
+        <h2>Quotation Preview</h2>
+        <span>{{ previewData.quotation_no || 'Draft Quotation' }}</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" (click)="downloadPreview()">
+          <i class="bi bi-download me-1"></i>Download
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="closePreview()">Close</button>
+      </div>
+    </div>
+
+    <div class="preview-document">
+      <div class="preview-header">
+        <div>
+          <h3>THE CHENNAI VIDEO</h3>
+          <p>Quotation</p>
+        </div>
+        <div class="text-end">
+          <strong>{{ previewData.quotation_no || 'Draft' }}</strong>
+          <span>{{ previewData.quotation_date }}</span>
+        </div>
+      </div>
+
+      <div class="preview-meta">
+        <div><span>Customer</span><strong>{{ previewData.customer_name }}</strong></div>
+        <div><span>Valid Until</span><strong>{{ previewData.valid_until || '-' }}</strong></div>
+      </div>
+
+      <table class="table table-sm preview-table">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Item Name</th>
+            <th class="text-end">Qty</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of previewData.items; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ item.item_name }}</td>
+            <td class="text-end">{{ item.qty | number:'1.2-2' }}</td>
+            <td class="text-end">{{ item.selling_price | number:'1.2-2' }}</td>
+            <td class="text-end">{{ item.amount | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="quotation-summary preview-total">
+        <div><span>Subtotal</span><strong>{{ previewData.total_amount | number:'1.2-2' }}</strong></div>
+        <div><span>Discount</span><strong>{{ previewData.discount_amount | number:'1.2-2' }}</strong></div>
+        <div><span>Tax</span><strong>{{ previewData.tax_amount | number:'1.2-2' }}</strong></div>
+        <div class="grand-total"><span>Total</span><strong>{{ previewData.net_amount | number:'1.2-2' }}</strong></div>
+      </div>
+    </div>
+  </section>
+</div>

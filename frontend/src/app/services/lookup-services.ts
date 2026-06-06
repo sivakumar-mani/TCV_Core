@@ -14,6 +14,10 @@ export class LookupServices {
     return this.http.get(`${this.url}/lookup/suppliers`);
   }
 
+  getCustomers() {
+    return this.http.get(`${this.url}/lookup/customers`);
+  }
+
   getProducts() {
     return this.http.get(`${this.url}/lookup/products`);
   }

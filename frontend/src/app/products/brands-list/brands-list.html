@@ -1,24 +1,12 @@
-<mat-toolbar class="p-0 border-bottom">
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
-      <li class="breadcrumb-item active" aria-current="page">Products</li>
-      <li class="breadcrumb-item active" aria-current="page">Brands</li>
-    </ol>
-  </nav>
-</mat-toolbar>
 <div class="content-container">
-  <div class="page-header">
+  <div class="screen-toolbar">
     <h1 class="page-title">Brands List</h1>
     <button matButton="filled" (click)="addBrand()" class="btn-yes">Add Brand</button>
   </div>
 
   <div class="ag-grid-wrapper">
     <div class="mat-elevation-z8">
-      <mat-form-field>
-        <mat-label>Filter</mat-label>
-        <input matInput (keyup)="applyFilter($event)" placeholder="Ex. ium" #input>
-      </mat-form-field>
+      <div class="table-tools mb-3"><div class="input-group input-group-sm"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" (keyup)="applyFilter($event)" placeholder="Ex. ium"></div></div>
       <table mat-table [dataSource]="dataSource">
         <!-- serial Column -->
         <ng-container matColumnDef="serial">
@@ -86,3 +74,5 @@
   </div>
 
 </div>
+
+

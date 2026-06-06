@@ -1,8 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -14,7 +12,7 @@ import { CommonMethods } from '../../shared/common-methods';
 
 @Component({
   selector: 'app-purchase-list',
-  imports: [MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatTableModule, MatToolbarModule],
+  imports: [MatButtonModule, MatIconModule, MatPaginatorModule, MatTableModule, MatToolbarModule],
   templateUrl: './purchase-list.html',
   styleUrl: './purchase-list.scss',
 })
@@ -89,3 +87,4 @@ export class PurchaseList {
     this.dataSource.filter = (event.target as HTMLInputElement).value.trim().toLowerCase();
   }
 }
+

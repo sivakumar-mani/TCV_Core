@@ -1,0 +1,25 @@
+<div class="content-container">
+  <section class="tcv-grid-panel">
+    <div class="tcv-panel-titlebar">
+      <div class="tcv-panel-title">
+        <span class="tcv-title-icon"><i class="bi bi-sliders"></i></span>
+        <span>Customer List</span>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="addCustomer()">
+        <i class="bi bi-plus-lg me-1"></i>Create New
+      </button>
+    </div>
+
+    <ag-grid-angular
+      class="ag-theme-quartz tcv-ag-grid"
+      [theme]="theme"
+      [rowData]="customerList"
+      [columnDefs]="colDefs"
+      [defaultColDef]="defaultColDef"
+      [pagination]="pagination"
+      [paginationPageSize]="paginationPageSize"
+      [paginationPageSizeSelector]="paginationPageSizeSelector"
+      domLayout="autoHeight">
+    </ag-grid-angular>
+  </section>
+</div>

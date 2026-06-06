@@ -99,6 +99,33 @@ navSections: NavItem[] = [
   },
 
   {
+    label: 'Sales',
+    icon: 'bi-cash-coin',
+    children: [
+      {
+        label: 'Customers',
+        icon: 'bi-person-lines-fill',
+        route: '/customers'
+      },
+      {
+        label: 'New Customer',
+        icon: 'bi-person-plus-fill',
+        route: '/customers/add'
+      },
+      {
+        label: 'Quotations',
+        icon: 'bi-file-earmark-text-fill',
+        route: '/quotations'
+      },
+      {
+        label: 'New Quotation',
+        icon: 'bi-file-earmark-plus-fill',
+        route: '/quotations/add'
+      }
+    ]
+  },
+
+  {
     label: 'Workflow',
     icon: 'bi-check2-square',
     children: [
@@ -133,6 +160,7 @@ navSections: NavItem[] = [
 
 setActive(label: string): void {
   this.activeLabel = label;
+  this.sidebarService.setActivePage(label);
 }
 
 hasChildren(item: any): boolean {
@@ -141,9 +169,9 @@ hasChildren(item: any): boolean {
 
 toggleMenu(label: string): void {
   if (this.openMenus.includes(label)) {
-    this.openMenus = this.openMenus.filter(menu => menu !== label);
+    this.openMenus = [];
   } else {
-    this.openMenus.push(label);
+    this.openMenus = [label];
   }
 }
 

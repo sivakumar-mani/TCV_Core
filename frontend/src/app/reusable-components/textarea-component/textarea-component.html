@@ -1,16 +1,14 @@
-<div class="floating-field textarea-field">
-
+<div class="mb-3">
+  <label class="form-label">
+    {{ label }} <sup *ngIf="required" class="text-danger">*</sup>
+  </label>
   <textarea
-    class="form-control custom-textarea"
-    placeholder=" "
+    class="form-control"
+    [placeholder]="label"
     [value]="value"
     (input)="change($event)"
   ></textarea>
-
-  <label>{{ label }}</label>
-
+  <app-error
+    [label]="label">
+  </app-error>
 </div>
-<app-error
-  
-  [label]="label">
-</app-error>

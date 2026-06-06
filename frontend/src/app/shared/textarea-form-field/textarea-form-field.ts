@@ -1,11 +1,9 @@
 import { NgIf, TitleCasePipe } from '@angular/common';
-import { Component, input, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormControl, ReactiveFormsModule,  } from '@angular/forms';
-import {MatInputModule} from '@angular/material/input';
-import {MatFormFieldModule} from '@angular/material/form-field';
 @Component({
   selector: 'app-textarea-form-field',
-  imports: [ TitleCasePipe, MatFormFieldModule,MatInputModule, ReactiveFormsModule, MatFormFieldModule, NgIf],
+  imports: [TitleCasePipe, ReactiveFormsModule, NgIf],
   templateUrl: './textarea-form-field.html',
   styleUrl: './textarea-form-field.scss',
 })

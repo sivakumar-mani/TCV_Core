@@ -10,6 +10,8 @@ const purchaseRoute = require('./routes/purchaseRouter')
 const materialRoute = require('./routes/materialRouter')
 const stockRoute = require('./routes/stockRouter')
 const lookupRoute = require('./routes/lookupRouter')
+const customerRoute = require('./routes/customerRouter')
+const quotationRoute = require('./routes/quotationRouter')
 const app = express()
 
 app.use(cors());
@@ -26,4 +28,6 @@ app.use('/api/purchase', purchaseRoute);
 app.use('/api/material', materialRoute);
 app.use('/api/stock', stockRoute);
 app.use('/api/lookup', lookupRoute);
+app.use('/api/customer', customerRoute);
+app.use('/api/quotation', quotationRoute);
 module.exports = app;

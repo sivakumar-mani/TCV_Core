@@ -4,8 +4,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { BrandServices } from '../../services/brand-services';
@@ -24,7 +22,7 @@ import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-
   selector: 'app-brands-list',
   imports: [MatIconModule, MatToolbarModule,
     MatTableModule, MatPaginatorModule, MatMenuModule, MatMenuModule,
-    MatInputModule, MatFormFieldModule, ReactiveFormsModule,
+    ReactiveFormsModule,
   ],
   templateUrl: './brands-list.html',
   styleUrl: './brands-list.scss',
@@ -158,3 +156,4 @@ export class BrandsList {
     this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex)
   }
 }
+

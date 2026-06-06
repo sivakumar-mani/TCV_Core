@@ -1,9 +1,7 @@
 import { Component, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -22,8 +20,6 @@ import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-
     MatTableModule,
     MatPaginatorModule,
     MatMenuModule,
-    MatInputModule,
-    MatFormFieldModule,
     MatButtonModule
   ],
   templateUrl: './supplier-list.html',
@@ -134,3 +130,4 @@ export class SupplierList {
     return Number(status) === 1 ? 'Active' : 'Inactive';
   }
 }
+

@@ -1,31 +1,24 @@
-<!-- form-input.component.html -->
-
-<div class="static-height">
-<div class="floating-field">
-
+<div class="mb-3">
+  <label class="form-label">
+    {{ label }} <sup *ngIf="required" class="text-danger">*</sup>
+  </label>
+  <div class="input-group">
+    <span *ngIf="icon" class="input-group-text">
+      <i class="{{ icon }}"></i>
+    </span>
   <input
     [type]="inputType"
-    class="form-control custom-control"
-    [class.has-icon]="icon"
-    [class.has-password-toggle]="type === 'password'"
+    class="form-control"
     [placeholder]="placeholder"
     [value]="value"
     [disabled]="disabled"
     (input)="change($event)"
     (blur)="onTouched()"
   />
- <i
-      *ngIf="icon"
-      class="input-icon {{ icon }}">
-    </i>
-  <label>{{ label }} <sup *ngIf="required" style="color:red">*</sup></label>
-
-
-    <!-- Password Toggle -->
     <button
       *ngIf="type === 'password'"
       type="button"
-      class="password-toggle"
+      class="btn btn-outline-secondary"
       (click)="togglePassword()">
 
       <i
@@ -34,9 +27,9 @@
       </i>
 
     </button>
-</div>
-<app-error
-  [control]="control"
-  [label]="label">
-</app-error>
+  </div>
+  <app-error
+    [control]="control"
+    [label]="label">
+  </app-error>
 </div>

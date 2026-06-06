@@ -401,6 +401,8 @@ CREATE TABLE quotation_master (
     net_amount DECIMAL(12,2) DEFAULT 0,
     quotation_status ENUM('DRAFT','SUBMITTED','APPROVED','REJECTED','EXPIRED','CONVERTED') DEFAULT 'DRAFT',
     approval_request_id INT,
+    revised_from_quotation_id INT,
+    revision_no INT DEFAULT 0,
     approved_date DATE,
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -410,7 +412,8 @@ CREATE TABLE quotation_master (
     CONSTRAINT fk_quotation_prepared_by
         FOREIGN KEY (prepared_by_employee_id) REFERENCES employees(employee_id),
     CONSTRAINT fk_quotation_approval
-        FOREIGN KEY (approval_request_id) REFERENCES approval_requests(approval_request_id)
+        FOREIGN KEY (approval_request_id) REFERENCES approval_requests(approval_request_id),
+    INDEX idx_quotation_revision (revised_from_quotation_id, revision_no)
 );
 
 -- =====================================================

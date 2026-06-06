@@ -13,6 +13,17 @@ const getLookupSuppliers = async (req, res) => {
     }
 };
 
+const getLookupCustomers = async (req, res) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT customer_id AS value, customer_name AS label FROM customers WHERE status = 1 ORDER BY customer_name'
+        );
+        return res.json({ success: true, data: rows });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Failed to fetch customers', error: error.message });
+    }
+};
+
 const getLookupProducts = async (req, res) => {
     try {
         const [columns] = await db.query('SHOW COLUMNS FROM products');
@@ -20,8 +31,11 @@ const getLookupProducts = async (req, res) => {
         const hasProductCode = columnNames.includes('product_code');
         const hasUnit = columnNames.includes('unit');
         const hasStatus = columnNames.includes('status');
+        const hasSellingPrice = columnNames.includes('selling_price');
+        const hasPrice = columnNames.includes('price');
         const productCodeSelect = hasProductCode ? 'product_code' : 'NULL AS product_code';
         const unitSelect = hasUnit ? 'unit' : "'PCS' AS unit";
+        const sellingPriceSelect = hasSellingPrice ? 'selling_price' : (hasPrice ? 'price AS selling_price' : '0 AS selling_price');
         const labelCode = hasProductCode ? 'COALESCE(product_code, product_id)' : 'product_id';
         const whereClause = hasStatus ? "WHERE status IN (1, '1', 'ACTIVE')" : '';
 
@@ -32,7 +46,8 @@ const getLookupProducts = async (req, res) => {
                 product_id,
                 product_name,
                 ${productCodeSelect},
-                ${unitSelect}
+                ${unitSelect},
+                ${sellingPriceSelect}
              FROM products
              ${whereClause}
              ORDER BY product_name`
@@ -105,6 +120,7 @@ const getLookupMaterialIssues = async (req, res) => {
 };
 
 module.exports = {
+    getLookupCustomers,
     getLookupEmployees,
     getLookupMaterialIssues,
     getLookupProducts,
