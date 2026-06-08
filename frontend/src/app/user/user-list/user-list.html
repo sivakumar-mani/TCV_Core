@@ -7,16 +7,14 @@
   </ol>
 </nav>
 </mat-toolbar>
-<div class="content-container">
-  <div class="page-header">
-      <h1 class="page-title">Users List</h1>
-        <button matButton="filled" (click)=" addUser()" class="btn-yes">Add User</button>
-  </div>
-
-    <div class="ag-grid-wrapper">
-      <ag-grid-angular  [rowData]="userList" [columnDefs]="colDefs"  domLayout="autoHeight"
-                [defaultColDef]="defaultColDef" [pagination]="pagination" [paginationPageSize]="paginationPageSize"
-                [paginationPageSizeSelector]="paginationPageSizeSelector" />
-                </div>
-
-</div>
+<app-ag-grid-list
+  title="Users List"
+  addButtonLabel="Add User"
+  [rowData]="userList"
+  [columnDefs]="colDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="pagination"
+  [paginationPageSize]="paginationPageSize"
+  [paginationPageSizeSelector]="paginationPageSizeSelector"
+  (add)="addUser()">
+</app-ag-grid-list>

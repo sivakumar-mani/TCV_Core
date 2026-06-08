@@ -1,0 +1,41 @@
+<nav aria-label="breadcrumb" class="bg-light border-bottom px-3 py-2 mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a routerLink="/dashboard">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Audit Logs</li>
+  </ol>
+</nav>
+
+<app-ag-grid-list
+  title="Audit Log List"
+  addButtonLabel="Add Audit Log"
+  [rowData]="auditLogs"
+  [columnDefs]="colDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="pagination"
+  [paginationPageSize]="paginationPageSize"
+  [paginationPageSizeSelector]="paginationPageSizeSelector"
+  (add)="addAuditLog()">
+</app-ag-grid-list>
+
+<div class="modal-backdrop fade show" *ngIf="selectedAuditLog"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="selectedAuditLog" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Audit Log Details</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="closeView()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-4" *ngFor="let item of selectedAuditLog | keyvalue">
+            <label class="form-label text-muted">{{ item.key }}</label>
+            <pre class="audit-value text-break">{{ item.value || '-' }}</pre>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeView()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

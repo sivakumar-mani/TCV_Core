@@ -82,6 +82,54 @@ export const routes: Routes = [
                 expectedRole:['admin']
             }
         },
+         {
+            path:'employees',
+            loadComponent: ()=> import('./employees/employee-list/employee-list').then(n => n.EmployeeList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'employees/add',
+            loadComponent: ()=> import('./employees/employee-form/employee-form').then(n => n.EmployeeForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'employees/edit/:id',
+            loadComponent: ()=> import('./employees/employee-form/employee-form').then(n => n.EmployeeForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'audit-logs',
+            loadComponent: ()=> import('./audit-logs/audit-log-list/audit-log-list').then(n => n.AuditLogList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'audit-logs/add',
+            loadComponent: ()=> import('./audit-logs/audit-log-form/audit-log-form').then(n => n.AuditLogForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'audit-logs/edit/:id',
+            loadComponent: ()=> import('./audit-logs/audit-log-form/audit-log-form').then(n => n.AuditLogForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
         
     ]
     },

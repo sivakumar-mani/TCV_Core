@@ -18,6 +18,10 @@ export class InputFormField implements ControlValueAccessor{
   @Input() classLabel: string='';
   @Input()  inputClass: string='';
   @Input() formControl!: FormControl;
+  @Input() readonly: boolean = false;
+  @Input() maxLength?: number;
+  @Input() inputMode: string = '';
+  @Input() numericOnly: boolean = false;
   
 
   constructor( @Self() public ngControl: NgControl){
@@ -27,6 +31,16 @@ export class InputFormField implements ControlValueAccessor{
   get control(): FormControl{
     return this.ngControl.control as FormControl;
   }
+
+  onInput(event: Event) {
+    if (!this.numericOnly) return;
+
+    const input = event.target as HTMLInputElement;
+    const nextValue = input.value.replace(/\D/g, '').slice(0, this.maxLength || undefined);
+    input.value = nextValue;
+    this.control.setValue(nextValue, { emitEvent: true });
+  }
+
   writeValue(obj: any): void {}
   registerOnChange(fn: any): void {}
   registerOnTouched(fn: any): void {}

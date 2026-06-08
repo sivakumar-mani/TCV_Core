@@ -9,6 +9,16 @@
           <mat-icon matListIcon>people</mat-icon> <span matLine>Users</span>
       </mat-panel-title>
   </a>
+   <a mat-list-item [routerLink]="['/employees']" routerLinkActive="active-link">
+    <mat-panel-title>
+          <mat-icon matListIcon>badge</mat-icon> <span matLine>Employees</span>
+      </mat-panel-title>
+  </a>
+   <a mat-list-item [routerLink]="['/audit-logs']" routerLinkActive="active-link">
+    <mat-panel-title>
+          <mat-icon matListIcon>history</mat-icon> <span matLine>Audit Logs</span>
+      </mat-panel-title>
+  </a>
   <!-- <a mat-list-item [routerLink]="['/settings']" routerLinkActive="active-link">
     <mat-icon matListIcon>settings</mat-icon>
     <span matLine>Settings</span>

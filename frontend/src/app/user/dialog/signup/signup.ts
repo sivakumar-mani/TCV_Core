@@ -30,9 +30,11 @@ export class Signup {
   ) { }
 
   roleList = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'user', label: 'User' },
-    { value: 'staff', label: 'Staff' }
+    { value: 'ADMIN', label: 'Admin' },
+    { value: 'MANAGER', label: 'Manager' },
+    { value: 'EMPLOYEE', label: 'Employee' },
+    { value: 'SALES', label: 'Sales' },
+    { value: 'SERVICE', label: 'Service' }
   ];
 
   ngOnInit() {
@@ -54,23 +56,23 @@ export class Signup {
   registeredDate = new Date().getDate();
   loginDate = new Date();
 
+  private buildUserPayload() {
+    const formData = this.signupForm.value;
+    return {
+      userName: formData.userName,
+      password: formData.password,
+      email: formData.email,
+      contactNumber: formData.contactNumber,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      role: formData.role,
+      Status: formData.Status
+    };
+  }
+
   sigupSubmit() {
     this.ngxLoader.start();
-    var formData = this.signupForm.value,
-      data = {
-        userName: formData.userName,
-        password: formData.password,
-        email: formData.email,
-        contactNumber: formData.contactNumber,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        // dateRegistered: this.registeredDate.toString(),
-        // lastLogin: this.loginDate.toString(),
-        dateRegistered: "2026-10-12",
-        lastLogin: "2026-10-12 10:00:00",
-        role: formData.role,
-        Status: formData.Status
-      }
+    const data = this.buildUserPayload();
     this.userService.signup(data).subscribe({
       next: (response: any) => {
         this.ngxLoader.stop();
@@ -97,22 +99,10 @@ export class Signup {
   }
   userEditSubmit() {
     this.ngxLoader.start();
-    var formData = this.signupForm.value,
-      data = {
-        userId: this.data.userId,
-        userName: formData.userName,
-        password: formData.password,
-        email: formData.email,
-        contactNumber: formData.contactNumber,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        // dateRegistered: this.registeredDate.toString(),
-        // lastLogin: this.loginDate.toString(),
-        dateRegistered: "2026-10-12",
-        lastLogin: "2026-10-12 10:00:00",
-        role: formData.role,
-        Status: formData.Status
-      }
+    const data = {
+      userId: this.data.userId,
+      ...this.buildUserPayload()
+    };
 
     this.userService.userEdit(data).subscribe({
       next: (response: any) => {

@@ -1,0 +1,300 @@
+<nav aria-label="breadcrumb" class="bg-light border-bottom px-3 py-2 mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a routerLink="/dashboard">Home</a></li>
+    <li class="breadcrumb-item"><a routerLink="/employees">Employees</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ isEditMode ? 'Edit' : 'Add' }}</li>
+  </ol>
+</nav>
+
+<div class="page-header">
+  <h1 class="page-title">{{ isEditMode ? 'Edit Employee' : 'Add Employee' }}</h1>
+</div>
+
+<form [formGroup]="employeeForm" (ngSubmit)="submit()" class="employee-form">
+  <div class="form-section">
+    <h2>Basic Details</h2>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Employee Code'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [readonly]="true"
+          [formControl]="$any(employeeForm.controls['employee_code'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'First Name'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['first_name'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Last Name'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['last_name'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Designation'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['designation'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-select-form-field
+          [label]="'Department'"
+          [labelClass]="'form-label'"
+          [selectClass]="'form-control'"
+          [options]="departmentOptions"
+          [formControl]="$any(employeeForm.controls['department'])">
+        </app-select-form-field>
+      </div>
+      <div class="col-md-4">
+        <mat-form-field appearance="outline" floatLabel="always" class="w-100">
+          <mat-label>Joining Date</mat-label>
+          <input matInput readonly [matDatepicker]="joiningPicker" formControlName="joining_date" (click)="joiningPicker.open()">
+          <mat-datepicker-toggle matIconSuffix [for]="joiningPicker"></mat-datepicker-toggle>
+          <mat-datepicker #joiningPicker></mat-datepicker>
+          <mat-error *ngIf="employeeForm.controls['joining_date'].touched && employeeForm.controls['joining_date'].hasError('required')">
+            This Joining Date is mandatory
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Contact</h2>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Phone'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'tel'"
+          [maxLength]="10"
+          [inputMode]="'numeric'"
+          [numericOnly]="true"
+          [formControl]="$any(employeeForm.controls['phone'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Alternate Phone'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'tel'"
+          [maxLength]="10"
+          [inputMode]="'numeric'"
+          [numericOnly]="true"
+          [formControl]="$any(employeeForm.controls['alternate_phone'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Email'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'email'"
+          [formControl]="$any(employeeForm.controls['email'])">
+        </app-input-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Permanent Address</h2>
+    <div class="row g-3">
+      <div class="col-12">
+        <app-textarea-form-field
+          [label]="'Address'"
+          [classLabel]="'form-label'"
+          [rows]="2"
+          [control]="$any(employeeForm.controls['permanent_address'])">
+        </app-textarea-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-select-form-field
+          [label]="'State'"
+          [labelClass]="'form-label'"
+          [selectClass]="'form-control'"
+          [options]="stateOptions"
+          [formControl]="$any(employeeForm.controls['permanent_state'])">
+        </app-select-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-select-form-field
+          [label]="'District'"
+          [labelClass]="'form-label'"
+          [selectClass]="'form-control'"
+          [options]="permanentDistrictOptions"
+          [formControl]="$any(employeeForm.controls['permanent_city_district'])">
+        </app-select-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Pincode'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['permanent_pincode'])">
+        </app-input-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Temporary Address</h2>
+    <div class="row g-3">
+      <div class="col-12">
+        <app-textarea-form-field
+          [label]="'Address'"
+          [classLabel]="'form-label'"
+          [rows]="2"
+          [control]="$any(employeeForm.controls['temporary_address'])">
+        </app-textarea-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-select-form-field
+          [label]="'State'"
+          [labelClass]="'form-label'"
+          [selectClass]="'form-control'"
+          [options]="stateOptions"
+          [formControl]="$any(employeeForm.controls['temporary_state'])">
+        </app-select-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-select-form-field
+          [label]="'District'"
+          [labelClass]="'form-label'"
+          [selectClass]="'form-control'"
+          [options]="temporaryDistrictOptions"
+          [formControl]="$any(employeeForm.controls['temporary_city_district'])">
+        </app-select-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Pincode'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['temporary_pincode'])">
+        </app-input-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h2>Personal and Proof</h2>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <mat-form-field appearance="outline" floatLabel="always" class="w-100">
+          <mat-label>Date Of Birth</mat-label>
+          <input matInput readonly [matDatepicker]="dobPicker" formControlName="date_of_birth" (click)="dobPicker.open()">
+          <mat-datepicker-toggle matIconSuffix [for]="dobPicker"></mat-datepicker-toggle>
+          <mat-datepicker #dobPicker></mat-datepicker>
+          <mat-error *ngIf="employeeForm.controls['date_of_birth'].touched && employeeForm.controls['date_of_birth'].hasError('required')">
+            This Date Of Birth is mandatory
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Qualification'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['qualification'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Photo</label>
+        <input class="form-control" type="file" accept=".jpeg,.jpg,.png,image/jpeg,image/png" (change)="onPhotoSelected($event)">
+        <div class="form-text">jpeg, jpg, png only. Max 1 MB.</div>
+        <div class="text-danger small" *ngIf="photoError">{{ photoError }}</div>
+        <div class="small mt-1" *ngIf="selectedPhotoName">{{ selectedPhotoName }}</div>
+        <img *ngIf="photoPreview" [src]="photoPreview" class="employee-photo-preview mt-2" alt="Employee photo preview">
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Spouse/Parent Name'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['spouse_or_parent_name'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'Relationship'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['relationship'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-select-form-field
+          [label]="'ID Proof Type'"
+          [labelClass]="'form-label'"
+          [selectClass]="'form-control'"
+          [options]="idProofTypes"
+          [formControl]="$any(employeeForm.controls['id_proof_type'])">
+        </app-select-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'ID Proof Name'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['id_proof_name'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-input-form-field
+          [label]="'ID Proof Number'"
+          [classLabel]="'form-label'"
+          [inputClass]="'form-control'"
+          [type]="'text'"
+          [formControl]="$any(employeeForm.controls['id_proof_number'])">
+        </app-input-form-field>
+      </div>
+      <div class="col-md-4">
+        <app-select-form-field
+          [label]="'Status'"
+          [labelClass]="'form-label'"
+          [selectClass]="'form-control'"
+          [options]="statusOptions"
+          [formControl]="$any(employeeForm.controls['is_active'])">
+        </app-select-form-field>
+      </div>
+      <div class="col-12">
+        <app-textarea-form-field
+          [label]="'Kids Details'"
+          [classLabel]="'form-label'"
+          [rows]="2"
+          [control]="$any(employeeForm.controls['kids_details'])">
+        </app-textarea-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mb-4">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid">
+      {{ isEditMode ? 'Update' : 'Save' }}
+    </button>
+  </div>
+</form>

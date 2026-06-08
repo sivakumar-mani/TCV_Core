@@ -22,8 +22,8 @@ export interface signupInterface {
   contactNumber: string;
   firstName: string;
   lastName: string;
-  dateRegistered: string;
-  lastLogin: string;
+  dateRegistered?: string;
+  lastLogin?: string;
   role: string;
   Status: string;
 }

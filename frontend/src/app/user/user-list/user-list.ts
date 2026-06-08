@@ -1,8 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { AgGridModule } from 'ag-grid-angular';
-import { AllCommunityModule, ColDef, ModuleRegistry, themeBalham } from 'ag-grid-community';
+import { ColDef } from 'ag-grid-community';
 import { UserServices } from '../../services/user-services';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Router } from '@angular/router';
@@ -13,10 +12,10 @@ import { ViewUser } from '../dialog/view-user/view-user';
 import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-popup';
 import { Snackbar } from '../../services/snackbar';
 import { globalConstants } from '../../services/global-constants';
-ModuleRegistry.registerModules([AllCommunityModule]);
+import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 @Component({
   selector: 'app-user-list',
-  imports: [MatIconModule, MatToolbarModule, AgGridModule],
+  imports: [MatIconModule, MatToolbarModule, AgGridList],
   templateUrl: './user-list.html',
   styleUrl: './user-list.scss',
 })
@@ -29,7 +28,6 @@ export class UserList {
   pagination = true;
   paginationPageSize = 10;
   paginationPageSizeSelector = [10, 25, 50, 100];
-  public theme = themeBalham;
   // userList:any[]=[];
   userList: any;
   dialog = inject(MatDialog);
