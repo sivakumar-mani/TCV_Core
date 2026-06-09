@@ -28,7 +28,13 @@ import { CommonMethods } from '../../../shared/common-methods';
 })
 export class Category {
   categories: any[] = [];
-  rootCategories: any[] = [];
+  parentCategory = [
+    { label: 'CCTV', value: 'CCTV' },
+    { label: 'CATV', value: 'CATV' },
+    { label: 'Internet', value: 'Internet' },
+    { label: 'Solar', value: 'Solar' },
+    { label: 'Other', value: 'Other' }
+  ];
   categoryForm!: FormGroup;
   router = inject(Router);
   isEditData = false;
@@ -63,7 +69,8 @@ export class Category {
   initForm() {
     this.categoryForm = this.fb.group({
       category_id: [null],
-      parent_id: [null, Validators.required],
+      parent_category: [null, Validators.required],
+      parent_id: [null],
       category_name: [''],
       level_1: [''],
       level_2: [''],
@@ -84,7 +91,6 @@ export class Category {
       next: (response: any) => {
         this.ngxLoader.stop();
         this.categories = response ?? [];
-        this.rootCategories = this.categories.filter((category) => !category.parent_id);
 
         if (this.isEditData) {
           this.patchEditData(this.dialogData);
@@ -100,6 +106,7 @@ export class Category {
   patchEditData(data: any) {
     this.categoryForm.patchValue({
       category_id: data.category_id,
+      parent_category: null,
       parent_id: data.parent_id,
       category_name: data.category_name,
       level_1: data.category_name,
@@ -108,8 +115,10 @@ export class Category {
     });
 
     this.categoryForm.get('parent_id')?.clearValidators();
+    this.categoryForm.get('parent_category')?.clearValidators();
     this.categoryForm.get('category_name')?.setValidators([Validators.required]);
     this.categoryForm.get('parent_id')?.updateValueAndValidity();
+    this.categoryForm.get('parent_category')?.updateValueAndValidity();
     this.categoryForm.get('category_name')?.updateValueAndValidity();
   }
 
@@ -125,7 +134,7 @@ export class Category {
       .filter(Boolean);
 
     const payload = {
-      parent_id: formValue.parent_id,
+      parent_category: formValue.parent_category,
       level_names: levelNames,
       status: formValue.status,
       sort_order: formValue.sort_order

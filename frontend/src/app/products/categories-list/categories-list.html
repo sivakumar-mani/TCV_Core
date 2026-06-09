@@ -19,8 +19,8 @@
 
       <ng-template pTemplate="header">
         <tr>
-          <th>Name</th>
           <th>Parent</th>
+          <th>Child</th>
           <th>Level</th>
           <th>Slug</th>
           <th>Status</th>
@@ -34,10 +34,10 @@
         <tr>
           <td>
             <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
-            {{ rowData.category_name }}
+            {{ rowData.parent_id ? '' : rowData.category_name }}
           </td>
 
-          <td>{{ rowData.parent_name || 'Main' }}</td>
+          <td>{{ rowData.parent_id ? rowData.category_name : 'Main' }}</td>
           <td>{{ rowData.level }}</td>
           <td>{{ rowData.slug }}</td>
 

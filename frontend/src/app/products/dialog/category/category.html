@@ -6,14 +6,14 @@
   <form [formGroup]="categoryForm">
     <div class="grid-2-col mt-4">
 
-      <mat-form-field appearance="outline" class="w-100">
+      <mat-form-field appearance="outline" class="w-100" *ngIf="!isEditData">
         <mat-label>Parent Category</mat-label>
-        <mat-select formControlName="parent_id">
-          <mat-option *ngFor="let item of rootCategories" [value]="item.category_id">
-            {{ item.category_name }}
+        <mat-select formControlName="parent_category">
+          <mat-option *ngFor="let item of parentCategory" [value]="item.value">
+            {{ item.label }}
           </mat-option>
         </mat-select>
-        <mat-error *ngIf="categoryForm.controls['parent_id'].hasError('required')">
+        <mat-error *ngIf="categoryForm.controls['parent_category'].hasError('required')">
           Parent category is required.
         </mat-error>
       </mat-form-field>

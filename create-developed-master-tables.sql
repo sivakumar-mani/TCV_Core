@@ -59,13 +59,9 @@ CREATE TABLE IF NOT EXISTS categories (
     INDEX idx_categories_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT IGNORE INTO categories (category_name, slug, level, parent_id, sort_order, status)
-VALUES
-    ('CCTV', 'cctv', 1, NULL, 1, 1),
-    ('CATV', 'catv', 1, NULL, 2, 1),
-    ('Internet', 'internet', 1, NULL, 3, 1),
-    ('Solar', 'solar', 1, NULL, 4, 1),
-    ('Other', 'other', 1, NULL, 5, 1);
+-- Category parent options are handled by the frontend dropdown:
+-- CCTV, CATV, Internet, Solar, Other.
+-- The selected parent is inserted on first category save if it is not already available.
 
 -- =====================================================
 -- SUPPLIERS

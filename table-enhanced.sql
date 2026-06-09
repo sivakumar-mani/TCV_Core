@@ -763,14 +763,9 @@ COMMENT='Audit trail for regulatory compliance';
 INSERT IGNORE INTO users (username, password, email, first_name, last_name, role, is_active)
 VALUES ('admin', '$2b$10$', 'admin@tcv.com', 'Admin', 'User', 'ADMIN', 1);
 
--- Insert Sample Categories
-INSERT IGNORE INTO categories (category_name, parent_id, level, slug, sort_order, is_active)
-VALUES 
-    ('CCTV', NULL, 1, 'cctv', 1, 1),
-    ('CATV', NULL, 1, 'catv', 2, 1),
-    ('Internet', NULL, 1, 'internet', 3, 1),
-    ('Solar', NULL, 1, 'solar', 4, 1),
-    ('Other', NULL, 1, 'other', 5, 1);
+-- Category parent options are handled by the frontend dropdown:
+-- CCTV, CATV, Internet, Solar, Other.
+-- The selected parent is inserted on first category save if it is not already available.
 
 -- =====================================================
 -- DATABASE CONSTRAINTS SUMMARY
