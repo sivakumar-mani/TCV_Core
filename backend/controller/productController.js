@@ -1,50 +1,67 @@
 const connection = require('../connection');
 require('dotenv').config();
 
+const toNumber = (value, defaultValue = 0) => {
+    if (value === null || typeof value === 'undefined' || value === '') {
+        return defaultValue;
+    }
+
+    return Number(value);
+};
+
 const getProducts = async (req, res) => {
     const query = `
+    WITH RECURSIVE category_tree AS (
+        SELECT
+            category_id,
+            parent_id,
+            category_name,
+            CAST(category_name AS CHAR(1000)) AS category_path
+        FROM categories
+        WHERE parent_id IS NULL
+
+        UNION ALL
+
+        SELECT
+            c.category_id,
+            c.parent_id,
+            c.category_name,
+            CONCAT(ct.category_path, ' > ', c.category_name) AS category_path
+        FROM categories c
+        INNER JOIN category_tree ct
+            ON ct.category_id = c.parent_id
+    )
     SELECT 
         p.product_id,
         p.product_name,
         p.product_code,
+        p.barcode,
         p.description,
         p.price,
         p.stock_qty,
+        p.purchase_price,
+        p.selling_price,
+        p.gst_percent,
+        p.hsn_code,
+        p.unit,
+        p.reorder_level,
         p.status,
         p.created_at,
+        p.updated_at,
 
         b.brand_id,
         b.brand_name,
 
-        c4.category_id,
-
-        CONCAT_WS(' > ',
-            c1.category_name,
-            c2.category_name,
-            c3.category_name,
-            c4.category_name
-        ) AS category_path
+        p.category_id,
+        ct.category_path
 
     FROM products p
 
     LEFT JOIN brands b
         ON b.brand_id = p.brand_id
 
-    -- LAST LEVEL CATEGORY
-    LEFT JOIN categories c4
-        ON c4.category_id = p.category_id
-
-    -- LEVEL 3
-    LEFT JOIN categories c3
-        ON c3.category_id = c4.parent_id
-
-    -- LEVEL 2
-    LEFT JOIN categories c2
-        ON c2.category_id = c3.parent_id
-
-    -- LEVEL 1
-    LEFT JOIN categories c1
-        ON c1.category_id = c2.parent_id
+    LEFT JOIN category_tree ct
+        ON ct.category_id = p.category_id
 
     ORDER BY p.product_id DESC
 `;
@@ -67,6 +84,7 @@ const addProduct = async (req, res) => {
             brand_id,
             category_id,
             product_code,
+            barcode,
             description,
             price,
             stock_qty,
@@ -145,6 +163,23 @@ const addProduct = async (req, res) => {
             }
         }
 
+        if (barcode) {
+
+            const [existingBarcode] = await connection.promise().query(
+                `SELECT product_id
+                 FROM products
+                 WHERE LOWER(barcode) = LOWER(?)`,
+                [barcode]
+            );
+
+            if (existingBarcode.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Barcode already exists'
+                });
+            }
+        }
+
         // INSERT PRODUCT
         const query = `
             INSERT INTO products (
@@ -152,6 +187,7 @@ const addProduct = async (req, res) => {
                 brand_id,
                 category_id,
                 product_code,
+                barcode,
                 description,
                 price,
                 stock_qty,
@@ -163,23 +199,26 @@ const addProduct = async (req, res) => {
                 reorder_level,
                 status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
+
+        const sellingPrice = toNumber(selling_price, toNumber(price, 0));
 
         const values = [
             product_name,
             brand_id || null,
             category_id,
             product_code || null,
+            barcode || null,
             description || null,
-            price ?? 0,
-            stock_qty ?? 0,
-            purchase_price ?? 0,
-            selling_price ?? price ?? 0,
-            gst_percent ?? 0,
+            sellingPrice,
+            toNumber(stock_qty),
+            toNumber(purchase_price),
+            sellingPrice,
+            toNumber(gst_percent),
             hsn_code || null,
             unit || 'PCS',
-            reorder_level ?? 0,
+            toNumber(reorder_level),
             status || 'ACTIVE'
         ];
 
@@ -211,6 +250,7 @@ const updateProduct = async (req, res) => {
             brand_id,
             category_id,
             product_code,
+            barcode,
             description,
             price,
             stock_qty,
@@ -239,6 +279,43 @@ const updateProduct = async (req, res) => {
                 message: "Product not found"
             });
         }
+
+        if (product_code) {
+            const [existingCode] = await connection.promise().query(
+                `SELECT product_id
+                 FROM products
+                 WHERE LOWER(product_code) = LOWER(?)
+                   AND product_id != ?`,
+                [product_code, product_id]
+            );
+
+            if (existingCode.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Product code already exists'
+                });
+            }
+        }
+
+        if (barcode) {
+            const [existingBarcode] = await connection.promise().query(
+                `SELECT product_id
+                 FROM products
+                 WHERE LOWER(barcode) = LOWER(?)
+                   AND product_id != ?`,
+                [barcode, product_id]
+            );
+
+            if (existingBarcode.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Barcode already exists'
+                });
+            }
+        }
+
+        const sellingPrice = toNumber(selling_price, toNumber(price, 0));
+
         // Update query
         await connection.promise().query(
             `UPDATE products 
@@ -246,6 +323,7 @@ const updateProduct = async (req, res) => {
       brand_id = ?,
       category_id = ?,
       product_code = ?,
+      barcode = ?,
       description = ?,
       price = ?,
       stock_qty = ?,
@@ -263,15 +341,16 @@ const updateProduct = async (req, res) => {
                 brand_id || null,
                 category_id,
                 product_code,
+                barcode || null,
                 description,
-                price ?? 0,
-                stock_qty ?? 0,
-                purchase_price ?? 0,
-                selling_price ?? price ?? 0,
-                gst_percent ?? 0,
+                sellingPrice,
+                toNumber(stock_qty),
+                toNumber(purchase_price),
+                sellingPrice,
+                toNumber(gst_percent),
                 hsn_code || null,
                 unit || 'PCS',
-                reorder_level ?? 0,
+                toNumber(reorder_level),
                 status || 'ACTIVE',
                 product_id
             ]

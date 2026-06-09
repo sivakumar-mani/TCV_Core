@@ -44,9 +44,19 @@ export class ProductList {
       this.products = data.map((p: any) => ({
         ...p,
         price: parseFloat(p.price),
-        stock_qty: Number(p.stock_qty)
+        stock_qty: Number(p.stock_qty),
+        purchase_price: Number(p.purchase_price),
+        selling_price: Number(p.selling_price),
+        gst_percent: Number(p.gst_percent),
+        reorder_level: Number(p.reorder_level)
       }));
     });
+  }
+
+  getStatusSeverity(status: string) {
+    if (status === 'ACTIVE') return 'success';
+    if (status === 'DISCONTINUED') return 'warn';
+    return 'danger';
   }
 
   getMenuItems(row: any): MenuItem[] {
@@ -67,7 +77,7 @@ export class ProductList {
   addProduct() {
     const dialogRef = this.dialog.open(Product, {
       width: '70%',
-      height: '60%',
+      height: '90%',
       maxHeight: '100vh',
       maxWidth: '100vw',
       disableClose: true,
@@ -85,7 +95,7 @@ export class ProductList {
     const dialogRef = this.dialog.open(Product, {
       data: row,
       width: '70%',
-      height: '70%',
+      height: '90%',
       maxHeight: '100vh',
       maxWidth: '100vw',
       disableClose: true,
