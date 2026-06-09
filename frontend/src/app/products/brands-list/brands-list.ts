@@ -1,41 +1,34 @@
 import { Component, inject } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
-
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { ReactiveFormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { BrandServices } from '../../services/brand-services';
-import { NgxUiLoaderService } from 'ngx-ui-loader';
-import { Snackbar } from '../../services/snackbar';
 import { Router } from '@angular/router';
+import { ColDef } from 'ag-grid-community';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { BrandServices } from '../../services/brand-services';
 import { globalConstants } from '../../services/global-constants';
+import { Snackbar } from '../../services/snackbar';
+import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 import { ActionMenu } from '../../shared/list-action-menu';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { Brands } from '../dialog/brands/brands';
 import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-popup';
+import { Brands } from '../dialog/brands/brands';
 
 @Component({
   selector: 'app-brands-list',
-  imports: [MatIconModule, MatToolbarModule,
-    MatTableModule, MatPaginatorModule, MatMenuModule, MatMenuModule,
-    MatInputModule, MatFormFieldModule, ReactiveFormsModule,
-  ],
+  imports: [MatIconModule, MatToolbarModule, AgGridList],
   templateUrl: './brands-list.html',
   styleUrl: './brands-list.scss',
 })
 export class BrandsList {
-  displayedColumns: string[] = ['serial', 'brand_code', 'brand_name', 'description', 'status', 'created_at', 'updated_at', 'action'];
-  dataSource: any;
+  isMobile = window.innerWidth < 768;
+  brandList: any[] = [];
   responseMessage: any;
   dialog = inject(MatDialog);
+  pagination = true;
+  paginationPageSize = 10;
+  paginationPageSizeSelector = [10, 25, 50, 100];
 
-  constructor(private http: HttpClient,
+  constructor(
     private brandServices: BrandServices,
     private ngxLoader: NgxUiLoaderService,
     private snackbarService: Snackbar,
@@ -48,26 +41,22 @@ export class BrandsList {
   }
 
   brandData() {
-    this.brandServices.getBrands().subscribe((response: any) => {
-      this.ngxLoader.stop();
-      this.dataSource = new MatTableDataSource(response);
-    },
-      (error: any) => {
+    this.brandServices.getBrands().subscribe({
+      next: (response: any) => {
         this.ngxLoader.stop();
-        if (error.error?.message) {
-          this.responseMessage = error.error?.message;
-        } else {
-          this.responseMessage = globalConstants.genericError;
-        }
-        this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex)
+        this.brandList = response ?? [];
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.handleError(error);
       }
-    )
+    });
   }
 
   addBrand() {
     const dialogConfig = this.dialog.open(Brands, {
-      width: '40%',
-      height: '60%',
+      width: this.isMobile ? '96%' : '50%',
+      height: this.isMobile ? '90%' : '70%',
       maxHeight: '100vh',
       maxWidth: '100vw',
       disableClose: true,
@@ -75,86 +64,144 @@ export class BrandsList {
         top: 'calc(1vw + 20px)'
       },
     });
-    dialogConfig.afterClosed().subscribe((results) => {
-      if (results == 'success') {
+
+    dialogConfig.afterClosed().subscribe((result) => {
+      if (result === 'success') {
         this.brandData();
       }
-    })
+    });
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+  viewBrand(brandData: any) {
+    this.dialog.open(Brands, {
+      data: { mode: 'view', brand: brandData },
+      width: this.isMobile ? '96%' : '50%',
+      height: this.isMobile ? '90%' : '70%',
+      maxHeight: '100vh',
+      maxWidth: '100vw',
+      disableClose: true,
+      position: {
+        top: '20px'
+      },
+    });
   }
-  editBrand(value: any) {
+
+  editBrand(brandData: any) {
     const dialogConfig = this.dialog.open(Brands, {
-      data: value,
-      width: '40%',
-      height: '60%',
+      data: { mode: 'edit', brand: brandData },
+      width: this.isMobile ? '96%' : '50%',
+      height: this.isMobile ? '90%' : '70%',
       maxHeight: '100vh',
       maxWidth: '100vw',
       disableClose: true,
       position: {
         top: 'calc(1vw + 20px)'
       },
-    })
-    dialogConfig.afterClosed().subscribe((results) => {
-      if (results == 'success') {
+    });
+
+    dialogConfig.afterClosed().subscribe((result) => {
+      if (result === 'success') {
         this.brandData();
       }
-    })
+    });
   }
-  deleteBrand(dialogData: any) {
+
+  deleteBrand(brandData: any) {
     const dialogConfig = this.dialog.open(ConfirmationPopup, {
       data: {
-        data: dialogData,
+        data: brandData,
         message: "Delete",
         brandName: "Brand Name"
       },
-      width: '60%',
-      height: '60%',
+      width: this.isMobile ? '90%' : '40%',
+      height: this.isMobile ? '40%' : '40%',
       maxWidth: '100vw',
       maxHeight: '100vh',
       disableClose: true,
       position: {
         top: 'calc(1vw + 20px)'
       }
-    })
-      dialogConfig.afterClosed().subscribe((results) => {
-            if (results == 'success') {
-              this.brandData();
-            }
-          })
+    });
+
     const sub = dialogConfig.componentInstance.onEmitStatusChange.subscribe(() => {
-      this.brandServices.deleteBrand(dialogData).subscribe({
+      this.brandServices.deleteBrand(brandData).subscribe({
         next: (response: any) => {
           this.ngxLoader.stop();
           this.handleTokenAndMessage(response);
-          if (response) {
-            dialogConfig.close('success');
-          }
+          dialogConfig.close('success');
           this.router.navigateByUrl('/brands');
         },
         error: (error: any) => {
           this.ngxLoader.stop();
           this.handleError(error);
         }
-      })
-    })
-    
+      });
+    });
+
+    dialogConfig.afterClosed().subscribe((result) => {
+      if (result === 'success') {
+        sub.unsubscribe();
+        this.brandData();
+      }
+    });
   }
 
-  public handleTokenAndMessage(response: any) {
+  defaultColDef: ColDef = {
+    resizable: true,
+    minWidth: 120,
+    flex: 1,
+    filter: true,
+    floatingFilter: true,
+    headerClass: 'ag-header-style',
+  };
+
+  formatIndiaDate = (params: any) => {
+    if (!params.value) return '';
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata'
+    }).format(new Date(params.value));
+  };
+
+  colDefs: ColDef[] = [
+    { headerName: 'S.No', maxWidth: 70, valueGetter: (params: any) => params.node.rowIndex + 1 },
+    { field: 'brand_code', headerName: 'Brand Code', maxWidth: 160 },
+    { field: 'brand_name', headerName: 'Brand Name', maxWidth: 180 },
+    { field: 'description', headerName: 'Description', minWidth: 260 },
+    { field: 'status', headerName: 'Status', maxWidth: 120 },
+    { field: 'created_at', headerName: 'Created Date', valueFormatter: this.formatIndiaDate },
+    { field: 'updated_at', headerName: 'Updated Date', valueFormatter: this.formatIndiaDate },
+    {
+      headerName: 'Action',
+      maxWidth: 120,
+      cellRenderer: ActionMenu,
+      cellRendererParams: {
+        dropdownMenu: [
+          { label: 'View', action: (brandData: any) => this.viewBrand(brandData) },
+          { label: 'Edit', action: (brandData: any) => this.editBrand(brandData) },
+          { label: 'Delete', action: (brandData: any) => this.deleteBrand(brandData) }
+        ]
+      },
+      filter: false,
+      sortable: false
+    }
+  ];
+
+  private handleTokenAndMessage(response: any) {
     if (response?.token) {
-      localStorage.setItem('token', response?.token)
+      localStorage.setItem('token', response?.token);
     }
-    this.responseMessage = response.message;
-    this.snackbarService.openSnackbar(this.responseMessage, '')
+    this.responseMessage = response?.message;
+    this.snackbarService.openSnackbar(this.responseMessage, '');
   }
-  public handleError(error: any) {
-    if (error.error?.message) {
-      this.responseMessage = error.error?.message || globalConstants.genericError
-    }
-    this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex)
+
+  private handleError(error: any) {
+    this.responseMessage = error?.error?.message || globalConstants.genericError;
+    this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex);
   }
 }

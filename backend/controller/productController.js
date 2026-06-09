@@ -1,7 +1,5 @@
-const express = require('express');
 const connection = require('../connection');
 require('dotenv').config();
-const jwt = require('jsonwebtoken');
 
 const getProducts = async (req, res) => {
     const query = `
@@ -57,10 +55,6 @@ const getProducts = async (req, res) => {
             return res.status(500).json({ message: "Internal server error" });
         }
 
-        if (results.length === 0) {
-            return res.status(404).json({ message: "No Products found" });
-        }
-
         return res.status(200).json(results);
     });
 };
@@ -76,6 +70,12 @@ const addProduct = async (req, res) => {
             description,
             price,
             stock_qty,
+            purchase_price,
+            selling_price,
+            gst_percent,
+            hsn_code,
+            unit,
+            reorder_level,
             status
         } = req.body;
 
@@ -155,9 +155,15 @@ const addProduct = async (req, res) => {
                 description,
                 price,
                 stock_qty,
+                purchase_price,
+                selling_price,
+                gst_percent,
+                hsn_code,
+                unit,
+                reorder_level,
                 status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const values = [
@@ -166,8 +172,14 @@ const addProduct = async (req, res) => {
             category_id,
             product_code || null,
             description || null,
-            price || 0,
-            stock_qty || 0,
+            price ?? 0,
+            stock_qty ?? 0,
+            purchase_price ?? 0,
+            selling_price ?? price ?? 0,
+            gst_percent ?? 0,
+            hsn_code || null,
+            unit || 'PCS',
+            reorder_level ?? 0,
             status || 'ACTIVE'
         ];
 
@@ -202,11 +214,24 @@ const updateProduct = async (req, res) => {
             description,
             price,
             stock_qty,
+            purchase_price,
+            selling_price,
+            gst_percent,
+            hsn_code,
+            unit,
+            reorder_level,
             status
         } = req.body;
 
+        if (!product_id) {
+            return res.status(400).json({
+                success: false,
+                message: "product_id is required"
+            });
+        }
+
         const [existing] = await connection.promise().query(
-            "select * from Products where product_id=?", [product_id]
+            "SELECT * FROM products WHERE product_id = ?", [product_id]
         )
 
         if (existing.length === 0) {
@@ -224,18 +249,30 @@ const updateProduct = async (req, res) => {
       description = ?,
       price = ?,
       stock_qty = ?,
+      purchase_price = ?,
+      selling_price = ?,
+      gst_percent = ?,
+      hsn_code = ?,
+      unit = ?,
+      reorder_level = ?,
       status = ?,
       updated_at = NOW()
       WHERE product_id = ?`,
             [
                 product_name,
-                brand_id,
+                brand_id || null,
                 category_id,
                 product_code,
                 description,
-                price,
-                stock_qty,
-                status,
+                price ?? 0,
+                stock_qty ?? 0,
+                purchase_price ?? 0,
+                selling_price ?? price ?? 0,
+                gst_percent ?? 0,
+                hsn_code || null,
+                unit || 'PCS',
+                reorder_level ?? 0,
+                status || 'ACTIVE',
                 product_id
             ]
         );

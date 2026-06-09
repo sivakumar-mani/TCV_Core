@@ -25,6 +25,14 @@
       Maximum {{ maxLength }} characters allowed.
     </span>
 
+    <span *ngIf="control.hasError('minlength')">
+      Minimum {{ control.errors?.['minlength']?.requiredLength }} characters required.
+    </span>
+
+    <span *ngIf="control.hasError('maxWords')">
+      Maximum {{ control.errors?.['maxWords']?.requiredLength }} words allowed.
+    </span>
+
   </mat-error>
   <div class="char-count" *ngIf="maxLength">
     {{ control.value?.length || 0 }} / {{ maxLength }}

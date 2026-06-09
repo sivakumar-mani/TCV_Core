@@ -7,25 +7,26 @@ import { environment } from '../../environments/environment.development';
 export class BrandServices {
    url = environment.apiUrl
    http = inject(HttpClient)
+   private endpoint = `${this.url}/v1/brands`;
 
     getBrands(){
-      return this.http.get(`${this.url}/brand/get`);
+      return this.http.get(this.endpoint);
     }
 
     addBrands(data:any){
-      return this.http.post(`${this.url}/brand/add`, data,{
+      return this.http.post(this.endpoint, data,{
         headers : new HttpHeaders().set('content-type',"application/json")
       })
     }
 
     updateBrand(data:any){
-      return this.http.patch(`${this.url}/brand/edit`,data,{
+      return this.http.patch(this.endpoint,data,{
         headers: new HttpHeaders().set('content-type',"application/json")
       } )
     }
 
     deleteBrand(data:any){
-      return this.http.delete(`${this.url}/brand/delete`,{
+      return this.http.delete(this.endpoint,{
         body: data,
          headers: new HttpHeaders().set('content-type',"application/json")
       })

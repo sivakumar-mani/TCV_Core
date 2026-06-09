@@ -1,154 +1,166 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, inject, ViewChild } from '@angular/core';
-import { Snackbar } from '../../services/snackbar';
-import { CategoryServices } from '../../services/category-services';
+import { Component, inject } from '@angular/core';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Router } from '@angular/router';
-import { TableModule } from 'primeng/table';
-import { JsonPipe, NgFor, NgIf } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { TreeTableModule } from 'primeng/treetable';
-import { InputTextModule } from 'primeng/inputtext';
-
 import { TagModule } from 'primeng/tag';
-
-import { FormsModule } from '@angular/forms';
-import { AccordionModule } from 'primeng/accordion';
 import { MatButtonModule } from '@angular/material/button';
-import { SelectModule } from 'primeng/select';
+import { CategoryServices } from '../../services/category-services';
+import { Snackbar } from '../../services/snackbar';
+import { globalConstants } from '../../services/global-constants';
+import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-popup';
 import { Category } from '../dialog/category/category';
+
 @Component({
   selector: 'app-categories-list',
-  imports: [TableModule, MatToolbar, MatIcon, AccordionModule, SelectModule,  InputTextModule,TagModule,MatButtonModule,
-    FormsModule, MatMenuModule, MatMenuModule,TreeTableModule],
+  imports: [MatToolbar, MatIcon, TagModule, MatButtonModule, MatMenuModule, TreeTableModule],
   templateUrl: './categories-list.html',
   styleUrl: './categories-list.scss',
 })
 export class CategoriesList {
-
-    categories:any;
-    http = inject(HttpClient);
-    flatCategories: any[]=[];
-    dialog = inject(MatDialog)
-    isMobile:boolean = false;
-    levelOptions: any[] = [];
-    @ViewChild('dt') dt: any;
+  dialog = inject(MatDialog);
+  isMobile = window.innerWidth < 768;
   treeData: any[] = [];
+  responseMessage: any;
 
- constructor( private snackBarService: Snackbar,
-  private categoryService : CategoryServices,
-  private ngxLoader: NgxUiLoaderService,
-  private router: Router
- ){}
+  constructor(
+    private snackBarService: Snackbar,
+    private categoryService: CategoryServices,
+    private ngxLoader: NgxUiLoaderService,
+    private router: Router
+  ) { }
 
- ngOnInit(){
-  this.getCategoriesList();   
- }
-convertToTreeNodes(data: any[]): any[] {
-  return data.map(item => ({
-    key: item.category_id,
-    data: item,
-    children: item.children ? this.convertToTreeNodes(item.children) : []
-  }));
-}
+  ngOnInit() {
+    this.ngxLoader.start();
+    this.getCategoriesList();
+  }
 
- getCategoriesList(){
-  this.categoryService.getCategory().subscribe(( response:any)=>{
-    this.ngxLoader.stop();
-      // this.categories = response;
-        this.treeData = this.convertToTreeNodes(response);
-      this.flatCategories = this.flattenCategories(response);
-       this.levelFilter();
-      
-  })
- }
+  convertToTreeNodes(data: any[]): any[] {
+    return data.map(item => ({
+      key: item.category_id,
+      data: item,
+      children: item.children ? this.convertToTreeNodes(item.children) : []
+    }));
+  }
 
- flattenCategories(categories: any[], level: number = 0, parent: any = null): any[] {
-  let result: any[] = [];
+  getCategoriesList() {
+    this.categoryService.getCategory().subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.treeData = this.convertToTreeNodes(response ?? []);
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.handleError(error);
+      }
+    });
+  }
 
-  categories.forEach(cat => {
-    result.push({
-      ...cat,
-      levelDepth: level,
-      parentName: parent ? parent.category_name : 'Main'
+  addCategory() {
+    const dialogConfig = this.dialog.open(Category, {
+      width: this.isMobile ? '96%' : '60%',
+      height: this.isMobile ? '90%' : '80%',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      disableClose: true,
+      position: {
+        top: 'calc(1vw + 20px)'
+      }
     });
 
-    if (cat.children && cat.children.length) {
-      result = result.concat(this.flattenCategories(cat.children, level + 1, cat));
-    }
-  });
-
-  return result;
-}
-
-addCategory(){
-  const dialogConfig = this.dialog.open(Category,{
-      width: this.isMobile ? '96%' : '60%',
-      height: this.isMobile ? '90%' : '80%',
-      maxWidth: '100vw',
-      maxHeight:'100vh',
-       disableClose: true,
-      position:{
-         top: 'calc(1vw + 20px)'
+    dialogConfig.afterClosed().subscribe((result) => {
+      if (result === 'success') {
+        this.getCategoriesList();
       }
-  });
-  dialogConfig.afterClosed().subscribe((results)=>{
-    if(results =='success'){
-       this.getCategoriesList();
-    }
-  }); 
-}
-editCategory(categoryValue: any) {
- const dialogConfig = this.dialog.open(Category, {
-    data : categoryValue,
-      width: this.isMobile ? '96%' : '60%',
-      height: this.isMobile ? '90%' : '80%',
-      maxWidth: '100vw',
-      maxHeight:'100vh',
-       disableClose: true,
-      position:{
-         top: 'calc(1vw + 20px)'
-      }
- });
-  dialogConfig.afterClosed().subscribe((results)=>{
-    if(results == 'success'){
-      this.getCategoriesList();
-    }
-  })
-}
-
-levelFilter(){
- const levels = [...new Set(this.flatCategories.map( c => c.level))];
-this.levelOptions = [
-  { label: 'All', value: null },
-  ...levels.map(l => ({
-    label: 'Level ' + l,
-    value: l
-  }))
-];
-}
-
-statusOptions = [
-  { label: 'Active', value: 1 },
-  { label: 'Inactive', value: 0 }
-];
-
-onSingleFilter(value: any, filterCallback: Function) {
-
-  this.dt.clear();
-
-  if (value) {
-    filterCallback(value);
+    });
   }
-}
 
+  editCategory(categoryValue: any) {
+    const dialogConfig = this.dialog.open(Category, {
+      data: categoryValue,
+      width: this.isMobile ? '96%' : '60%',
+      height: this.isMobile ? '90%' : '80%',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      disableClose: true,
+      position: {
+        top: 'calc(1vw + 20px)'
+      }
+    });
 
+    dialogConfig.afterClosed().subscribe((result) => {
+      if (result === 'success') {
+        this.getCategoriesList();
+      }
+    });
+  }
 
-deleteCategory(category: any) {
-  console.log('Delete:', category);
-}
+  deleteCategory(category: any) {
+    const dialogConfig = this.dialog.open(ConfirmationPopup, {
+      data: {
+        data: category,
+        message: "Delete",
+        brandName: "Category Name"
+      },
+      width: this.isMobile ? '90%' : '40%',
+      height: this.isMobile ? '40%' : '40%',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      disableClose: true,
+      position: {
+        top: 'calc(1vw + 20px)'
+      }
+    });
 
+    const sub = dialogConfig.componentInstance.onEmitStatusChange.subscribe(() => {
+      this.categoryService.deleteCategory(category.category_id).subscribe({
+        next: (response: any) => {
+          this.ngxLoader.stop();
+          this.handleTokenAndMessage(response);
+          dialogConfig.close('success');
+          this.router.navigateByUrl('/categoriesLists');
+        },
+        error: (error: any) => {
+          this.ngxLoader.stop();
+          this.handleError(error);
+        }
+      });
+    });
+
+    dialogConfig.afterClosed().subscribe((result) => {
+      if (result === 'success') {
+        sub.unsubscribe();
+        this.getCategoriesList();
+      }
+    });
+  }
+
+  formatIndiaDate(value: string) {
+    if (!value) return '';
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'Asia/Kolkata'
+    }).format(new Date(value));
+  }
+
+  private handleTokenAndMessage(response: any) {
+    if (response?.token) {
+      localStorage.setItem('token', response.token);
+    }
+    this.responseMessage = response?.message;
+    this.snackBarService.openSnackbar(this.responseMessage, '');
+  }
+
+  private handleError(error: any) {
+    this.responseMessage = error?.error?.message || globalConstants.genericError;
+    this.snackBarService.openSnackbar(this.responseMessage, globalConstants.errorRegex);
+  }
 }

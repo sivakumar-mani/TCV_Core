@@ -4,7 +4,7 @@
 -- For: Inventory, Purchase, Quotation, Sales & Service Management
 -- =====================================================
 -- Version: 2.0
--- Last Updated: 2026-06-07
+-- Last Updated: 2026-06-09
 -- =====================================================
 
 -- =====================================================
@@ -109,11 +109,13 @@ CREATE TABLE brands (
     brand_code VARCHAR(20) UNIQUE,
     description VARCHAR(255),
     logo_url VARCHAR(255),
+    status ENUM('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE' COMMENT 'Used by current Brand API',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_brand_name (brand_name),
+    INDEX idx_status (status),
     INDEX idx_active (is_active)
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Product brands master';
@@ -130,6 +132,7 @@ CREATE TABLE categories (
     slug VARCHAR(200) UNIQUE COMMENT 'URL-friendly identifier',
     sort_order SMALLINT NOT NULL DEFAULT 0,
     description TEXT,
+    status TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Used by current Category API',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -140,6 +143,7 @@ CREATE TABLE categories (
     INDEX idx_parent_id (parent_id),
     INDEX idx_level (level),
     INDEX idx_slug (slug),
+    INDEX idx_status (status),
     INDEX idx_active (is_active),
     INDEX idx_parent_active (parent_id, is_active)
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -152,11 +156,13 @@ COMMENT='Hierarchical product categories';
 CREATE TABLE products (
     product_id INT AUTO_INCREMENT PRIMARY KEY,
     product_name VARCHAR(200) NOT NULL,
-    product_code VARCHAR(100) NOT NULL UNIQUE COMMENT 'SKU/Product code',
+    product_code VARCHAR(100) UNIQUE COMMENT 'SKU/Product code',
     brand_id INT COMMENT 'Brand foreign key',
     category_id INT COMMENT 'Category foreign key',
     barcode VARCHAR(100) UNIQUE,
     description TEXT,
+    price DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (price >= 0) COMMENT 'Used by current Product API',
+    stock_qty DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (stock_qty >= 0) COMMENT 'Used by current Product API',
     purchase_price DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (purchase_price >= 0),
     selling_price DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (selling_price >= 0),
     gst_percent DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (gst_percent >= 0 AND gst_percent <= 100),
@@ -177,6 +183,7 @@ CREATE TABLE products (
     INDEX idx_category_id (category_id),
     INDEX idx_product_code (product_code),
     INDEX idx_status (status),
+    INDEX idx_stock_qty (stock_qty),
     INDEX idx_reorder (reorder_level, status)
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Product catalog with pricing and classification';
@@ -189,16 +196,17 @@ CREATE TABLE suppliers (
     supplier_id INT AUTO_INCREMENT PRIMARY KEY,
     supplier_name VARCHAR(150) NOT NULL UNIQUE,
     contact_person VARCHAR(100),
-    phone VARCHAR(20) NOT NULL,
+    phone VARCHAR(20),
     alternate_phone VARCHAR(20),
     email VARCHAR(100),
     gst_no VARCHAR(15) COMMENT 'GST registration number',
     pan_no VARCHAR(10),
-    address TEXT NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(100) NOT NULL,
+    address TEXT,
+    city VARCHAR(100),
+    state VARCHAR(100),
     pincode VARCHAR(10),
     opening_balance DECIMAL(12,2) NOT NULL DEFAULT 0 COMMENT 'Supplier credit balance',
+    status TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Used by current Supplier API',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     payment_terms VARCHAR(100) COMMENT 'e.g., Net 30, 2/10 Net 30',
     bank_account_no VARCHAR(20),
@@ -210,6 +218,7 @@ CREATE TABLE suppliers (
     INDEX idx_supplier_name (supplier_name),
     INDEX idx_gst_no (gst_no),
     INDEX idx_city (city),
+    INDEX idx_status (status),
     INDEX idx_active (is_active),
     INDEX idx_email (email)
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

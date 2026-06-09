@@ -8,18 +8,19 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 export class ProductService {
   url = environment.apiUrl;
   http = inject(HttpClient);
+  private endpoint = `${this.url}/v1/products`;
 
   getProduct(){
-    return this.http.get(`${this.url}/product/get`);
+    return this.http.get(this.endpoint);
   }
 
   addProduct(data:any){
-    return this.http.post(`${this.url}/product/add`, data, {
+    return this.http.post(this.endpoint, data, {
       headers : new HttpHeaders().set('content-type', "application/json")
     })
   }
   updateProduct(data:any){
-    return this.http.patch(`${this.url}/product/update`, data,{
+    return this.http.patch(this.endpoint, data,{
       headers: new HttpHeaders().set('content-type', "application/json")
     })
   }

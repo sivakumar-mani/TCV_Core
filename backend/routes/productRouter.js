@@ -3,8 +3,15 @@ const auth = require('../services/authendication');
 const router = express.Router();
 const { getProducts, addProduct, updateProduct } = require('../controller/productController');
 
+router.get('/', getProducts);
 router.get('/get', getProducts);
+router.post('/', addProduct);
 router.post('/add', addProduct);
+router.patch('/', updateProduct);
 router.patch('/update', updateProduct);
+router.patch('/:product_id', (req, res) => {
+  req.body.product_id = req.body.product_id || req.params.product_id;
+  return updateProduct(req, res);
+});
 
 module.exports = router;

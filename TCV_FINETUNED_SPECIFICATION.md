@@ -1,5 +1,5 @@
 # TCV Core - Finetuned Functional Specification Document
-**Version:** 2.0 | **Date:** 2026-06-07 | **Status:** REFINED
+**Version:** 2.0 | **Date:** 2026-06-09 | **Status:** REFINED
 
 ---
 
@@ -137,14 +137,41 @@ TCV Core is an integrated enterprise management system designed for **Time Cable
 - **Performance:** Indexed on frequently queried columns
 
 ### 4.3 API Structure
+
+#### Currently Developed APIs
+The following master-data APIs are already implemented in the current Node.js/Express backend and are consumed by the Angular frontend using `environment.apiUrl = http://localhost:8080/api`.
+
+```
+/api/product/get          - Product catalog list with brand and category path
+/api/product/add          - Add product
+/api/product/update       - Update product
+
+/api/brand/get            - Brand list
+/api/brand/add            - Add brand
+/api/brand/edit           - Update brand
+/api/brand/delete         - Delete brand
+
+/api/category/get         - Hierarchical category tree
+/api/category/add         - Add category
+/api/category/update      - Update category
+/api/category/get/:id     - Get category by ID
+
+/api/supplier/get         - Supplier list
+/api/supplier/get/:id     - Get supplier by ID
+/api/supplier/add         - Add supplier
+/api/supplier/update      - Update supplier
+/api/supplier/delete      - Delete supplier
+```
+
+#### Planned Versioned API Structure
 ```
 /api/v1/auth/          - Login, authentication
 /api/v1/users/         - User management
 /api/v1/employees/     - Employee records
-/api/v1/products/      - Product catalog
-/api/v1/brands/        - Brand management
-/api/v1/categories/    - Category management
-/api/v1/suppliers/     - Supplier management
+/api/v1/products/      - Product catalog (developed currently as /api/product/*)
+/api/v1/brands/        - Brand management (developed currently as /api/brand/*)
+/api/v1/categories/    - Category management (developed currently as /api/category/*)
+/api/v1/suppliers/     - Supplier management (developed currently as /api/supplier/*)
 /api/v1/customers/     - Customer management
 /api/v1/purchase/      - Purchase orders
 /api/v1/stock/         - Stock management
@@ -160,28 +187,30 @@ TCV Core is an integrated enterprise management system designed for **Time Cable
 
 ## 5. DATABASE ENTITIES
 
-### 5.1 Core Entities (20 Tables)
+### 5.1 Core Entities (23 Tables in Enhanced Schema)
 1. **users** - User authentication & roles
 2. **employees** - Employee master data
-3. **brands** - Product brands
-4. **categories** - Product categories (hierarchical)
-5. **products** - Product catalog with pricing
-6. **suppliers** - Supplier master data
-7. **customers** - Customer master data
-8. **purchase_master** - Purchase order headers
-9. **purchase_items** - Purchase order line items
-10. **stock_master** - Current stock levels
-11. **stock_ledger** - Stock transaction audit trail
-12. **quotation_master** - Customer quotations
-13. **quotation_items** - Quotation line items
-14. **work_orders** - Installation/service work orders
-15. **work_order_employees** - Employee assignments to work orders
-16. **sales_master** - Sales invoices
-17. **sales_items** - Sales invoice line items
-18. **customer_payments** - Customer payment records
-19. **supplier_payments** - Supplier payment records
-20. **service_tickets** - Customer service requests
-21. **warranty_master** - Product warranty records
+3. **employee_salary** - Employee salary history
+4. **brands** - Product brands (developed)
+5. **categories** - Product categories, hierarchical (developed)
+6. **products** - Product catalog with pricing and stock fields (developed)
+7. **suppliers** - Supplier master data (developed)
+8. **customers** - Customer master data
+9. **purchase_master** - Purchase order headers
+10. **purchase_items** - Purchase order line items
+11. **stock_master** - Current stock levels
+12. **stock_ledger** - Stock transaction audit trail
+13. **quotation_master** - Customer quotations
+14. **quotation_items** - Quotation line items
+15. **work_orders** - Installation/service work orders
+16. **work_order_employees** - Employee assignments to work orders
+17. **sales_master** - Sales invoices
+18. **sales_items** - Sales invoice line items
+19. **customer_payments** - Customer payment records
+20. **supplier_payments** - Supplier payment records
+21. **service_tickets** - Customer service requests
+22. **warranty_master** - Product warranty records
+23. **audit_log** - Audit trail for sensitive operations
 
 ---
 
@@ -356,5 +385,5 @@ TCV Core is an integrated enterprise management system designed for **Time Cable
 ---
 
 **Document Prepared By:** Development Team  
-**Last Updated:** 2026-06-07  
+**Last Updated:** 2026-06-09
 **Next Review Date:** 2026-09-07

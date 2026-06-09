@@ -23,6 +23,9 @@
          <span *ngIf="control?.errors?.['maxlength']">
             Maximum {{ control.errors?.['maxlength']?.requiredLength }} characters allowed
          </span>
+         <span *ngIf="control?.errors?.['minlength']">
+            Minimum {{ control.errors?.['minlength']?.requiredLength }} characters required
+         </span>
          <!-- <span *ngIf="control?.errors?.['mismatch'] && (control.get('newPassword')?.touched || control.get('confirmPassword')?.touched)">
             New Password and Confirm Password must be match
          </span> -->

@@ -1,122 +1,173 @@
+import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
-import { MatDialog, MatDialogActions, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogActions, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CommonModule, NgIf } from '@angular/common';
-import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Router } from '@angular/router';
-import { SelectFormField } from '../../../shared/select-form-field/select-form-field';
-import { InputFormField } from '../../../shared/input-form-field/input-form-field';
-import { TextareaFormField } from '../../../shared/textarea-form-field/textarea-form-field';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { BrandServices } from '../../../services/brand-services';
-import { Snackbar } from '../../../services/snackbar';
 import { globalConstants } from '../../../services/global-constants';
+import { Snackbar } from '../../../services/snackbar';
+import { InputFormField } from '../../../shared/input-form-field/input-form-field';
+import { SelectFormField } from '../../../shared/select-form-field/select-form-field';
+import { TextareaFormField } from '../../../shared/textarea-form-field/textarea-form-field';
+
+const maxWords = (limit: number) => {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value || '';
+    const wordCount = value.trim().split(/\s+/).filter(Boolean).length;
+    return wordCount > limit ? { maxWords: { requiredLength: limit, actualLength: wordCount } } : null;
+  };
+};
 
 @Component({
   selector: 'app-brands',
-  imports: [ MatDialogModule, MatDialogActions, SelectFormField, CommonModule,
-    InputFormField,TextareaFormField, MatFormFieldModule, ReactiveFormsModule],
+  imports: [
+    MatDialogModule,
+    MatDialogActions,
+    SelectFormField,
+    CommonModule,
+    InputFormField,
+    TextareaFormField,
+    MatFormFieldModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './brands.html',
   styleUrl: './brands.scss',
 })
 export class Brands {
+  brandForm!: FormGroup;
+  responseMessage: any;
+  isEditMode = false;
+  isViewMode = false;
+  brandData: any;
 
- brandForm: any = FormGroup;
- responseMessage:any
-  isEditMode!: boolean;
+  statusList = [
+    { label: 'Active', value: 'ACTIVE' },
+    { label: 'Inactive', value: 'INACTIVE' }
+  ];
 
- constructor( private fb: FormBuilder,
-  private ngxUiLoader : NgxUiLoaderService,
-  private brandService : BrandServices,
-  private snackbarService: Snackbar,
-  private dialog: MatDialogRef<Brands>,
-  private router: Router,
-  @Inject(MAT_DIALOG_DATA) public dialogData:any
- ){}
+  constructor(
+    private fb: FormBuilder,
+    private ngxUiLoader: NgxUiLoaderService,
+    private brandService: BrandServices,
+    private snackbarService: Snackbar,
+    private dialog: MatDialogRef<Brands>,
+    private router: Router,
+    @Inject(MAT_DIALOG_DATA) public dialogData: any
+  ) { }
 
- ngOnInit(){
-  this.brandFormInitiate();
- }
-
- brandFormInitiate(){
-  this.brandForm = this.fb.group({
-    brand_name:['',[Validators.required]],
-    brand_code:[''],
-     description:['',[Validators.required]],
-     status:[''],
-  });
-  if (this.dialogData) {
-        this.isEditMode = true;
-        this.brandForm.patchValue(this.dialogData);
-
-    this.brandForm.get('brand_code')?.setValidators([Validators.required]);
-    this.brandForm.get('status')?.setValidators([Validators.required]);
-
-    this.brandForm.get('brand_code')?.updateValueAndValidity();
-    this.brandForm.get('status')?.updateValueAndValidity();
-  } else {
-    this.isEditMode = false;
+  ngOnInit() {
+    this.brandData = this.dialogData?.brand || this.dialogData;
+    this.isViewMode = this.dialogData?.mode === 'view';
+    this.isEditMode = this.dialogData?.mode === 'edit' || (!!this.dialogData && !this.isViewMode);
+    this.brandFormInitiate();
   }
- }
 
-   statusList = [
-  { label: 'Active', value: 'ACTIVE' },
-  { label: 'Inactive', value: 'INACTIVE' }
-];
-    
- addSubmit(){  
-  this.ngxUiLoader.start();
-  var formData = this.brandForm.value,
-  data ={
-    brand_name : formData.brand_name, 
-    description : formData.description,
-  }
- 
-  this.brandService.addBrands(data).subscribe({
-    next: (response:any)=>{
-      this.ngxUiLoader.stop();
-     this.handleTokenAndMessage(response);
-      if(response){
-        this.dialog.close('success');
-      }
-      this.router.navigateByUrl('/brands');
-    },
-    error: (error:any)=>{
-      this.ngxUiLoader.stop();
-     this.handleError(error);
-    },
-   
-  })
- }
+  brandFormInitiate() {
+    this.brandForm = this.fb.group({
+      brand_id: [null],
+      brand_name: ['', [Validators.required]],
+      brand_code: ['', [Validators.required, Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)]],
+      description: ['', [Validators.required, Validators.minLength(10), maxWords(200)]],
+      status: ['ACTIVE', [Validators.required]],
+    });
 
- editSubmit(){
-  this.ngxUiLoader.start();
-  const formData = this.brandForm.value,
-  data ={
-    brand_id : this.dialogData.brand_id,
-    brand_name : formData.brand_name,
-    brand_code : formData.brand_code,
-    description: formData.description,
-    status: formData.status
-  }
-  this.brandService.updateBrand(data).subscribe({
-    next: (response:any)=>{
-      this.ngxUiLoader.stop();
-      this.handleTokenAndMessage(response);
-      if(response){
-        this.dialog.close('success');
-      }
-      this.router.navigateByUrl('/brands');
-    },
-    error: (error)=>{
-      this.ngxUiLoader.stop();
-      this.handleError(error);
+    if (this.brandData) {
+      this.brandForm.patchValue(this.brandData);
     }
-  })
- }
 
+    if (this.isViewMode) {
+      this.brandForm.disable();
+    }
 
- // ─── HELPERS ───────────────────────────────────────────────────────────────
+    this.brandForm.get('brand_name')?.valueChanges.subscribe((value) => {
+      if (this.isEditMode || this.isViewMode) return;
+
+      const brandCodeControl = this.brandForm.get('brand_code');
+      if (!brandCodeControl?.dirty) {
+        brandCodeControl?.setValue(this.slugify(value || ''), { emitEvent: false });
+      }
+    });
+
+    this.brandForm.get('brand_code')?.valueChanges.subscribe((value) => {
+      if (this.isViewMode) return;
+
+      const nextValue = this.slugify(value || '');
+      if (value !== nextValue) {
+        this.brandForm.get('brand_code')?.setValue(nextValue, { emitEvent: false });
+      }
+    });
+  }
+
+  addSubmit() {
+    if (this.brandForm.invalid) {
+      this.brandForm.markAllAsTouched();
+      return;
+    }
+
+    this.ngxUiLoader.start();
+    const formData = this.brandForm.getRawValue();
+    const data = {
+      brand_name: formData.brand_name,
+      brand_code: this.slugify(formData.brand_code),
+      description: formData.description,
+      status: formData.status
+    };
+
+    this.brandService.addBrands(data).subscribe({
+      next: (response: any) => {
+        this.ngxUiLoader.stop();
+        this.handleTokenAndMessage(response);
+        this.dialog.close('success');
+        this.router.navigateByUrl('/brands');
+      },
+      error: (error: any) => {
+        this.ngxUiLoader.stop();
+        this.handleError(error);
+      },
+    });
+  }
+
+  editSubmit() {
+    if (this.brandForm.invalid) {
+      this.brandForm.markAllAsTouched();
+      return;
+    }
+
+    this.ngxUiLoader.start();
+    const formData = this.brandForm.getRawValue();
+    const data = {
+      brand_id: this.brandData.brand_id,
+      brand_name: formData.brand_name,
+      brand_code: this.slugify(formData.brand_code),
+      description: formData.description,
+      status: formData.status
+    };
+
+    this.brandService.updateBrand(data).subscribe({
+      next: (response: any) => {
+        this.ngxUiLoader.stop();
+        this.handleTokenAndMessage(response);
+        this.dialog.close('success');
+        this.router.navigateByUrl('/brands');
+      },
+      error: (error: any) => {
+        this.ngxUiLoader.stop();
+        this.handleError(error);
+      }
+    });
+  }
+
+  private slugify(value: string) {
+    return value
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   private handleTokenAndMessage(response: any) {
     if (response?.token) {
       localStorage.setItem('token', response.token);

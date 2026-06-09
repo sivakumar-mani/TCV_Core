@@ -1,62 +1,66 @@
 <mat-toolbar class="p-0 border-bottom">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
-            <li class="breadcrumb-item active" aria-current="page">Products</li>
-            <li class="breadcrumb-item active" aria-current="page">Brands</li>
-        </ol>
-    </nav>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item active" aria-current="page">Products</li>
+      <li class="breadcrumb-item active" aria-current="page">Categories List</li>
+    </ol>
+  </nav>
 </mat-toolbar>
+
 <div class="content-container">
-    <div class="page-header">
-        <h1 class="page-title">Categories List</h1>
-        <button matButton="filled" (click)="addCategory()" class="btn-yes">Add Category</button>
-    </div>
-    <div class="card flex justify-center">    
+  <div class="page-header">
+    <h1 class="page-title">Categories List</h1>
+    <button matButton="filled" (click)="addCategory()" class="btn-yes">Add Category</button>
+  </div>
+
+  <div class="card flex justify-center">
     <p-treeTable [value]="treeData" [paginator]="true" [rows]="10">
 
-        <!-- HEADER -->
-        <ng-template pTemplate="header">
-            <tr>
-                <th>Name</th>
-                <th>Parent ID</th>
-                <th>Level</th>
-                <th>Short Name</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </ng-template>
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Parent</th>
+          <th>Level</th>
+          <th>Slug</th>
+          <th>Status</th>
+          <th>Created Date</th>
+          <th>Updated Date</th>
+          <th>Action</th>
+        </tr>
+      </ng-template>
 
-        <!-- BODY -->
-        <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
-            <tr>
+      <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+        <tr>
+          <td>
+            <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+            {{ rowData.category_name }}
+          </td>
 
-                <!-- TREE COLUMN -->
-                <td>
-                    <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
-                    {{ rowData.category_name }}
-                </td>
+          <td>{{ rowData.parent_name || 'Main' }}</td>
+          <td>{{ rowData.level }}</td>
+          <td>{{ rowData.slug }}</td>
 
-                <td>{{ rowData.parent_id }}</td>
-                <td>{{ rowData.level }}</td>
-                <td>{{ rowData.slug }}</td>
+          <td>
+            <p-tag
+              [value]="rowData.status == 1 ? 'Active' : 'Inactive'"
+              [severity]="rowData.status == 1 ? 'success' : 'danger'">
+            </p-tag>
+          </td>
 
-                <td>
-                    <p-tag [value]="rowData.status == 1 ? 'Active' : 'Inactive'"
-                        [severity]="rowData.status == 1 ? 'success' : 'danger'">
-                    </p-tag>
-                </td>
+          <td>{{ formatIndiaDate(rowData.created_at) }}</td>
+          <td>{{ formatIndiaDate(rowData.updated_at) }}</td>
 
-                <td>
-                    <button mat-button [matMenuTriggerFor]="menu">Action</button>
-                    <mat-menu #menu="matMenu">
-                        <button mat-menu-item (click)="editCategory(rowData)">Edit</button>
-                        <button mat-menu-item (click)="deleteCategory(rowData)">Delete</button>
-                    </mat-menu>
-                </td>
-
-            </tr>
-        </ng-template>
+          <td>
+            <button mat-button [matMenuTriggerFor]="menu">Action</button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="editCategory(rowData)">Edit</button>
+              <button mat-menu-item (click)="deleteCategory(rowData)">Delete</button>
+            </mat-menu>
+          </td>
+        </tr>
+      </ng-template>
 
     </p-treeTable>
+  </div>
 </div>

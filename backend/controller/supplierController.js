@@ -3,7 +3,12 @@ const connection = require('../connection');
 const getSuppliers = async (req, res) => {
     try {
         const [rows] = await connection.promise().query(
-            'SELECT supplier_id, supplier_name, contact_person, phone, email, gst_no, address, city, state, pincode, status, created_at, updated_at FROM suppliers ORDER BY supplier_id DESC'
+            `SELECT supplier_id, supplier_name, contact_person, phone, alternate_phone,
+                    email, gst_no, pan_no, address, city, state, pincode,
+                    opening_balance, status, payment_terms, bank_account_no,
+                    bank_name, ifsc_code, created_at, updated_at
+             FROM suppliers
+             ORDER BY supplier_id DESC`
         );
 
         return res.json(rows);
@@ -20,13 +25,20 @@ const addSupplier = async (req, res) => {
             supplier_name,
             contact_person,
             phone,
+            alternate_phone,
             email,
             gst_no,
+            pan_no,
             address,
             city,
             state,
             pincode,
-            status
+            opening_balance,
+            status,
+            payment_terms,
+            bank_account_no,
+            bank_name,
+            ifsc_code
         } = req.body;
 
         if (!supplier_name) {
@@ -38,27 +50,41 @@ const addSupplier = async (req, res) => {
                 supplier_name,
                 contact_person,
                 phone,
+                alternate_phone,
                 email,
                 gst_no,
+                pan_no,
                 address,
                 city,
                 state,
                 pincode,
-                status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                opening_balance,
+                status,
+                payment_terms,
+                bank_account_no,
+                bank_name,
+                ifsc_code
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const values = [
             supplier_name,
             contact_person || null,
             phone || null,
+            alternate_phone || null,
             email || null,
             gst_no || null,
+            pan_no || null,
             address || null,
             city || null,
             state || null,
             pincode || null,
-            typeof status !== 'undefined' ? status : 1
+            opening_balance ?? 0,
+            typeof status !== 'undefined' ? status : 1,
+            payment_terms || null,
+            bank_account_no || null,
+            bank_name || null,
+            ifsc_code || null
         ];
 
         const [result] = await connection.promise().query(query, values);
@@ -78,17 +104,28 @@ const updateSupplier = async (req, res) => {
             supplier_name,
             contact_person,
             phone,
+            alternate_phone,
             email,
             gst_no,
+            pan_no,
             address,
             city,
             state,
             pincode,
-            status
+            opening_balance,
+            status,
+            payment_terms,
+            bank_account_no,
+            bank_name,
+            ifsc_code
         } = req.body;
 
         if (!supplier_id) {
             return res.status(400).json({ success: false, message: 'supplier_id is required' });
+        }
+
+        if (!supplier_name) {
+            return res.status(400).json({ success: false, message: 'Supplier name is required' });
         }
 
         const [existing] = await connection.promise().query('SELECT supplier_id FROM suppliers WHERE supplier_id = ?', [supplier_id]);
@@ -102,28 +139,42 @@ const updateSupplier = async (req, res) => {
                 supplier_name = ?,
                 contact_person = ?,
                 phone = ?,
+                alternate_phone = ?,
                 email = ?,
                 gst_no = ?,
+                pan_no = ?,
                 address = ?,
                 city = ?,
                 state = ?,
                 pincode = ?,
+                opening_balance = ?,
                 status = ?,
+                payment_terms = ?,
+                bank_account_no = ?,
+                bank_name = ?,
+                ifsc_code = ?,
                 updated_at = NOW()
             WHERE supplier_id = ?
         `;
 
         const values = [
-            supplier_name || null,
+            supplier_name,
             contact_person || null,
             phone || null,
+            alternate_phone || null,
             email || null,
             gst_no || null,
+            pan_no || null,
             address || null,
             city || null,
             state || null,
             pincode || null,
+            opening_balance ?? 0,
             typeof status !== 'undefined' ? status : 1,
+            payment_terms || null,
+            bank_account_no || null,
+            bank_name || null,
+            ifsc_code || null,
             supplier_id
         ];
 
@@ -170,7 +221,12 @@ const getSupplierById = async (req, res) => {
         }
 
         const [rows] = await connection.promise().query(
-            'SELECT supplier_id, supplier_name, contact_person, phone, email, gst_no, address, city, state, pincode, status, created_at, updated_at FROM suppliers WHERE supplier_id = ?',
+            `SELECT supplier_id, supplier_name, contact_person, phone, alternate_phone,
+                    email, gst_no, pan_no, address, city, state, pincode,
+                    opening_balance, status, payment_terms, bank_account_no,
+                    bank_name, ifsc_code, created_at, updated_at
+             FROM suppliers
+             WHERE supplier_id = ?`,
             [supplier_id]
         );
 

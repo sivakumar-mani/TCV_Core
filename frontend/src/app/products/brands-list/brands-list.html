@@ -3,86 +3,19 @@
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
       <li class="breadcrumb-item active" aria-current="page">Products</li>
-      <li class="breadcrumb-item active" aria-current="page">Brands</li>
+      <li class="breadcrumb-item active" aria-current="page">Brands List</li>
     </ol>
   </nav>
 </mat-toolbar>
-<div class="content-container">
-  <div class="page-header">
-    <h1 class="page-title">Brands List</h1>
-    <button matButton="filled" (click)="addBrand()" class="btn-yes">Add Brand</button>
-  </div>
 
-  <div class="ag-grid-wrapper">
-    <div class="mat-elevation-z8">
-      <mat-form-field>
-        <mat-label>Filter</mat-label>
-        <input matInput (keyup)="applyFilter($event)" placeholder="Ex. ium" #input>
-      </mat-form-field>
-      <table mat-table [dataSource]="dataSource">
-        <!-- serial Column -->
-        <ng-container matColumnDef="serial">
-          <th mat-header-cell *matHeaderCellDef> Serial </th>
-          <td mat-cell *matCellDef="let element; let i = index"> {{i + 1}} </td>
-        </ng-container>
-
-
-        <!-- Name Column -->
-        <ng-container matColumnDef="brand_code">
-          <th mat-header-cell *matHeaderCellDef> Brand Code </th>
-          <td mat-cell *matCellDef="let element"> {{element.brand_code}} </td>
-        </ng-container>
-
-        <!-- Weight Column -->
-        <ng-container matColumnDef="brand_name">
-          <th mat-header-cell *matHeaderCellDef> Brand Name </th>
-          <td mat-cell *matCellDef="let element"> {{element.brand_name}} </td>
-        </ng-container>
-        <!-- Symbol Column -->
-        <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef> Descritption </th>
-          <td mat-cell *matCellDef="let element"> {{element.description}} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef> Status </th>
-          <td mat-cell *matCellDef="let element"> {{element.status}} </td>
-        </ng-container>
-        <ng-container matColumnDef="created_at">
-          <th mat-header-cell *matHeaderCellDef> Created At </th>
-          <td mat-cell *matCellDef="let element"> {{element.created_at}} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="updated_at">
-          <th mat-header-cell *matHeaderCellDef> Updated At </th>
-          <td mat-cell *matCellDef="let element"> {{element.updated_at}} </td>
-        </ng-container>
-        <!-- Actions Column -->
-        <ng-container matColumnDef="action">
-          <th mat-header-cell *matHeaderCellDef> Action </th>
-          <td mat-cell *matCellDef="let element">
-            <a [matMenuTriggerFor]="menu">Action</a>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="editBrand(element)">Edit</button>
-              <button mat-menu-item (click)="deleteBrand(element)">Delete</button>
-            </mat-menu>
-          </td>
-        </ng-container>
-        <!-- <app-action-menu
-      [rowData]="element"
-      [actions]="actionList">
-    </app-action-menu> -->
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-      </table>
-
-      <!-- Pagination -->
-      <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons>
-      </mat-paginator>
-
-    </div>
-  </div>
-
-</div>
+<app-ag-grid-list
+  title="Brands List"
+  addButtonLabel="Add Brand"
+  [rowData]="brandList"
+  [columnDefs]="colDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="pagination"
+  [paginationPageSize]="paginationPageSize"
+  [paginationPageSizeSelector]="paginationPageSizeSelector"
+  (add)="addBrand()">
+</app-ag-grid-list>
