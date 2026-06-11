@@ -1,0 +1,192 @@
+<nav aria-label="breadcrumb" class="bg-light border-bottom px-3 py-2 mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a routerLink="/dashboard">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Employee Salary</li>
+  </ol>
+</nav>
+
+<app-ag-grid-list
+  title="Employee Salary Slips"
+  addButtonLabel="Add Salary Slip"
+  [rowData]="salarySlips"
+  [columnDefs]="colDefs"
+  [defaultColDef]="defaultColDef"
+  [pagination]="pagination"
+  [paginationPageSize]="paginationPageSize"
+  [paginationPageSizeSelector]="paginationPageSizeSelector"
+  (add)="openAddForm()">
+</app-ag-grid-list>
+
+<div class="salary-editor mt-3" *ngIf="showEditor">
+  <form [formGroup]="salaryForm" (ngSubmit)="submit()">
+    <div class="page-header editor-header">
+      <h2 class="page-title">{{ isEditMode ? 'Edit Salary Slip' : 'Add Salary Slip' }}</h2>
+      <div class="header-actions">
+        <button type="button" class="btn-no" (click)="cancelEditor()">Cancel</button>
+        <button type="submit" class="btn-yes">Save</button>
+      </div>
+    </div>
+
+    <div class="salary-form-grid">
+      <div class="form-group">
+        <label class="form-label">Employee Name</label>
+        <select class="form-select" formControlName="employee_id">
+          <option value="">Select employee</option>
+          <option *ngFor="let employee of employees" [value]="employee.employee_id">
+            {{ employee.employee_code }} - {{ employee.employee_name }}
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company Name</label>
+        <input class="form-control" formControlName="company_name" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Salary Month</label>
+        <select class="form-select" formControlName="salary_month">
+          <option *ngFor="let month of monthOptions" [value]="month.value">{{ month.label }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Salary Year</label>
+        <input type="number" min="2000" class="form-control" formControlName="salary_year" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-control" formControlName="period_start_date" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-control" formControlName="period_end_date" />
+      </div>
+    </div>
+
+    <div class="salary-lines">
+      <div class="line-toolbar">
+        <h3>Salary Components</h3>
+        <div>
+          <button type="button" class="btn-yes" (click)="addItem('EARNING')">Add Earning</button>
+          <button type="button" class="btn-no ms-2" (click)="addItem('DEDUCTION')">Add Deduction</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody formArrayName="items">
+            <tr *ngFor="let item of items.controls; let i = index; trackBy: trackByIndex" [formGroupName]="i">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <select class="form-select compact-control" formControlName="item_type">
+                  <option value="EARNING">Earning</option>
+                  <option value="DEDUCTION">Deduction</option>
+                </select>
+              </td>
+              <td><input class="form-control compact-control" formControlName="description" /></td>
+              <td><input type="number" min="0" class="form-control compact-control text-end" formControlName="qty" /></td>
+              <td><input type="number" min="0" class="form-control compact-control text-end" formControlName="price" /></td>
+              <td class="text-end fw-semibold">{{ currency(getLineTotal(item)) }}</td>
+              <td class="text-center">
+                <button type="button" class="btn-no remove-btn" (click)="removeItem(i)">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" class="text-end fw-semibold">Sub Total</td>
+              <td class="text-end fw-semibold">{{ currency(earningsTotal) }}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="text-end fw-semibold">Deductions</td>
+              <td class="text-end fw-semibold">-{{ currency(deductionsTotal) }}</td>
+              <td></td>
+            </tr>
+            <tr class="net-row">
+              <td colspan="5" class="text-end fw-bold">Net Salary</td>
+              <td class="text-end fw-bold">{{ currency(netSalary) }}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="form-group mt-3">
+      <label class="form-label">Remarks</label>
+      <textarea class="form-control" rows="2" formControlName="remarks"></textarea>
+    </div>
+  </form>
+</div>
+
+<div class="modal-backdrop fade show" *ngIf="selectedSlip"></div>
+<div class="modal fade show d-block" tabindex="-1" *ngIf="selectedSlip" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Salary Slip</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="closeView()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="slip-preview">
+          <div class="slip-title">
+            <h2>{{ selectedSlip.company_name }}</h2>
+            <p>Salary Slip</p>
+          </div>
+          <div class="slip-meta">
+            <div><strong>Employee:</strong> {{ selectedSlip.employee_name }}</div>
+            <div><strong>Code:</strong> {{ selectedSlip.employee_code }}</div>
+            <div><strong>Month:</strong> {{ getMonthName(selectedSlip.salary_month) }} {{ selectedSlip.salary_year }}</div>
+            <div><strong>Period:</strong> {{ selectedSlip.period_start_date | date:'dd/MM/yyyy' }} to {{ selectedSlip.period_end_date | date:'dd/MM/yyyy' }}</div>
+          </div>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Description</th>
+                <th class="text-end">Qty</th>
+                <th class="text-end">Price</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedSlip.items; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ item.description }}</td>
+                <td class="text-end">{{ item.qty }}</td>
+                <td class="text-end">{{ currency(item.price) }}</td>
+                <td class="text-end">{{ item.item_type === 'DEDUCTION' ? '-' : '' }}{{ currency(item.total) }}</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td colspan="4" class="text-end fw-semibold">Sub Total</td>
+                <td class="text-end fw-semibold">{{ currency(selectedSlip.earnings_total) }}</td>
+              </tr>
+              <tr>
+                <td colspan="4" class="text-end fw-semibold">Deductions</td>
+                <td class="text-end fw-semibold">-{{ currency(selectedSlip.deductions_total) }}</td>
+              </tr>
+              <tr class="net-row">
+                <td colspan="4" class="text-end fw-bold">Net Salary</td>
+                <td class="text-end fw-bold">{{ currency(selectedSlip.net_salary) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-yes" (click)="openPrintWindow(selectedSlip)">Download PDF</button>
+        <button type="button" class="btn-no" (click)="closeView()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
