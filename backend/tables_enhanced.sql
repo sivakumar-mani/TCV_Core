@@ -84,9 +84,16 @@ COMMENT='Employee master data with department assignment';
 CREATE TABLE employee_salary (
     salary_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
+    company_name VARCHAR(150) NOT NULL DEFAULT 'TCV',
+    salary_month TINYINT NOT NULL CHECK (salary_month BETWEEN 1 AND 12),
+    salary_year SMALLINT NOT NULL CHECK (salary_year >= 2000),
+    period_start_date DATE NOT NULL,
+    period_end_date DATE NOT NULL,
     salary_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (salary_amount >= 0),
-    effective_from DATE NOT NULL,
-    effective_to DATE,
+    earnings_total DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (earnings_total >= 0),
+    deductions_total DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (deductions_total >= 0),
+    net_salary DECIMAL(12,2) NOT NULL DEFAULT 0,
+    status ENUM('DRAFT','FINAL') NOT NULL DEFAULT 'FINAL',
     remarks TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -94,10 +101,31 @@ CREATE TABLE employee_salary (
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
 
+    UNIQUE KEY uk_employee_salary_month (employee_id, salary_month, salary_year),
     INDEX idx_employee_id (employee_id),
-    INDEX idx_effective_from (effective_from)
+    INDEX idx_salary_period (salary_year, salary_month),
+    INDEX idx_period_start_date (period_start_date)
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Employee salary history maintained separately from employee master';
+COMMENT='Employee monthly salary slip header';
+
+CREATE TABLE employee_salary_items (
+    salary_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    salary_id INT NOT NULL,
+    item_type ENUM('EARNING','DEDUCTION') NOT NULL DEFAULT 'EARNING',
+    line_no SMALLINT NOT NULL,
+    description VARCHAR(200) NOT NULL,
+    qty DECIMAL(10,2) NOT NULL DEFAULT 1 CHECK (qty >= 0),
+    price DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (price >= 0),
+    total DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (total >= 0),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (salary_id) REFERENCES employee_salary(salary_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+
+    INDEX idx_salary_id (salary_id),
+    INDEX idx_item_type (item_type)
+) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Employee salary slip earning and deduction lines';
 
 -- =====================================================
 -- 3. BRANDS
