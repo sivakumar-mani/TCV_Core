@@ -7,7 +7,6 @@ const categoryRoute = require('./routes/categoryRouter');
 const productRoute = require('./routes/productRouter')
 const supplierRoute = require('./routes/supplierRouter')
 const employeeRoute = require('./routes/employeeRouter')
-const employeeSalaryRoute = require('./routes/employeeSalaryRouter')
 const auditLogRoute = require('./routes/auditLogRouter')
 const locationRoute = require('./routes/locationRouter')
 const app = express()
@@ -27,7 +26,6 @@ app.use('/api/v1/categories', categoryRoute);
 app.use('/api/v1/products', productRoute);
 app.use('/api/v1/suppliers', supplierRoute);
 app.use('/api/employee', employeeRoute);
-app.use('/api/employee-salary', employeeSalaryRoute);
 app.use('/api/audit-log', auditLogRoute);
 app.use('/api/location', locationRoute);
 module.exports = app;

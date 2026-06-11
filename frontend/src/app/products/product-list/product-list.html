@@ -31,13 +31,8 @@
           'product_code',
           'brand_name',
           'category_path',
-          'barcode',
-          'purchase_price',
-          'selling_price',
-          'gst_percent',
-          'unit',
+          'price',
           'stock_qty',
-          'reorder_level',
           'status'
         ]"
         styleClass="p-datatable-sm p-datatable-gridlines"
@@ -74,26 +69,11 @@
             <th pSortableColumn="category_path">
               Category <p-sortIcon field="category_path" />
             </th>
-            <th pSortableColumn="barcode">
-              Barcode <p-sortIcon field="barcode" />
-            </th>
-            <th pSortableColumn="purchase_price">
-              Purchase <p-sortIcon field="purchase_price" />
-            </th>
-            <th pSortableColumn="selling_price">
-              Selling <p-sortIcon field="selling_price" />
-            </th>
-            <th pSortableColumn="gst_percent">
-              GST <p-sortIcon field="gst_percent" />
-            </th>
-            <th pSortableColumn="unit">
-              Unit <p-sortIcon field="unit" />
+            <th pSortableColumn="price">
+              Price <p-sortIcon field="price" />
             </th>
             <th pSortableColumn="stock_qty">
               Stock <p-sortIcon field="stock_qty" />
-            </th>
-            <th pSortableColumn="reorder_level">
-              Reorder <p-sortIcon field="reorder_level" />
             </th>
             <th pSortableColumn="status">
               Status <p-sortIcon field="status" />
@@ -137,42 +117,10 @@
       class="p-column-filter" />
   </th>
   <th>
-    <input
-      pInputText
-      type="text"
-      (input)="dt.filter($any($event.target).value, 'barcode', 'contains')"
-      placeholder="Search..."
-      class="p-column-filter" />
-  </th>
-  <th>
-    <input
-      pInputText
-      type="text"
-      (input)="dt.filter($any($event.target).value, 'purchase_price', 'contains')"
-      placeholder="Search..."
-      class="p-column-filter" />
-  </th>
-  <th>
-    <input
-      pInputText
-      type="text"
-      (input)="dt.filter($any($event.target).value, 'selling_price', 'contains')"
-      placeholder="Search..."
-      class="p-column-filter" />
-  </th>
-  <th>
-    <input
-      pInputText
-      type="text"
-      (input)="dt.filter($any($event.target).value, 'gst_percent', 'contains')"
-      placeholder="Search..."
-      class="p-column-filter" />
-  </th>
-  <th>
-    <input
-      pInputText
-      type="text"
-      (input)="dt.filter($any($event.target).value, 'unit', 'contains')"
+    <input 
+      pInputText 
+      type="text" 
+      (input)="dt.filter($any($event.target).value, 'price', 'contains')"
       placeholder="Search..."
       class="p-column-filter" />
   </th>
@@ -181,14 +129,6 @@
       pInputText 
       type="text" 
       (input)="dt.filter($any($event.target).value, 'stock_qty', 'contains')"
-      placeholder="Search..."
-      class="p-column-filter" />
-  </th>
-  <th>
-    <input 
-      pInputText 
-      type="text" 
-      (input)="dt.filter($any($event.target).value, 'reorder_level', 'contains')"
       placeholder="Search..."
       class="p-column-filter" />
   </th>
@@ -212,17 +152,12 @@
             <td>{{ row.product_code }}</td>
             <td>{{ row.brand_name }}</td>
             <td class="text-wrap">{{ row.category_path }}</td>
-            <td>{{ row.barcode }}</td>
-            <td>Rs. {{ row.purchase_price }}</td>
-            <td>Rs. {{ row.selling_price }}</td>
-            <td>{{ row.gst_percent }}%</td>
-            <td>{{ row.unit }}</td>
+            <td>₹ {{ row.price }}</td>
             <td>{{ row.stock_qty }}</td>
-            <td>{{ row.reorder_level }}</td>
             <td>
               <p-tag
                 [value]="row.status"
-                [severity]="getStatusSeverity(row.status)">
+                [severity]="row.status === 'ACTIVE' ? 'success' : 'danger'">
               </p-tag>
             </td>
             <td>
@@ -236,7 +171,7 @@
         <!-- EMPTY -->
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="13" class="text-center p-3">
+            <td colspan="8" class="text-center p-3">
               No Products Found
             </td>
           </tr>

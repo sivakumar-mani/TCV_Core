@@ -20,7 +20,7 @@ import { InputFormField } from '../../../shared/input-form-field/input-form-fiel
 @Component({
   selector: 'app-product',
   imports: [MatFormFieldModule, MatDialogModule, CommonModule, MatInputModule,
-     NgIf, FormsModule, NgFor, ReactiveFormsModule, MatSelectModule, MatInputModule, MatButtonModule],
+     NgIf, FormsModule, NgFor, ReactiveFormsModule, MatSelectModule, MatInputModule],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })
@@ -55,17 +55,10 @@ export class Product {
       product_name: [''],
       brand_id: ['', Validators.required],
       category_id: ['', Validators.required],
-      barcode: [''],
       description: [''],
       price: [0],
       stock_qty: [0],
-      purchase_price: [0],
-      selling_price: [0, Validators.required],
-      gst_percent: [0],
-      hsn_code: [''],
-      unit: ['PCS', Validators.required],
-      reorder_level: [0],
-      status:['ACTIVE', Validators.required],
+      status:[''],
     });
     if (this.dialogData) {
       this.productForm.patchValue(this.dialogData);
@@ -78,10 +71,6 @@ export class Product {
       this.productForm.get('price')?.updateValueAndValidity();
       this.productForm.get('status')?.updateValueAndValidity();
       this.productForm.get('stock_qty')?.updateValueAndValidity();
-      this.productForm.get('purchase_price')?.updateValueAndValidity();
-      this.productForm.get('selling_price')?.updateValueAndValidity();
-      this.productForm.get('gst_percent')?.updateValueAndValidity();
-      this.productForm.get('unit')?.updateValueAndValidity();
         
     } 
   }
@@ -199,17 +188,9 @@ export class Product {
       brand_id: formData.brand_id,
       category_id: formData.category_id,
       product_code: this.productCode,
-      barcode: formData.barcode,
       description: formData.description,
-      price: formData.selling_price,
+      price: formData.price,
       stock_qty: formData.stock_qty,
-      purchase_price: formData.purchase_price,
-      selling_price: formData.selling_price,
-      gst_percent: formData.gst_percent,
-      hsn_code: formData.hsn_code,
-      unit: formData.unit,
-      reorder_level: formData.reorder_level,
-      status: formData.status
     }
 
     this.productService.addProduct(data).subscribe({
@@ -248,16 +229,9 @@ export class Product {
       brand_id: formData.brand_id,
       category_id: formData.category_id,
       product_code: this.productCode,
-      barcode: formData.barcode,
       description: formData.description,
-      price: formData.selling_price,
+      price: formData.price,
       stock_qty: formData.stock_qty,
-      purchase_price: formData.purchase_price,
-      selling_price: formData.selling_price,
-      gst_percent: formData.gst_percent,
-      hsn_code: formData.hsn_code,
-      unit: formData.unit,
-      reorder_level: formData.reorder_level,
       status: formData.status,
       product_id: this.dialogData.product_id // 👈 important
     };

@@ -107,14 +107,6 @@ export const routes: Routes = [
             }
         },
          {
-            path:'employee-salary',
-            loadComponent: ()=> import('./employee-salary/employee-salary').then(n => n.EmployeeSalary),
-            canActivate:[RouteGuard],
-            data:{
-                expectedRole:['admin']
-            }
-        },
-         {
             path:'audit-logs',
             loadComponent: ()=> import('./audit-logs/audit-log-list/audit-log-list').then(n => n.AuditLogList),
             canActivate:[RouteGuard],
