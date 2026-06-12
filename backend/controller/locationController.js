@@ -1,3 +1,4 @@
+const connection = require('../connection');
 const https = require('https');
 
 let locationCache = null;
@@ -79,6 +80,94 @@ const getLocationData = async () => {
   return locationCache;
 };
 
+// Get all states (from database)
+const getStatesFromDB = async (req, res) => {
+  try {
+    const [states] = await connection.promise().query(
+      'SELECT state_id, state_code, state_name FROM states WHERE is_active = 1 ORDER BY state_name'
+    );
+    return res.json(states);
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+// Get districts by state_id (from database)
+const getDistrictsByStateDB = async (req, res) => {
+  try {
+    const { state_id } = req.params;
+
+    if (!state_id) {
+      return res.status(400).json({ success: false, message: 'state_id is required' });
+    }
+
+    const [districts] = await connection.promise().query(
+      'SELECT district_id, district_name FROM districts WHERE state_id = ? AND is_active = 1 ORDER BY district_name',
+      [state_id]
+    );
+
+    return res.json(districts);
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+// Get all states with districts (from database)
+const getStatesWithDistrictsDB = async (req, res) => {
+  try {
+    const [states] = await connection.promise().query(
+      `SELECT s.state_id, s.state_code, s.state_name, 
+              JSON_ARRAYAGG(JSON_OBJECT('district_id', d.district_id, 'district_name', d.district_name)) as districts
+       FROM states s
+       LEFT JOIN districts d ON s.state_id = d.state_id AND d.is_active = 1
+       WHERE s.is_active = 1
+       GROUP BY s.state_id, s.state_code, s.state_name
+       ORDER BY s.state_name`
+    );
+    return res.json(states);
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+};
+
+// Get list of ID proof types (for dropdown)
+const getIdProofTypes = async (req, res) => {
+  const idProofTypes = [
+    { code: 'AADHAAR', name: 'Aadhar' },
+    { code: 'PAN', name: 'PAN Card' },
+    { code: 'VOTER_ID', name: 'Voter ID' },
+    { code: 'PASSPORT', name: 'Passport' },
+    { code: 'DRIVING_LICENSE', name: 'Driving License' },
+    { code: 'RATION_CARD', name: 'Ration Card' },
+    { code: 'NREGA_JOB_CARD', name: 'NREGA Job Card' },
+    { code: 'BANK_PASSBOOK', name: 'Bank Passbook' },
+    { code: 'POST_OFFICE_PASSBOOK', name: 'Post Office Passbook' },
+    { code: 'GOVERNMENT_EMPLOYEE_ID', name: 'Government Employee ID' },
+    { code: 'DEFENCE_ID', name: 'Defence ID' },
+    { code: 'PENSIONER_CARD', name: 'Pensioner Card' },
+    { code: 'BIRTH_CERTIFICATE', name: 'Birth Certificate' },
+    { code: 'OTHER', name: 'Other' }
+  ];
+
+  return res.json(idProofTypes);
+};
+
+// Get list of departments
+const getDepartments = async (req, res) => {
+  const departments = [
+    { code: 'ADMIN', name: 'Admin' },
+    { code: 'SALES', name: 'Sales' },
+    { code: 'PURCHASE', name: 'Purchase' },
+    { code: 'STORE', name: 'Store' },
+    { code: 'INSTALLATION', name: 'Installation' },
+    { code: 'SERVICE', name: 'Service' },
+    { code: 'ACCOUNTS', name: 'Accounts' }
+  ];
+
+  return res.json(departments);
+};
+
+// Legacy API methods (using external source)
 const getStates = async (req, res) => {
   try {
     const states = await getLocationData();
@@ -118,4 +207,12 @@ const getDistricts = async (req, res) => {
   }
 };
 
-module.exports = { getStates, getDistricts };
+module.exports = { 
+  getStates,
+  getDistricts,
+  getStatesFromDB,
+  getDistrictsByStateDB,
+  getStatesWithDistrictsDB,
+  getIdProofTypes,
+  getDepartments
+};

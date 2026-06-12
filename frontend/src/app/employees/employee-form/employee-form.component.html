@@ -1,0 +1,352 @@
+<div class="employee-form-container">
+  <mat-card class="form-card">
+    <mat-card-header>
+      <mat-card-title>
+        {{ isEditMode ? 'Edit Employee' : 'Add New Employee' }}
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+        
+        <!-- Employee Code Section -->
+        <div class="employee-code-section" *ngIf="isEditMode">
+          <mat-form-field class="form-field-full">
+            <mat-label>Employee Code</mat-label>
+            <input matInput formControlName="employeeCode" disabled />
+            <mat-hint>Auto-generated code</mat-hint>
+          </mat-form-field>
+        </div>
+
+        <!-- Photo Upload Section -->
+        <div class="photo-section">
+          <div class="photo-preview" *ngIf="photoPreview">
+            <img [src]="photoPreview" alt="Employee Photo" />
+          </div>
+          <div class="photo-upload">
+            <input 
+              type="file" 
+              #photoInput 
+              (change)="onFileSelected($event)" 
+              accept=".jpeg,.jpg,.png"
+              hidden
+            />
+            <button 
+              type="button" 
+              mat-raised-button 
+              color="primary"
+              (click)="photoInput.click()"
+            >
+              <mat-icon>upload</mat-icon>
+              Upload Photo (JPEG/PNG, Max 1MB)
+            </button>
+            <p class="photo-note">Photo will be displayed in max 1MB size</p>
+          </div>
+        </div>
+
+        <mat-tab-group>
+          <!-- Personal Information Tab -->
+          <mat-tab label="Personal Information">
+            <div class="tab-content">
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>First Name *</mat-label>
+                  <input matInput formControlName="firstName" />
+                  <mat-error *ngIf="employeeForm.get('firstName')?.hasError('required')">
+                    First name is required
+                  </mat-error>
+                  <mat-error *ngIf="employeeForm.get('firstName')?.hasError('minlength')">
+                    Minimum 2 characters required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="form-field-half">
+                  <mat-label>Last Name *</mat-label>
+                  <input matInput formControlName="lastName" />
+                  <mat-error *ngIf="employeeForm.get('lastName')?.hasError('required')">
+                    Last name is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>Date of Birth *</mat-label>
+                  <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth" />
+                  <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #dobPicker></mat-datepicker>
+                  <mat-error *ngIf="employeeForm.get('dateOfBirth')?.hasError('required')">
+                    Date of birth is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="form-field-half">
+                  <mat-label>Qualification *</mat-label>
+                  <input matInput formControlName="qualification" />
+                  <mat-error *ngIf="employeeForm.get('qualification')?.hasError('required')">
+                    Qualification is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>Phone *</mat-label>
+                  <input matInput formControlName="phone" placeholder="10 digits" />
+                  <mat-error *ngIf="employeeForm.get('phone')?.hasError('required')">
+                    Phone is required
+                  </mat-error>
+                  <mat-error *ngIf="employeeForm.get('phone')?.hasError('pattern')">
+                    Phone must be exactly 10 numeric digits
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="form-field-half">
+                  <mat-label>Alternate Phone</mat-label>
+                  <input matInput formControlName="alternatePhone" placeholder="10 digits (optional)" />
+                  <mat-error *ngIf="employeeForm.get('alternatePhone')?.hasError('pattern')">
+                    Phone must be exactly 10 numeric digits
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-full">
+                  <mat-label>Email</mat-label>
+                  <input matInput formControlName="email" type="email" />
+                  <mat-error *ngIf="employeeForm.get('email')?.hasError('email')">
+                    Please enter a valid email
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- Employment Information Tab -->
+          <mat-tab label="Employment Information">
+            <div class="tab-content">
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>Designation *</mat-label>
+                  <input matInput formControlName="designation" />
+                  <mat-error *ngIf="employeeForm.get('designation')?.hasError('required')">
+                    Designation is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="form-field-half">
+                  <mat-label>Department *</mat-label>
+                  <mat-select formControlName="department">
+                    <mat-option>-- Select Department --</mat-option>
+                    <mat-option *ngFor="let dept of departments" [value]="dept.code">
+                      {{ dept.name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="employeeForm.get('department')?.hasError('required')">
+                    Department is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>Joining Date *</mat-label>
+                  <input matInput [matDatepicker]="joiningPicker" formControlName="joiningDate" />
+                  <mat-datepicker-toggle matSuffix [for]="joiningPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #joiningPicker></mat-datepicker>
+                  <mat-error *ngIf="employeeForm.get('joiningDate')?.hasError('required')">
+                    Joining date is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- Identification Tab -->
+          <mat-tab label="Identification">
+            <div class="tab-content">
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>ID Proof Type *</mat-label>
+                  <mat-select formControlName="idProofType">
+                    <mat-option>-- Select ID Proof Type --</mat-option>
+                    <mat-option *ngFor="let type of idProofTypes" [value]="type.code">
+                      {{ type.name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="employeeForm.get('idProofType')?.hasError('required')">
+                    ID Proof Type is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="form-field-half">
+                  <mat-label>ID Proof Number *</mat-label>
+                  <input matInput formControlName="idProofNumber" />
+                  <mat-error *ngIf="employeeForm.get('idProofNumber')?.hasError('required')">
+                    ID Proof Number is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- Family Information Tab -->
+          <mat-tab label="Family Information">
+            <div class="tab-content">
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>Spouse/Parent Name *</mat-label>
+                  <input matInput formControlName="spouseOrParentName" />
+                  <mat-error *ngIf="employeeForm.get('spouseOrParentName')?.hasError('required')">
+                    Spouse/Parent Name is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="form-field-half">
+                  <mat-label>Relationship</mat-label>
+                  <input matInput formControlName="relationship" />
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-full">
+                  <mat-label>Kids Details</mat-label>
+                  <textarea matInput formControlName="kidsDetails" rows="3"></textarea>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- Permanent Address Tab -->
+          <mat-tab label="Permanent Address">
+            <div class="tab-content">
+              <div class="form-row">
+                <mat-form-field class="form-field-full">
+                  <mat-label>Address *</mat-label>
+                  <textarea matInput formControlName="permanentAddress" rows="3"></textarea>
+                  <mat-error *ngIf="employeeForm.get('permanentAddress')?.hasError('required')">
+                    Address is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>State *</mat-label>
+                  <mat-select 
+                    formControlName="permanentState"
+                    (selectionChange)="onPermanentStateChange($event.value)"
+                  >
+                    <mat-option>-- Select State --</mat-option>
+                    <mat-option *ngFor="let state of states" [value]="state.state_id">
+                      {{ state.state_name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="employeeForm.get('permanentState')?.hasError('required')">
+                    State is required
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="form-field-half">
+                  <mat-label>District/City *</mat-label>
+                  <mat-select formControlName="permanentDistrict">
+                    <mat-option>-- Select District --</mat-option>
+                    <mat-option *ngFor="let district of permanentDistricts" [value]="district.district_name">
+                      {{ district.district_name }}
+                    </mat-option>
+                  </mat-select>
+                  <mat-error *ngIf="employeeForm.get('permanentDistrict')?.hasError('required')">
+                    District is required
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>Pincode *</mat-label>
+                  <input matInput formControlName="permanentPincode" placeholder="6 digits" />
+                  <mat-error *ngIf="employeeForm.get('permanentPincode')?.hasError('required')">
+                    Pincode is required
+                  </mat-error>
+                  <mat-error *ngIf="employeeForm.get('permanentPincode')?.hasError('pattern')">
+                    Pincode must be exactly 6 numeric digits
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- Temporary Address Tab -->
+          <mat-tab label="Temporary Address (Optional)">
+            <div class="tab-content">
+              <div class="form-row">
+                <mat-form-field class="form-field-full">
+                  <mat-label>Address</mat-label>
+                  <textarea matInput formControlName="temporaryAddress" rows="3"></textarea>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>State</mat-label>
+                  <mat-select 
+                    formControlName="temporaryState"
+                    (selectionChange)="onTemporaryStateChange($event.value)"
+                  >
+                    <mat-option>-- Select State --</mat-option>
+                    <mat-option *ngFor="let state of states" [value]="state.state_id">
+                      {{ state.state_name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field class="form-field-half">
+                  <mat-label>District/City</mat-label>
+                  <mat-select formControlName="temporaryDistrict">
+                    <mat-option>-- Select District --</mat-option>
+                    <mat-option *ngFor="let district of temporaryDistricts" [value]="district.district_name">
+                      {{ district.district_name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="form-row">
+                <mat-form-field class="form-field-half">
+                  <mat-label>Pincode</mat-label>
+                  <input matInput formControlName="temporaryPincode" placeholder="6 digits (optional)" />
+                  <mat-error *ngIf="employeeForm.get('temporaryPincode')?.hasError('pattern')">
+                    Pincode must be exactly 6 numeric digits
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+
+        <!-- Action Buttons -->
+        <div class="button-group">
+          <button 
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            [disabled]="isLoading || employeeForm.invalid"
+          >
+            <mat-icon *ngIf="!isLoading">save</mat-icon>
+            <span *ngIf="isLoading">Saving...</span>
+            <span *ngIf="!isLoading">{{ isEditMode ? 'Update' : 'Save' }}</span>
+          </button>
+          <button 
+            type="button" 
+            mat-raised-button 
+            (click)="onCancel()"
+            [disabled]="isLoading"
+          >
+            <mat-icon>close</mat-icon>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
