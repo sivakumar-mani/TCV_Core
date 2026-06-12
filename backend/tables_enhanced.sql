@@ -34,7 +34,8 @@ CREATE TABLE users (
     INDEX idx_active_date (is_active, date_registered)
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='User authentication and role management';
-
+INSERT INTO users (username, password, email, contact_number, first_name, last_name, role, is_active)
+VALUES ('admin', 'Tcv@1234', 'timecablevision@gmail.com', '9876543210', 'Siva', 'Kumar', 'ADMIN', 1);
 -- =====================================================
 -- 2. EMPLOYEES
 -- =====================================================
