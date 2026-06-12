@@ -5,7 +5,7 @@ const getSuppliers = async (req, res) => {
         const [rows] = await connection.promise().query(
             `SELECT supplier_id, supplier_name, contact_person, phone, alternate_phone,
                     email, gst_no, pan_no, address, city, state, pincode,
-                    opening_balance, status, payment_terms, bank_account_no,
+                    opening_balance, is_active, is_active AS status, payment_terms, bank_account_no,
                     bank_name, ifsc_code, created_at, updated_at
              FROM suppliers
              ORDER BY supplier_id DESC`
@@ -59,7 +59,7 @@ const addSupplier = async (req, res) => {
                 state,
                 pincode,
                 opening_balance,
-                status,
+                is_active,
                 payment_terms,
                 bank_account_no,
                 bank_name,
@@ -148,7 +148,7 @@ const updateSupplier = async (req, res) => {
                 state = ?,
                 pincode = ?,
                 opening_balance = ?,
-                status = ?,
+                is_active = ?,
                 payment_terms = ?,
                 bank_account_no = ?,
                 bank_name = ?,
@@ -223,7 +223,7 @@ const getSupplierById = async (req, res) => {
         const [rows] = await connection.promise().query(
             `SELECT supplier_id, supplier_name, contact_person, phone, alternate_phone,
                     email, gst_no, pan_no, address, city, state, pincode,
-                    opening_balance, status, payment_terms, bank_account_no,
+                    opening_balance, is_active, is_active AS status, payment_terms, bank_account_no,
                     bank_name, ifsc_code, created_at, updated_at
              FROM suppliers
              WHERE supplier_id = ?`,

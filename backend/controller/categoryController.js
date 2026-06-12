@@ -49,7 +49,7 @@ const ensureSelectedRootCategory = async (parentCategory) => {
 
   const [result] = await connection.promise().query(
     `INSERT INTO categories
-     (category_name, parent_id, level, slug, status, sort_order, created_at, updated_at)
+     (category_name, parent_id, level, slug, is_active, sort_order, created_at, updated_at)
      VALUES (?, NULL, 1, ?, 1, ?, NOW(), NOW())`,
     [selectedRoot.category_name, selectedRoot.slug, selectedRoot.sort_order]
   );
@@ -155,7 +155,7 @@ const insertCategory = async ({ categoryName, parentId, status, sortOrder, descr
 
   const [result] = await connection.promise().query(
     `INSERT INTO categories
-     (category_name, parent_id, level, slug, description, status, sort_order, created_at, updated_at)
+     (category_name, parent_id, level, slug, description, is_active, sort_order, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
     [
       name,
@@ -252,6 +252,7 @@ const getCategoriesTree = async (req, res) => {
   try {
     const [rows] = await connection.promise().query(
       `SELECT c.*,
+              c.is_active AS status,
               p.category_name AS parent_name
        FROM categories c
        LEFT JOIN categories p ON p.category_id = c.parent_id
@@ -279,6 +280,7 @@ const getCatById = async (req, res) => {
 
     const [rows] = await connection.promise().query(
       `SELECT c.*,
+              c.is_active AS status,
               p.category_name AS parent_name
        FROM categories c
        LEFT JOIN categories p ON p.category_id = c.parent_id
@@ -349,7 +351,7 @@ const updateCategory = async (req, res) => {
            level = ?,
            slug = ?,
            description = ?,
-           status = ?,
+           is_active = ?,
            sort_order = ?,
            updated_at = NOW()
        WHERE category_id = ?`,

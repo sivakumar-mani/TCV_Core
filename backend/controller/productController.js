@@ -8,8 +8,10 @@ const getProducts = async (req, res) => {
         p.product_name,
         p.product_code,
         p.description,
-        p.price,
-        p.stock_qty,
+        p.selling_price AS price,
+        0 AS stock_qty,
+        p.purchase_price,
+        p.selling_price,
         p.status,
         p.created_at,
 
@@ -69,7 +71,6 @@ const addProduct = async (req, res) => {
             product_code,
             description,
             price,
-            stock_qty,
             purchase_price,
             selling_price,
             gst_percent,
@@ -153,8 +154,6 @@ const addProduct = async (req, res) => {
                 category_id,
                 product_code,
                 description,
-                price,
-                stock_qty,
                 purchase_price,
                 selling_price,
                 gst_percent,
@@ -163,7 +162,7 @@ const addProduct = async (req, res) => {
                 reorder_level,
                 status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const values = [
@@ -172,8 +171,6 @@ const addProduct = async (req, res) => {
             category_id,
             product_code || null,
             description || null,
-            price ?? 0,
-            stock_qty ?? 0,
             purchase_price ?? 0,
             selling_price ?? price ?? 0,
             gst_percent ?? 0,
@@ -213,7 +210,6 @@ const updateProduct = async (req, res) => {
             product_code,
             description,
             price,
-            stock_qty,
             purchase_price,
             selling_price,
             gst_percent,
@@ -247,8 +243,6 @@ const updateProduct = async (req, res) => {
       category_id = ?,
       product_code = ?,
       description = ?,
-      price = ?,
-      stock_qty = ?,
       purchase_price = ?,
       selling_price = ?,
       gst_percent = ?,
@@ -264,8 +258,6 @@ const updateProduct = async (req, res) => {
                 category_id,
                 product_code,
                 description,
-                price ?? 0,
-                stock_qty ?? 0,
                 purchase_price ?? 0,
                 selling_price ?? price ?? 0,
                 gst_percent ?? 0,

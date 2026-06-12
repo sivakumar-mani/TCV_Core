@@ -155,10 +155,10 @@ const addEmployee = async (req, res) => {
     const validationMessage = validateEmployee(employee);
     if (validationMessage) return res.status(400).json({ success: false, message: validationMessage });
 
-    employee.employee_code = employee.employee_code || await generateEmployeeCode();
-
+    const employeeCode = await generateEmployeeCode();
     const placeholders = EMPLOYEE_FIELDS.map(() => '?').join(', ');
     const values = EMPLOYEE_FIELDS.map((field) => {
+      if (field === 'employee_code') return employeeCode;
       if (field === 'is_active') return typeof employee[field] !== 'undefined' ? employee[field] : 1;
       return employee[field] || null;
     });
@@ -168,7 +168,12 @@ const addEmployee = async (req, res) => {
       values
     );
 
-    return res.status(201).json({ success: true, message: 'Employee added successfully', employee_id: result.insertId });
+    return res.status(201).json({ 
+      success: true, 
+      message: 'Employee added successfully', 
+      employee_id: result.insertId,
+      employee_code: employeeCode 
+    });
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ success: false, message: 'Employee code or email already exists' });

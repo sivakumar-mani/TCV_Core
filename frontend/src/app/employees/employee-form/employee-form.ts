@@ -102,7 +102,7 @@ export class EmployeeForm {
 
   buildForm() {
     this.employeeForm = this.fb.group({
-      employee_code: ['', Validators.required],
+      employee_code: [{ value: '', disabled: true }], // Auto-generated, disabled, no validation
       first_name: ['', Validators.required],
       last_name: ['', Validators.required],
       phone: ['', [Validators.required, Validators.pattern(this.phoneRegex)]],
@@ -137,7 +137,7 @@ export class EmployeeForm {
   loadNextEmployeeCode() {
     this.employeeService.getNextEmployeeCode().subscribe({
       next: (response: any) => {
-        this.employeeForm.patchValue({ employee_code: response?.employee_code || '' });
+        this.employeeForm.get('employee_code')?.setValue(response?.employee_code || '');
       },
       error: (error: any) => this.commonMethods.handleError(error)
     });
@@ -291,6 +291,12 @@ export class EmployeeForm {
       joining_date: this.toSqlDate(formData.joining_date),
       ...(this.isEditMode ? { employee_id: this.employeeId } : {})
     };
+
+    // In create mode, don't send employee_code (backend will auto-generate it)
+    if (!this.isEditMode) {
+      delete payload.employee_code;
+    }
+
     const request = this.isEditMode
       ? this.employeeService.updateEmployee(payload)
       : this.employeeService.addEmployee(payload);
@@ -299,6 +305,10 @@ export class EmployeeForm {
       next: (response: any) => {
         this.ngxLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
+        if (!this.isEditMode && response?.employee_code) {
+          // Optionally store or display the generated employee code
+          console.log('Generated Employee Code:', response.employee_code);
+        }
         this.router.navigateByUrl('/employees');
       },
       error: (error: any) => {

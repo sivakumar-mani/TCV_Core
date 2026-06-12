@@ -1,0 +1,160 @@
+<nav aria-label="breadcrumb" class="bg-light border-bottom px-3 py-2 mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item">Home</li>
+    <li class="breadcrumb-item active" aria-current="page">Employee Salary</li>
+  </ol>
+</nav>
+
+<div class="salary-page">
+  <section class="salary-editor">
+    <div class="page-header">
+      <h1>{{ selectedSalaryId ? 'Edit Salary Slip' : 'Add Salary Slip' }}</h1>
+      <div class="header-actions">
+        <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">New</button>
+        <button type="button" class="btn btn-outline-primary" [disabled]="salaryForm.invalid" (click)="downloadPdf()">PDF</button>
+      </div>
+    </div>
+
+    <form [formGroup]="salaryForm" (ngSubmit)="submit()">
+      <div class="form-section">
+        <h2>Salary Header</h2>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Employee</label>
+            <select class="form-control" formControlName="employee_id">
+              <option value="">Select employee</option>
+              <option *ngFor="let employee of employees" [value]="employee.employee_id">
+                {{ employee.employee_code }} - {{ employee.employee_name || (employee.first_name + ' ' + employee.last_name) }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Company Name</label>
+            <input class="form-control" type="text" formControlName="company_name">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Salary Month</label>
+            <select class="form-control" formControlName="salary_month">
+              <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Salary Year</label>
+            <input class="form-control" type="number" formControlName="salary_year">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Start Date</label>
+            <input class="form-control" type="date" formControlName="period_start_date">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">End Date</label>
+            <input class="form-control" type="date" formControlName="period_end_date">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Status</label>
+            <select class="form-control" formControlName="status">
+              <option value="FINAL">Final</option>
+              <option value="DRAFT">Draft</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Remarks</label>
+            <input class="form-control" type="text" formControlName="remarks">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="section-title-row">
+          <h2>Salary Components</h2>
+          <div class="component-actions">
+            <button type="button" class="btn btn-sm btn-outline-success" (click)="addItem('EARNING')">Add Earning</button>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="addItem('DEDUCTION')">Add Deduction</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table salary-table align-middle">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody formArrayName="items">
+              <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+                <td>{{ i + 1 }}</td>
+                <td>
+                  <select class="form-control" formControlName="item_type">
+                    <option value="EARNING">Earning</option>
+                    <option value="DEDUCTION">Deduction</option>
+                  </select>
+                </td>
+                <td><input class="form-control" type="text" formControlName="description"></td>
+                <td><input class="form-control text-end" type="number" min="0" step="0.01" formControlName="qty"></td>
+                <td><input class="form-control text-end" type="number" min="0" step="0.01" formControlName="price"></td>
+                <td class="text-end total-cell">{{ money(lineTotal(i)) }}</td>
+                <td class="text-end">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" (click)="removeItem(i)">Remove</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="totals-panel">
+          <div><span>Sub Total</span><strong>{{ money(earningsTotal()) }}</strong></div>
+          <div><span>Deductions</span><strong>{{ money(deductionsTotal()) }}</strong></div>
+          <div class="net-total"><span>Net Salary</span><strong>{{ money(netSalary()) }}</strong></div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mb-4">
+        <button type="button" class="btn btn-secondary" (click)="resetForm()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="salaryForm.invalid">
+          {{ selectedSalaryId ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="salary-list">
+    <h2>Salary Slips</h2>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Month</th>
+            <th>Period</th>
+            <th class="text-end">Net Salary</th>
+            <th>Status</th>
+            <th class="text-end">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let salary of salaries">
+            <td>{{ salary.employee_code }} - {{ salary.employee_name || (salary.first_name + ' ' + salary.last_name) }}</td>
+            <td>{{ monthName(salary.salary_month) }} {{ salary.salary_year }}</td>
+            <td>{{ displayDate(salary.period_start_date) }} to {{ displayDate(salary.period_end_date) }}</td>
+            <td class="text-end">{{ money(salary.net_salary) }}</td>
+            <td>{{ salary.status }}</td>
+            <td class="text-end action-buttons">
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="editSalary(salary.salary_id)">Edit</button>
+              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="downloadExistingPdf(salary)">PDF</button>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteSalary(salary.salary_id)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="salaries.length === 0">
+            <td colspan="6" class="text-center text-muted py-4">No salary slips found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

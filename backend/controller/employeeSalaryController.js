@@ -1,6 +1,7 @@
 const connection = require('../connection');
 
 const isBlank = (value) => value === undefined || value === null || String(value).trim() === '';
+const toNumber = (value) => Number.parseFloat(value || 0) || 0;
 
 const validateSalary = (salary) => {
   const requiredFields = [
@@ -33,6 +34,59 @@ const validateSalary = (salary) => {
   return { valid: true };
 };
 
+const normalizeSalaryItems = (items = []) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return {
+      valid: false,
+      error: 'At least one salary component is required',
+      items: [],
+      earnings_total: 0,
+      deductions_total: 0,
+      net_salary: 0
+    };
+  }
+
+  const normalizedItems = [];
+  let earnings_total = 0;
+  let deductions_total = 0;
+
+  for (const [index, item] of items.entries()) {
+    const item_type = item.item_type === 'DEDUCTION' ? 'DEDUCTION' : 'EARNING';
+    const description = String(item.description || '').trim();
+    const qty = toNumber(item.qty || 1);
+    const price = toNumber(item.price);
+    const total = Number((qty * price).toFixed(2));
+
+    if (isBlank(description)) {
+      return { valid: false, error: `Description is required for line ${index + 1}` };
+    }
+
+    if (qty < 0 || price < 0) {
+      return { valid: false, error: `Qty and price cannot be negative on line ${index + 1}` };
+    }
+
+    if (item_type === 'EARNING') earnings_total += total;
+    else deductions_total += total;
+
+    normalizedItems.push({
+      item_type,
+      line_no: index + 1,
+      description,
+      qty,
+      price,
+      total
+    });
+  }
+
+  return {
+    valid: true,
+    items: normalizedItems,
+    earnings_total: Number(earnings_total.toFixed(2)),
+    deductions_total: Number(deductions_total.toFixed(2)),
+    net_salary: Number((earnings_total - deductions_total).toFixed(2))
+  };
+};
+
 const getSalaries = async (req, res) => {
   try {
     const [salaries] = await connection.promise().query(
@@ -42,6 +96,7 @@ const getSalaries = async (req, res) => {
         e.employee_code,
         e.first_name,
         e.last_name,
+        CONCAT_WS(' ', e.first_name, e.last_name) AS employee_name,
         es.company_name,
         es.salary_month,
         es.salary_year,
@@ -101,9 +156,17 @@ const getSalaryById = async (req, res) => {
 };
 
 const addSalary = async (req, res) => {
+  const db = connection.promise();
+
   try {
     const salary = req.body;
-    const validation = validateSalary(salary);
+    const itemResult = normalizeSalaryItems(salary.items);
+
+    if (!itemResult.valid) {
+      return res.status(400).json({ error: itemResult.error });
+    }
+
+    const validation = validateSalary({ ...salary, net_salary: itemResult.net_salary });
 
     if (!validation.valid) {
       return res.status(400).json({ error: validation.error });
@@ -116,16 +179,12 @@ const addSalary = async (req, res) => {
       salary_year,
       period_start_date,
       period_end_date,
-      salary_amount = 0,
-      earnings_total = 0,
-      deductions_total = 0,
-      net_salary,
       status = 'FINAL',
       remarks
     } = salary;
 
     // Check if employee exists
-    const [employees] = await connection.promise().query(
+    const [employees] = await db.query(
       'SELECT employee_id FROM employees WHERE employee_id = ?',
       [employee_id]
     );
@@ -135,7 +194,7 @@ const addSalary = async (req, res) => {
     }
 
     // Check for duplicate salary record
-    const [existing] = await connection.promise().query(
+    const [existing] = await db.query(
       `SELECT salary_id FROM employee_salary 
        WHERE employee_id = ? AND salary_month = ? AND salary_year = ?`,
       [employee_id, salary_month, salary_year]
@@ -145,7 +204,9 @@ const addSalary = async (req, res) => {
       return res.status(400).json({ error: 'Salary record already exists for this month' });
     }
 
-    const [result] = await connection.promise().query(
+    await db.beginTransaction();
+
+    const [result] = await db.query(
       `INSERT INTO employee_salary 
        (employee_id, company_name, salary_month, salary_year, period_start_date, 
         period_end_date, salary_amount, earnings_total, deductions_total, net_salary, status, remarks)
@@ -157,31 +218,79 @@ const addSalary = async (req, res) => {
         salary_year,
         period_start_date,
         period_end_date,
-        salary_amount,
-        earnings_total,
-        deductions_total,
-        net_salary,
+        itemResult.earnings_total,
+        itemResult.earnings_total,
+        itemResult.deductions_total,
+        itemResult.net_salary,
         status,
         remarks
       ]
     );
 
-    res.status(201).json({ message: 'Salary record created', salary_id: result.insertId });
+    const itemValues = itemResult.items.map((item) => [
+      result.insertId,
+      item.item_type,
+      item.line_no,
+      item.description,
+      item.qty,
+      item.price,
+      item.total
+    ]);
+
+    await db.query(
+      `INSERT INTO employee_salary_items
+       (salary_id, item_type, line_no, description, qty, price, total)
+       VALUES ?`,
+      [itemValues]
+    );
+
+    await db.commit();
+
+    res.status(201).json({
+      message: 'Salary record created',
+      salary_id: result.insertId,
+      earnings_total: itemResult.earnings_total,
+      deductions_total: itemResult.deductions_total,
+      net_salary: itemResult.net_salary
+    });
   } catch (error) {
+    try {
+      await db.rollback();
+    } catch (rollbackError) {
+      console.error('Salary add rollback failed:', rollbackError);
+    }
+
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'Salary record already exists for this month' });
+    }
+
     res.status(500).json({ error: error.message });
   }
 };
 
 const updateSalary = async (req, res) => {
+  const db = connection.promise();
+
   try {
     const { salary_id, ...updates } = req.body;
+    const itemResult = normalizeSalaryItems(updates.items);
 
     if (isBlank(salary_id)) {
       return res.status(400).json({ error: 'Salary ID is required' });
     }
 
+    if (!itemResult.valid) {
+      return res.status(400).json({ error: itemResult.error });
+    }
+
+    const validation = validateSalary({ ...updates, net_salary: itemResult.net_salary });
+
+    if (!validation.valid) {
+      return res.status(400).json({ error: validation.error });
+    }
+
     // Check if salary exists
-    const [existing] = await connection.promise().query(
+    const [existing] = await db.query(
       'SELECT salary_id FROM employee_salary WHERE salary_id = ?',
       [salary_id]
     );
@@ -190,32 +299,70 @@ const updateSalary = async (req, res) => {
       return res.status(404).json({ error: 'Salary record not found' });
     }
 
-    const allowedFields = [
-      'salary_amount',
-      'earnings_total',
-      'deductions_total',
-      'net_salary',
-      'status',
-      'remarks'
-    ];
+    await db.beginTransaction();
 
-    const updateFields = Object.keys(updates).filter(key => allowedFields.includes(key));
-
-    if (updateFields.length === 0) {
-      return res.status(400).json({ error: 'No valid fields to update' });
-    }
-
-    const setClause = updateFields.map(field => `${field} = ?`).join(', ');
-    const values = updateFields.map(field => updates[field]);
-    values.push(salary_id);
-
-    await connection.promise().query(
-      `UPDATE employee_salary SET ${setClause} WHERE salary_id = ?`,
-      values
+    await db.query(
+      `UPDATE employee_salary
+       SET employee_id = ?, company_name = ?, salary_month = ?, salary_year = ?,
+           period_start_date = ?, period_end_date = ?, salary_amount = ?,
+           earnings_total = ?, deductions_total = ?, net_salary = ?,
+           status = ?, remarks = ?
+       WHERE salary_id = ?`,
+      [
+        updates.employee_id,
+        updates.company_name || 'TCV',
+        updates.salary_month,
+        updates.salary_year,
+        updates.period_start_date,
+        updates.period_end_date,
+        itemResult.earnings_total,
+        itemResult.earnings_total,
+        itemResult.deductions_total,
+        itemResult.net_salary,
+        updates.status || 'FINAL',
+        updates.remarks || null,
+        salary_id
+      ]
     );
 
-    res.status(200).json({ message: 'Salary record updated' });
+    await db.query('DELETE FROM employee_salary_items WHERE salary_id = ?', [salary_id]);
+
+    const itemValues = itemResult.items.map((item) => [
+      salary_id,
+      item.item_type,
+      item.line_no,
+      item.description,
+      item.qty,
+      item.price,
+      item.total
+    ]);
+
+    await db.query(
+      `INSERT INTO employee_salary_items
+       (salary_id, item_type, line_no, description, qty, price, total)
+       VALUES ?`,
+      [itemValues]
+    );
+
+    await db.commit();
+
+    res.status(200).json({
+      message: 'Salary record updated',
+      earnings_total: itemResult.earnings_total,
+      deductions_total: itemResult.deductions_total,
+      net_salary: itemResult.net_salary
+    });
   } catch (error) {
+    try {
+      await db.rollback();
+    } catch (rollbackError) {
+      console.error('Salary update rollback failed:', rollbackError);
+    }
+
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'Salary record already exists for this month' });
+    }
+
     res.status(500).json({ error: error.message });
   }
 };

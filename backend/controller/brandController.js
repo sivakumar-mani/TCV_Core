@@ -39,6 +39,7 @@ const validateBrandPayload = ({ brand_name, brand_code, description }) => {
 };
 
 const isValidStatus = (status) => ['ACTIVE', 'INACTIVE'].includes(status);
+const statusToActive = (status) => status === 'INACTIVE' ? 0 : 1;
 
 const addBrand = async (req, res) => {
     try {
@@ -72,9 +73,9 @@ const addBrand = async (req, res) => {
         }
 
         const [result] = await connection.promise().query(
-            `INSERT INTO brands (brand_name, brand_code, description, status)
+            `INSERT INTO brands (brand_name, brand_code, description, is_active)
              VALUES (?, ?, ?, ?)`,
-            [brand_name, brand_code, description, status]
+            [brand_name, brand_code, description, statusToActive(status)]
         );
 
         return res.status(201).json({
@@ -94,7 +95,11 @@ const addBrand = async (req, res) => {
 const getBrands = async (req, res) => {
     try {
         const [rows] = await connection.promise().query(
-            "SELECT * FROM brands ORDER BY brand_id DESC"
+            `SELECT brand_id, brand_name, brand_code, description, logo_url, is_active,
+                    CASE WHEN is_active = 1 THEN 'ACTIVE' ELSE 'INACTIVE' END AS status,
+                    created_at, updated_at
+             FROM brands
+             ORDER BY brand_id DESC`
         );
 
         return res.status(200).json(rows);
@@ -195,10 +200,10 @@ const editBrand = async (req, res) => {
              SET brand_name = ?,
                  brand_code = ?,
                  description = ?,
-                 status = ?,
+                 is_active = ?,
                  updated_at = NOW()
              WHERE brand_id = ?`,
-            [brand_name, brand_code, description, status, brand_id]
+            [brand_name, brand_code, description, statusToActive(status), brand_id]
         );
 
         return res.status(200).json({

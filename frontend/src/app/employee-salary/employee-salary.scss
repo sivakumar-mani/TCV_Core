@@ -1,0 +1,102 @@
+.salary-page {
+  padding: 0 16px 24px;
+}
+
+.page-header,
+.section-title-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  margin: 0 0 16px;
+}
+
+.header-actions,
+.component-actions,
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.form-section,
+.salary-list {
+  border: 1px solid #dde3ea;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #fff;
+}
+
+.form-section h2,
+.salary-list h2 {
+  font-size: 18px;
+  margin: 0 0 14px;
+}
+
+.salary-table {
+  min-width: 860px;
+}
+
+.salary-table th:first-child,
+.salary-table td:first-child {
+  width: 64px;
+}
+
+.salary-table th:nth-child(2),
+.salary-table td:nth-child(2) {
+  width: 150px;
+}
+
+.salary-table th:nth-child(4),
+.salary-table td:nth-child(4),
+.salary-table th:nth-child(5),
+.salary-table td:nth-child(5),
+.salary-table th:nth-child(6),
+.salary-table td:nth-child(6) {
+  width: 130px;
+}
+
+.total-cell {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.totals-panel {
+  margin-left: auto;
+  max-width: 360px;
+  border-top: 1px solid #dde3ea;
+  padding-top: 12px;
+}
+
+.totals-panel div {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.net-total {
+  border-top: 1px solid #c8d1dc;
+  font-size: 18px;
+  margin-top: 4px;
+  padding-top: 10px !important;
+}
+
+@media (max-width: 768px) {
+  .page-header,
+  .section-title-row,
+  .header-actions,
+  .component-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .header-actions,
+  .component-actions {
+    width: 100%;
+  }
+}
