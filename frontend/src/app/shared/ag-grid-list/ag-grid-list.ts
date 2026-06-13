@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { AgGridModule } from 'ag-grid-angular';
 import { AllCommunityModule, ColDef, ModuleRegistry, themeBalham } from 'ag-grid-community';
 
@@ -7,7 +8,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 @Component({
   selector: 'app-ag-grid-list',
-  imports: [CommonModule, AgGridModule],
+  imports: [CommonModule, FormsModule, AgGridModule],
   templateUrl: './ag-grid-list.html',
   styleUrl: './ag-grid-list.scss',
 })
@@ -31,4 +32,5 @@ export class AgGridList {
   @Output() add = new EventEmitter<void>();
 
   public theme = themeBalham;
+  quickFilterText = '';
 }

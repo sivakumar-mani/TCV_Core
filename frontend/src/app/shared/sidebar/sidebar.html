@@ -1,54 +1,61 @@
 <mat-nav-list aria-label="Main navigation">
-  <a mat-list-item [routerLink]="['/home']" routerLinkActive="active-link">
-   <mat-panel-title>
-          <mat-icon matListIcon>home</mat-icon> <span matLine>Home</span>
-      </mat-panel-title>
+  <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
+    <mat-icon matListIcon>dashboard</mat-icon>
+    <span matLine>Dashboard</span>
   </a>
-   <a mat-list-item [routerLink]="['/users']" routerLinkActive="active-link">
-    <mat-panel-title>
-          <mat-icon matListIcon>people</mat-icon> <span matLine>Users</span>
-      </mat-panel-title>
-  </a>
-   <a mat-list-item [routerLink]="['/employees']" routerLinkActive="active-link">
-    <mat-panel-title>
-          <mat-icon matListIcon>badge</mat-icon> <span matLine>Employees</span>
-      </mat-panel-title>
-  </a>
-   <a mat-list-item [routerLink]="['/audit-logs']" routerLinkActive="active-link">
-    <mat-panel-title>
-          <mat-icon matListIcon>history</mat-icon> <span matLine>Audit Logs</span>
-      </mat-panel-title>
-  </a>
-  <!-- <a mat-list-item [routerLink]="['/settings']" routerLinkActive="active-link">
-    <mat-icon matListIcon>settings</mat-icon>
-    <span matLine>Settings</span>
-  </a> -->
-  <mat-accordion class="app-nav-accordion" [multi]="false">
-  <mat-expansion-panel>
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-          <mat-icon matListIcon>groups</mat-icon> <span matLine>HR Process</span>
-      </mat-panel-title>
-    </mat-expansion-panel-header>
-    <mat-nav-list>
-      <a mat-list-item routerLink="/employees" routerLinkActive="active-link">Employees</a>
-      <a mat-list-item routerLink="/employee-salary" routerLinkActive="active-link">Employee Salary</a>
-    </mat-nav-list>
-  </mat-expansion-panel>
-  <!-- Section 1 -->
-  <mat-expansion-panel>
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-          <mat-icon matListIcon>inventory</mat-icon> <span matLine>Products</span>
-      </mat-panel-title>
-    </mat-expansion-panel-header>
-    <mat-nav-list>
-      <a mat-list-item routerLink="/brands" routerLinkActive="active-link">Brands</a>
-      <a mat-list-item routerLink="/categoriesLists" routerLinkActive="active-link">Categories</a>
-      <a mat-list-item routerLink="/productList" routerLinkActive="active-link">Products</a>
-      <a mat-list-item routerLink="/suppliers" routerLinkActive="active-link">Suppliers</a>
-    </mat-nav-list>
-  </mat-expansion-panel>
-</mat-accordion>
-</mat-nav-list>
 
+  <mat-accordion class="app-nav-accordion" [multi]="false">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon matListIcon>groups</mat-icon>
+          <span matLine>Business Partners</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-nav-list>
+        <a mat-list-item routerLink="/customers" routerLinkActive="active-link">Customers</a>
+        <a mat-list-item routerLink="/suppliers" routerLinkActive="active-link">Suppliers</a>
+      </mat-nav-list>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon matListIcon>inventory</mat-icon>
+          <span matLine>Inventory</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-nav-list>
+        <a mat-list-item routerLink="/brands" routerLinkActive="active-link">Brands</a>
+        <a mat-list-item routerLink="/categoriesLists" routerLinkActive="active-link">Categories</a>
+        <a mat-list-item routerLink="/productList" routerLinkActive="active-link">Products</a>
+      </mat-nav-list>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon matListIcon>badge</mat-icon>
+          <span matLine>HR Process</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-nav-list>
+        <a mat-list-item routerLink="/employees" routerLinkActive="active-link">Employees</a>
+        <a mat-list-item routerLink="/employee-salary" routerLinkActive="active-link">Employee Salary</a>
+      </mat-nav-list>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon matListIcon>admin_panel_settings</mat-icon>
+          <span matLine>Administration</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <mat-nav-list>
+        <a mat-list-item routerLink="/users" routerLinkActive="active-link">Users</a>
+        <a mat-list-item routerLink="/audit-logs" routerLinkActive="active-link">Audit Logs</a>
+      </mat-nav-list>
+    </mat-expansion-panel>
+  </mat-accordion>
+</mat-nav-list>

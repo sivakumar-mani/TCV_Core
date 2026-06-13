@@ -1,13 +1,20 @@
 <div class="content-container">
   <div class="page-header">
     <h1 class="page-title">{{ title }}</h1>
-    <button
-      *ngIf="showAddButton"
-      type="button"
-      class="btn-yes"
-      (click)="add.emit()">
-      {{ addButtonLabel }}
-    </button>
+    <div class="ag-grid-actions">
+      <input
+        class="form-control ag-grid-search"
+        type="search"
+        placeholder="Search..."
+        [(ngModel)]="quickFilterText">
+      <button
+        *ngIf="showAddButton"
+        type="button"
+        class="btn-yes"
+        (click)="add.emit()">
+        {{ addButtonLabel }}
+      </button>
+    </div>
   </div>
 
   <div class="ag-grid-wrapper">
@@ -15,6 +22,7 @@
       [theme]="theme"
       [rowData]="rowData"
       [columnDefs]="columnDefs"
+      [quickFilterText]="quickFilterText"
       domLayout="autoHeight"
       [defaultColDef]="defaultColDef"
       [pagination]="pagination"

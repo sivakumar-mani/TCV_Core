@@ -5,19 +5,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
-import { SupplierServices } from '../../services/supplier-services';
+import { CustomerServices } from '../../services/customer-services';
 import { CommonMethods } from '../../shared/common-methods';
 import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { SelectFormField } from '../../shared/select-form-field/select-form-field';
 import { TextareaFormField } from '../../shared/textarea-form-field/textarea-form-field';
 
 @Component({
-  selector: 'app-add-supplier',
+  selector: 'app-customer-form',
   imports: [
     CommonModule,
     NgIf,
+    RouterLink,
     MatButtonModule,
     MatIconModule,
     MatToolbarModule,
@@ -27,15 +28,24 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
     SelectFormField,
     TextareaFormField
   ],
-  templateUrl: './add-supplier.html',
-  styleUrl: './add-supplier.scss',
+  templateUrl: './customer-form.html',
+  styleUrl: './customer-form.scss',
 })
-export class AddSupplier {
-  supplierForm!: FormGroup;
+export class CustomerForm {
+  customerForm!: FormGroup;
   isEditMode = false;
-  supplierId!: number;
+  customerId!: number;
   stateOptions: any[] = [];
   districtOptions: any[] = [];
+  private phoneRegex = /^[0-9]{10}$/;
+
+  customerTypeOptions = [
+    { label: 'Retail', value: 'RETAIL' },
+    { label: 'Wholesale', value: 'WHOLESALE' },
+    { label: 'Dealer', value: 'DEALER' },
+    { label: 'Corporate', value: 'CORPORATE' },
+    { label: 'Service', value: 'SERVICE' }
+  ];
 
   statusList = [
     { label: 'Active', value: 1 },
@@ -44,45 +54,41 @@ export class AddSupplier {
 
   constructor(
     private fb: FormBuilder,
-    private supplierService: SupplierServices,
+    private customerService: CustomerServices,
     private ngxUiLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
     private router: Router,
     private route: ActivatedRoute
-  ) { }
+  ) {}
 
   ngOnInit() {
-    this.supplierFormInitiate();
+    this.buildForm();
     this.setupLocationDependency();
     this.loadStates();
   }
 
-  initializeFormData() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.supplierId = Number(id);
-      this.loadSupplierDetails(this.supplierId);
-    }
-  }
-
-  supplierFormInitiate() {
-    this.supplierForm = this.fb.group({
-      supplier_name: ['', Validators.required],
-      contact_person: [''],
-      phone: [''],
+  buildForm() {
+    this.customerForm = this.fb.group({
+      customer_name: ['', Validators.required],
+      contact_person: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern(this.phoneRegex)]],
+      alternate_phone: ['', Validators.pattern(this.phoneRegex)],
       email: ['', Validators.email],
       gst_no: [''],
-      address: [''],
-      city_district: [''],
-      state: [''],
+      customer_type: ['RETAIL', Validators.required],
+      address: ['', Validators.required],
+      state: ['', Validators.required],
+      city_district: ['', Validators.required],
       pincode: [''],
-      status: [1]
+      credit_limit: [0, [Validators.min(0)]],
+      opening_balance: [0],
+      outstanding_balance: [0],
+      status: [1, Validators.required]
     });
-
   }
 
   loadStates() {
-    this.supplierService.getStates().subscribe({
+    this.customerService.getStates().subscribe({
       next: (response: any) => {
         const states = Array.isArray(response) ? response : [];
         this.stateOptions = states.map((state) => ({
@@ -99,8 +105,17 @@ export class AddSupplier {
     });
   }
 
+  initializeFormData() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.isEditMode = true;
+      this.customerId = Number(id);
+      this.loadCustomerDetails(this.customerId);
+    }
+  }
+
   setupLocationDependency() {
-    this.supplierForm.get('state')?.valueChanges.subscribe((stateName) => {
+    this.customerForm.get('state')?.valueChanges.subscribe((stateName) => {
       this.loadDistrictOptions(stateName);
     });
   }
@@ -110,11 +125,11 @@ export class AddSupplier {
 
     if (!state?.id) {
       this.districtOptions = [];
-      this.supplierForm.get('city_district')?.setValue('');
+      this.customerForm.get('city_district')?.setValue('');
       return;
     }
 
-    this.supplierService.getDistricts(state.id).subscribe({
+    this.customerService.getDistricts(state.id).subscribe({
       next: (response: any) => {
         this.districtOptions = (Array.isArray(response) ? response : []).map((district) => ({
           value: district.district_name,
@@ -122,28 +137,25 @@ export class AddSupplier {
           id: district.district_id
         }));
 
-        const currentDistrict = this.supplierForm.get('city_district')?.value;
+        const currentDistrict = this.customerForm.get('city_district')?.value;
         if (currentDistrict && !this.districtOptions.some((item) => item.value === currentDistrict)) {
-          this.supplierForm.get('city_district')?.setValue('');
+          this.customerForm.get('city_district')?.setValue('');
         }
       },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }
 
-  loadSupplierDetails(supplierId: number) {
-    this.isEditMode = true;
+  loadCustomerDetails(customerId: number) {
     this.ngxUiLoader.start();
-    this.supplierService.getSupplierById(supplierId).subscribe({
+    this.customerService.getCustomerById(customerId).subscribe({
       next: (response: any) => {
         this.ngxUiLoader.stop();
-        const supplierData = response?.data ?? response;
-        this.supplierForm.patchValue({
-          ...supplierData,
-          city_district: supplierData.city_district || supplierData.city
+        const customerData = response?.data ?? response;
+        this.customerForm.patchValue({
+          ...customerData,
+          status: customerData.status ?? customerData.is_active
         });
-        this.supplierForm.get('status')?.setValidators([Validators.required]);
-        this.supplierForm.get('status')?.updateValueAndValidity();
       },
       error: (error: any) => {
         this.ngxUiLoader.stop();
@@ -153,14 +165,19 @@ export class AddSupplier {
   }
 
   addSubmit() {
-    this.ngxUiLoader.start();
-    const data = this.supplierForm.getRawValue();
+    if (this.customerForm.invalid) {
+      this.customerForm.markAllAsTouched();
+      return;
+    }
 
-    this.supplierService.addSupplier(data).subscribe({
+    this.ngxUiLoader.start();
+    const data = this.customerForm.getRawValue();
+
+    this.customerService.addCustomer(data).subscribe({
       next: (response: any) => {
         this.ngxUiLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
-        this.router.navigateByUrl('/suppliers');
+        this.router.navigateByUrl('/customers');
       },
       error: (error: any) => {
         this.ngxUiLoader.stop();
@@ -170,18 +187,22 @@ export class AddSupplier {
   }
 
   editSubmit() {
+    if (this.customerForm.invalid) {
+      this.customerForm.markAllAsTouched();
+      return;
+    }
+
     this.ngxUiLoader.start();
-    const formData = this.supplierForm.getRawValue();
     const data = {
-      supplier_id: this.supplierId,
-      ...formData
+      customer_id: this.customerId,
+      ...this.customerForm.getRawValue()
     };
 
-    this.supplierService.updateSupplier(data).subscribe({
+    this.customerService.updateCustomer(data).subscribe({
       next: (response: any) => {
         this.ngxUiLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
-        this.router.navigateByUrl('/suppliers');
+        this.router.navigateByUrl('/customers');
       },
       error: (error: any) => {
         this.ngxUiLoader.stop();
@@ -191,6 +212,6 @@ export class AddSupplier {
   }
 
   cancel() {
-    this.router.navigateByUrl('/suppliers');
+    this.router.navigateByUrl('/customers');
   }
 }

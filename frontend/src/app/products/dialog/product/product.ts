@@ -20,7 +20,7 @@ import { InputFormField } from '../../../shared/input-form-field/input-form-fiel
 @Component({
   selector: 'app-product',
   imports: [MatFormFieldModule, MatDialogModule, CommonModule, MatInputModule,
-     NgIf, FormsModule, NgFor, ReactiveFormsModule, MatSelectModule, MatInputModule],
+     NgIf, FormsModule, NgFor, ReactiveFormsModule, MatSelectModule, MatButtonModule],
   templateUrl: './product.html',
   styleUrl: './product.scss',
 })
@@ -52,13 +52,19 @@ export class Product {
 
   initForm() {
     this.productForm = this.fb.group({
-      product_name: [''],
+      product_name: ['', Validators.required],
       brand_id: ['', Validators.required],
       category_id: ['', Validators.required],
+      product_code: ['', Validators.required],
+      barcode: [''],
       description: [''],
-      price: [0],
-      stock_qty: [0],
-      status:[''],
+      purchase_price: [0, [Validators.min(0)]],
+      selling_price: [0, [Validators.min(0)]],
+      gst_percent: [0, [Validators.min(0), Validators.max(100)]],
+      hsn_code: [''],
+      unit: ['PCS', Validators.required],
+      reorder_level: [0, [Validators.min(0)]],
+      status:['ACTIVE', Validators.required],
     });
     if (this.dialogData) {
       this.productForm.patchValue(this.dialogData);
@@ -67,10 +73,16 @@ export class Product {
       this.productForm.get('brand_id')?.setValidators([Validators.required]);
 
       this.productForm.get('category_id')?.updateValueAndValidity();
+      this.productForm.get('product_code')?.updateValueAndValidity();
+      this.productForm.get('barcode')?.updateValueAndValidity();
       this.productForm.get('description')?.updateValueAndValidity();
-      this.productForm.get('price')?.updateValueAndValidity();
+      this.productForm.get('purchase_price')?.updateValueAndValidity();
+      this.productForm.get('selling_price')?.updateValueAndValidity();
+      this.productForm.get('gst_percent')?.updateValueAndValidity();
+      this.productForm.get('hsn_code')?.updateValueAndValidity();
+      this.productForm.get('unit')?.updateValueAndValidity();
+      this.productForm.get('reorder_level')?.updateValueAndValidity();
       this.productForm.get('status')?.updateValueAndValidity();
-      this.productForm.get('stock_qty')?.updateValueAndValidity();
         
     } 
   }
@@ -159,9 +171,9 @@ export class Product {
       .join(' ');
 
     this.productForm.patchValue({
-      product_name: productName
+      product_name: productName,
+      product_code: this.generateProductCode(productName)
     });
-    this.generateProductCode(productName);
   }
   generateProductCode(name: string): string {
     const words = name.trim().split(' ');
@@ -187,10 +199,16 @@ export class Product {
       product_name: formData.product_name,
       brand_id: formData.brand_id,
       category_id: formData.category_id,
-      product_code: this.productCode,
+      product_code: formData.product_code || this.productCode,
+      barcode: formData.barcode,
       description: formData.description,
-      price: formData.price,
-      stock_qty: formData.stock_qty,
+      purchase_price: formData.purchase_price,
+      selling_price: formData.selling_price,
+      gst_percent: formData.gst_percent,
+      hsn_code: formData.hsn_code,
+      unit: formData.unit,
+      reorder_level: formData.reorder_level,
+      status: formData.status,
     }
 
     this.productService.addProduct(data).subscribe({
@@ -212,7 +230,8 @@ export class Product {
 
   statusList = [
     { label: 'Active', value: 'ACTIVE' },
-    { label: 'Inactive', value: 'INACTIVE' }
+    { label: 'Inactive', value: 'INACTIVE' },
+    { label: 'Discontinued', value: 'DISCONTINUED' }
   ];
 
   editSubmit() {
@@ -228,10 +247,15 @@ export class Product {
       product_name: formData.product_name,
       brand_id: formData.brand_id,
       category_id: formData.category_id,
-      product_code: this.productCode,
+      product_code: formData.product_code || this.productCode,
+      barcode: formData.barcode,
       description: formData.description,
-      price: formData.price,
-      stock_qty: formData.stock_qty,
+      purchase_price: formData.purchase_price,
+      selling_price: formData.selling_price,
+      gst_percent: formData.gst_percent,
+      hsn_code: formData.hsn_code,
+      unit: formData.unit,
+      reorder_level: formData.reorder_level,
       status: formData.status,
       product_id: this.dialogData.product_id // 👈 important
     };

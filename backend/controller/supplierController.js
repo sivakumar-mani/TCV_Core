@@ -1,10 +1,22 @@
 const connection = require('../connection');
 
+let supplierCityColumn = null;
+
+const getSupplierCityColumn = async () => {
+    if (supplierCityColumn) return supplierCityColumn;
+
+    const [columns] = await connection.promise().query('SHOW COLUMNS FROM suppliers');
+    const columnNames = columns.map((column) => column.Field);
+    supplierCityColumn = columnNames.includes('city_district') ? 'city_district' : 'city';
+    return supplierCityColumn;
+};
+
 const getSuppliers = async (req, res) => {
     try {
+        const cityColumn = await getSupplierCityColumn();
         const [rows] = await connection.promise().query(
             `SELECT supplier_id, supplier_name, contact_person, phone, alternate_phone,
-                    email, gst_no, pan_no, address, city, state, pincode,
+                    email, gst_no, pan_no, address, ${cityColumn} AS city_district, ${cityColumn} AS city, state, pincode,
                     opening_balance, is_active, is_active AS status, payment_terms, bank_account_no,
                     bank_name, ifsc_code, created_at, updated_at
              FROM suppliers
@@ -21,6 +33,7 @@ const getSuppliers = async (req, res) => {
 
 const addSupplier = async (req, res) => {
     try {
+        const cityColumn = await getSupplierCityColumn();
         const {
             supplier_name,
             contact_person,
@@ -31,6 +44,7 @@ const addSupplier = async (req, res) => {
             pan_no,
             address,
             city,
+            city_district,
             state,
             pincode,
             opening_balance,
@@ -55,7 +69,7 @@ const addSupplier = async (req, res) => {
                 gst_no,
                 pan_no,
                 address,
-                city,
+                ${cityColumn},
                 state,
                 pincode,
                 opening_balance,
@@ -76,7 +90,7 @@ const addSupplier = async (req, res) => {
             gst_no || null,
             pan_no || null,
             address || null,
-            city || null,
+            city_district || city || null,
             state || null,
             pincode || null,
             opening_balance ?? 0,
@@ -99,6 +113,7 @@ const addSupplier = async (req, res) => {
 
 const updateSupplier = async (req, res) => {
     try {
+        const cityColumn = await getSupplierCityColumn();
         const {
             supplier_id,
             supplier_name,
@@ -110,6 +125,7 @@ const updateSupplier = async (req, res) => {
             pan_no,
             address,
             city,
+            city_district,
             state,
             pincode,
             opening_balance,
@@ -144,7 +160,7 @@ const updateSupplier = async (req, res) => {
                 gst_no = ?,
                 pan_no = ?,
                 address = ?,
-                city = ?,
+                ${cityColumn} = ?,
                 state = ?,
                 pincode = ?,
                 opening_balance = ?,
@@ -166,7 +182,7 @@ const updateSupplier = async (req, res) => {
             gst_no || null,
             pan_no || null,
             address || null,
-            city || null,
+            city_district || city || null,
             state || null,
             pincode || null,
             opening_balance ?? 0,
@@ -214,6 +230,7 @@ const deleteSupplier = async (req, res) => {
 
 const getSupplierById = async (req, res) => {
     try {
+        const cityColumn = await getSupplierCityColumn();
         const supplier_id = req.params.supplier_id;
 
         if (!supplier_id) {
@@ -222,7 +239,7 @@ const getSupplierById = async (req, res) => {
 
         const [rows] = await connection.promise().query(
             `SELECT supplier_id, supplier_name, contact_person, phone, alternate_phone,
-                    email, gst_no, pan_no, address, city, state, pincode,
+                    email, gst_no, pan_no, address, ${cityColumn} AS city_district, ${cityColumn} AS city, state, pincode,
                     opening_balance, is_active, is_active AS status, payment_terms, bank_account_no,
                     bank_name, ifsc_code, created_at, updated_at
              FROM suppliers

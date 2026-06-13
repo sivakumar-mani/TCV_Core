@@ -123,38 +123,11 @@
     </form>
   </section>
 
-  <section class="salary-list">
-    <h2>Salary Slips</h2>
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Month</th>
-            <th>Period</th>
-            <th class="text-end">Net Salary</th>
-            <th>Status</th>
-            <th class="text-end">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let salary of salaries">
-            <td>{{ salary.employee_code }} - {{ salary.employee_name || (salary.first_name + ' ' + salary.last_name) }}</td>
-            <td>{{ monthName(salary.salary_month) }} {{ salary.salary_year }}</td>
-            <td>{{ displayDate(salary.period_start_date) }} to {{ displayDate(salary.period_end_date) }}</td>
-            <td class="text-end">{{ money(salary.net_salary) }}</td>
-            <td>{{ salary.status }}</td>
-            <td class="text-end action-buttons">
-              <button type="button" class="btn btn-sm btn-outline-primary" (click)="editSalary(salary.salary_id)">Edit</button>
-              <button type="button" class="btn btn-sm btn-outline-secondary" (click)="downloadExistingPdf(salary)">PDF</button>
-              <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteSalary(salary.salary_id)">Delete</button>
-            </td>
-          </tr>
-          <tr *ngIf="salaries.length === 0">
-            <td colspan="6" class="text-center text-muted py-4">No salary slips found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+  <app-ag-grid-list
+    title="Salary Slips"
+    [showAddButton]="false"
+    [rowData]="salaries"
+    [columnDefs]="salaryColDefs"
+    [defaultColDef]="defaultColDef">
+  </app-ag-grid-list>
 </div>

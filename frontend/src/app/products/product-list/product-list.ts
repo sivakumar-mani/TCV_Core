@@ -1,36 +1,72 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { MenuItem } from 'primeng/api';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { MenuModule } from 'primeng/menu';
-import { TagModule } from 'primeng/tag';
-import { InputTextModule } from 'primeng/inputtext';
-import { ProductService } from '../../services/product-service';
-import { Router } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { ColDef } from 'ag-grid-community';
+import { ProductService } from '../../services/product-service';
+import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
+import { ActionMenu } from '../../shared/list-action-menu';
 import { Product } from '../dialog/product/product';
-import { MatIcon } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { SelectModule } from 'primeng/select';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
   selector: 'app-product-list',
-  imports: [TableModule, ButtonModule,MenuModule,InputIconModule,MultiSelectModule, SelectModule,FormsModule, IconFieldModule,TagModule,InputTextModule,
-     MatIcon, MatToolbarModule ],
+  imports: [AgGridList],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
 })
 export class ProductList {
-
   products: any[] = [];
-
-  router = inject(Router);
   dialog = inject(MatDialog);
+
+  defaultColDef: ColDef = {
+    resizable: true,
+    minWidth: 120,
+    flex: 1,
+    filter: true,
+    floatingFilter: true,
+    headerClass: 'ag-header-style',
+  };
+
+  colDefs: ColDef[] = [
+    { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
+    { field: 'product_name', headerName: 'Product' },
+    { field: 'product_code', headerName: 'Code', maxWidth: 160 },
+    { field: 'barcode', headerName: 'Barcode', maxWidth: 160 },
+    { field: 'brand_name', headerName: 'Brand' },
+    { field: 'category_path', headerName: 'Category' },
+    {
+      field: 'purchase_price',
+      headerName: 'Purchase',
+      maxWidth: 140,
+      valueFormatter: (params) => this.money(params.value),
+    },
+    {
+      field: 'selling_price',
+      headerName: 'Selling',
+      maxWidth: 140,
+      valueFormatter: (params) => this.money(params.value),
+    },
+    {
+      field: 'gst_percent',
+      headerName: 'GST',
+      maxWidth: 110,
+      valueFormatter: (params) => `${Number(params.value) || 0}%`,
+    },
+    { field: 'hsn_code', headerName: 'HSN', maxWidth: 130 },
+    { field: 'unit', headerName: 'Unit', maxWidth: 110 },
+    { field: 'reorder_level', headerName: 'Reorder', maxWidth: 130 },
+    { field: 'status', headerName: 'Status', maxWidth: 140 },
+    {
+      headerName: 'Action',
+      maxWidth: 110,
+      cellRenderer: ActionMenu,
+      cellRendererParams: {
+        dropdownMenu: [
+          { label: 'Edit', action: (row: any) => this.editProduct(row) }
+        ]
+      },
+      filter: false,
+      sortable: false
+    }
+  ];
 
   constructor(private productService: ProductService) {}
 
@@ -43,25 +79,12 @@ export class ProductList {
       const data = Array.isArray(response) ? response : response.data ?? [];
       this.products = data.map((p: any) => ({
         ...p,
-        price: parseFloat(p.price),
-        stock_qty: Number(p.stock_qty)
+        purchase_price: Number(p.purchase_price ?? 0),
+        selling_price: Number(p.selling_price ?? p.price ?? 0),
+        gst_percent: Number(p.gst_percent ?? 0),
+        reorder_level: Number(p.reorder_level ?? 0)
       }));
     });
-  }
-
-  getMenuItems(row: any): MenuItem[] {
-    return [
-      {
-        label: 'Edit',
-        icon: 'pi pi-pencil',
-        command: () => this.editProduct(row)
-      },
-      {
-        label: 'Delete',
-        icon: 'pi pi-trash',
-        command: () => this.deleteProduct(row)
-      }
-    ];
   }
 
   addProduct() {
@@ -99,7 +122,7 @@ export class ProductList {
     });
   }
 
-  deleteProduct(row: any) {
-    console.log('DELETE', row);
+  money(value: number | string) {
+    return `Rs. ${(Number(value) || 0).toFixed(2)}`;
   }
 }

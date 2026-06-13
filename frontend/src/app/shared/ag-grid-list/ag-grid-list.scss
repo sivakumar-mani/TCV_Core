@@ -5,3 +5,25 @@
 .ag-grid-wrapper {
   width: 100%;
 }
+
+.ag-grid-actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.ag-grid-search {
+  width: min(280px, 45vw);
+}
+
+@media (max-width: 576px) {
+  .ag-grid-actions {
+    align-items: stretch;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .ag-grid-search {
+    width: 100%;
+  }
+}

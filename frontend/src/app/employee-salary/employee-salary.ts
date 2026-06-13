@@ -1,16 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ColDef } from 'ag-grid-community';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { EmployeeServices } from '../services/employee-services';
 import { EmployeeSalaryServices } from '../services/employee-salary-services';
+import { AgGridList } from '../shared/ag-grid-list/ag-grid-list';
 import { CommonMethods } from '../shared/common-methods';
+import { ActionMenu } from '../shared/list-action-menu';
 
 type SalaryItemType = 'EARNING' | 'DEDUCTION';
 
 @Component({
   selector: 'app-employee-salary',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AgGridList],
   templateUrl: './employee-salary.html',
   styleUrl: './employee-salary.scss',
 })
@@ -19,6 +22,52 @@ export class EmployeeSalary {
   salaries: any[] = [];
   employees: any[] = [];
   selectedSalaryId: number | null = null;
+
+  defaultColDef: ColDef = {
+    resizable: true,
+    minWidth: 120,
+    flex: 1,
+    filter: true,
+    floatingFilter: true,
+    headerClass: 'ag-header-style',
+  };
+
+  salaryColDefs: ColDef[] = [
+    { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
+    {
+      headerName: 'Employee',
+      valueGetter: (params: any) => `${params.data?.employee_code || ''} - ${params.data?.employee_name || `${params.data?.first_name || ''} ${params.data?.last_name || ''}`.trim()}`.trim(),
+    },
+    {
+      headerName: 'Month',
+      valueGetter: (params: any) => `${this.monthName(params.data?.salary_month)} ${params.data?.salary_year || ''}`.trim(),
+    },
+    {
+      headerName: 'Period',
+      valueGetter: (params: any) => `${this.displayDate(params.data?.period_start_date)} to ${this.displayDate(params.data?.period_end_date)}`,
+    },
+    {
+      field: 'net_salary',
+      headerName: 'Net Salary',
+      maxWidth: 150,
+      valueFormatter: (params) => this.money(params.value),
+    },
+    { field: 'status', headerName: 'Status', maxWidth: 130 },
+    {
+      headerName: 'Action',
+      maxWidth: 110,
+      cellRenderer: ActionMenu,
+      cellRendererParams: {
+        dropdownMenu: [
+          { label: 'Edit', action: (row: any) => this.editSalary(row.salary_id) },
+          { label: 'PDF', action: (row: any) => this.downloadExistingPdf(row) },
+          { label: 'Delete', action: (row: any) => this.deleteSalary(row.salary_id) }
+        ]
+      },
+      filter: false,
+      sortable: false
+    }
+  ];
 
   months = [
     { value: 1, label: 'January' },

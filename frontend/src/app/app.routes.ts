@@ -67,6 +67,30 @@ export const routes: Routes = [
             }
         },
          {
+            path:'customers',
+            loadComponent: ()=> import('./customers/customer-list/customer-list').then(n => n.CustomerList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'customers/add',
+            loadComponent: ()=> import('./customers/customer-form/customer-form').then(n => n.CustomerForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'customers/edit/:id',
+            loadComponent: ()=> import('./customers/customer-form/customer-form').then(n => n.CustomerForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
             path:'suppliers/add',
             loadComponent: ()=> import('./suppliers/add-supplier/add-supplier').then(n => n.AddSupplier),
             canActivate:[RouteGuard],

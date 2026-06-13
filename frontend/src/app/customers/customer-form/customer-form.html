@@ -1,0 +1,96 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item"><a routerLink="/customers">Customers</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</li>
+    </ol>
+  </nav>
+</mat-toolbar>
+
+<div class="content-container">
+  <div class="page-header">
+    <h1 class="page-title">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</h1>
+    <button class="btn-no" mat-raised-button (click)="cancel()">Cancel</button>
+  </div>
+
+  <form [formGroup]="customerForm">
+    <div class="form-section">
+      <h2>Basic Details</h2>
+      <div class="grid-2-col mt-4">
+        <app-input-form-field [label]="'Customer Name'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(customerForm.controls['customer_name'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'Contact Person'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(customerForm.controls['contact_person'])"></app-input-form-field>
+
+        <app-select-form-field [label]="'Customer Type'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="customerTypeOptions" [formControl]="$any(customerForm.controls['customer_type'])"></app-select-form-field>
+
+        <app-select-form-field [label]="'Status'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="statusList" [formControl]="$any(customerForm.controls['status'])"></app-select-form-field>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Contact</h2>
+      <div class="grid-2-col mt-4">
+        <app-input-form-field [label]="'Phone'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'tel'" [maxLength]="10" [inputMode]="'numeric'" [numericOnly]="true"
+          [formControl]="$any(customerForm.controls['phone'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'Alternate Phone'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'tel'" [maxLength]="10" [inputMode]="'numeric'" [numericOnly]="true"
+          [formControl]="$any(customerForm.controls['alternate_phone'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'Email'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'email'" [formControl]="$any(customerForm.controls['email'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'GST No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(customerForm.controls['gst_no'])"></app-input-form-field>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Address</h2>
+      <div class="grid-1-col mt-4">
+        <app-textarea-form-field [label]="'Address'" [classLabel]="'form-label'" [rows]="3"
+          [placeholder]="'Enter address'" [control]="$any(customerForm.controls['address'])">
+        </app-textarea-form-field>
+      </div>
+
+      <div class="grid-2-col mt-4">
+        <app-select-form-field [label]="'State'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="stateOptions" [formControl]="$any(customerForm.controls['state'])"></app-select-form-field>
+
+        <app-select-form-field [label]="'City/District'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="districtOptions" [formControl]="$any(customerForm.controls['city_district'])"></app-select-form-field>
+
+        <app-input-form-field [label]="'Pincode'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(customerForm.controls['pincode'])"></app-input-form-field>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Credit</h2>
+      <div class="grid-2-col mt-4">
+        <app-input-form-field [label]="'Credit Limit'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'number'" [formControl]="$any(customerForm.controls['credit_limit'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'Opening Balance'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'number'" [formControl]="$any(customerForm.controls['opening_balance'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'Outstanding Balance'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'number'" [formControl]="$any(customerForm.controls['outstanding_balance'])"></app-input-form-field>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-no" mat-raised-button type="button" (click)="cancel()">Cancel</button>
+      <button *ngIf="!isEditMode" mat-raised-button type="button" (click)="addSubmit()"
+        [class]="customerForm.valid ? 'btn-yes' : 'btn-no btn-disabled'" [disabled]="!customerForm.valid">Save</button>
+      <button *ngIf="isEditMode" mat-raised-button type="button" (click)="editSubmit()"
+        [class]="customerForm.valid ? 'btn-yes' : 'btn-no btn-disabled'" [disabled]="!customerForm.valid">Update</button>
+    </div>
+  </form>
+</div>

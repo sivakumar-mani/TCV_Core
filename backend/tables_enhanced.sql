@@ -224,8 +224,8 @@ CREATE TABLE suppliers (
     gst_no VARCHAR(15) COMMENT 'GST registration number',
     pan_no VARCHAR(10),
     address TEXT NOT NULL,
-    city VARCHAR(100) NOT NULL,
-    state VARCHAR(100) NOT NULL,
+     state VARCHAR(100) NOT NULL,
+    city_district VARCHAR(100) NOT NULL,       
     pincode VARCHAR(10),
     opening_balance DECIMAL(12,2) NOT NULL DEFAULT 0 COMMENT 'Supplier credit balance',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -238,7 +238,7 @@ CREATE TABLE suppliers (
     
     INDEX idx_supplier_name (supplier_name),
     INDEX idx_gst_no (gst_no),
-    INDEX idx_city (city),
+    INDEX idx_city (city_district),
     INDEX idx_active (is_active),
     INDEX idx_email (email)
 ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -258,7 +258,7 @@ CREATE TABLE customers (
     gst_no VARCHAR(15),
     customer_type ENUM('RETAIL','WHOLESALE','DEALER','CORPORATE','SERVICE') NOT NULL DEFAULT 'RETAIL',
     address TEXT NOT NULL,
-    city VARCHAR(100) NOT NULL,
+    city_district VARCHAR(100) NOT NULL,
     state VARCHAR(100) NOT NULL,
     pincode VARCHAR(10),
     credit_limit DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (credit_limit >= 0),
@@ -270,7 +270,7 @@ CREATE TABLE customers (
     
     INDEX idx_customer_name (customer_name),
     INDEX idx_customer_type (customer_type),
-    INDEX idx_city (city),
+    INDEX idx_city (city_district),
     INDEX idx_active (is_active),
     INDEX idx_email (email),
     INDEX idx_phone (phone)

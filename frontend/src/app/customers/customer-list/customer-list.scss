@@ -1,0 +1,17 @@
+.customer-table {
+  overflow: auto;
+
+  table {
+    min-width: 1300px;
+    width: 100%;
+  }
+
+  mat-form-field {
+    margin: 10px;
+    width: min(320px, calc(100% - 20px));
+  }
+}
+
+.action-link {
+  cursor: pointer;
+}

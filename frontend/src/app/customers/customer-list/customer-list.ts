@@ -2,19 +2,19 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ColDef } from 'ag-grid-community';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
-import { SupplierServices } from '../../services/supplier-services';
+import { CustomerServices } from '../../services/customer-services';
 import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 import { CommonMethods } from '../../shared/common-methods';
 import { ActionMenu } from '../../shared/list-action-menu';
 
 @Component({
-  selector: 'app-supplier-list',
+  selector: 'app-customer-list',
   imports: [AgGridList],
-  templateUrl: './supplier-list.html',
-  styleUrl: './supplier-list.scss',
+  templateUrl: './customer-list.html',
+  styleUrl: './customer-list.scss',
 })
-export class SupplierList {
-  suppliers: any[] = [];
+export class CustomerList {
+  customers: any[] = [];
 
   defaultColDef: ColDef = {
     resizable: true,
@@ -27,14 +27,25 @@ export class SupplierList {
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
-    { field: 'supplier_name', headerName: 'Supplier Name' },
+    { field: 'customer_name', headerName: 'Customer Name' },
     { field: 'contact_person', headerName: 'Contact Person' },
     { field: 'phone', headerName: 'Phone', maxWidth: 140 },
     { field: 'email', headerName: 'Email' },
-    { field: 'gst_no', headerName: 'GST No', maxWidth: 150 },
+    { field: 'customer_type', headerName: 'Type', maxWidth: 140 },
     { field: 'city_district', headerName: 'City/District' },
     { field: 'state', headerName: 'State' },
-    { field: 'pincode', headerName: 'Pincode', maxWidth: 130 },
+    {
+      field: 'credit_limit',
+      headerName: 'Credit Limit',
+      maxWidth: 150,
+      valueFormatter: (params) => this.money(params.value),
+    },
+    {
+      field: 'outstanding_balance',
+      headerName: 'Outstanding',
+      maxWidth: 150,
+      valueFormatter: (params) => this.money(params.value),
+    },
     {
       field: 'status',
       headerName: 'Status',
@@ -47,8 +58,8 @@ export class SupplierList {
       cellRenderer: ActionMenu,
       cellRendererParams: {
         dropdownMenu: [
-          { label: 'Edit', action: (row: any) => this.editSupplier(row) },
-          { label: 'Delete', action: (row: any) => this.deleteSupplier(row) }
+          { label: 'Edit', action: (row: any) => this.editCustomer(row) },
+          { label: 'Delete', action: (row: any) => this.deleteCustomer(row) }
         ]
       },
       filter: false,
@@ -57,26 +68,22 @@ export class SupplierList {
   ];
 
   constructor(
-    private supplierService: SupplierServices,
+    private customerService: CustomerServices,
     private ngxLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit() {
-    this.loadSuppliers();
+    this.loadCustomers();
   }
 
-  loadSuppliers() {
+  loadCustomers() {
     this.ngxLoader.start();
-    this.supplierService.getSuppliers().subscribe({
+    this.customerService.getCustomers().subscribe({
       next: (response: any) => {
         this.ngxLoader.stop();
-        const data = Array.isArray(response) ? response : response.data ?? [];
-        this.suppliers = data.map((supplier: any) => ({
-          ...supplier,
-          city_district: supplier.city_district || supplier.city
-        }));
+        this.customers = Array.isArray(response) ? response : response.data ?? [];
       },
       error: (error: any) => {
         this.ngxLoader.stop();
@@ -85,23 +92,23 @@ export class SupplierList {
     });
   }
 
-  addSupplier() {
-    this.router.navigateByUrl('/suppliers/add');
+  addCustomer() {
+    this.router.navigateByUrl('/customers/add');
   }
 
-  editSupplier(row: any) {
-    this.router.navigate(['/suppliers/edit', row.supplier_id]);
+  editCustomer(row: any) {
+    this.router.navigate(['/customers/edit', row.customer_id]);
   }
 
-  deleteSupplier(row: any) {
-    if (!confirm(`Delete supplier ${row.supplier_name}?`)) return;
+  deleteCustomer(row: any) {
+    if (!confirm(`Delete customer ${row.customer_name}?`)) return;
 
     this.ngxLoader.start();
-    this.supplierService.deleteSupplier({ supplier_id: row.supplier_id }).subscribe({
+    this.customerService.deleteCustomer({ customer_id: row.customer_id }).subscribe({
       next: (response: any) => {
         this.ngxLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
-        this.loadSuppliers();
+        this.loadCustomers();
       },
       error: (error: any) => {
         this.ngxLoader.stop();
@@ -112,5 +119,9 @@ export class SupplierList {
 
   getStatusLabel(status: number | string) {
     return Number(status) === 1 ? 'Active' : 'Inactive';
+  }
+
+  money(value: number | string) {
+    return `Rs. ${(Number(value) || 0).toFixed(2)}`;
   }
 }

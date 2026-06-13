@@ -31,11 +31,11 @@
       <app-input-form-field [label]="'GST No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
         [type]="'text'" [formControl]="$any(supplierForm.controls['gst_no'])"></app-input-form-field>
 
-      <app-input-form-field [label]="'City'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-        [type]="'text'" [formControl]="$any(supplierForm.controls['city'])"></app-input-form-field>
+      <app-select-form-field [label]="'State'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="stateOptions" [formControl]="$any(supplierForm.controls['state'])"></app-select-form-field>
 
-      <app-input-form-field [label]="'State'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-        [type]="'text'" [formControl]="$any(supplierForm.controls['state'])"></app-input-form-field>
+      <app-select-form-field [label]="'City/District'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+        [options]="districtOptions" [formControl]="$any(supplierForm.controls['city_district'])"></app-select-form-field>
 
       <app-input-form-field [label]="'Pincode'" [classLabel]="'form-label'" [inputClass]="'form-control'"
         [type]="'text'" [formControl]="$any(supplierForm.controls['pincode'])"></app-input-form-field>

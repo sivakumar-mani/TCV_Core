@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.form-section {
+  margin-bottom: 24px;
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  margin-bottom: 24px;
+}

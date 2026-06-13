@@ -7,13 +7,18 @@ const getProducts = async (req, res) => {
         p.product_id,
         p.product_name,
         p.product_code,
+        p.barcode,
         p.description,
         p.selling_price AS price,
-        0 AS stock_qty,
         p.purchase_price,
         p.selling_price,
+        p.gst_percent,
+        p.hsn_code,
+        p.unit,
+        p.reorder_level,
         p.status,
         p.created_at,
+        p.updated_at,
 
         b.brand_id,
         b.brand_name,
@@ -69,6 +74,7 @@ const addProduct = async (req, res) => {
             brand_id,
             category_id,
             product_code,
+            barcode,
             description,
             price,
             purchase_price,
@@ -85,6 +91,13 @@ const addProduct = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Product name is required'
+            });
+        }
+
+        if (!product_code) {
+            return res.status(400).json({
+                success: false,
+                message: 'Product code is required'
             });
         }
 
@@ -129,19 +142,32 @@ const addProduct = async (req, res) => {
         }
 
         // CHECK PRODUCT CODE ALREADY EXISTS
-        if (product_code) {
+        const [existingProduct] = await connection.promise().query(
+            `SELECT product_id 
+             FROM products 
+             WHERE LOWER(product_code) = LOWER(?)`,
+            [product_code]
+        );
 
-            const [existingProduct] = await connection.promise().query(
-                `SELECT product_id 
-                 FROM products 
-                 WHERE LOWER(product_code) = LOWER(?)`,
-                [product_code]
+        if (existingProduct.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Product code already exists'
+            });
+        }
+
+        if (barcode) {
+            const [existingBarcode] = await connection.promise().query(
+                `SELECT product_id
+                 FROM products
+                 WHERE LOWER(barcode) = LOWER(?)`,
+                [barcode]
             );
 
-            if (existingProduct.length > 0) {
+            if (existingBarcode.length > 0) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Product code already exists'
+                    message: 'Barcode already exists'
                 });
             }
         }
@@ -153,6 +179,7 @@ const addProduct = async (req, res) => {
                 brand_id,
                 category_id,
                 product_code,
+                barcode,
                 description,
                 purchase_price,
                 selling_price,
@@ -162,14 +189,15 @@ const addProduct = async (req, res) => {
                 reorder_level,
                 status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const values = [
             product_name,
             brand_id || null,
             category_id,
-            product_code || null,
+            product_code,
+            barcode || null,
             description || null,
             purchase_price ?? 0,
             selling_price ?? price ?? 0,
@@ -208,6 +236,7 @@ const updateProduct = async (req, res) => {
             brand_id,
             category_id,
             product_code,
+            barcode,
             description,
             price,
             purchase_price,
@@ -235,6 +264,60 @@ const updateProduct = async (req, res) => {
                 message: "Product not found"
             });
         }
+
+        if (!product_name) {
+            return res.status(400).json({
+                success: false,
+                message: "Product name is required"
+            });
+        }
+
+        if (!product_code) {
+            return res.status(400).json({
+                success: false,
+                message: "Product code is required"
+            });
+        }
+
+        if (!category_id) {
+            return res.status(400).json({
+                success: false,
+                message: "Category is required"
+            });
+        }
+
+        const [duplicateCode] = await connection.promise().query(
+            `SELECT product_id
+             FROM products
+             WHERE LOWER(product_code) = LOWER(?)
+               AND product_id <> ?`,
+            [product_code, product_id]
+        );
+
+        if (duplicateCode.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Product code already exists"
+            });
+        }
+
+        if (barcode) {
+            const [duplicateBarcode] = await connection.promise().query(
+                `SELECT product_id
+                 FROM products
+                 WHERE LOWER(barcode) = LOWER(?)
+                   AND product_id <> ?`,
+                [barcode, product_id]
+            );
+
+            if (duplicateBarcode.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Barcode already exists"
+                });
+            }
+        }
+
         // Update query
         await connection.promise().query(
             `UPDATE products 
@@ -242,6 +325,7 @@ const updateProduct = async (req, res) => {
       brand_id = ?,
       category_id = ?,
       product_code = ?,
+      barcode = ?,
       description = ?,
       purchase_price = ?,
       selling_price = ?,
@@ -257,6 +341,7 @@ const updateProduct = async (req, res) => {
                 brand_id || null,
                 category_id,
                 product_code,
+                barcode || null,
                 description,
                 purchase_price ?? 0,
                 selling_price ?? price ?? 0,
