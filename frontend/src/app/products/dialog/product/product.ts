@@ -58,6 +58,7 @@ export class Product {
       product_code: ['', Validators.required],
       barcode: [''],
       description: [''],
+      product_type: ['MATERIAL', Validators.required],
       purchase_price: [0, [Validators.min(0)]],
       selling_price: [0, [Validators.min(0)]],
       gst_percent: [0, [Validators.min(0), Validators.max(100)]],
@@ -76,6 +77,7 @@ export class Product {
       this.productForm.get('product_code')?.updateValueAndValidity();
       this.productForm.get('barcode')?.updateValueAndValidity();
       this.productForm.get('description')?.updateValueAndValidity();
+      this.productForm.get('product_type')?.updateValueAndValidity();
       this.productForm.get('purchase_price')?.updateValueAndValidity();
       this.productForm.get('selling_price')?.updateValueAndValidity();
       this.productForm.get('gst_percent')?.updateValueAndValidity();
@@ -202,6 +204,7 @@ export class Product {
       product_code: formData.product_code || this.productCode,
       barcode: formData.barcode,
       description: formData.description,
+      product_type: formData.product_type,
       purchase_price: formData.purchase_price,
       selling_price: formData.selling_price,
       gst_percent: formData.gst_percent,
@@ -234,6 +237,12 @@ export class Product {
     { label: 'Discontinued', value: 'DISCONTINUED' }
   ];
 
+  productTypeList = [
+    { label: 'Material / Stock', value: 'MATERIAL' },
+    { label: 'Service Charge', value: 'SERVICE' },
+    { label: 'Labor Charge', value: 'LABOR' }
+  ];
+
   editSubmit() {
 
     this.ngxUiLoader.start();
@@ -250,6 +259,7 @@ export class Product {
       product_code: formData.product_code || this.productCode,
       barcode: formData.barcode,
       description: formData.description,
+      product_type: formData.product_type,
       purchase_price: formData.purchase_price,
       selling_price: formData.selling_price,
       gst_percent: formData.gst_percent,

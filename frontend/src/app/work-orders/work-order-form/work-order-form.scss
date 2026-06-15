@@ -26,6 +26,13 @@
   flex-wrap: wrap;
 }
 
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
 .form-section {
   background: #fff;
   border: 1px solid #dce3ea;

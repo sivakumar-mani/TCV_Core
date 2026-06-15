@@ -35,6 +35,10 @@ export class WorkOrderServices {
     return this.http.patch(this.endpoint, data, { headers: this.headers });
   }
 
+  addMaterialIssue(workOrderId: number, data: any) {
+    return this.http.post(`${this.endpoint}/${workOrderId}/material-issue`, data, { headers: this.headers });
+  }
+
   addMaterialReturn(workOrderId: number, data: any) {
     return this.http.post(`${this.endpoint}/${workOrderId}/material-return`, data, { headers: this.headers });
   }

@@ -131,6 +131,14 @@ export const routes: Routes = [
             }
         },
          {
+            path:'work-orders/material-issue/:id',
+            loadComponent: ()=> import('./work-orders/work-order-material/work-order-material').then(n => n.WorkOrderMaterial),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
             path:'stock',
             loadComponent: ()=> import('./stock/stock-list/stock-list').then(n => n.StockList),
             canActivate:[RouteGuard],

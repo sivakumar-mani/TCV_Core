@@ -10,7 +10,27 @@ const toSqlDate = (value) => {
     return String(value).slice(0, 10);
 };
 
+const ensureProductTypeColumn = async (conn) => {
+    const [columns] = await conn.query(
+        `SELECT COLUMN_NAME
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'products'
+           AND COLUMN_NAME = 'product_type'`
+    );
+
+    if (columns.length === 0) {
+        await conn.query(
+            `ALTER TABLE products
+             ADD COLUMN product_type ENUM('MATERIAL','SERVICE','LABOR') NOT NULL DEFAULT 'MATERIAL'
+             AFTER description`
+        );
+    }
+};
+
 const ensureWorkOrderSupport = async (conn) => {
+    await ensureProductTypeColumn(conn);
+
     await conn.query(`
         CREATE TABLE IF NOT EXISTS stock_master (
             stock_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -160,6 +180,7 @@ const ensureWorkOrderSupport = async (conn) => {
         SELECT p.product_id, p.product_code, p.product_name, p.description, p.unit, p.selling_price, p.gst_percent,
                CASE WHEN p.status = 'ACTIVE' THEN 1 ELSE 0 END
         FROM products p
+        WHERE p.product_type = 'MATERIAL'
         ON DUPLICATE KEY UPDATE
             product_id = VALUES(product_id),
             material_name = VALUES(material_name),
@@ -179,6 +200,26 @@ const resolveProductId = async (conn, materialId, productId) => {
     return materials[0]?.product_id || null;
 };
 
+const resolveMaterialId = async (conn, materialId, productId) => {
+    if (materialId) return Number(materialId);
+    if (!productId) return null;
+
+    const [materials] = await conn.query(
+        'SELECT material_id FROM material_master WHERE product_id = ? LIMIT 1',
+        [productId]
+    );
+    return materials[0]?.material_id || null;
+};
+
+const isMaterialProduct = async (conn, productId) => {
+    if (!productId) return false;
+    const [rows] = await conn.query(
+        `SELECT product_type FROM products WHERE product_id = ?`,
+        [productId]
+    );
+    return (rows[0]?.product_type || 'MATERIAL') === 'MATERIAL';
+};
+
 const postStockMovement = async (conn, {
     productId,
     transactionType,
@@ -191,6 +232,7 @@ const postStockMovement = async (conn, {
     employeeId = null
 }) => {
     if (!productId) return;
+    if (!(await isMaterialProduct(conn, productId))) return;
 
     const inQty = toNumber(qtyIn);
     const outQty = toNumber(qtyOut);
@@ -294,9 +336,10 @@ const getMaterials = async (req, res) => {
         const conn = connection.promise();
         await ensureWorkOrderSupport(conn);
         const [rows] = await conn.query(
-            `SELECT mm.*, p.product_code, p.product_name
+            `SELECT mm.*, p.product_code, p.product_name, p.product_type
              FROM material_master mm
              LEFT JOIN products p ON p.product_id = mm.product_id
+             WHERE COALESCE(p.product_type, 'MATERIAL') = 'MATERIAL'
              ORDER BY mm.material_name`
         );
         return res.json(rows);
@@ -371,17 +414,25 @@ const getWorkOrderById = async (req, res) => {
 
         const [items] = await conn.query('SELECT * FROM work_order_items WHERE work_order_id = ? ORDER BY line_no, work_order_item_id', [work_order_id]);
         const [issues] = await conn.query(
-            `SELECT mi.*, mm.material_code, mm.material_name
+            `SELECT mi.*, mm.material_code, mm.material_name,
+                    CONCAT_WS(' ', issued_to.first_name, issued_to.last_name) AS issued_to_employee_name,
+                    CONCAT_WS(' ', issued_by.first_name, issued_by.last_name) AS issued_by_employee_name
              FROM work_order_material_issues mi
              LEFT JOIN material_master mm ON mm.material_id = mi.material_id
+             LEFT JOIN employees issued_to ON issued_to.employee_id = mi.issued_to_employee_id
+             LEFT JOIN employees issued_by ON issued_by.employee_id = mi.issued_by_employee_id
              WHERE mi.work_order_id = ?
              ORDER BY mi.issue_id`,
             [work_order_id]
         );
         const [returns] = await conn.query(
-            `SELECT mr.*, mm.material_code, mm.material_name
+            `SELECT mr.*, mm.material_code, mm.material_name,
+                    CONCAT_WS(' ', returned_by.first_name, returned_by.last_name) AS returned_by_employee_name,
+                    CONCAT_WS(' ', received_by.first_name, received_by.last_name) AS received_by_employee_name
              FROM work_order_material_returns mr
              LEFT JOIN material_master mm ON mm.material_id = mr.material_id
+             LEFT JOIN employees returned_by ON returned_by.employee_id = mr.returned_by_employee_id
+             LEFT JOIN employees received_by ON received_by.employee_id = mr.received_by_employee_id
              WHERE mr.work_order_id = ?
              ORDER BY mr.return_id`,
             [work_order_id]
@@ -469,6 +520,9 @@ const addWorkOrder = async (req, res) => {
             if (!issue.material_id && !issue.product_id) continue;
             const issueNo = issue.issue_no || await createSequenceNo(conn, 'work_order_material_issues', 'issue_no', 'MI');
             const issueProductId = await resolveProductId(conn, issue.material_id, issue.product_id);
+            if (!(await isMaterialProduct(conn, issueProductId))) {
+                throw new Error('Only material products can be issued from stock');
+            }
             const issuedQty = toNumber(issue.issued_qty || issue.qty);
             const [issueResult] = await conn.query(
                 `INSERT INTO work_order_material_issues (
@@ -556,6 +610,72 @@ const updateWorkOrder = async (req, res) => {
 
         await conn.commit();
         return res.json({ success: true, message: 'Work order updated successfully' });
+    } catch (error) {
+        await conn.rollback();
+        console.error(error);
+        return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
+const addMaterialIssue = async (req, res) => {
+    const conn = connection.promise();
+    try {
+        await ensureWorkOrderSupport(conn);
+        const payload = req.body;
+        const workOrderId = payload.work_order_id || req.params.work_order_id;
+        if (!workOrderId) return res.status(400).json({ success: false, message: 'work_order_id is required' });
+
+        await conn.beginTransaction();
+
+        const [orders] = await conn.query(
+            'SELECT work_order_id, work_order_no, assigned_to_employee_id, created_by_employee_id FROM work_orders WHERE work_order_id = ? FOR UPDATE',
+            [workOrderId]
+        );
+        if (orders.length === 0) throw new Error('Work order not found');
+
+        const issueProductId = await resolveProductId(conn, payload.material_id, payload.product_id);
+        if (!issueProductId) throw new Error('Material is required');
+        if (!(await isMaterialProduct(conn, issueProductId))) {
+            throw new Error('Only material products can be issued from stock');
+        }
+
+        const issueMaterialId = await resolveMaterialId(conn, payload.material_id, issueProductId);
+        if (!issueMaterialId) throw new Error('Material master entry not found for selected product');
+
+        const issuedQty = toNumber(payload.issued_qty);
+        if (issuedQty <= 0) throw new Error('Issued quantity is required');
+
+        const issueNo = payload.issue_no || await createSequenceNo(conn, 'work_order_material_issues', 'issue_no', 'MI');
+        const [issueResult] = await conn.query(
+            `INSERT INTO work_order_material_issues (
+                issue_no, work_order_id, material_id, product_id, issued_qty,
+                issued_date, issued_to_employee_id, issued_by_employee_id, remarks
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                issueNo,
+                workOrderId,
+                issueMaterialId,
+                issueProductId,
+                issuedQty,
+                toSqlDate(payload.issued_date) || toSqlDate(new Date().toISOString()),
+                payload.issued_to_employee_id || orders[0].assigned_to_employee_id || null,
+                payload.issued_by_employee_id || payload.created_by_employee_id || orders[0].created_by_employee_id || null,
+                payload.remarks || null
+            ]
+        );
+
+        await postStockMovement(conn, {
+            productId: issueProductId,
+            transactionType: 'INSTALLATION',
+            transactionId: issueResult.insertId,
+            referenceNo: issueNo,
+            qtyOut: issuedQty,
+            remarks: payload.remarks || `Material issued for ${orders[0].work_order_no}`,
+            employeeId: payload.issued_by_employee_id || payload.created_by_employee_id || orders[0].created_by_employee_id || null
+        });
+
+        await conn.commit();
+        return res.status(201).json({ success: true, message: 'Material issued successfully', issue_id: issueResult.insertId, issue_no: issueNo });
     } catch (error) {
         await conn.rollback();
         console.error(error);
@@ -672,6 +792,7 @@ module.exports = {
     getWorkOrderById,
     addWorkOrder,
     updateWorkOrder,
+    addMaterialIssue,
     addMaterialReturn,
     createInvoiceFromWorkOrder
 };

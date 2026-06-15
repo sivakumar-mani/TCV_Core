@@ -1,12 +1,31 @@
 <div class="header">
   <mat-toolbar>
-    <span>TCV</span>
-    <button matIconButton (click)="toggleSidebar.emit()" class="example-icon"
-      aria-label="Example icon-button with menu icon">
+    <div class="brand">
+      <span class="brand-mark">T</span>
+      <span class="brand-text">TCV Core</span>
+    </div>
+    <button mat-icon-button (click)="toggleSidebar.emit()" class="sidebar-toggle"
+      aria-label="Toggle sidebar">
       <mat-icon>menu</mat-icon>
     </button>
+    <div class="header-search">
+      <input type="text" placeholder="Search">
+      <mat-icon>search</mat-icon>
+    </div>
     <span class="mid-spacer"></span>
-    <button matButton [matMenuTriggerFor]="menu">Menu</button>
+    <button mat-icon-button class="header-icon" aria-label="Notifications">
+      <mat-icon>notifications_none</mat-icon>
+      <span class="badge-dot">4</span>
+    </button>
+    <button mat-icon-button class="header-icon" aria-label="Messages">
+      <mat-icon>chat_bubble_outline</mat-icon>
+      <span class="badge-dot success">3</span>
+    </button>
+    <button mat-button [matMenuTriggerFor]="menu" class="profile-trigger">
+      <span class="avatar">A</span>
+      <span class="profile-name">Admin</span>
+      <mat-icon>expand_more</mat-icon>
+    </button>
     <mat-menu #menu="matMenu">
       <!-- <button mat-menu-item (click)="signup()">Signup</button> -->
       <button mat-menu-item (click)="changePassword()">Change Password</button>

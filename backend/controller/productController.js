@@ -1,7 +1,32 @@
 const connection = require('../connection');
 require('dotenv').config();
 
+const ensureProductTypeColumn = async () => {
+    const [columns] = await connection.promise().query(
+        `SELECT COLUMN_NAME
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'products'
+           AND COLUMN_NAME = 'product_type'`
+    );
+
+    if (columns.length === 0) {
+        await connection.promise().query(
+            `ALTER TABLE products
+             ADD COLUMN product_type ENUM('MATERIAL','SERVICE','LABOR') NOT NULL DEFAULT 'MATERIAL'
+             AFTER description`
+        );
+    }
+};
+
 const getProducts = async (req, res) => {
+    try {
+        await ensureProductTypeColumn();
+    } catch (error) {
+        console.error("Database error:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+
     const query = `
     SELECT 
         p.product_id,
@@ -9,6 +34,7 @@ const getProducts = async (req, res) => {
         p.product_code,
         p.barcode,
         p.description,
+        p.product_type,
         p.selling_price AS price,
         p.purchase_price,
         p.selling_price,
@@ -68,6 +94,7 @@ const getProducts = async (req, res) => {
 
 const addProduct = async (req, res) => {
     try {
+        await ensureProductTypeColumn();
 
         const {
             product_name,
@@ -76,6 +103,7 @@ const addProduct = async (req, res) => {
             product_code,
             barcode,
             description,
+            product_type,
             price,
             purchase_price,
             selling_price,
@@ -181,6 +209,7 @@ const addProduct = async (req, res) => {
                 product_code,
                 barcode,
                 description,
+                product_type,
                 purchase_price,
                 selling_price,
                 gst_percent,
@@ -189,7 +218,7 @@ const addProduct = async (req, res) => {
                 reorder_level,
                 status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const values = [
@@ -199,6 +228,7 @@ const addProduct = async (req, res) => {
             product_code,
             barcode || null,
             description || null,
+            product_type || 'MATERIAL',
             purchase_price ?? 0,
             selling_price ?? price ?? 0,
             gst_percent ?? 0,
@@ -230,6 +260,7 @@ const addProduct = async (req, res) => {
 }
 const updateProduct = async (req, res) => {
     try {
+        await ensureProductTypeColumn();
         const {
             product_id,
             product_name,
@@ -238,6 +269,7 @@ const updateProduct = async (req, res) => {
             product_code,
             barcode,
             description,
+            product_type,
             price,
             purchase_price,
             selling_price,
@@ -327,6 +359,7 @@ const updateProduct = async (req, res) => {
       product_code = ?,
       barcode = ?,
       description = ?,
+      product_type = ?,
       purchase_price = ?,
       selling_price = ?,
       gst_percent = ?,
@@ -343,6 +376,7 @@ const updateProduct = async (req, res) => {
                 product_code,
                 barcode || null,
                 description,
+                product_type || 'MATERIAL',
                 purchase_price ?? 0,
                 selling_price ?? price ?? 0,
                 gst_percent ?? 0,

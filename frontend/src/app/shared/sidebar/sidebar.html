@@ -1,10 +1,10 @@
-<mat-nav-list aria-label="Main navigation">
+<mat-nav-list aria-label="Main navigation" [class.is-collapsed]="collapsed">
   <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
     <mat-icon matListIcon>dashboard</mat-icon>
-    <span matLine>Dashboard</span>
+    <span matLine class="nav-label">Dashboard</span>
   </a>
 
-  <mat-accordion class="app-nav-accordion" [multi]="false">
+  <mat-accordion class="app-nav-accordion" [multi]="false" *ngIf="!collapsed">
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -76,4 +76,22 @@
       </mat-nav-list>
     </mat-expansion-panel>
   </mat-accordion>
+
+  <div class="collapsed-links" *ngIf="collapsed">
+    <a mat-list-item routerLink="/customers" routerLinkActive="active-link" title="Business Partners">
+      <mat-icon matListIcon>groups</mat-icon>
+    </a>
+    <a mat-list-item routerLink="/productList" routerLinkActive="active-link" title="Inventory">
+      <mat-icon matListIcon>inventory</mat-icon>
+    </a>
+    <a mat-list-item routerLink="/work-orders" routerLinkActive="active-link" title="Sales">
+      <mat-icon matListIcon>request_quote</mat-icon>
+    </a>
+    <a mat-list-item routerLink="/employees" routerLinkActive="active-link" title="HR Process">
+      <mat-icon matListIcon>badge</mat-icon>
+    </a>
+    <a mat-list-item routerLink="/users" routerLinkActive="active-link" title="Administration">
+      <mat-icon matListIcon>admin_panel_settings</mat-icon>
+    </a>
+  </div>
 </mat-nav-list>

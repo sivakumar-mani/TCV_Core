@@ -128,7 +128,10 @@ export class WorkOrderForm {
       error: (error: any) => this.commonMethods.handleError(error)
     });
     this.productService.getProduct().subscribe({
-      next: (response: any) => this.products = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.products = Array.isArray(response) ? response : response.data ?? [];
+        this.syncMaterialIssueMaterials();
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
     this.quotationService.getQuotations().subscribe({
@@ -187,14 +190,6 @@ export class WorkOrderForm {
         this.items.clear();
         (quotation.items || []).forEach((item: any) => this.addItem(item));
         this.materialIssues.clear();
-        (quotation.items || [])
-          .filter((item: any) => item.product_id)
-          .forEach((item: any) => this.addMaterialIssue({
-            material_id: this.materialIdForProduct(item.product_id),
-            product_id: item.product_id,
-            issued_qty: item.qty,
-            remarks: `From quotation ${quotation.quotation_no}`
-          }));
         this.workOrderForm.patchValue({
           customer_id: quotation.customer_id,
           site_address: quotation.address || 'Customer site',
@@ -263,12 +258,67 @@ export class WorkOrderForm {
   }
 
   syncMaterialIssueMaterials() {
+    for (let index = this.materialIssues.length - 1; index >= 0; index--) {
+      const row = this.materialIssues.at(index) as FormGroup;
+      const productId = row.get('product_id')?.value;
+      const materialId = this.materialIdForProduct(productId);
+      if (productId && !materialId && !this.isMaterialProduct(productId)) {
+        this.materialIssues.removeAt(index);
+      }
+    }
+
     this.materialIssues.controls.forEach((control) => {
       const row = control as FormGroup;
       if (row.get('material_id')?.value) return;
       const materialId = this.materialIdForProduct(row.get('product_id')?.value);
       if (materialId) row.get('material_id')?.setValue(materialId);
     });
+  }
+
+  isMaterialProduct(productId: any) {
+    if (!productId) return false;
+    const product = this.products.find((item) => Number(item.product_id) === Number(productId));
+    if (product) return (product.product_type || 'MATERIAL') === 'MATERIAL';
+    return Boolean(this.materialIdForProduct(productId));
+  }
+
+  productTypeLabel(product: any) {
+    const labels: Record<string, string> = {
+      MATERIAL: 'Material',
+      SERVICE: 'Service',
+      LABOR: 'Labor'
+    };
+    return labels[product?.product_type || 'MATERIAL'] || 'Material';
+  }
+
+  onMaterialChange(index: number) {
+    const row = this.materialIssues.at(index) as FormGroup;
+    const material = this.materials.find((item) => Number(item.material_id) === Number(row.get('material_id')?.value));
+    row.patchValue({ product_id: material?.product_id || '' });
+  }
+
+  copyMaterialsFromWorkItems() {
+    const copiedItems = new Map<number, any>();
+
+    this.items.controls.forEach((control) => {
+      const item = (control as FormGroup).getRawValue();
+      const productId = Number(item.product_id);
+      if (!productId || !this.isMaterialProduct(productId)) return;
+
+      const materialId = this.materialIdForProduct(productId);
+      if (!materialId) return;
+
+      const existing = copiedItems.get(productId);
+      copiedItems.set(productId, {
+        material_id: materialId,
+        product_id: productId,
+        issued_qty: (existing?.issued_qty || 0) + this.toNumber(item.qty),
+        remarks: 'From work items'
+      });
+    });
+
+    this.materialIssues.clear();
+    copiedItems.forEach((issue) => this.addMaterialIssue(issue));
   }
 
   removeMaterialIssue(index: number) {
@@ -328,7 +378,7 @@ export class WorkOrderForm {
         tax_amount: this.lineTax(index),
         amount: this.lineTotal(index)
       })),
-      material_issues: this.isEditMode ? [] : rawValue.material_issues
+      material_issues: []
     };
 
     delete payload.work_order_no;

@@ -1,0 +1,200 @@
+<nav aria-label="breadcrumb" class="bg-light border-bottom px-3 py-2 mb-3">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a routerLink="/dashboard">Home</a></li>
+    <li class="breadcrumb-item"><a routerLink="/work-orders">Work Orders</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Material Issue</li>
+  </ol>
+</nav>
+
+<div class="material-page">
+  <div class="page-header">
+    <h1>Material Issue</h1>
+    <button type="button" class="btn btn-outline-secondary" (click)="back()">Back</button>
+  </div>
+
+  <section class="summary-grid" *ngIf="workOrder">
+    <div>
+      <span>Work Order</span>
+      <strong>{{ workOrder.work_order_no }}</strong>
+    </div>
+    <div>
+      <span>Customer</span>
+      <strong>{{ workOrder.customer_name }}</strong>
+    </div>
+    <div>
+      <span>Status</span>
+      <strong>{{ workOrder.work_status }}</strong>
+    </div>
+    <div>
+      <span>Assigned To</span>
+      <strong>{{ workOrder.assigned_employee_name || '-' }}</strong>
+    </div>
+    <div>
+      <span>Start Date</span>
+      <strong>{{ displayDate(workOrder.start_date) || '-' }}</strong>
+    </div>
+    <div>
+      <span>Site</span>
+      <strong>{{ workOrder.site_address }}</strong>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <h2>Material Issue List</h2>
+    <form [formGroup]="issueTableForm">
+    <div class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>Issue No</th>
+            <th>Material</th>
+            <th class="text-end">Issued Qty</th>
+            <th>Issue Date</th>
+            <th>Issued To</th>
+            <th>Remarks</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody formArrayName="rows">
+          <tr *ngFor="let row of issueRows.controls; let i = index" [formGroupName]="i">
+            <td>{{ row.get('issue_no')?.value || '-' }}</td>
+            <td>
+              <select class="form-control" formControlName="material_id" (change)="onIssueMaterialChange(i)" [attr.disabled]="row.get('issue_id')?.value ? true : null">
+                <option value="">Select material</option>
+                <option *ngFor="let material of materials" [value]="material.material_id">
+                  {{ material.material_code }} - {{ material.material_name }}
+                </option>
+              </select>
+            </td>
+            <td>
+              <input class="form-control text-end" type="number" min="0.01" step="0.01" formControlName="issued_qty" [readonly]="row.get('issue_id')?.value">
+            </td>
+            <td><input class="form-control" type="date" formControlName="issued_date" [readonly]="row.get('issue_id')?.value"></td>
+            <td>
+              <select class="form-control" formControlName="issued_to_employee_id" [attr.disabled]="row.get('issue_id')?.value ? true : null">
+                <option value="">Select employee</option>
+                <option *ngFor="let employee of employees" [value]="employee.employee_id">
+                  {{ employee.employee_code }} - {{ employee.employee_name }}
+                </option>
+              </select>
+            </td>
+            <td><input class="form-control" type="text" formControlName="remarks" [readonly]="row.get('issue_id')?.value"></td>
+            <td class="text-end">
+              <button *ngIf="row.get('issue_id')?.value" type="button" class="btn btn-sm btn-outline-primary" (click)="selectReturnIssue(row.getRawValue())">Return</button>
+              <button *ngIf="!row.get('issue_id')?.value" type="button" class="btn btn-sm btn-primary" (click)="saveMaterialIssue(i)">Save</button>
+            </td>
+          </tr>
+          <tr *ngIf="!issueRows.length">
+            <td colspan="7" class="text-center text-muted py-3">No material products available.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer-actions">
+      <button type="button" class="btn btn-outline-primary" (click)="addMaterialRow()">Add Material</button>
+    </div>
+    </form>
+  </section>
+
+  <section class="form-section">
+    <h2>Material Return</h2>
+    <form [formGroup]="returnForm" (ngSubmit)="saveMaterialReturn()">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <app-select-form-field
+            [label]="'Against Issue'"
+            [labelClass]="'form-label'"
+            [selectClass]="'form-control'"
+            [options]="returnIssueOptions"
+            [formControl]="$any(returnForm.controls['issue_id'])">
+          </app-select-form-field>
+        </div>
+        <div class="col-md-2">
+          <app-input-form-field
+            [label]="'Returned Qty'"
+            [classLabel]="'form-label'"
+            [inputClass]="'form-control text-end'"
+            [type]="'number'"
+            [formControl]="$any(returnForm.controls['returned_qty'])">
+          </app-input-form-field>
+        </div>
+        <div class="col-md-2">
+          <app-input-form-field
+            [label]="'Return Date'"
+            [classLabel]="'form-label'"
+            [inputClass]="'form-control'"
+            [type]="'date'"
+            [formControl]="$any(returnForm.controls['return_date'])">
+          </app-input-form-field>
+        </div>
+        <div class="col-md-2">
+          <app-select-form-field
+            [label]="'Returned By'"
+            [labelClass]="'form-label'"
+            [selectClass]="'form-control'"
+            [options]="employeeOptions"
+            [formControl]="$any(returnForm.controls['returned_by_employee_id'])">
+          </app-select-form-field>
+        </div>
+        <div class="col-md-2">
+          <app-select-form-field
+            [label]="'Received By'"
+            [labelClass]="'form-label'"
+            [selectClass]="'form-control'"
+            [options]="employeeOptions"
+            [formControl]="$any(returnForm.controls['received_by_employee_id'])">
+          </app-select-form-field>
+        </div>
+        <div class="col-md-1">
+          <app-select-form-field
+            [label]="'Condition'"
+            [labelClass]="'form-label'"
+            [selectClass]="'form-control'"
+            [options]="conditionOptions"
+            [formControl]="$any(returnForm.controls['condition_status'])">
+          </app-select-form-field>
+        </div>
+        <div class="col-md-10">
+          <app-input-form-field
+            [label]="'Remarks'"
+            [classLabel]="'form-label'"
+            [inputClass]="'form-control'"
+            [type]="'text'"
+            [formControl]="$any(returnForm.controls['remarks'])">
+          </app-input-form-field>
+        </div>
+        <div class="col-md-2 d-flex align-items-end justify-content-end">
+          <button type="submit" class="btn btn-primary" [disabled]="returnForm.invalid">Save Return</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="table-responsive mt-3">
+      <table class="table table-sm align-middle">
+        <thead>
+          <tr>
+            <th>Return No</th>
+            <th>Material</th>
+            <th class="text-end">Qty</th>
+            <th>Date</th>
+            <th>Condition</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of workOrder?.material_returns || []">
+            <td>{{ item.return_no }}</td>
+            <td>{{ item.material_code }} - {{ item.material_name }}</td>
+            <td class="text-end">{{ item.returned_qty }}</td>
+            <td>{{ displayDate(item.return_date) }}</td>
+            <td>{{ item.condition_status }}</td>
+            <td>{{ item.remarks || '-' }}</td>
+          </tr>
+          <tr *ngIf="!(workOrder?.material_returns || []).length">
+            <td colspan="6" class="text-center text-muted py-3">No material returned yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

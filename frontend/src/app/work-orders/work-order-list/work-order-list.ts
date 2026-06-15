@@ -46,6 +46,7 @@ export class WorkOrderList {
       cellRendererParams: {
         dropdownMenu: [
           { label: 'Edit', action: (row: any) => this.editWorkOrder(row) },
+          { label: 'Material Issue', action: (row: any) => this.openMaterialIssue(row) },
           { label: 'Create Invoice', action: (row: any) => this.createInvoice(row) }
         ]
       },
@@ -85,6 +86,10 @@ export class WorkOrderList {
 
   editWorkOrder(row: any) {
     this.router.navigate(['/work-orders/edit', row.work_order_id]);
+  }
+
+  openMaterialIssue(row: any) {
+    this.router.navigate(['/work-orders/material-issue', row.work_order_id]);
   }
 
   createInvoice(row: any) {

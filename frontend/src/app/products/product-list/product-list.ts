@@ -29,6 +29,12 @@ export class ProductList {
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
     { field: 'product_name', headerName: 'Product' },
     { field: 'product_code', headerName: 'Code', maxWidth: 160 },
+    {
+      field: 'product_type',
+      headerName: 'Type',
+      maxWidth: 150,
+      valueFormatter: (params) => this.productTypeLabel(params.value),
+    },
     { field: 'barcode', headerName: 'Barcode', maxWidth: 160 },
     { field: 'brand_name', headerName: 'Brand' },
     { field: 'category_path', headerName: 'Category' },
@@ -124,5 +130,14 @@ export class ProductList {
 
   money(value: number | string) {
     return `Rs. ${(Number(value) || 0).toFixed(2)}`;
+  }
+
+  productTypeLabel(value: string) {
+    const labels: Record<string, string> = {
+      MATERIAL: 'Material',
+      SERVICE: 'Service',
+      LABOR: 'Labor'
+    };
+    return labels[value] || 'Material';
   }
 }

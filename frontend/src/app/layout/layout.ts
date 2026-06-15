@@ -14,11 +14,26 @@ import { RouterOutlet } from '@angular/router';
 })
 export class Layout {
 opened = false;
+collapsed = false;
+isDesktop = false;
 
 constructor( private breakPointService : BreakpointObserver){
   // function is using show hide in mobile and web view
-  this.breakPointService.observe(['(min-width:768px']).subscribe( results=>{
-    this.opened = results.matches
+  this.breakPointService.observe(['(min-width:768px)']).subscribe( results=>{
+    this.isDesktop = results.matches;
+    this.opened = results.matches;
+    if (!results.matches) {
+      this.collapsed = false;
+    }
   })
+}
+
+toggleSidebar(sidenav: any) {
+  if (this.isDesktop) {
+    this.collapsed = !this.collapsed;
+    return;
+  }
+
+  sidenav.toggle();
 }
 }

@@ -125,6 +125,7 @@ CREATE TABLE products (
     product_code VARCHAR(100) UNIQUE,
     barcode VARCHAR(100),
     description TEXT,
+    product_type ENUM('MATERIAL','SERVICE','LABOR') NOT NULL DEFAULT 'MATERIAL',
     purchase_price DECIMAL(12,2) DEFAULT 0,
     selling_price DECIMAL(12,2) DEFAULT 0,
     gst_percent DECIMAL(5,2) DEFAULT 0,

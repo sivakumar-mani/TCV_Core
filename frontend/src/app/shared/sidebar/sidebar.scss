@@ -1,0 +1,118 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+mat-nav-list {
+  background: #ffffff;
+  color: #012970;
+  height: 100%;
+  overflow-x: hidden;
+  padding: 1rem 0.85rem !important;
+}
+
+.nav-label {
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+:host ::ng-deep .mat-mdc-list-item {
+  border-radius: 6px !important;
+  color: #012970 !important;
+  height: 38px !important;
+  margin-bottom: 0.25rem;
+}
+
+:host ::ng-deep .mat-mdc-list-item .mat-icon {
+  color: #7d91bd;
+  font-size: 20px;
+  height: 20px;
+  margin-right: 0.55rem;
+  width: 20px;
+}
+
+:host ::ng-deep .mat-mdc-list-item:hover,
+:host ::ng-deep .mat-mdc-list-item.active-link {
+  background: #f2f6ff !important;
+  color: #4154f1 !important;
+}
+
+:host ::ng-deep .mat-mdc-list-item:hover .mat-icon,
+:host ::ng-deep .mat-mdc-list-item.active-link .mat-icon {
+  color: #4154f1 !important;
+}
+
+:host ::ng-deep .mat-expansion-panel {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #012970;
+  margin: 0 0 0.2rem !important;
+}
+
+:host ::ng-deep .mat-expansion-panel-header {
+  border-radius: 6px !important;
+  height: 40px !important;
+  padding: 0 0.9rem !important;
+}
+
+:host ::ng-deep .mat-expansion-panel-header:hover,
+:host ::ng-deep .mat-expanded .mat-expansion-panel-header {
+  background: #f2f6ff !important;
+}
+
+:host ::ng-deep .mat-expansion-panel-header-title {
+  align-items: center;
+  color: #012970;
+  font-size: 0.86rem;
+  font-weight: 500;
+  gap: 0.55rem;
+}
+
+:host ::ng-deep .mat-expansion-panel-header-title .mat-icon {
+  color: #7d91bd;
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
+
+:host ::ng-deep .mat-expansion-panel-body {
+  padding: 0.15rem 0 0.35rem !important;
+}
+
+:host ::ng-deep .mat-expansion-panel-body mat-nav-list {
+  height: auto;
+  padding: 0 !important;
+}
+
+:host ::ng-deep .mat-expansion-panel-body .mat-mdc-list-item {
+  height: 34px !important;
+  padding-left: 2.7rem !important;
+}
+
+:host ::ng-deep .mat-expansion-panel-body .mat-mdc-list-item .mdc-list-item__primary-text {
+  font-size: 0.78rem !important;
+  font-weight: 400 !important;
+  line-height: 1.2;
+}
+
+.is-collapsed {
+  padding: 0.8rem 0.5rem !important;
+}
+
+.is-collapsed .nav-label {
+  display: none;
+}
+
+.collapsed-links {
+  display: grid;
+  gap: 0.25rem;
+}
+
+:host ::ng-deep .is-collapsed .mat-mdc-list-item {
+  justify-content: center;
+  padding: 0 !important;
+}
+
+:host ::ng-deep .is-collapsed .mat-mdc-list-item .mat-icon {
+  margin-right: 0;
+}

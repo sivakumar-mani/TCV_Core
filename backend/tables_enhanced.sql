@@ -186,6 +186,7 @@ CREATE TABLE products (
     category_id INT COMMENT 'Category foreign key',
     barcode VARCHAR(100) UNIQUE,
     description TEXT,
+    product_type ENUM('MATERIAL','SERVICE','LABOR') NOT NULL DEFAULT 'MATERIAL' COMMENT 'MATERIAL affects stock; SERVICE/LABOR are billable only',
     purchase_price DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (purchase_price >= 0),
     selling_price DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (selling_price >= 0),
     gst_percent DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (gst_percent >= 0 AND gst_percent <= 100),

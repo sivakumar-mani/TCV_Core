@@ -7,6 +7,7 @@ const {
   getWorkOrderById,
   addWorkOrder,
   updateWorkOrder,
+  addMaterialIssue,
   addMaterialReturn,
   createInvoiceFromWorkOrder
 } = require('../controller/workOrderController');
@@ -25,6 +26,7 @@ router.patch('/:work_order_id', (req, res) => {
   req.body.work_order_id = req.body.work_order_id || req.params.work_order_id;
   return updateWorkOrder(req, res);
 });
+router.post('/:work_order_id/material-issue', addMaterialIssue);
 router.post('/:work_order_id/material-return', addMaterialReturn);
 router.post('/:work_order_id/create-invoice', createInvoiceFromWorkOrder);
 

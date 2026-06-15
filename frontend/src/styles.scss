@@ -250,14 +250,22 @@ body {
 
 // --------------- form fields -------------
 .mat-mdc-form-field {
+  --mat-form-field-container-height: 40px;
+  --mat-form-field-container-vertical-padding: 9px;
+  font-size: 0.82rem !important;
 
   .mdc-text-field--outlined {
+    height: 40px !important;
     padding: 0 12px !important;
 
     .mat-mdc-form-field-infix {
-      padding: 12px 0 !important;
-      min-height: 30px !important
+      min-height: 40px !important;
+      padding: 9px 0 !important;
     }
+  }
+
+  .mat-mdc-select-trigger {
+    height: 30px;
   }
 
   .mat-mdc-select {
@@ -278,6 +286,14 @@ body {
   }
 }
 
+.mdc-floating-label {
+  font-size: 0.95rem !important;
+}
+
+.error-message {
+  font-size: 0.65rem !important;
+}
+
 
 
 // --------------- Grid value -------------
@@ -285,13 +301,13 @@ body {
 .grid-1-col {
   display: grid;
   grid-template-columns: minmax(300px, 1fr);
-  gap: 10px;
+  gap: 15px;
 }
 
 .grid-2-col {
   display: grid;
   grid-template-columns: repeat(2, minmax(300px, 1fr));
-  gap: 10px;
+  gap: 15px;
 }
 
 /* Tablet */
@@ -565,19 +581,35 @@ body {
 
 // --------------- form fields -------------
 .mat-mdc-form-field {
+  --mat-form-field-container-height: 40px;
+  --mat-form-field-container-vertical-padding: 9px;
+  font-size: 0.82rem !important;
 
   .mdc-text-field--outlined {
+    height: 40px !important;
     padding: 0 12px !important;
 
     .mat-mdc-form-field-infix {
-      padding: 12px 0 !important;
-      min-height: 30px !important
+      min-height: 40px !important;
+      padding: 9px 0 !important;
     }
+  }
+
+  .mat-mdc-select-trigger {
+    height: 30px;
   }
 
   .mat-mdc-form-field-error-wrapper {
     padding: 0 4px !important;
   }
+}
+
+.mdc-floating-label {
+  font-size: 0.95rem !important;
+}
+
+.error-message {
+  font-size: 0.65rem !important;
 }
 
 
@@ -587,13 +619,13 @@ body {
 .grid-1-col {
   display: grid;
   grid-template-columns: minmax(300px, 1fr);
-  gap: 10px;
+  gap: 15px;
 }
 
 .grid-2-col {
   display: grid;
   grid-template-columns: repeat(2, minmax(300px, 1fr));
-  gap: 10px;
+  gap: 15px;
 }
 
 
@@ -764,4 +796,211 @@ body {
   .mat-mdc-button {
     height: 20px !important;
     }
+}
+
+// --------------- NiceAdmin-inspired shell theme -------------
+:root {
+  --tcv-primary: #012970;
+  --tcv-accent: #4154f1;
+  --tcv-muted: #899bbd;
+  --tcv-shell-bg: #f6f9ff;
+  --tcv-border: #edf1f7;
+  --tcv-card-shadow: 0 0 24px rgba(1, 41, 112, 0.08);
+  --bs-primary: #4154f1;
+  --btn-primary-blue: #4154f1;
+  --ag-grid-header: #f2f6ff;
+}
+
+body {
+  background: var(--tcv-shell-bg) !important;
+  color: #012970;
+  font-size: 13px;
+}
+
+.header .mat-toolbar {
+  background: #ffffff !important;
+  border-bottom: 1px solid var(--tcv-border);
+  box-shadow: 0 1px 8px rgba(16, 24, 40, 0.06) !important;
+  color: var(--tcv-primary) !important;
+}
+
+.mat-drawer-container {
+  background: var(--tcv-shell-bg) !important;
+  height: calc(100vh - 56px) !important;
+}
+
+.mat-drawer-content {
+  background: var(--tcv-shell-bg) !important;
+  padding: 1.25rem 1.4rem !important;
+}
+
+.mat-drawer-side {
+  background: #ffffff !important;
+  border-right: 1px solid var(--tcv-border) !important;
+  box-shadow: 0 0 20px rgba(1, 41, 112, 0.08);
+}
+
+.main-content {
+  background: var(--tcv-shell-bg) !important;
+}
+
+.form-section,
+.summary-grid,
+.mat-mdc-card,
+app-ag-grid-list {
+  color: #012970;
+}
+
+.form-section,
+.summary-grid {
+  border-color: var(--tcv-border) !important;
+  box-shadow: var(--tcv-card-shadow);
+}
+
+.form-section,
+.card,
+.widget-card {
+  background: #ffffff !important;
+  border: 1px solid #d9dee8 !important;
+  border-radius: 5px !important;
+  box-shadow: 0 1px 4px rgba(1, 41, 112, 0.14) !important;
+  overflow: hidden;
+}
+
+.form-section {
+  padding: 1.15rem 1.25rem !important;
+}
+
+.form-section > h2:first-child,
+.card > .card-header,
+.widget-card > .widget-header {
+  background: #ffffff;
+  border-bottom: 1px solid #d9dee8;
+  color: #012970;
+  display: block;
+  font-size: 1rem !important;
+  font-weight: 500;
+  margin: -1.15rem -1.25rem 1.15rem !important;
+  padding: 0.95rem 1.25rem;
+}
+
+.card > .card-body,
+.widget-card > .widget-body {
+  padding: 1.15rem 1.25rem;
+}
+
+.section-title-row {
+  border-bottom: 1px solid #d9dee8;
+  margin: -1.15rem -1.25rem 1.15rem !important;
+  padding: 0.85rem 1.25rem;
+}
+
+.section-title-row h2 {
+  margin: 0 !important;
+}
+
+.page-header .page-title,
+.page-header h1,
+.form-section h2 {
+  color: var(--tcv-primary);
+  letter-spacing: 0;
+}
+
+.page-header .page-title,
+.page-header h1 {
+  font-size: 1.35rem !important;
+}
+
+.form-section h2 {
+  font-size: 0.95rem !important;
+}
+
+.breadcrumb,
+.breadcrumb a,
+nav[aria-label='breadcrumb'] {
+  color: var(--tcv-muted) !important;
+  font-size: 0.84rem;
+}
+
+nav[aria-label='breadcrumb'] {
+  background: transparent !important;
+  border: 0 !important;
+  padding-left: 0 !important;
+}
+
+.form-control,
+.mat-mdc-form-field,
+.mat-mdc-select,
+.mat-mdc-option,
+.mat-mdc-button,
+.mat-mdc-raised-button,
+.mat-mdc-menu-item,
+.table,
+.ag-theme-quartz,
+.ag-theme-alpine {
+  font-size: 0.84rem !important;
+}
+
+button,
+.btn {
+  font-size: 0.82rem !important;
+  padding: 0.35rem 0.7rem;
+}
+
+.btn-primary,
+.btn-yes {
+  background-color: var(--tcv-accent) !important;
+  border-color: var(--tcv-accent) !important;
+}
+
+.ag-header-cell {
+  background: var(--ag-grid-header) !important;
+  color: var(--tcv-primary);
+}
+
+.ag-row:nth-child(even) {
+  background-color: #fbfcff !important;
+}
+
+.table {
+  background: #ffffff;
+  border: 1px solid #d9dee8;
+  border-collapse: separate;
+  border-radius: 5px;
+  border-spacing: 0;
+  box-shadow: 0 1px 4px rgba(1, 41, 112, 0.14);
+  color: #012970;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.table > :not(caption) > * > * {
+  border-bottom: 1px solid #d9dee8;
+  padding: 0.7rem 0.85rem;
+  vertical-align: middle;
+}
+
+.table > thead > tr > th {
+  background: #ffffff;
+  border-bottom: 2px solid #d9dee8;
+  color: #012970;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.table > tbody > tr:nth-child(odd) > * {
+  background-color: #f7f7f9;
+}
+
+.table > tbody > tr:nth-child(even) > * {
+  background-color: #ffffff;
+}
+
+.table > tbody > tr:last-child > * {
+  border-bottom: 0;
+}
+
+.table.table-sm > :not(caption) > * > * {
+  padding: 0.55rem 0.7rem;
 }

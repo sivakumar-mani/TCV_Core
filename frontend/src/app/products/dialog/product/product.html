@@ -8,7 +8,7 @@
   <!-- Product Name -->
   <mat-form-field appearance="outline">
     <mat-label>Product Name</mat-label>
-    <input matInput formControlName="product_name" placeholder="Auto generate"  readonly>
+    <input matInput formControlName="product_name" placeholder="Auto generate or enter">
   </mat-form-field>
 
   <mat-form-field appearance="outline">
@@ -51,6 +51,15 @@
   <mat-form-field appearance="outline">
     <mat-label>Barcode</mat-label>
     <input matInput formControlName="barcode">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Product Type</mat-label>
+    <mat-select formControlName="product_type">
+      <mat-option *ngFor="let type of productTypeList" [value]="type.value">
+        {{ type.label }}
+      </mat-option>
+    </mat-select>
   </mat-form-field>
 
   <mat-form-field appearance="outline">

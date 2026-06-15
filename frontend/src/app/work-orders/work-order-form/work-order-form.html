@@ -143,7 +143,7 @@
                 <select class="form-control" formControlName="product_id" (change)="onProductChange(i)">
                   <option value="">Custom item</option>
                   <option *ngFor="let product of products" [value]="product.product_id">
-                    {{ product.product_code }} - {{ product.product_name }}
+                    {{ product.product_code }} - {{ product.product_name }} ({{ productTypeLabel(product) }})
                   </option>
                 </select>
               </td>
@@ -161,116 +161,6 @@
       </div>
       <div class="totals-panel">
         <div><span>Invoice Value</span><strong>{{ money(netAmount()) }}</strong></div>
-      </div>
-    </section>
-
-    <section class="form-section">
-      <div class="section-title-row">
-        <h2>Material Issue</h2>
-        <button type="button" class="btn btn-sm btn-outline-primary" (click)="addMaterialIssue()">Add Material</button>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-sm align-middle material-table">
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>Material</th>
-              <th class="text-end">Issued Qty</th>
-              <th>Issue Date</th>
-              <th>Issued To</th>
-              <th>Remarks</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody formArrayName="material_issues">
-            <tr *ngFor="let issue of materialIssues.controls; let i = index" [formGroupName]="i">
-              <td>{{ i + 1 }}</td>
-              <td>
-                <select class="form-control" formControlName="material_id">
-                  <option value="">Select material</option>
-                  <option *ngFor="let material of materials" [value]="material.material_id">
-                    {{ material.material_code }} - {{ material.material_name }}
-                  </option>
-                </select>
-              </td>
-              <td><input class="form-control text-end" type="number" min="0.01" step="0.01" formControlName="issued_qty"></td>
-              <td><input class="form-control" type="date" formControlName="issued_date"></td>
-              <td>
-                <select class="form-control" formControlName="issued_to_employee_id">
-                  <option value="">Select employee</option>
-                  <option *ngFor="let employee of employees" [value]="employee.employee_id">
-                    {{ employee.employee_code }} - {{ employee.employee_name }}
-                  </option>
-                </select>
-              </td>
-              <td><input class="form-control" type="text" formControlName="remarks"></td>
-              <td class="text-end">
-                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeMaterialIssue(i)">Remove</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section *ngIf="isEditMode" class="form-section">
-      <h2>Material Return</h2>
-      <div class="row g-3" formGroupName="material_return">
-        <div class="col-md-3">
-          <label class="form-label">Against Issue</label>
-          <select class="form-control" formControlName="issue_id">
-            <option value="">Select issue</option>
-            <option *ngFor="let issue of existingIssues" [value]="issue.issue_id">
-              {{ issue.issue_no }} - {{ issue.material_name }} ({{ issue.issued_qty }})
-            </option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Returned Qty</label>
-          <input class="form-control text-end" type="number" min="0.01" step="0.01" formControlName="returned_qty">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Return Date</label>
-          <input class="form-control" type="date" formControlName="return_date">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Condition</label>
-          <select class="form-control" formControlName="condition_status">
-            <option value="GOOD">GOOD</option>
-            <option value="DAMAGED">DAMAGED</option>
-            <option value="SCRAP">SCRAP</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Remarks</label>
-          <input class="form-control" type="text" formControlName="remarks">
-        </div>
-        <div class="col-md-12 text-end">
-          <button type="button" class="btn btn-outline-primary" (click)="saveMaterialReturn()">Save Return</button>
-        </div>
-      </div>
-
-      <div class="table-responsive mt-3" *ngIf="existingReturns.length">
-        <table class="table table-sm">
-          <thead>
-            <tr>
-              <th>Return No</th>
-              <th>Material</th>
-              <th class="text-end">Qty</th>
-              <th>Date</th>
-              <th>Condition</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of existingReturns">
-              <td>{{ item.return_no }}</td>
-              <td>{{ item.material_code }} - {{ item.material_name }}</td>
-              <td class="text-end">{{ item.returned_qty }}</td>
-              <td>{{ item.return_date | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ item.condition_status }}</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </section>
 
