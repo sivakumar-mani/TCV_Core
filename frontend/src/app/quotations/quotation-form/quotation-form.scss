@@ -1,0 +1,167 @@
+.quotation-page {
+  padding: 0 1rem 2rem;
+}
+
+.page-header,
+.section-title-row,
+.form-actions,
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.page-header {
+  margin-bottom: 1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.page-header p {
+  margin: 0.25rem 0 0;
+  color: #5f6b7a;
+}
+
+.header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.form-section,
+.totals-panel,
+.quotation-preview {
+  background: #fff;
+  border: 1px solid #dce3ea;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.quotation-items-table th,
+.quotation-items-table td {
+  min-width: 110px;
+}
+
+.quotation-items-table th:nth-child(2),
+.quotation-items-table td:nth-child(2),
+.quotation-items-table th:nth-child(3),
+.quotation-items-table td:nth-child(3) {
+  min-width: 210px;
+}
+
+.total-cell {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.totals-panel,
+.preview-totals {
+  margin-left: auto;
+  max-width: 430px;
+}
+
+.totals-panel div,
+.preview-totals div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.totals-panel div:last-child,
+.preview-totals div:last-child {
+  border-bottom: 0;
+}
+
+.net-total {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.quotation-preview {
+  max-width: 980px;
+  margin: 0 auto 2rem;
+}
+
+.preview-title,
+.preview-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.preview-title h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.preview-title p,
+.preview-meta p {
+  margin: 0.2rem 0;
+}
+
+.status-chip {
+  align-self: flex-start;
+  border: 1px solid #2d6cdf;
+  color: #214f9d;
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-weight: 600;
+}
+
+.preview-meta {
+  border-top: 1px solid #edf1f5;
+  border-bottom: 1px solid #edf1f5;
+  padding: 1rem 0;
+}
+
+.preview-meta span {
+  display: block;
+  color: #607080;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.requirement {
+  background: #f7f9fb;
+  border-left: 3px solid #2d6cdf;
+  padding: 0.75rem;
+}
+
+.preview-table p {
+  margin: 0.2rem 0 0;
+  color: #607080;
+}
+
+@media print {
+  .no-print,
+  app-header,
+  app-sidebar,
+  mat-sidenav,
+  mat-toolbar {
+    display: none !important;
+  }
+
+  .quotation-page {
+    padding: 0;
+  }
+
+  .quotation-preview {
+    border: 0;
+    padding: 0;
+    max-width: none;
+  }
+}

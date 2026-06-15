@@ -1,0 +1,8 @@
+<app-ag-grid-list
+  title="Work Orders"
+  addButtonLabel="Add Work Order"
+  [rowData]="workOrders"
+  [columnDefs]="colDefs"
+  [defaultColDef]="defaultColDef"
+  (add)="addWorkOrder()">
+</app-ag-grid-list>

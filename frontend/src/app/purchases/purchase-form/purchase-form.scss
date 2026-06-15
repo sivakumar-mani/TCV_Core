@@ -1,0 +1,80 @@
+.purchase-form-page {
+  padding: 0 16px 24px;
+}
+
+.page-header,
+.section-title-row,
+.form-actions {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  margin: 0 0 16px;
+}
+
+.form-section,
+.totals-panel {
+  background: #fff;
+  border: 1px solid #dde3ea;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.form-section h2 {
+  font-size: 18px;
+  margin: 0 0 14px;
+}
+
+.purchase-items-table {
+  min-width: 1100px;
+}
+
+.purchase-items-table th:first-child,
+.purchase-items-table td:first-child {
+  width: 64px;
+}
+
+.purchase-items-table th:nth-child(2),
+.purchase-items-table td:nth-child(2) {
+  min-width: 320px;
+}
+
+.total-cell {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.totals-panel {
+  margin-left: auto;
+  max-width: 420px;
+}
+
+.totals-panel div {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.net-total {
+  border-top: 1px solid #c8d1dc;
+  font-size: 18px;
+  margin-top: 4px;
+  padding-top: 10px !important;
+}
+
+.form-actions {
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .page-header,
+  .section-title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

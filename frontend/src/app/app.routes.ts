@@ -59,6 +59,142 @@ export const routes: Routes = [
             }
         },
          {
+            path:'purchases',
+            loadComponent: ()=> import('./purchases/purchase-list/purchase-list').then(n => n.PurchaseList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'quotations',
+            loadComponent: ()=> import('./quotations/quotation-list/quotation-list').then(n => n.QuotationList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'quotations/add',
+            loadComponent: ()=> import('./quotations/quotation-form/quotation-form').then(n => n.QuotationForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'quotations/edit/:id',
+            loadComponent: ()=> import('./quotations/quotation-form/quotation-form').then(n => n.QuotationForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'quotations/preview/:id',
+            loadComponent: ()=> import('./quotations/quotation-form/quotation-form').then(n => n.QuotationForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'workflow-approval',
+            loadComponent: ()=> import('./workflows/workflow-list/workflow-list').then(n => n.WorkflowList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'work-orders',
+            loadComponent: ()=> import('./work-orders/work-order-list/work-order-list').then(n => n.WorkOrderList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'work-orders/add',
+            loadComponent: ()=> import('./work-orders/work-order-form/work-order-form').then(n => n.WorkOrderForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'work-orders/edit/:id',
+            loadComponent: ()=> import('./work-orders/work-order-form/work-order-form').then(n => n.WorkOrderForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'stock',
+            loadComponent: ()=> import('./stock/stock-list/stock-list').then(n => n.StockList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'quotations',
+            loadComponent: ()=> import('./quotations/quotation-list/quotation-list').then(n => n.QuotationList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'quotations/add',
+            loadComponent: ()=> import('./quotations/quotation-form/quotation-form').then(n => n.QuotationForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'quotations/edit/:id',
+            loadComponent: ()=> import('./quotations/quotation-form/quotation-form').then(n => n.QuotationForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'quotations/review/:id',
+            loadComponent: ()=> import('./quotations/quotation-form/quotation-form').then(n => n.QuotationForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'workflow',
+            loadComponent: ()=> import('./workflow/workflow-list/workflow-list').then(n => n.WorkflowList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'purchases/add',
+            loadComponent: ()=> import('./purchases/purchase-form/purchase-form').then(n => n.PurchaseForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'purchases/edit/:id',
+            loadComponent: ()=> import('./purchases/purchase-form/purchase-form').then(n => n.PurchaseForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
             path:'suppliers',
             loadComponent: ()=> import('./suppliers/supplier-list/supplier-list').then(n => n.SupplierList),
             canActivate:[RouteGuard],

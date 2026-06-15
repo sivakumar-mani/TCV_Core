@@ -1,0 +1,216 @@
+<nav aria-label="breadcrumb" class="bg-light border-bottom px-3 py-2 mb-3 no-print">
+  <ol class="breadcrumb mb-0">
+    <li class="breadcrumb-item"><a routerLink="/dashboard">Home</a></li>
+    <li class="breadcrumb-item"><a routerLink="/quotations">Quotations</a></li>
+    <li class="breadcrumb-item active" aria-current="page">
+      {{ isPreviewMode ? 'Preview' : isEditMode ? 'Edit' : 'Add' }}
+    </li>
+  </ol>
+</nav>
+
+<div class="quotation-page">
+  <div class="page-header no-print">
+    <div>
+      <h1>{{ isPreviewMode ? 'Quotation Preview' : isEditMode ? 'Edit Quotation' : 'Add Quotation' }}</h1>
+      <p *ngIf="quotation">Status: <strong>{{ quotation.quotation_status }}</strong> | Version: <strong>{{ quotation.quotation_version }}</strong></p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Back</button>
+      <button *ngIf="isPreviewMode" type="button" class="btn btn-outline-primary" (click)="editQuotation()">Edit</button>
+      <button *ngIf="canApprove" type="button" class="btn btn-success" (click)="approveQuotation()">Approve</button>
+      <button *ngIf="canSubmit" type="button" class="btn btn-primary" (click)="submitToCustomer()">Submit to Customer</button>
+      <button *ngIf="canCreateWorkOrder" type="button" class="btn btn-outline-success" (click)="createWorkOrder()">Create Work Order</button>
+      <button *ngIf="canDownload" type="button" class="btn btn-dark" (click)="downloadPdf()">Download PDF</button>
+    </div>
+  </div>
+
+  <form *ngIf="!isPreviewMode" [formGroup]="quotationForm" (ngSubmit)="saveDraft()">
+    <section class="form-section">
+      <h2>Quotation Header</h2>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Quotation No</label>
+          <input class="form-control" type="text" formControlName="quotation_no" readonly>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Customer</label>
+          <select class="form-control" formControlName="customer_id">
+            <option value="">Select customer</option>
+            <option *ngFor="let customer of customers" [value]="customer.customer_id">
+              {{ customer.customer_name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Quotation Date</label>
+          <input class="form-control" type="date" formControlName="quotation_date">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Valid Until</label>
+          <input class="form-control" type="date" formControlName="valid_until">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Prepared By</label>
+          <select class="form-control" formControlName="prepared_by_employee_id">
+            <option value="">Select employee</option>
+            <option *ngFor="let employee of employees" [value]="employee.employee_id">
+              {{ employee.employee_code }} - {{ employee.employee_name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Header Discount Amount</label>
+          <input class="form-control text-end" type="number" min="0" step="0.01" formControlName="discount_amount">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Header Discount %</label>
+          <input class="form-control text-end" type="number" min="0" step="0.01" formControlName="discount_percent">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">CGST %</label>
+          <input class="form-control text-end" type="number" min="0" step="0.01" formControlName="cgst_percent">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">SGST %</label>
+          <input class="form-control text-end" type="number" min="0" step="0.01" formControlName="sgst_percent">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Requirement Details</label>
+          <textarea class="form-control" rows="3" formControlName="requirement_details"></textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Remarks</label>
+          <textarea class="form-control" rows="3" formControlName="remarks"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="section-title-row">
+        <h2>Quotation Items</h2>
+        <button type="button" class="btn btn-sm btn-outline-primary" (click)="addItem()">Add Row</button>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle quotation-items-table">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Product</th>
+              <th>Item Name</th>
+              <th class="text-end">Qty</th>
+              <th class="text-end">Price</th>
+              <th class="text-end">Discount %</th>
+              <th class="text-end">Item Tax %</th>
+              <th class="text-end">Amount</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody formArrayName="items">
+            <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <select class="form-control" formControlName="product_id" (change)="onProductChange(i)">
+                  <option value="">Custom item</option>
+                  <option *ngFor="let product of products" [value]="product.product_id">
+                    {{ product.product_code }} - {{ product.product_name }}
+                  </option>
+                </select>
+              </td>
+              <td><input class="form-control" type="text" formControlName="item_name"></td>
+              <td><input class="form-control text-end" type="number" min="0.01" step="0.01" formControlName="qty"></td>
+              <td><input class="form-control text-end" type="number" min="0" step="0.01" formControlName="selling_price"></td>
+              <td><input class="form-control text-end" type="number" min="0" step="0.01" formControlName="discount_percent"></td>
+              <td><input class="form-control text-end" type="number" min="0" step="0.01" formControlName="tax_percent"></td>
+              <td class="text-end total-cell">{{ money(lineTotal(i)) }}</td>
+              <td class="text-end">
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeItem(i)">Remove</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="totals-panel">
+      <div><span>Subtotal</span><strong>{{ money(subtotal()) }}</strong></div>
+      <div><span>Item Discount</span><strong>{{ money(itemDiscountTotal()) }}</strong></div>
+      <div><span>Header Discount</span><strong>{{ money(headerDiscount()) }}</strong></div>
+      <div><span>CGST</span><strong>{{ money(cgstAmount()) }}</strong></div>
+      <div><span>SGST</span><strong>{{ money(sgstAmount()) }}</strong></div>
+      <div><span>Total Tax</span><strong>{{ money(totalTax()) }}</strong></div>
+      <div class="net-total"><span>Net Amount</span><strong>{{ money(netAmount()) }}</strong></div>
+    </section>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+      <button type="submit" class="btn btn-primary" [disabled]="quotationForm.invalid">Save as Draft</button>
+    </div>
+  </form>
+
+  <section *ngIf="isPreviewMode && quotation" class="quotation-preview" id="quotationPreview">
+    <div class="preview-title">
+      <div>
+        <h2>Quotation</h2>
+        <p>{{ quotation.quotation_no }} / V{{ quotation.quotation_version }}</p>
+      </div>
+      <div class="status-chip">{{ quotation.quotation_status }}</div>
+    </div>
+
+    <div class="preview-meta">
+      <div>
+        <span>Customer</span>
+        <strong>{{ quotation.customer_name }}</strong>
+        <p>{{ quotation.contact_person }}</p>
+        <p>{{ quotation.phone }} {{ quotation.email }}</p>
+      </div>
+      <div>
+        <span>Quotation Date</span>
+        <strong>{{ displayDate(quotation.quotation_date) }}</strong>
+        <span>Valid Until</span>
+        <strong>{{ displayDate(quotation.valid_until) }}</strong>
+        <span>Created By</span>
+        <strong>{{ quotation.prepared_by_employee_code }} - {{ quotation.prepared_by_employee_name }}</strong>
+      </div>
+    </div>
+
+    <p class="requirement" *ngIf="quotation.requirement_details">{{ quotation.requirement_details }}</p>
+
+    <table class="table preview-table">
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Item</th>
+          <th class="text-end">Qty</th>
+          <th class="text-end">Rate</th>
+          <th class="text-end">Discount</th>
+          <th class="text-end">Tax</th>
+          <th class="text-end">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of quotation.items; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <strong>{{ item.item_name }}</strong>
+            <p *ngIf="item.description">{{ item.description }}</p>
+          </td>
+          <td class="text-end">{{ item.qty }}</td>
+          <td class="text-end">{{ money(item.selling_price) }}</td>
+          <td class="text-end">{{ money(item.discount_amount) }}</td>
+          <td class="text-end">{{ money(item.tax_amount) }}</td>
+          <td class="text-end">{{ money(item.amount) }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="preview-totals">
+      <div><span>Subtotal</span><strong>{{ money(quotation.total_amount) }}</strong></div>
+      <div><span>Discount</span><strong>{{ money(quotation.discount_amount) }}</strong></div>
+      <div><span>CGST {{ quotation.cgst_percent }}%</span><strong>{{ money(cgstAmount()) }}</strong></div>
+      <div><span>SGST {{ quotation.sgst_percent }}%</span><strong>{{ money(sgstAmount()) }}</strong></div>
+      <div><span>Total Tax</span><strong>{{ money(quotation.tax_amount) }}</strong></div>
+      <div class="net-total"><span>Net Amount</span><strong>{{ money(quotation.net_amount) }}</strong></div>
+    </div>
+  </section>
+</div>

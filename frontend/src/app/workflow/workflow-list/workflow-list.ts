@@ -1,0 +1,89 @@
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { ColDef } from 'ag-grid-community';
+import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { QuotationServices } from '../../services/quotation-services';
+import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
+import { CommonMethods } from '../../shared/common-methods';
+import { ActionMenu } from '../../shared/list-action-menu';
+
+@Component({
+  selector: 'app-workflow-list',
+  imports: [AgGridList],
+  templateUrl: './workflow-list.html',
+  styleUrl: './workflow-list.scss',
+})
+export class WorkflowList {
+  workflowRows: any[] = [];
+
+  defaultColDef: ColDef = {
+    resizable: true,
+    minWidth: 120,
+    flex: 1,
+    filter: true,
+    floatingFilter: true,
+    headerClass: 'ag-header-style',
+  };
+
+  colDefs: ColDef[] = [
+    { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
+    { field: 'reference_no', headerName: 'Reference No', maxWidth: 170 },
+    { field: 'customer_name', headerName: 'Customer' },
+    { field: 'net_amount', headerName: 'Amount', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
+    { field: 'workflow_status', headerName: 'Workflow', maxWidth: 140 },
+    { field: 'quotation_status', headerName: 'Quotation Status', maxWidth: 170 },
+    { field: 'quotation_version', headerName: 'Version', maxWidth: 110 },
+    { field: 'requested_at', headerName: 'Requested', maxWidth: 180, valueFormatter: (params) => this.displayDate(params.value) },
+    {
+      headerName: 'Action',
+      maxWidth: 110,
+      cellRenderer: ActionMenu,
+      cellRendererParams: {
+        dropdownMenu: [
+          { label: 'Review', action: (row: any) => this.review(row) }
+        ]
+      },
+      filter: false,
+      sortable: false
+    }
+  ];
+
+  constructor(
+    private quotationService: QuotationServices,
+    private ngxLoader: NgxUiLoaderService,
+    private commonMethods: CommonMethods,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.loadWorkflow();
+  }
+
+  loadWorkflow() {
+    this.ngxLoader.start();
+    this.quotationService.getWorkflow().subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.workflowRows = Array.isArray(response) ? response : response.data ?? [];
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleError(error);
+      }
+    });
+  }
+
+  review(row: any) {
+    this.router.navigate(['/quotations/review', row.reference_id]);
+  }
+
+  money(value: number | string) {
+    return `Rs. ${(Number(value) || 0).toFixed(2)}`;
+  }
+
+  displayDate(value: string | Date) {
+    if (!value) return '';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString('en-IN');
+  }
+}

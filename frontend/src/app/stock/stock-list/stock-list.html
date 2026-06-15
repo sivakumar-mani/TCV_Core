@@ -1,0 +1,37 @@
+<div class="stock-page">
+  <section class="stock-summary">
+    <div class="page-header">
+      <div>
+        <h1>Stock Ledger</h1>
+        <p>Stock is updated automatically from purchase receipts, material issue, and material return.</p>
+      </div>
+      <button type="button" class="btn btn-outline-secondary" (click)="filterLedger(null)">Show All Ledger</button>
+    </div>
+  </section>
+
+  <app-ag-grid-list
+    title="Stock On Hand"
+    [showAddButton]="false"
+    [rowData]="stockRows"
+    [columnDefs]="stockColDefs"
+    [defaultColDef]="defaultColDef">
+  </app-ag-grid-list>
+
+  <div class="ledger-filter">
+    <label class="form-label">Ledger Product Filter</label>
+    <select class="form-control" [value]="selectedProductId || ''" (change)="filterLedger($any($event.target).value || null)">
+      <option value="">All products</option>
+      <option *ngFor="let product of products" [value]="product.product_id">
+        {{ product.product_code }} - {{ product.product_name }}
+      </option>
+    </select>
+  </div>
+
+  <app-ag-grid-list
+    title="Stock Ledger"
+    [showAddButton]="false"
+    [rowData]="ledgerRows"
+    [columnDefs]="ledgerColDefs"
+    [defaultColDef]="defaultColDef">
+  </app-ag-grid-list>
+</div>

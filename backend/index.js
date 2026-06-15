@@ -7,6 +7,11 @@ const categoryRoute = require('./routes/categoryRouter');
 const productRoute = require('./routes/productRouter')
 const supplierRoute = require('./routes/supplierRouter')
 const customerRoute = require('./routes/customerRouter')
+const purchaseRoute = require('./routes/purchaseRouter')
+const stockRoute = require('./routes/stockRouter')
+const quotationRoute = require('./routes/quotationRouter')
+const workflowRoute = require('./routes/workflowRouter')
+const workOrderRoute = require('./routes/workOrderRouter')
 const employeeRoute = require('./routes/employeeRouter')
 const employeeSalaryRoute = require('./routes/employeeSalaryRouter')
 const auditLogRoute = require('./routes/auditLogRouter')
@@ -24,11 +29,22 @@ app.use('/api/category', categoryRoute);
 app.use('/api/product', productRoute);
 app.use('/api/supplier', supplierRoute);
 app.use('/api/customer', customerRoute);
+app.use('/api/purchase', purchaseRoute);
+app.use('/api/stock', stockRoute);
+app.use('/api/quotation', quotationRoute);
+app.use('/api/workflow', workflowRoute);
+app.use('/api/work-order', workOrderRoute);
 app.use('/api/v1/brands', brandRoute);
 app.use('/api/v1/categories', categoryRoute);
 app.use('/api/v1/products', productRoute);
 app.use('/api/v1/suppliers', supplierRoute);
 app.use('/api/v1/customers', customerRoute);
+app.use('/api/v1/purchase', purchaseRoute);
+app.use('/api/v1/stock', stockRoute);
+app.use('/api/v1/quotations', quotationRoute);
+app.use('/api/v1/workflow', workflowRoute);
+app.use('/api/v1/workflows', workflowRoute);
+app.use('/api/v1/work-orders', workOrderRoute);
 app.use('/api/employee', employeeRoute);
 app.use('/api/employee-salary', employeeSalaryRoute);
 app.use('/api/audit-log', auditLogRoute);

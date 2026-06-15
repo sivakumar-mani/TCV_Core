@@ -407,6 +407,7 @@ COMMENT='Immutable stock transaction history';
 CREATE TABLE quotation_master (
     quotation_id INT AUTO_INCREMENT PRIMARY KEY,
     quotation_no VARCHAR(50) NOT NULL UNIQUE,
+    quotation_version INT NOT NULL DEFAULT 1 COMMENT 'Incremented whenever quotation is revised',
     quotation_date DATE NOT NULL DEFAULT (CURDATE()),
     valid_until DATE COMMENT 'Quote expiry date',
     customer_id INT NOT NULL,
@@ -416,6 +417,8 @@ CREATE TABLE quotation_master (
     total_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (total_amount >= 0),
     discount_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
     discount_percent DECIMAL(5,2) DEFAULT 0,
+    cgst_percent DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (cgst_percent >= 0),
+    sgst_percent DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (sgst_percent >= 0),
     tax_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
     net_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (net_amount >= 0),
     quotation_status ENUM('DRAFT','SENT','APPROVED','REJECTED','EXPIRED','CONVERTED') NOT NULL DEFAULT 'DRAFT',
@@ -470,7 +473,34 @@ CREATE TABLE quotation_items (
 COMMENT='Line items in each quotation';
 
 -- =====================================================
--- 14. WORK ORDERS / INSTALLATION
+-- 14. WORKFLOW APPROVALS
+-- =====================================================
+
+CREATE TABLE workflow_approvals (
+    workflow_id INT AUTO_INCREMENT PRIMARY KEY,
+    module_name VARCHAR(50) NOT NULL,
+    reference_id INT NOT NULL,
+    reference_no VARCHAR(50) NOT NULL,
+    workflow_status ENUM('PENDING','APPROVED','REJECTED','CANCELLED') NOT NULL DEFAULT 'PENDING',
+    requested_by_employee_id INT,
+    approved_by_employee_id INT,
+    requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    reviewed_at TIMESTAMP NULL,
+    remarks TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (requested_by_employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
+    FOREIGN KEY (approved_by_employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
+
+    UNIQUE KEY uk_workflow_reference (module_name, reference_id),
+    INDEX idx_module_status (module_name, workflow_status),
+    INDEX idx_reference_no (reference_no)
+) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Approval queue for draft business documents such as quotations';
+
+-- =====================================================
+-- 15. WORK ORDERS / INSTALLATION
 -- =====================================================
 
 CREATE TABLE work_orders (
@@ -535,7 +565,128 @@ CREATE TABLE work_order_employees (
 COMMENT='Employee assignment to work orders';
 
 -- =====================================================
--- 16. SALES MASTER (INVOICES)
+-- 16. WORK ORDER ITEMS
+-- =====================================================
+
+CREATE TABLE work_order_items (
+    work_order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    work_order_id INT NOT NULL,
+    quotation_item_id INT COMMENT 'Source quotation item if created from quotation',
+    product_id INT COMMENT 'NULL for custom work items',
+    item_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    qty DECIMAL(10,2) NOT NULL CHECK (qty > 0),
+    selling_price DECIMAL(12,2) NOT NULL CHECK (selling_price >= 0),
+    discount_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
+    discount_percent DECIMAL(5,2) DEFAULT 0,
+    tax_percent DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (tax_percent >= 0),
+    tax_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (tax_amount >= 0),
+    amount DECIMAL(12,2) NOT NULL CHECK (amount >= 0),
+    line_no SMALLINT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (work_order_id) REFERENCES work_orders(work_order_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (quotation_item_id) REFERENCES quotation_items(quotation_item_id) ON DELETE SET NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+    INDEX idx_work_order_id (work_order_id),
+    INDEX idx_product_id (product_id),
+    INDEX idx_quotation_item_id (quotation_item_id)
+) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Billable work items used to create invoices after work completion';
+
+-- =====================================================
+-- 17. MATERIAL MASTER
+-- =====================================================
+
+CREATE TABLE material_master (
+    material_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT COMMENT 'Optional linked inventory product',
+    material_code VARCHAR(50) NOT NULL UNIQUE,
+    material_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    unit VARCHAR(20) NOT NULL DEFAULT 'PCS',
+    standard_rate DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (standard_rate >= 0),
+    gst_percent DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (gst_percent >= 0),
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL ON UPDATE CASCADE,
+
+    INDEX idx_material_code (material_code),
+    INDEX idx_material_name (material_name),
+    INDEX idx_active (is_active)
+) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Material catalog for work order issue and return';
+
+-- =====================================================
+-- 18. WORK ORDER MATERIAL ISSUES
+-- =====================================================
+
+CREATE TABLE work_order_material_issues (
+    issue_id INT AUTO_INCREMENT PRIMARY KEY,
+    issue_no VARCHAR(50) NOT NULL UNIQUE,
+    work_order_id INT NOT NULL,
+    material_id INT,
+    product_id INT COMMENT 'Inventory product issued',
+    issued_qty DECIMAL(10,2) NOT NULL CHECK (issued_qty > 0),
+    issued_date DATE NOT NULL DEFAULT (CURDATE()),
+    issued_to_employee_id INT,
+    issued_by_employee_id INT,
+    remarks TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (work_order_id) REFERENCES work_orders(work_order_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (material_id) REFERENCES material_master(material_id) ON DELETE SET NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (issued_to_employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
+    FOREIGN KEY (issued_by_employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
+
+    INDEX idx_work_order_id (work_order_id),
+    INDEX idx_material_id (material_id),
+    INDEX idx_product_id (product_id),
+    INDEX idx_issued_date (issued_date)
+) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Materials issued against work orders';
+
+-- =====================================================
+-- 19. WORK ORDER MATERIAL RETURNS
+-- =====================================================
+
+CREATE TABLE work_order_material_returns (
+    return_id INT AUTO_INCREMENT PRIMARY KEY,
+    return_no VARCHAR(50) NOT NULL UNIQUE,
+    issue_id INT,
+    work_order_id INT NOT NULL,
+    material_id INT,
+    product_id INT,
+    returned_qty DECIMAL(10,2) NOT NULL CHECK (returned_qty > 0),
+    return_date DATE NOT NULL DEFAULT (CURDATE()),
+    returned_by_employee_id INT,
+    received_by_employee_id INT,
+    condition_status ENUM('GOOD','DAMAGED','SCRAP') NOT NULL DEFAULT 'GOOD',
+    remarks TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (issue_id) REFERENCES work_order_material_issues(issue_id) ON DELETE SET NULL,
+    FOREIGN KEY (work_order_id) REFERENCES work_orders(work_order_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (material_id) REFERENCES material_master(material_id) ON DELETE SET NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY (returned_by_employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
+    FOREIGN KEY (received_by_employee_id) REFERENCES employees(employee_id) ON DELETE SET NULL,
+
+    INDEX idx_issue_id (issue_id),
+    INDEX idx_work_order_id (work_order_id),
+    INDEX idx_return_date (return_date)
+) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Returned material tracking after work completion';
+
+-- =====================================================
+-- 20. SALES MASTER (INVOICES)
 -- =====================================================
 
 CREATE TABLE sales_master (

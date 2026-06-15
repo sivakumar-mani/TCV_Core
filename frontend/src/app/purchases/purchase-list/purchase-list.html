@@ -1,0 +1,8 @@
+<app-ag-grid-list
+  title="Purchase List"
+  addButtonLabel="Add Purchase"
+  [rowData]="purchases"
+  [columnDefs]="colDefs"
+  [defaultColDef]="defaultColDef"
+  (add)="addPurchase()">
+</app-ag-grid-list>

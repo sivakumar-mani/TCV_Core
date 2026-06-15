@@ -1,0 +1,41 @@
+.stock-page {
+  padding: 0 16px 24px;
+}
+
+.stock-summary,
+.ledger-filter {
+  background: #fff;
+  border: 1px solid #dde3ea;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  padding: 16px;
+}
+
+.page-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  margin: 0;
+}
+
+.page-header p {
+  color: #607080;
+  margin: 4px 0 0;
+}
+
+.ledger-filter {
+  max-width: 520px;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

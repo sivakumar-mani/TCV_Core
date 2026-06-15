@@ -1,0 +1,8 @@
+<app-ag-grid-list
+  title="Quotation List"
+  addButtonLabel="Add Quotation"
+  [rowData]="quotations"
+  [columnDefs]="colDefs"
+  [defaultColDef]="defaultColDef"
+  (add)="addQuotation()">
+</app-ag-grid-list>
