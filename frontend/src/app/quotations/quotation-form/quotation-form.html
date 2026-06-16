@@ -91,7 +91,7 @@
         <button type="button" class="btn btn-sm btn-outline-primary" (click)="addItem()">Add Row</button>
       </div>
 
-      <div class="table-responsive">
+      <div class="table-responsive quotation-items-responsive" (scroll)="refreshProductDropdownPosition()">
         <table class="table table-sm align-middle quotation-items-table">
           <thead>
             <tr>
@@ -110,12 +110,40 @@
             <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
               <td>{{ i + 1 }}</td>
               <td>
-                <select class="form-control" formControlName="product_id" (change)="onProductChange(i)">
-                  <option value="">Custom item</option>
-                  <option *ngFor="let product of products" [value]="product.product_id">
-                    {{ product.product_code }} - {{ product.product_name }}
-                  </option>
-                </select>
+                <div class="product-search">
+                  <input
+                    class="form-control product-search-input"
+                    type="text"
+                    placeholder="Search product"
+                    [value]="productSearchValue(i)"
+                    (focus)="openProductDropdown(i, $event)"
+                    (input)="onProductSearch(i, $event)"
+                    (blur)="scheduleProductDropdownClose()">
+                  <button
+                    type="button"
+                    class="product-search-toggle"
+                    aria-label="Open product list"
+                    (mousedown)="toggleProductDropdown(i, $event)">
+                    <span class="product-search-icon"></span>
+                    <span class="product-dropdown-icon"></span>
+                  </button>
+                  <div *ngIf="activeProductDropdownIndex === i" class="product-search-menu" [ngStyle]="productDropdownStyle">
+                    <button
+                      type="button"
+                      class="product-search-option"
+                      (mousedown)="selectCustomProduct(i)">
+                      Custom item
+                    </button>
+                    <button
+                      *ngFor="let product of filteredProducts(i)"
+                      type="button"
+                      class="product-search-option"
+                      (mousedown)="selectProduct(i, product)">
+                      {{ product.product_name }}
+                    </button>
+                    <div *ngIf="filteredProducts(i).length === 0" class="product-search-empty">No products found</div>
+                  </div>
+                </div>
               </td>
               <td><input class="form-control" type="text" formControlName="item_name"></td>
               <td><input class="form-control text-end" type="number" min="0.01" step="0.01" formControlName="qty"></td>
@@ -150,8 +178,34 @@
 
   <section *ngIf="isPreviewMode && quotation" class="quotation-preview" id="quotationPreview">
     <div class="quote-document-header">
-      <div>
-        <h2>Quotation</h2>
+        <div class="quote-brand">
+        <h1>TCV</h1>
+        <P>No:2/3, Second Street, Arkeeswarar Colony</P>
+        <P>Chrompet, Chennai - 600044</P>
+        <P>Contact # : 9962543540</P>
+      </div>
+       </div>
+      <div class="quotation-body">
+        <h2 class="text-center">Quotation</h2>
+         <div class="quote-meta-box">
+          
+         </div>
+       
+      </div>
+    
+   
+
+    <div class="quote-party-grid">
+     
+      <div class="quote-party-card">
+        <p class="fw-800">To:</p>
+        <div class="ms-3 d-block">
+         <p>{{ quotation.customer_name }}</p>
+         <p>{{ quotation.address || '-' }}</p>
+         <p>Contact #: {{ quotation.phone || '' }}</p>    
+         </div>   
+      </div>
+       <div class="quote-party-card">
         <div class="quote-meta-line">
           <span>Quotation#</span>
           <strong>{{ quotation.quotation_no }}</strong>
@@ -160,80 +214,79 @@
           <span>Quotation Date</span>
           <strong>{{ displayDate(quotation.quotation_date) }}</strong>
         </div>
-      </div>
-      <div class="quote-brand">
-        <span>TCV</span>
-        <strong>CORE</strong>
-      </div>
-    </div>
-
-    <div class="quote-party-grid">
-      <div class="quote-party-card">
-        <div><span>Quotation by</span><strong>TCV</strong></div>
-        <div><span>Address</span><p>Time Cable Vision, Tamil Nadu, India</p></div>
-        <div><span>Email</span><p>{{ quotation.prepared_by_email || 'timecablevision@gmail.com' }}</p></div>
-      </div>
-      <div class="quote-party-card">
-        <div><span>Quotation to</span><strong>{{ quotation.customer_name }}</strong></div>
-        <div><span>Address</span><p>{{ quotation.address || '-' }}</p></div>
-        <div><span>Contact</span><p>{{ quotation.contact_person || '-' }} {{ quotation.phone || '' }}</p></div>
+        <div class="quote-meta-line">
+          <span>Valid Until</span>
+          <strong>{{ displayDate(quotation.valid_until) || '-' }}</strong>
+        </div>
       </div>
     </div>
 
-    <div class="quote-supply-row">
-      <div><span>Valid Until</span><strong>{{ displayDate(quotation.valid_until) || '-' }}</strong></div>
+    <!-- <div class="quote-supply-row">
+     
       <div><span>Status</span><strong>{{ quotation.quotation_status }}</strong></div>
-    </div>
+    </div> -->
 
     <table class="quote-preview-table">
+      <colgroup>
+        <col class="quote-description-col">
+        <col class="quote-qty-col">
+        <col class="quote-rate-col">
+        <col class="quote-amount-col">
+      </colgroup>
       <thead>
         <tr>
-          <th>Item #/Item description</th>
-          <th class="text-end">Qty</th>
-          <th class="text-end">Rate</th>
-          <th class="text-end">Amount</th>
+          <th><span class="quote-item-heading">Item #</span><span class="quote-description-heading">Description</span></th>
+          <th class="text-end quote-number-cell">Qty</th>
+          <th class="text-end quote-number-cell">Rate</th>
+          <th class="text-end quote-number-cell">Amount</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of quotation.items; let i = index">
           <td>
             <span class="quote-item-number">{{ i + 1 }}.</span>
-            <strong>{{ item.item_name }}</strong>
-            <p *ngIf="item.description">{{ item.description }}</p>
+            <span class="ms-4">{{ item.item_name }}</span>
+            <!-- <p *ngIf="item.description">{{ item.description }}</p> -->
           </td>
-          <td class="text-end">{{ item.qty }}</td>
-          <td class="text-end">{{ quoteMoney(item.selling_price, 0) }}</td>
-          <td class="text-end">{{ quoteMoney(item.amount) }}</td>
+          <td class="text-end quote-number-cell">{{ item.qty }}</td>
+          <td class="text-end quote-number-cell">{{ quoteNumber(item.selling_price, 0) }}</td>
+          <td class="text-end quote-number-cell"><span class="quote-money-cell"><span class="quote-currency">₹</span><span>{{ quoteNumber(item.amount, 0) }}</span></span></td>
+        </tr>
+        <tr class="bottom-info"> 
+          <td colspan="4">
+            <div class="quote-bottom-summary">
+              <div class="quote-terms">
+                <h3>Terms and Conditions</h3>
+                <ol>
+                  <li>One Year service warranty for camera, DVR and Hard Disk.</li>
+                  <li>No burning warranty  for any product.</li>
+                  <li>No replacement No exchange.</li>
+                  <li>Prices are subjected to change.</li>
+                  <li>50% advance payment along with confirmation of order.</li>
+                  <li>Free service support during the warranty period.</li>
+                </ol>
+
+                <!-- <h3>Additional Notes</h3>
+                <p>{{ quotation.remarks || quotation.requirement_details || 'Thank you for the opportunity to submit this quotation.' }}</p> -->
+
+                <p class="quote-contact">{{ previewContactLine() }}</p>
+              </div>
+              <div class="quote-total-panel">
+                <div><span>Sub Total</span><strong class="quote-money-cell"><span class="quote-currency">₹</span><span>{{ quoteNumber(previewSubtotal(), 0) }}</span></strong></div>
+                <div><span>Discount</span><strong class="quote-money-cell"><span class="quote-currency quote-negative-currency">- ₹</span><span>{{ quoteNumber(previewDiscount(), 0) }}</span></strong></div>
+                <div *ngIf="toNumber(quotation.tax_amount)"><span>Tax</span><strong class="quote-money-cell"><span class="quote-currency">₹</span><span>{{ quoteNumber(quotation.tax_amount, 0) }}</span></strong></div>
+                <div class="quote-grand-total"><span>Total</span><strong class="quote-money-cell"><span class="quote-currency">₹</span><span>{{ quoteNumber(previewNetAmount(), 0) }}</span></strong></div>
+                <small>Invoice Total (in words)</small>
+                <p class="quote-words">{{ amountInWords(previewNetAmount()) }}</p>
+                <div class="quote-signature">
+                  <div class="signature-line"></div>
+                  <span>Authorized Signature</span>
+                </div>
+              </div>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
-
-    <div class="quote-bottom-grid">
-      <div>
-        <h3>Terms and Conditions</h3>
-        <ol>
-          <li>Please pay within the agreed due date.</li>
-          <li>Please quote quotation number when remitting funds.</li>
-        </ol>
-
-        <h3>Additional Notes</h3>
-        <p>{{ quotation.remarks || quotation.requirement_details || 'Thank you for the opportunity to submit this quotation.' }}</p>
-
-        <p class="quote-contact">{{ previewContactLine() }}</p>
-      </div>
-
-      <div class="quote-total-panel">
-        <div><span>Sub Total</span><strong>{{ quoteMoney(previewSubtotal(), 0) }}</strong></div>
-        <div><span>Discount</span><strong>- {{ quoteMoney(previewDiscount(), 0) }}</strong></div>
-        <div *ngIf="toNumber(quotation.tax_amount)"><span>Tax</span><strong>{{ quoteMoney(quotation.tax_amount, 0) }}</strong></div>
-        <div class="quote-grand-total"><span>Total</span><strong>{{ quoteMoney(previewNetAmount(), 0) }}</strong></div>
-        <small>Invoice Total (in words)</small>
-        <p class="quote-words">{{ amountInWords(previewNetAmount()) }}</p>
-        <div class="quote-signature">
-          <div class="signature-line"></div>
-          <span>Authorized Signature</span>
-        </div>
-      </div>
-    </div>
   </section>
 </div>
