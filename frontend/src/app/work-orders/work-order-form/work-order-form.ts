@@ -216,7 +216,7 @@ export class WorkOrderForm {
       discount_percent: [Number(item.discount_percent ?? 0), [Validators.min(0)]],
       discount_amount: [Number(item.discount_amount ?? 0), [Validators.min(0)]],
       tax_percent: [Number(item.tax_percent ?? 0), [Validators.min(0)]],
-      tax_amount: [Number(item.tax_amount ?? 0), [Validators.min(0)]]
+      tax_amount: [0, [Validators.min(0)]]
     }));
   }
 
@@ -351,7 +351,7 @@ export class WorkOrderForm {
   lineTax(index: number) {
     const item = this.items.at(index).value;
     const taxable = Math.max(this.lineGross(index) - this.lineDiscount(index), 0);
-    return this.toNumber(item.tax_amount) || taxable * this.toNumber(item.tax_percent) / 100;
+    return taxable * this.toNumber(item.tax_percent) / 100;
   }
 
   lineTotal(index: number) {

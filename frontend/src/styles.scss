@@ -414,6 +414,28 @@ button {
   opacity: .5;
 }
 
+.mat-mdc-raised-button.btn-yes,
+.mat-mdc-raised-button.btn-no,
+.mat-mdc-raised-button.btn-disabled {
+  --mdc-protected-button-label-text-color: var(--bs-white);
+  --mat-protected-button-state-layer-color: var(--bs-white);
+  color: var(--bs-white) !important;
+}
+
+.mat-mdc-raised-button.btn-yes {
+  background-color: var(--btn-primary-blue) !important;
+}
+
+.mat-mdc-raised-button.btn-no {
+  background-color: var(--bs-gray) !important;
+}
+
+.mat-mdc-raised-button.btn-disabled,
+.mat-mdc-raised-button:disabled {
+  background-color: var(--bs-gray-500) !important;
+  color: var(--bs-white) !important;
+}
+
 // password show and hide style for eye icon
 .showHideIcon {
   position: absolute;

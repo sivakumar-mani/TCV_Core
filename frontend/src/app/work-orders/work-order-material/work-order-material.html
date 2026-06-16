@@ -56,12 +56,15 @@
           </tr>
         </thead>
         <tbody formArrayName="rows">
-          <tr *ngFor="let row of issueRows.controls; let i = index" [formGroupName]="i">
+          <tr *ngFor="let row of issueRows.controls; let i = index; trackBy: trackByControl" [formGroupName]="i">
             <td>{{ row.get('issue_no')?.value || '-' }}</td>
             <td>
-              <select class="form-control" formControlName="material_id" (change)="onIssueMaterialChange(i)" [attr.disabled]="row.get('issue_id')?.value ? true : null">
+              <span *ngIf="row.get('issue_id')?.value">
+                {{ row.getRawValue().material_code }} - {{ row.getRawValue().material_name }}
+              </span>
+              <select *ngIf="!row.get('issue_id')?.value" class="form-control" formControlName="material_id" (change)="onIssueMaterialChange(i)">
                 <option value="">Select material</option>
-                <option *ngFor="let material of materials" [value]="material.material_id">
+                <option *ngFor="let material of materials; trackBy: trackById" [value]="material.material_id">
                   {{ material.material_code }} - {{ material.material_name }}
                 </option>
               </select>
@@ -71,9 +74,10 @@
             </td>
             <td><input class="form-control" type="date" formControlName="issued_date" [readonly]="row.get('issue_id')?.value"></td>
             <td>
-              <select class="form-control" formControlName="issued_to_employee_id" [attr.disabled]="row.get('issue_id')?.value ? true : null">
+              <span *ngIf="row.get('issue_id')?.value">{{ row.getRawValue().issued_to_employee_name || '-' }}</span>
+              <select *ngIf="!row.get('issue_id')?.value" class="form-control" formControlName="issued_to_employee_id">
                 <option value="">Select employee</option>
-                <option *ngFor="let employee of employees" [value]="employee.employee_id">
+                <option *ngFor="let employee of employees; trackBy: trackById" [value]="employee.employee_id">
                   {{ employee.employee_code }} - {{ employee.employee_name }}
                 </option>
               </select>
@@ -85,7 +89,7 @@
             </td>
           </tr>
           <tr *ngIf="!issueRows.length">
-            <td colspan="7" class="text-center text-muted py-3">No material products available.</td>
+            <td colspan="7" class="text-center text-muted py-3">No material issued yet. Use Add Material to create an issue.</td>
           </tr>
         </tbody>
       </table>
@@ -182,7 +186,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let item of workOrder?.material_returns || []">
+          <tr *ngFor="let item of workOrder?.material_returns || []; trackBy: trackById">
             <td>{{ item.return_no }}</td>
             <td>{{ item.material_code }} - {{ item.material_name }}</td>
             <td class="text-end">{{ item.returned_qty }}</td>

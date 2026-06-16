@@ -87,12 +87,18 @@ export class WorkflowList {
   displayDate(value: string | Date) {
     if (!value) return '';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-IN');
+    if (Number.isNaN(date.getTime())) return String(value);
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
   }
 
   displayDateTime(value: string | Date) {
     if (!value) return '';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString('en-IN');
+    if (Number.isNaN(date.getTime())) return String(value);
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
   }
 }

@@ -82,7 +82,7 @@ export class Brands {
     }
 
     this.brandForm.get('brand_name')?.valueChanges.subscribe((value) => {
-      if (this.isEditMode || this.isViewMode) return;
+      if (this.isViewMode) return;
 
       const brandCodeControl = this.brandForm.get('brand_code');
       if (!brandCodeControl?.dirty) {

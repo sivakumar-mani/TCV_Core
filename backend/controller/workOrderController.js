@@ -289,7 +289,7 @@ const normalizeWorkItem = (item, index) => {
     const gross = qty * price;
     const discountAmount = item.discount_amount !== undefined ? toNumber(item.discount_amount) : gross * toNumber(item.discount_percent) / 100;
     const taxable = Math.max(gross - discountAmount, 0);
-    const taxAmount = item.tax_amount !== undefined ? toNumber(item.tax_amount) : taxable * toNumber(item.tax_percent) / 100;
+    const taxAmount = taxable * toNumber(item.tax_percent) / 100;
 
     return {
         quotation_item_id: item.quotation_item_id || null,
@@ -302,7 +302,7 @@ const normalizeWorkItem = (item, index) => {
         discount_percent: toNumber(item.discount_percent),
         tax_percent: toNumber(item.tax_percent),
         tax_amount: taxAmount,
-        amount: item.amount !== undefined ? toNumber(item.amount) : taxable + taxAmount,
+        amount: taxable + taxAmount,
         line_no: index + 1
     };
 };

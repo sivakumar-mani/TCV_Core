@@ -32,12 +32,8 @@ const calculateLine = (item) => {
         : gross * discountPercent / 100;
     const taxable = Math.max(gross - discountAmount, 0);
     const taxPercent = toNumber(item.tax_percent);
-    const taxAmount = item.tax_amount !== undefined
-        ? toNumber(item.tax_amount)
-        : taxable * taxPercent / 100;
-    const amount = item.amount !== undefined
-        ? toNumber(item.amount)
-        : taxable + taxAmount;
+    const taxAmount = taxable * taxPercent / 100;
+    const amount = taxable + taxAmount;
 
     return {
         product_id: Number(item.product_id),

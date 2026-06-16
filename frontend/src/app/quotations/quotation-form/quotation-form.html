@@ -149,68 +149,91 @@
   </form>
 
   <section *ngIf="isPreviewMode && quotation" class="quotation-preview" id="quotationPreview">
-    <div class="preview-title">
+    <div class="quote-document-header">
       <div>
         <h2>Quotation</h2>
-        <p>{{ quotation.quotation_no }} / V{{ quotation.quotation_version }}</p>
+        <div class="quote-meta-line">
+          <span>Quotation#</span>
+          <strong>{{ quotation.quotation_no }}</strong>
+        </div>
+        <div class="quote-meta-line">
+          <span>Quotation Date</span>
+          <strong>{{ displayDate(quotation.quotation_date) }}</strong>
+        </div>
       </div>
-      <div class="status-chip">{{ quotation.quotation_status }}</div>
-    </div>
-
-    <div class="preview-meta">
-      <div>
-        <span>Customer</span>
-        <strong>{{ quotation.customer_name }}</strong>
-        <p>{{ quotation.contact_person }}</p>
-        <p>{{ quotation.phone }} {{ quotation.email }}</p>
-      </div>
-      <div>
-        <span>Quotation Date</span>
-        <strong>{{ displayDate(quotation.quotation_date) }}</strong>
-        <span>Valid Until</span>
-        <strong>{{ displayDate(quotation.valid_until) }}</strong>
-        <span>Created By</span>
-        <strong>{{ quotation.prepared_by_employee_code }} - {{ quotation.prepared_by_employee_name }}</strong>
+      <div class="quote-brand">
+        <span>TCV</span>
+        <strong>CORE</strong>
       </div>
     </div>
 
-    <p class="requirement" *ngIf="quotation.requirement_details">{{ quotation.requirement_details }}</p>
+    <div class="quote-party-grid">
+      <div class="quote-party-card">
+        <div><span>Quotation by</span><strong>TCV</strong></div>
+        <div><span>Address</span><p>Time Cable Vision, Tamil Nadu, India</p></div>
+        <div><span>Email</span><p>{{ quotation.prepared_by_email || 'timecablevision@gmail.com' }}</p></div>
+      </div>
+      <div class="quote-party-card">
+        <div><span>Quotation to</span><strong>{{ quotation.customer_name }}</strong></div>
+        <div><span>Address</span><p>{{ quotation.address || '-' }}</p></div>
+        <div><span>Contact</span><p>{{ quotation.contact_person || '-' }} {{ quotation.phone || '' }}</p></div>
+      </div>
+    </div>
 
-    <table class="table preview-table">
+    <div class="quote-supply-row">
+      <div><span>Valid Until</span><strong>{{ displayDate(quotation.valid_until) || '-' }}</strong></div>
+      <div><span>Status</span><strong>{{ quotation.quotation_status }}</strong></div>
+    </div>
+
+    <table class="quote-preview-table">
       <thead>
         <tr>
-          <th>S.No</th>
-          <th>Item</th>
+          <th>Item #/Item description</th>
           <th class="text-end">Qty</th>
           <th class="text-end">Rate</th>
-          <th class="text-end">Discount</th>
-          <th class="text-end">Tax</th>
           <th class="text-end">Amount</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let item of quotation.items; let i = index">
-          <td>{{ i + 1 }}</td>
           <td>
+            <span class="quote-item-number">{{ i + 1 }}.</span>
             <strong>{{ item.item_name }}</strong>
             <p *ngIf="item.description">{{ item.description }}</p>
           </td>
           <td class="text-end">{{ item.qty }}</td>
-          <td class="text-end">{{ money(item.selling_price) }}</td>
-          <td class="text-end">{{ money(item.discount_amount) }}</td>
-          <td class="text-end">{{ money(item.tax_amount) }}</td>
-          <td class="text-end">{{ money(item.amount) }}</td>
+          <td class="text-end">{{ quoteMoney(item.selling_price, 0) }}</td>
+          <td class="text-end">{{ quoteMoney(item.amount) }}</td>
         </tr>
       </tbody>
     </table>
 
-    <div class="preview-totals">
-      <div><span>Subtotal</span><strong>{{ money(quotation.total_amount) }}</strong></div>
-      <div><span>Discount</span><strong>{{ money(quotation.discount_amount) }}</strong></div>
-      <div><span>CGST {{ quotation.cgst_percent }}%</span><strong>{{ money(cgstAmount()) }}</strong></div>
-      <div><span>SGST {{ quotation.sgst_percent }}%</span><strong>{{ money(sgstAmount()) }}</strong></div>
-      <div><span>Total Tax</span><strong>{{ money(quotation.tax_amount) }}</strong></div>
-      <div class="net-total"><span>Net Amount</span><strong>{{ money(quotation.net_amount) }}</strong></div>
+    <div class="quote-bottom-grid">
+      <div>
+        <h3>Terms and Conditions</h3>
+        <ol>
+          <li>Please pay within the agreed due date.</li>
+          <li>Please quote quotation number when remitting funds.</li>
+        </ol>
+
+        <h3>Additional Notes</h3>
+        <p>{{ quotation.remarks || quotation.requirement_details || 'Thank you for the opportunity to submit this quotation.' }}</p>
+
+        <p class="quote-contact">{{ previewContactLine() }}</p>
+      </div>
+
+      <div class="quote-total-panel">
+        <div><span>Sub Total</span><strong>{{ quoteMoney(previewSubtotal(), 0) }}</strong></div>
+        <div><span>Discount</span><strong>- {{ quoteMoney(previewDiscount(), 0) }}</strong></div>
+        <div *ngIf="toNumber(quotation.tax_amount)"><span>Tax</span><strong>{{ quoteMoney(quotation.tax_amount, 0) }}</strong></div>
+        <div class="quote-grand-total"><span>Total</span><strong>{{ quoteMoney(previewNetAmount(), 0) }}</strong></div>
+        <small>Invoice Total (in words)</small>
+        <p class="quote-words">{{ amountInWords(previewNetAmount()) }}</p>
+        <div class="quote-signature">
+          <div class="signature-line"></div>
+          <span>Authorized Signature</span>
+        </div>
+      </div>
     </div>
   </section>
 </div>

@@ -20,6 +20,8 @@ export class WorkOrderMaterial {
   workOrder: any;
   materials: any[] = [];
   employees: any[] = [];
+  employeeOptions: any[] = [];
+  returnIssueOptions: any[] = [];
   issueTableForm!: FormGroup;
   returnForm!: FormGroup;
 
@@ -66,20 +68,6 @@ export class WorkOrderMaterial {
     return this.issueTableForm.get('rows') as FormArray;
   }
 
-  get employeeOptions() {
-    return this.employees.map((employee) => ({
-      value: employee.employee_id,
-      label: `${employee.employee_code} - ${employee.employee_name}`
-    }));
-  }
-
-  get returnIssueOptions() {
-    return (this.workOrder?.material_issues || []).map((issue: any) => ({
-      value: issue.issue_id,
-      label: `${issue.issue_no} - ${issue.material_name}`
-    }));
-  }
-
   conditionOptions = [
     { value: 'GOOD', label: 'GOOD' },
     { value: 'DAMAGED', label: 'DAMAGED' },
@@ -90,13 +78,18 @@ export class WorkOrderMaterial {
     this.workOrderService.getMaterials().subscribe({
       next: (response: any) => {
         this.materials = Array.isArray(response) ? response : response.data ?? [];
-        this.rebuildIssueRows();
       },
       error: (error: any) => this.commonMethods.handleError(error)
     });
 
     this.employeeService.getEmployees().subscribe({
-      next: (response: any) => this.employees = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.employees = Array.isArray(response) ? response : response.data ?? [];
+        this.employeeOptions = this.employees.map((employee) => ({
+          value: employee.employee_id,
+          label: `${employee.employee_code} - ${employee.employee_name}`
+        }));
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }
@@ -108,6 +101,10 @@ export class WorkOrderMaterial {
         this.ngxLoader.stop();
         this.workOrder = response?.data ?? response;
         this.rebuildIssueRows();
+        this.returnIssueOptions = (this.workOrder?.material_issues || []).map((issue: any) => ({
+          value: issue.issue_id,
+          label: `${issue.issue_no} - ${issue.material_name}`
+        }));
       },
       error: (error: any) => {
         this.ngxLoader.stop();
@@ -121,33 +118,25 @@ export class WorkOrderMaterial {
       issue_id: [source.issue_id || ''],
       issue_no: [source.issue_no || ''],
       material_id: [source.material_id || '', Validators.required],
+      material_code: [source.material_code || ''],
+      material_name: [source.material_name || ''],
       product_id: [source.product_id || ''],
       issued_qty: [source.issued_qty || '', existing ? [] : [Validators.min(0.01)]],
       issued_date: [this.toInputDate(source.issued_date) || this.today(), Validators.required],
       issued_to_employee_id: [source.issued_to_employee_id || ''],
+      issued_to_employee_name: [source.issued_to_employee_name || ''],
       issued_by_employee_id: [source.issued_by_employee_id || ''],
       remarks: [source.remarks || '']
     });
   }
 
   rebuildIssueRows() {
-    if (!this.workOrder || !this.materials.length) return;
+    if (!this.workOrder) return;
 
     this.issueRows.clear();
     (this.workOrder.material_issues || []).forEach((issue: any) => {
       this.issueRows.push(this.createIssueRow(issue, true));
     });
-
-    const issuedMaterialIds = new Set((this.workOrder.material_issues || []).map((issue: any) => Number(issue.material_id)));
-    this.materials
-      .filter((material) => !issuedMaterialIds.has(Number(material.material_id)))
-      .forEach((material) => {
-        this.issueRows.push(this.createIssueRow({
-          material_id: material.material_id,
-          product_id: material.product_id,
-          issued_date: this.today()
-        }));
-      });
   }
 
   addMaterialRow() {
@@ -245,7 +234,10 @@ export class WorkOrderMaterial {
   displayDate(value: string | Date) {
     if (!value) return '';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-IN');
+    if (Number.isNaN(date.getTime())) return String(value);
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
   }
 
   today() {
@@ -262,5 +254,13 @@ export class WorkOrderMaterial {
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     const day = `${date.getDate()}`.padStart(2, '0');
     return `${date.getFullYear()}-${month}-${day}`;
+  }
+
+  trackByControl(index: number) {
+    return index;
+  }
+
+  trackById(_index: number, item: any) {
+    return item?.return_id || item?.issue_id || item?.material_id || item?.employee_id || _index;
   }
 }

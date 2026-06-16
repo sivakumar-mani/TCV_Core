@@ -160,7 +160,7 @@ export class QuotationForm {
       discount_percent: [Number(item.discount_percent ?? 0), [Validators.min(0)]],
       discount_amount: [Number(item.discount_amount ?? 0), [Validators.min(0)]],
       tax_percent: [Number(item.tax_percent ?? 0), [Validators.min(0)]],
-      tax_amount: [Number(item.tax_amount ?? 0), [Validators.min(0)]],
+      tax_amount: [0, [Validators.min(0)]],
       notes: [item.notes || '']
     }));
   }
@@ -197,7 +197,7 @@ export class QuotationForm {
   lineTax(index: number) {
     const item = this.items.at(index).value;
     const taxable = Math.max(this.lineGross(index) - this.lineDiscount(index), 0);
-    return this.toNumber(item.tax_amount) || taxable * this.toNumber(item.tax_percent) / 100;
+    return taxable * this.toNumber(item.tax_percent) / 100;
   }
 
   lineTotal(index: number) {
@@ -470,6 +470,60 @@ export class QuotationForm {
     return this.toNumber(value).toFixed(2);
   }
 
+  quoteMoney(value: number | string, fractionDigits = 2) {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits
+    }).format(this.toNumber(value));
+  }
+
+  previewSubtotal() {
+    return this.toNumber(this.quotation?.total_amount);
+  }
+
+  previewDiscount() {
+    return this.toNumber(this.quotation?.discount_amount);
+  }
+
+  previewNetAmount() {
+    return this.toNumber(this.quotation?.net_amount);
+  }
+
+  previewContactLine() {
+    const email = this.quotation?.prepared_by_email || 'timecablevision@gmail.com';
+    const phone = this.quotation?.prepared_by_phone || '9876543210';
+    return `For any enquiries, email us on ${email} or call us on ${phone}`;
+  }
+
+  amountInWords(value: number | string) {
+    const amount = Math.round(this.toNumber(value));
+    if (amount === 0) return 'Zero Rupees Only';
+
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const twoDigits = (num: number) => num < 20 ? ones[num] : `${tens[Math.floor(num / 10)]}${num % 10 ? ` ${ones[num % 10]}` : ''}`;
+    const threeDigits = (num: number) => {
+      const hundred = Math.floor(num / 100);
+      const rest = num % 100;
+      return `${hundred ? `${ones[hundred]} Hundred` : ''}${hundred && rest ? ' ' : ''}${rest ? twoDigits(rest) : ''}`.trim();
+    };
+
+    const crore = Math.floor(amount / 10000000);
+    const lakh = Math.floor((amount % 10000000) / 100000);
+    const thousand = Math.floor((amount % 100000) / 1000);
+    const rest = amount % 1000;
+    const parts = [
+      crore ? `${threeDigits(crore)} Crore` : '',
+      lakh ? `${threeDigits(lakh)} Lakh` : '',
+      thousand ? `${threeDigits(thousand)} Thousand` : '',
+      rest ? threeDigits(rest) : ''
+    ].filter(Boolean);
+
+    return `${parts.join(' ')} Rupees Only`;
+  }
+
   editQuotation() {
     this.router.navigate(['/quotations/edit', this.quotationId]);
   }
@@ -506,6 +560,9 @@ export class QuotationForm {
   displayDate(value: string | Date) {
     if (!value) return '';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-IN');
+    if (Number.isNaN(date.getTime())) return String(value);
+    const day = `${date.getDate()}`.padStart(2, '0');
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
   }
 }
