@@ -8,6 +8,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CustomerServices } from '../../services/customer-services';
+import { EmployeeServices } from '../../services/employee-services';
 import { CommonMethods } from '../../shared/common-methods';
 import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { SelectFormField } from '../../shared/select-form-field/select-form-field';
@@ -37,7 +38,16 @@ export class CustomerForm {
   customerId!: number;
   stateOptions: any[] = [];
   districtOptions: any[] = [];
+  marketingEmployeeOptions: any[] = [];
   private phoneRegex = /^[0-9]{10}$/;
+
+  salutationOptions = [  
+    { label: 'Mr.', value: 'Mr.' },
+    { label: 'Mrs.', value: 'Mrs.' },
+    { label: 'Ms.', value: 'Ms.' },
+    { label: 'M/S', value: 'M/S' },
+    { label: 'Mr/Mrs/Ms', value: 'Mr/Mrs/Ms' }
+  ];
 
   customerTypeOptions = [
     { label: 'Retail', value: 'RETAIL' },
@@ -55,6 +65,7 @@ export class CustomerForm {
   constructor(
     private fb: FormBuilder,
     private customerService: CustomerServices,
+    private employeeService: EmployeeServices,
     private ngxUiLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
     private router: Router,
@@ -64,11 +75,13 @@ export class CustomerForm {
   ngOnInit() {
     this.buildForm();
     this.setupLocationDependency();
+    this.loadMarketingEmployees();
     this.loadStates();
   }
 
   buildForm() {
     this.customerForm = this.fb.group({
+      salutation: ['Mr/Mrs/Ms', Validators.required],
       customer_name: ['', Validators.required],
       contact_person: ['', Validators.required],
       phone: ['', [Validators.required, Validators.pattern(this.phoneRegex)]],
@@ -76,6 +89,8 @@ export class CustomerForm {
       email: ['', Validators.email],
       gst_no: [''],
       customer_type: ['RETAIL', Validators.required],
+      marketing_employee_id: [null],
+      referral_details: [''],
       address: ['', Validators.required],
       state: ['', Validators.required],
       city_district: ['', Validators.required],
@@ -84,6 +99,24 @@ export class CustomerForm {
       opening_balance: [0],
       outstanding_balance: [0],
       status: [1, Validators.required]
+    });
+  }
+
+  loadMarketingEmployees() {
+    this.employeeService.getEmployees().subscribe({
+      next: (response: any) => {
+        const employees = Array.isArray(response) ? response : response.data ?? [];
+        this.marketingEmployeeOptions = [
+          { label: 'Select marketing person', value: null },
+          ...employees
+            .filter((employee: any) => Number(employee.is_active) === 1)
+            .map((employee: any) => ({
+              value: employee.employee_id,
+              label: `${employee.employee_code ? employee.employee_code + ' - ' : ''}${employee.employee_name || ''}`.trim()
+            }))
+        ];
+      },
+      error: (error: any) => this.commonMethods.handleError(error)
     });
   }
 

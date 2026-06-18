@@ -168,6 +168,7 @@ CREATE TABLE suppliers (
 
 CREATE TABLE customers (
     customer_id INT AUTO_INCREMENT PRIMARY KEY,
+    salutation ENUM('Mr/Mrs/Ms','Mr.','Mrs.','Ms.','M/S') NOT NULL DEFAULT 'Mr/Mrs/Ms',
     customer_name VARCHAR(150) NOT NULL,
     contact_person VARCHAR(100),
     phone VARCHAR(20),
@@ -179,6 +180,8 @@ CREATE TABLE customers (
     state VARCHAR(100),
     pincode VARCHAR(20),
     customer_type ENUM('RETAIL','WHOLESALE','DEALER','CORPORATE') DEFAULT 'RETAIL',
+    marketing_employee_id INT,
+    referral_details VARCHAR(255),
     credit_limit DECIMAL(12,2) DEFAULT 0,
     opening_balance DECIMAL(12,2) DEFAULT 0,
     status TINYINT(1) DEFAULT 1,

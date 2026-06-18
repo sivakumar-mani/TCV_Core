@@ -46,6 +46,9 @@ export class EmployeeForm {
 
   departmentOptions = [
     { value: 'ADMIN', label: 'Admin' },
+    { value: 'ENGINEER', label: 'Engineer' },
+    { value: 'TECHNICAL', label: 'Technical' },
+    { value: 'STAFF', label: 'Staff' },
     { value: 'SALES', label: 'Sales' },
     { value: 'PURCHASE', label: 'Purchase' },
     { value: 'STORE', label: 'Store' },

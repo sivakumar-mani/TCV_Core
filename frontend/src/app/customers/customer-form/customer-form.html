@@ -18,8 +18,13 @@
     <div class="form-section">
       <h2>Basic Details</h2>
       <div class="grid-2-col mt-4">
-        <app-input-form-field [label]="'Customer Name'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-          [type]="'text'" [formControl]="$any(customerForm.controls['customer_name'])"></app-input-form-field>
+        <div class="customer-name-field">
+          <app-select-form-field [label]="'Salutation'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+            [options]="salutationOptions" [formControl]="$any(customerForm.controls['salutation'])"></app-select-form-field>
+
+          <app-input-form-field [label]="'Customer Name'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+            [type]="'text'" [formControl]="$any(customerForm.controls['customer_name'])"></app-input-form-field>
+        </div>
 
         <app-input-form-field [label]="'Contact Person'" [classLabel]="'form-label'" [inputClass]="'form-control'"
           [type]="'text'" [formControl]="$any(customerForm.controls['contact_person'])"></app-input-form-field>
@@ -29,6 +34,17 @@
 
         <app-select-form-field [label]="'Status'" [labelClass]="'form-label'" [selectClass]="'form-control'"
           [options]="statusList" [formControl]="$any(customerForm.controls['status'])"></app-select-form-field>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Reference</h2>
+      <div class="grid-2-col mt-4">
+        <app-select-form-field [label]="'Marketing Person'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="marketingEmployeeOptions" [formControl]="$any(customerForm.controls['marketing_employee_id'])"></app-select-form-field>
+
+        <app-input-form-field [label]="'Referral Person / Contact No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(customerForm.controls['referral_details'])"></app-input-form-field>
       </div>
     </div>
 

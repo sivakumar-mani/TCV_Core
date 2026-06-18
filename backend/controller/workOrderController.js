@@ -1,4 +1,5 @@
 const connection = require('../connection');
+const { ensureCustomerSchema } = require('../utils/customerSchema');
 
 const toNumber = (value, fallback = 0) => {
     const number = Number(value);
@@ -29,6 +30,7 @@ const ensureProductTypeColumn = async (conn) => {
 };
 
 const ensureWorkOrderSupport = async (conn) => {
+    await ensureCustomerSchema(conn);
     await ensureProductTypeColumn(conn);
 
     await conn.query(`
@@ -366,7 +368,8 @@ const getWorkOrders = async (req, res) => {
         const conn = connection.promise();
         await ensureWorkOrderSupport(conn);
         const [rows] = await conn.query(
-            `SELECT wo.*, c.customer_name, qm.quotation_no,
+            `SELECT wo.*, TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS customer_name,
+                    qm.quotation_no,
                     ae.employee_code AS assigned_employee_code,
                     CONCAT_WS(' ', ae.first_name, ae.last_name) AS assigned_employee_name,
                     COALESCE(item_counts.item_count, 0) AS item_count,
@@ -398,7 +401,8 @@ const getWorkOrderById = async (req, res) => {
         await ensureWorkOrderSupport(conn);
         const { work_order_id } = req.params;
         const [orders] = await conn.query(
-            `SELECT wo.*, c.customer_name, c.address, c.phone, c.email, qm.quotation_no,
+            `SELECT wo.*, TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS customer_name,
+                    c.address, c.phone, c.email, qm.quotation_no,
                     ae.employee_code AS assigned_employee_code,
                     CONCAT_WS(' ', ae.first_name, ae.last_name) AS assigned_employee_name,
                     sm.sales_id, sm.invoice_no

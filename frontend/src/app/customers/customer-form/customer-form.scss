@@ -19,3 +19,21 @@
   margin-top: 24px;
   margin-bottom: 24px;
 }
+
+.customer-name-field {
+  display: grid;
+  grid-template-columns: fit-content(110px) minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+
+  app-select-form-field {
+    display: block;
+    width: 92px;
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-name-field {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+}

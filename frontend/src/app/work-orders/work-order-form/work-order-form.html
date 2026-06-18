@@ -37,7 +37,7 @@
           <select class="form-control" formControlName="customer_id">
             <option value="">Select customer</option>
             <option *ngFor="let customer of customers" [value]="customer.customer_id">
-              {{ customer.customer_name }}
+              {{ customer.display_customer_name || ((customer.salutation ? customer.salutation + ' ' : '') + customer.customer_name) }}
             </option>
           </select>
         </div>

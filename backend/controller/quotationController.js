@@ -1,4 +1,5 @@
 const connection = require('../connection');
+const { ensureCustomerSchema } = require('../utils/customerSchema');
 
 const quotationStatuses = ['DRAFT', 'SENT', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED'];
 
@@ -25,6 +26,8 @@ const columnExists = async (conn, tableName, columnName) => {
 };
 
 const ensureQuotationSupport = async (conn) => {
+    await ensureCustomerSchema(conn);
+
     const additions = [
         ['quotation_master', 'quotation_version', 'ADD COLUMN quotation_version INT NOT NULL DEFAULT 1 AFTER quotation_no'],
         ['quotation_master', 'cgst_percent', 'ADD COLUMN cgst_percent DECIMAL(5,2) NOT NULL DEFAULT 0 AFTER discount_percent'],
@@ -168,7 +171,7 @@ const getQuotations = async (req, res) => {
     try {
         await ensureQuotationSupport(connection.promise());
         const [rows] = await connection.promise().query(
-            `SELECT qm.*, c.customer_name,
+            `SELECT qm.*, TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS customer_name,
                     pe.employee_code AS prepared_by_employee_code,
                     CONCAT_WS(' ', pe.first_name, pe.last_name) AS prepared_by_employee_name,
                     pe.designation AS prepared_by_designation,
@@ -205,7 +208,8 @@ const getQuotationById = async (req, res) => {
         await ensureQuotationSupport(connection.promise());
         const { quotation_id } = req.params;
         const [quotations] = await connection.promise().query(
-            `SELECT qm.*, c.customer_name, c.contact_person, c.phone, c.email, c.address,
+            `SELECT qm.*, TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS customer_name,
+                    c.contact_person, c.phone, c.email, c.address,
                     pe.employee_code AS prepared_by_employee_code,
                     CONCAT_WS(' ', pe.first_name, pe.last_name) AS prepared_by_employee_name,
                     pe.designation AS prepared_by_designation,

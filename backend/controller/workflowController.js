@@ -1,4 +1,5 @@
 const connection = require('../connection');
+const { ensureCustomerSchema } = require('../utils/customerSchema');
 
 const ensureWorkflowTable = async () => {
     await connection.promise().query(`
@@ -27,11 +28,12 @@ const ensureWorkflowTable = async () => {
 const getWorkflowApprovals = async (req, res) => {
     try {
         await ensureWorkflowTable();
+        await ensureCustomerSchema(connection.promise());
         const [rows] = await connection.promise().query(
             `SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
                     wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
                     qm.quotation_status, qm.quotation_version, qm.quotation_date, qm.valid_until, qm.net_amount,
-                    c.customer_name
+                    TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS customer_name
              FROM workflow_approvals wa
              LEFT JOIN quotation_master qm
                 ON wa.module_name = 'QUOTATION' AND qm.quotation_id = wa.reference_id

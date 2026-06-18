@@ -49,7 +49,7 @@ CREATE TABLE employees (
     alternate_phone VARCHAR(20),
     email VARCHAR(100) UNIQUE,
     designation VARCHAR(100) NOT NULL,
-    department ENUM('ADMIN','SALES','PURCHASE','STORE','INSTALLATION','SERVICE','ACCOUNTS') 
+    department ENUM('ADMIN','ENGINEER','TECHNICAL','STAFF','SALES','PURCHASE','STORE','INSTALLATION','SERVICE','ACCOUNTS')
                NOT NULL DEFAULT 'SERVICE',
     date_of_birth DATE,
     qualification VARCHAR(150),
@@ -251,6 +251,7 @@ COMMENT='Supplier master data with payment terms';
 
 CREATE TABLE customers (
     customer_id INT AUTO_INCREMENT PRIMARY KEY,
+    salutation ENUM('Mr/Mrs/Ms','Mr.','Mrs.','Ms.','M/S') NOT NULL DEFAULT 'Mr/Mrs/Ms',
     customer_name VARCHAR(150) NOT NULL,
     contact_person VARCHAR(100),
     phone VARCHAR(20) NOT NULL,
@@ -258,6 +259,8 @@ CREATE TABLE customers (
     email VARCHAR(100),
     gst_no VARCHAR(15),
     customer_type ENUM('RETAIL','WHOLESALE','DEALER','CORPORATE','SERVICE') NOT NULL DEFAULT 'RETAIL',
+    marketing_employee_id INT COMMENT 'Employee who canvassed or brought this customer account',
+    referral_details VARCHAR(255) COMMENT 'Referral person name and contact number',
     address TEXT NOT NULL,
     city_district VARCHAR(100) NOT NULL,
     state VARCHAR(100) NOT NULL,
@@ -268,9 +271,14 @@ CREATE TABLE customers (
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (marketing_employee_id) REFERENCES employees(employee_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
     
     INDEX idx_customer_name (customer_name),
+    INDEX idx_salutation (salutation),
     INDEX idx_customer_type (customer_type),
+    INDEX idx_marketing_employee_id (marketing_employee_id),
     INDEX idx_city (city_district),
     INDEX idx_active (is_active),
     INDEX idx_email (email),

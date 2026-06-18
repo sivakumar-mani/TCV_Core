@@ -2,6 +2,7 @@ const connection = require('../connection');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const { ensureEmployeeDepartmentColumn } = require('../utils/employeeSchema');
 
 const uploadDir = path.join(__dirname, '..', 'uploads', 'employees');
 fs.mkdirSync(uploadDir, { recursive: true });
@@ -151,6 +152,7 @@ const getEmployeeById = async (req, res) => {
 
 const addEmployee = async (req, res) => {
   try {
+    await ensureEmployeeDepartmentColumn(connection.promise());
     const employee = req.body;
     const validationMessage = validateEmployee(employee);
     if (validationMessage) return res.status(400).json({ success: false, message: validationMessage });
@@ -184,6 +186,7 @@ const addEmployee = async (req, res) => {
 
 const updateEmployee = async (req, res) => {
   try {
+    await ensureEmployeeDepartmentColumn(connection.promise());
     const { employee_id } = req.body;
     const validationMessage = validateEmployee(req.body);
     if (validationMessage) return res.status(400).json({ success: false, message: validationMessage });

@@ -1,8 +1,25 @@
 const connection = require('../connection');
+const { ensureCustomerSchema } = require('../utils/customerSchema');
 
 const phoneRegex = /^[0-9]{10}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const customerTypes = ['RETAIL', 'WHOLESALE', 'DEALER', 'CORPORATE', 'SERVICE'];
+
+const normalizeSalutation = (value) => {
+    if (!value) return 'Mr/Mrs/Ms';
+
+    const key = String(value).trim().toUpperCase().replace(/\./g, '');
+    const map = {
+        MRMRSMS: 'Mr/Mrs/Ms',
+        'MR/MRS/MS': 'Mr/Mrs/Ms',
+        MR: 'Mr.',
+        MRS: 'Mrs.',
+        MS: 'Ms.',
+        'M/S': 'M/S'
+    };
+
+    return map[key] || null;
+};
 
 const toNumber = (value, fallback = 0) => {
     const number = Number(value);
@@ -13,6 +30,9 @@ const validateCustomer = (payload) => {
     const errors = [];
 
     if (!payload.customer_name) errors.push('Customer name is required');
+    if (payload.salutation && !normalizeSalutation(payload.salutation)) {
+        errors.push('Invalid salutation');
+    }
     if (!payload.contact_person) errors.push('Contact person is required');
     if (!payload.phone) errors.push('Phone is required');
     else if (!phoneRegex.test(String(payload.phone))) errors.push('Phone must be 10 digits');
@@ -40,13 +60,19 @@ const validateCustomer = (payload) => {
 
 const getCustomers = async (req, res) => {
     try {
+        await ensureCustomerSchema(connection.promise());
         const [rows] = await connection.promise().query(
-            `SELECT customer_id, customer_name, contact_person, phone, alternate_phone,
-                    email, gst_no, customer_type, address, city_district, state, pincode,
-                    credit_limit, opening_balance, outstanding_balance, is_active,
-                    is_active AS status, created_at, updated_at
-             FROM customers
-             ORDER BY customer_id DESC`
+            `SELECT c.customer_id, c.salutation, c.customer_name,
+                    TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS display_customer_name,
+                    c.contact_person, c.phone, c.alternate_phone,
+                    c.email, c.gst_no, c.customer_type, c.marketing_employee_id,
+                    CONCAT_WS(' ', e.first_name, e.last_name) AS marketing_employee_name,
+                    c.referral_details, c.address, c.city_district, c.state, c.pincode,
+                    c.credit_limit, c.opening_balance, c.outstanding_balance, c.is_active,
+                    c.is_active AS status, c.created_at, c.updated_at
+             FROM customers c
+             LEFT JOIN employees e ON e.employee_id = c.marketing_employee_id
+             ORDER BY c.customer_id DESC`
         );
 
         return res.json(rows);
@@ -58,6 +84,7 @@ const getCustomers = async (req, res) => {
 
 const getCustomerById = async (req, res) => {
     try {
+        await ensureCustomerSchema(connection.promise());
         const { customer_id } = req.params;
 
         if (!customer_id) {
@@ -65,8 +92,11 @@ const getCustomerById = async (req, res) => {
         }
 
         const [rows] = await connection.promise().query(
-            `SELECT customer_id, customer_name, contact_person, phone, alternate_phone,
-                    email, gst_no, customer_type, address, city_district, state, pincode,
+            `SELECT customer_id, salutation, customer_name,
+                    TRIM(CONCAT(COALESCE(salutation, ''), ' ', customer_name)) AS display_customer_name,
+                    contact_person, phone, alternate_phone,
+                    email, gst_no, customer_type, marketing_employee_id,
+                    referral_details, address, city_district, state, pincode,
                     credit_limit, opening_balance, outstanding_balance, is_active,
                     is_active AS status, created_at, updated_at
              FROM customers
@@ -87,6 +117,7 @@ const getCustomerById = async (req, res) => {
 
 const addCustomer = async (req, res) => {
     try {
+        await ensureCustomerSchema(connection.promise());
         const payload = req.body;
         const errors = validateCustomer(payload);
 
@@ -96,6 +127,7 @@ const addCustomer = async (req, res) => {
 
         const query = `
             INSERT INTO customers (
+                salutation,
                 customer_name,
                 contact_person,
                 phone,
@@ -103,6 +135,8 @@ const addCustomer = async (req, res) => {
                 email,
                 gst_no,
                 customer_type,
+                marketing_employee_id,
+                referral_details,
                 address,
                 city_district,
                 state,
@@ -111,10 +145,11 @@ const addCustomer = async (req, res) => {
                 opening_balance,
                 outstanding_balance,
                 is_active
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const values = [
+            normalizeSalutation(payload.salutation),
             payload.customer_name,
             payload.contact_person,
             payload.phone,
@@ -122,6 +157,8 @@ const addCustomer = async (req, res) => {
             payload.email || null,
             payload.gst_no || null,
             payload.customer_type || 'RETAIL',
+            payload.marketing_employee_id || null,
+            payload.referral_details || null,
             payload.address,
             payload.city_district,
             payload.state,
@@ -147,6 +184,7 @@ const addCustomer = async (req, res) => {
 
 const updateCustomer = async (req, res) => {
     try {
+        await ensureCustomerSchema(connection.promise());
         const payload = req.body;
 
         if (!payload.customer_id) {
@@ -169,6 +207,7 @@ const updateCustomer = async (req, res) => {
 
         const query = `
             UPDATE customers SET
+                salutation = ?,
                 customer_name = ?,
                 contact_person = ?,
                 phone = ?,
@@ -176,6 +215,8 @@ const updateCustomer = async (req, res) => {
                 email = ?,
                 gst_no = ?,
                 customer_type = ?,
+                marketing_employee_id = ?,
+                referral_details = ?,
                 address = ?,
                 city_district = ?,
                 state = ?,
@@ -189,6 +230,7 @@ const updateCustomer = async (req, res) => {
         `;
 
         const values = [
+            normalizeSalutation(payload.salutation),
             payload.customer_name,
             payload.contact_person,
             payload.phone,
@@ -196,6 +238,8 @@ const updateCustomer = async (req, res) => {
             payload.email || null,
             payload.gst_no || null,
             payload.customer_type || 'RETAIL',
+            payload.marketing_employee_id || null,
+            payload.referral_details || null,
             payload.address,
             payload.city_district,
             payload.state,

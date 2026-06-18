@@ -27,11 +27,17 @@ export class CustomerList {
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
-    { field: 'customer_name', headerName: 'Customer Name' },
+    {
+      field: 'display_customer_name',
+      headerName: 'Customer Name',
+      valueGetter: (params: any) => params.data?.display_customer_name || this.getCustomerName(params.data)
+    },
     { field: 'contact_person', headerName: 'Contact Person' },
     { field: 'phone', headerName: 'Phone', maxWidth: 140 },
     { field: 'email', headerName: 'Email' },
     { field: 'customer_type', headerName: 'Type', maxWidth: 140 },
+    { field: 'marketing_employee_name', headerName: 'Marketing Person' },
+    { field: 'referral_details', headerName: 'Referral' },
     { field: 'city_district', headerName: 'City/District' },
     { field: 'state', headerName: 'State' },
     {
@@ -101,7 +107,7 @@ export class CustomerList {
   }
 
   deleteCustomer(row: any) {
-    if (!confirm(`Delete customer ${row.customer_name}?`)) return;
+    if (!confirm(`Delete customer ${this.getCustomerName(row)}?`)) return;
 
     this.ngxLoader.start();
     this.customerService.deleteCustomer({ customer_id: row.customer_id }).subscribe({
@@ -123,5 +129,9 @@ export class CustomerList {
 
   money(value: number | string) {
     return `Rs. ${(Number(value) || 0).toFixed(2)}`;
+  }
+
+  getCustomerName(customer: any) {
+    return [customer?.salutation, customer?.customer_name].filter(Boolean).join(' ');
   }
 }
