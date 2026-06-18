@@ -16,6 +16,12 @@ const employeeRoute = require('./routes/employeeRouter')
 const employeeSalaryRoute = require('./routes/employeeSalaryRouter')
 const auditLogRoute = require('./routes/auditLogRouter')
 const locationRoute = require('./routes/locationRouter')
+const employeeAttendanceRoute = require('./routes/employeeAttendanceRouter')
+const customerPaymentRoute = require('./routes/customerPaymentRouter')
+const supplierPaymentRoute = require('./routes/supplierPaymentRouter')
+const salesRoute = require('./routes/salesRouter')
+const serviceTicketRoute = require('./routes/serviceTicketRouter')
+const warrantyRoute = require('./routes/warrantyRouter')
 const app = express()
 
 app.use(cors());
@@ -49,4 +55,16 @@ app.use('/api/employee', employeeRoute);
 app.use('/api/employee-salary', employeeSalaryRoute);
 app.use('/api/audit-log', auditLogRoute);
 app.use('/api/location', locationRoute);
+app.use('/api/employee-attendance', employeeAttendanceRoute);
+app.use('/api/customer-payment', customerPaymentRoute);
+app.use('/api/supplier-payment', supplierPaymentRoute);
+app.use('/api/sales', salesRoute);
+app.use('/api/service-ticket', serviceTicketRoute);
+app.use('/api/warranty', warrantyRoute);
+app.use('/api/v1/employee-attendance', employeeAttendanceRoute);
+app.use('/api/v1/customer-payments', customerPaymentRoute);
+app.use('/api/v1/supplier-payments', supplierPaymentRoute);
+app.use('/api/v1/sales', salesRoute);
+app.use('/api/v1/service-tickets', serviceTicketRoute);
+app.use('/api/v1/warranties', warrantyRoute);
 module.exports = app;

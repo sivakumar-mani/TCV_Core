@@ -15,31 +15,22 @@
     <h2>Audit Details</h2>
     <div class="row g-3">
       <div class="col-md-4">
-        <label class="form-label">User ID</label>
-        <input class="form-control" formControlName="user_id" type="number">
+        <app-input-form-field [label]="'User ID'" [type]="'number'" [formControl]="$any(auditLogForm.controls['user_id'])"></app-input-form-field>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Module</label>
-        <input class="form-control" formControlName="module" type="text">
+        <app-input-form-field [label]="'Module'" [type]="'text'" [formControl]="$any(auditLogForm.controls['module'])"></app-input-form-field>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Action</label>
-        <select class="form-select" formControlName="action">
-          <option value="">Select Action</option>
-          <option *ngFor="let action of actions" [value]="action">{{ action }}</option>
-        </select>
+        <app-select-form-field [label]="'Action'" [options]="actionOptions()" [formControl]="$any(auditLogForm.controls['action'])"></app-select-form-field>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Table Name</label>
-        <input class="form-control" formControlName="table_name" type="text">
+        <app-input-form-field [label]="'Table Name'" [type]="'text'" [formControl]="$any(auditLogForm.controls['table_name'])"></app-input-form-field>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Record ID</label>
-        <input class="form-control" formControlName="record_id" type="number">
+        <app-input-form-field [label]="'Record ID'" [type]="'number'" [formControl]="$any(auditLogForm.controls['record_id'])"></app-input-form-field>
       </div>
       <div class="col-md-4">
-        <label class="form-label">IP Address</label>
-        <input class="form-control" formControlName="ip_address" type="text">
+        <app-input-form-field [label]="'IP Address'" [type]="'text'" [formControl]="$any(auditLogForm.controls['ip_address'])"></app-input-form-field>
       </div>
     </div>
   </div>
@@ -48,20 +39,16 @@
     <h2>Change Values</h2>
     <div class="row g-3">
       <div class="col-md-6">
-        <label class="form-label">Old Values JSON</label>
-        <textarea class="form-control font-monospace" formControlName="old_values" rows="8"></textarea>
+        <app-textarea-form-field [label]="'Old Values JSON'" [rows]="8" [control]="$any(auditLogForm.controls['old_values'])"></app-textarea-form-field>
       </div>
       <div class="col-md-6">
-        <label class="form-label">New Values JSON</label>
-        <textarea class="form-control font-monospace" formControlName="new_values" rows="8"></textarea>
+        <app-textarea-form-field [label]="'New Values JSON'" [rows]="8" [control]="$any(auditLogForm.controls['new_values'])"></app-textarea-form-field>
       </div>
       <div class="col-md-6">
-        <label class="form-label">Browser Info</label>
-        <textarea class="form-control" formControlName="browser_info" rows="3"></textarea>
+        <app-textarea-form-field [label]="'Browser Info'" [rows]="3" [control]="$any(auditLogForm.controls['browser_info'])"></app-textarea-form-field>
       </div>
       <div class="col-md-6">
-        <label class="form-label">Change Reason</label>
-        <textarea class="form-control" formControlName="change_reason" rows="3"></textarea>
+        <app-textarea-form-field [label]="'Change Reason'" [rows]="3" [control]="$any(auditLogForm.controls['change_reason'])"></app-textarea-form-field>
       </div>
     </div>
   </div>

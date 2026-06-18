@@ -48,6 +48,8 @@ export class SupplierList {
       cellRendererParams: {
         dropdownMenu: [
           { label: 'Edit', action: (row: any) => this.editSupplier(row) },
+          { label: 'Purchase Order', action: (row: any) => this.createPurchase(row) },
+          { label: 'Supplier Payment', action: (row: any) => this.createSupplierPayment(row) },
           { label: 'Delete', action: (row: any) => this.deleteSupplier(row) }
         ]
       },
@@ -91,6 +93,14 @@ export class SupplierList {
 
   editSupplier(row: any) {
     this.router.navigate(['/suppliers/edit', row.supplier_id]);
+  }
+
+  createPurchase(row: any) {
+    this.router.navigate(['/purchases/add'], { queryParams: { supplierId: row.supplier_id } });
+  }
+
+  createSupplierPayment(row: any) {
+    this.router.navigate(['/supplier-payments'], { queryParams: { supplierId: row.supplier_id } });
   }
 
   deleteSupplier(row: any) {

@@ -7,13 +7,15 @@ import { EmployeeServices } from '../services/employee-services';
 import { EmployeeSalaryServices } from '../services/employee-salary-services';
 import { AgGridList } from '../shared/ag-grid-list/ag-grid-list';
 import { CommonMethods } from '../shared/common-methods';
+import { InputFormField } from '../shared/input-form-field/input-form-field';
 import { ActionMenu } from '../shared/list-action-menu';
+import { SelectFormField } from '../shared/select-form-field/select-form-field';
 
 type SalaryItemType = 'EARNING' | 'DEDUCTION';
 
 @Component({
   selector: 'app-employee-salary',
-  imports: [CommonModule, ReactiveFormsModule, AgGridList],
+  imports: [CommonModule, ReactiveFormsModule, AgGridList, InputFormField, SelectFormField],
   templateUrl: './employee-salary.html',
   styleUrl: './employee-salary.scss',
 })
@@ -142,6 +144,23 @@ export class EmployeeSalary {
         this.commonMethods.handleError(error);
       },
     });
+  }
+
+  employeeOptions() {
+    return [
+      { label: 'Select employee', value: '' },
+      ...this.employees.map((employee) => ({
+        label: `${employee.employee_code} - ${employee.employee_name || `${employee.first_name || ''} ${employee.last_name || ''}`.trim()}`,
+        value: employee.employee_id
+      }))
+    ];
+  }
+
+  statusOptions() {
+    return [
+      { label: 'Final', value: 'FINAL' },
+      { label: 'Draft', value: 'DRAFT' }
+    ];
   }
 
   addItem(type: SalaryItemType = 'EARNING', description = '') {

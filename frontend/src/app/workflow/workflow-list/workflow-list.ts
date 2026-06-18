@@ -27,11 +27,13 @@ export class WorkflowList {
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
+    { field: 'module_name', headerName: 'Module', maxWidth: 150 },
     { field: 'reference_no', headerName: 'Reference No', maxWidth: 170 },
-    { field: 'customer_name', headerName: 'Customer' },
+    { headerName: 'Party', valueGetter: (params: any) => params.data?.customer_name || params.data?.supplier_name || '' },
     { field: 'net_amount', headerName: 'Amount', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
+    { field: 'balance_amount', headerName: 'Balance', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
     { field: 'workflow_status', headerName: 'Workflow', maxWidth: 140 },
-    { field: 'quotation_status', headerName: 'Quotation Status', maxWidth: 170 },
+    { headerName: 'Status', maxWidth: 170, valueGetter: (params: any) => params.data?.quotation_status || params.data?.workflow_status },
     { field: 'quotation_version', headerName: 'Version', maxWidth: 110 },
     { field: 'requested_at', headerName: 'Requested', maxWidth: 180, valueFormatter: (params) => this.displayDate(params.value) },
     {
@@ -74,6 +76,12 @@ export class WorkflowList {
   }
 
   review(row: any) {
+    if (row.module_name === 'SUPPLIER_PAYMENT') {
+      this.router.navigate(['/supplier-payments'], {
+        queryParams: { supplierId: row.supplier_id, purchaseId: row.reference_id }
+      });
+      return;
+    }
     this.router.navigate(['/quotations/review', row.reference_id]);
   }
 

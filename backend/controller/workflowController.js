@@ -33,12 +33,28 @@ const getWorkflowApprovals = async (req, res) => {
             `SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
                     wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
                     qm.quotation_status, qm.quotation_version, qm.quotation_date, qm.valid_until, qm.net_amount,
-                    TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS customer_name
+                    NULL AS supplier_id,
+                    TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS customer_name,
+                    NULL AS supplier_name,
+                    NULL AS purchase_date,
+                    NULL AS balance_amount
              FROM workflow_approvals wa
              LEFT JOIN quotation_master qm
                 ON wa.module_name = 'QUOTATION' AND qm.quotation_id = wa.reference_id
              LEFT JOIN customers c ON c.customer_id = qm.customer_id
-             ORDER BY wa.workflow_status = 'PENDING' DESC, wa.requested_at DESC`
+             UNION ALL
+             SELECT NULL AS workflow_id, 'SUPPLIER_PAYMENT' AS module_name, pm.purchase_id AS reference_id,
+                    pm.purchase_no AS reference_no, pm.payment_status AS workflow_status,
+                    pm.created_at AS requested_at, NULL AS reviewed_at,
+                    'Supplier payment balance pending' AS remarks,
+                    NULL AS quotation_status, NULL AS quotation_version, NULL AS quotation_date,
+                    NULL AS valid_until, pm.net_amount, pm.supplier_id,
+                    NULL AS customer_name, s.supplier_name, pm.purchase_date, pm.balance_amount
+             FROM purchase_master pm
+             JOIN suppliers s ON s.supplier_id = pm.supplier_id
+             WHERE pm.balance_amount > 0
+               AND pm.payment_status IN ('PENDING', 'PARTIAL')
+             ORDER BY workflow_status = 'PENDING' DESC, requested_at DESC`
         );
         return res.json(rows);
     } catch (error) {

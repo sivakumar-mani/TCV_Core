@@ -1,0 +1,22 @@
+<div class="form-section">
+  <h2>{{ selectedId ? 'Edit Service Ticket' : 'Service Ticket' }}</h2>
+  <form [formGroup]="form" class="module-form" (ngSubmit)="submit()">
+    <app-input-form-field [label]="'Ticket No'" [type]="'text'" [formControl]="$any(form.controls['ticket_no'])"></app-input-form-field>
+    <app-select-form-field [label]="'Customer'" [options]="customerOptions()" [formControl]="$any(form.controls['customer_id'])"></app-select-form-field>
+    <app-select-form-field [label]="'Product'" [options]="productOptions()" [formControl]="$any(form.controls['product_id'])"></app-select-form-field>
+    <app-select-form-field [label]="'Assigned To'" [options]="employeeOptions()" [formControl]="$any(form.controls['assigned_to_employee_id'])"></app-select-form-field>
+    <app-input-form-field [label]="'Opened Date'" [type]="'date'" [formControl]="$any(form.controls['opened_date'])"></app-input-form-field>
+    <app-input-form-field [label]="'Closed Date'" [type]="'date'" [formControl]="$any(form.controls['closed_date'])"></app-input-form-field>
+    <app-select-form-field [label]="'Status'" [options]="optionList(statuses)" [formControl]="$any(form.controls['service_status'])"></app-select-form-field>
+    <app-select-form-field [label]="'Priority'" [options]="optionList(priorities)" [formControl]="$any(form.controls['priority'])"></app-select-form-field>
+    <app-input-form-field [label]="'Resolution Hours'" [type]="'number'" [formControl]="$any(form.controls['resolution_time_hours'])"></app-input-form-field>
+    <app-textarea-form-field class="span-3" [label]="'Complaint Details'" [rows]="2" [control]="$any(form.controls['complaint_details'])"></app-textarea-form-field>
+    <app-textarea-form-field class="span-3" [label]="'Resolution Notes'" [rows]="2" [control]="$any(form.controls['resolution_notes'])"></app-textarea-form-field>
+    <div class="form-actions span-3">
+      <button class="btn-no" type="button" (click)="reset()">Clear</button>
+      <button class="btn-yes" type="submit" [disabled]="form.invalid">{{ selectedId ? 'Update' : 'Save' }}</button>
+    </div>
+  </form>
+</div>
+
+<app-ag-grid-list title="Service Tickets" [showAddButton]="false" [rowData]="rows" [columnDefs]="colDefs"></app-ag-grid-list>

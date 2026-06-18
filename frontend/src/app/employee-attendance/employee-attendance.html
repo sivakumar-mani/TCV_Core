@@ -1,0 +1,22 @@
+<div class="form-section">
+  <h2>{{ selectedId ? 'Edit Attendance' : 'Employee Attendance' }}</h2>
+  <form [formGroup]="form" class="module-form" (ngSubmit)="submit()">
+    <app-select-form-field [label]="'Employee'" [options]="employeeOptions()" [formControl]="$any(form.controls['employee_id'])"></app-select-form-field>
+    <app-input-form-field [label]="'Date'" [type]="'date'" [formControl]="$any(form.controls['attendance_date'])"></app-input-form-field>
+    <app-select-form-field [label]="'Status'" [options]="statusOptions()" [formControl]="$any(form.controls['status'])"></app-select-form-field>
+    <app-input-form-field [label]="'Check In'" [type]="'time'" [formControl]="$any(form.controls['check_in'])"></app-input-form-field>
+    <app-input-form-field [label]="'Check Out'" [type]="'time'" [formControl]="$any(form.controls['check_out'])"></app-input-form-field>
+    <app-textarea-form-field class="span-2" [label]="'Remarks'" [rows]="2" [control]="$any(form.controls['remarks'])"></app-textarea-form-field>
+    <div class="form-actions span-2">
+      <button class="btn-no" type="button" (click)="reset()">Clear</button>
+      <button class="btn-yes" type="submit" [disabled]="form.invalid">{{ selectedId ? 'Update' : 'Save' }}</button>
+    </div>
+  </form>
+</div>
+
+<app-ag-grid-list
+  title="Attendance List"
+  [showAddButton]="false"
+  [rowData]="rows"
+  [columnDefs]="colDefs">
+</app-ag-grid-list>

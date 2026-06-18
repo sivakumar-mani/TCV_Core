@@ -65,6 +65,7 @@ export class CustomerList {
       cellRendererParams: {
         dropdownMenu: [
           { label: 'Edit', action: (row: any) => this.editCustomer(row) },
+          { label: 'Create Quotation', action: (row: any) => this.createQuotation(row) },
           { label: 'Delete', action: (row: any) => this.deleteCustomer(row) }
         ]
       },
@@ -104,6 +105,10 @@ export class CustomerList {
 
   editCustomer(row: any) {
     this.router.navigate(['/customers/edit', row.customer_id]);
+  }
+
+  createQuotation(row: any) {
+    this.router.navigate(['/quotations/add'], { queryParams: { customerId: row.customer_id } });
   }
 
   deleteCustomer(row: any) {

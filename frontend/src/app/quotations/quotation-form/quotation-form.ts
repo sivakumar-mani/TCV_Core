@@ -107,6 +107,8 @@ export class QuotationForm implements OnDestroy {
       this.quotationId = Number(id);
       this.loadQuotation(this.quotationId);
     } else {
+      const customerId = this.route.snapshot.queryParamMap.get('customerId');
+      if (customerId) this.quotationForm.patchValue({ customer_id: customerId });
       this.quotationService.getNextQuotationNo().subscribe({
         next: (response: any) => this.quotationForm.get('quotation_no')?.setValue(response?.quotation_no || ''),
         error: (error: any) => this.commonMethods.handleError(error)

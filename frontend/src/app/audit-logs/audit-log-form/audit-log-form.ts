@@ -5,10 +5,13 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { AuditLogServices } from '../../services/audit-log-services';
 import { CommonMethods } from '../../shared/common-methods';
+import { InputFormField } from '../../shared/input-form-field/input-form-field';
+import { SelectFormField } from '../../shared/select-form-field/select-form-field';
+import { TextareaFormField } from '../../shared/textarea-form-field/textarea-form-field';
 
 @Component({
   selector: 'app-audit-log-form',
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, InputFormField, SelectFormField, TextareaFormField],
   templateUrl: './audit-log-form.html',
   styleUrl: './audit-log-form.scss',
 })
@@ -103,5 +106,12 @@ export class AuditLogForm {
 
   cancel() {
     this.router.navigateByUrl('/audit-logs');
+  }
+
+  actionOptions() {
+    return [
+      { label: 'Select Action', value: '' },
+      ...this.actions.map((action) => ({ label: action, value: action }))
+    ];
   }
 }

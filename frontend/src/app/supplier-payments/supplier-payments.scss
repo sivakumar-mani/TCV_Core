@@ -1,0 +1,35 @@
+.module-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+label {
+  display: grid;
+  gap: 5px;
+}
+
+span {
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.span-3 {
+  grid-column: span 3;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .module-form {
+    grid-template-columns: 1fr;
+  }
+
+  .span-3 {
+    grid-column: span 1;
+  }
+}

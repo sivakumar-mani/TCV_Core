@@ -46,6 +46,7 @@ export class PurchaseList {
       cellRendererParams: {
         dropdownMenu: [
           { label: 'Edit', action: (row: any) => this.editPurchase(row) },
+          { label: 'Supplier Payment', action: (row: any) => this.payPurchase(row) },
           { label: 'Delete', action: (row: any) => this.deletePurchase(row) }
         ]
       },
@@ -85,6 +86,12 @@ export class PurchaseList {
 
   editPurchase(row: any) {
     this.router.navigate(['/purchases/edit', row.purchase_id]);
+  }
+
+  payPurchase(row: any) {
+    this.router.navigate(['/supplier-payments'], {
+      queryParams: { supplierId: row.supplier_id, purchaseId: row.purchase_id }
+    });
   }
 
   deletePurchase(row: any) {

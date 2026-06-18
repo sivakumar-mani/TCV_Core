@@ -139,6 +139,46 @@ export const routes: Routes = [
             }
         },
          {
+            path:'sales',
+            loadComponent: ()=> import('./sales/sales').then(n => n.Sales),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'customer-payments',
+            loadComponent: ()=> import('./customer-payments/customer-payments').then(n => n.CustomerPayments),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'supplier-payments',
+            loadComponent: ()=> import('./supplier-payments/supplier-payments').then(n => n.SupplierPayments),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'service-tickets',
+            loadComponent: ()=> import('./service-tickets/service-tickets').then(n => n.ServiceTickets),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'warranty-master',
+            loadComponent: ()=> import('./warranty-master/warranty-master').then(n => n.WarrantyMaster),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
             path:'stock',
             loadComponent: ()=> import('./stock/stock-list/stock-list').then(n => n.StockList),
             canActivate:[RouteGuard],
@@ -277,6 +317,14 @@ export const routes: Routes = [
          {
             path:'employee-salary',
             loadComponent: ()=> import('./employee-salary/employee-salary').then(n => n.EmployeeSalary),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'employee-attendance',
+            loadComponent: ()=> import('./employee-attendance/employee-attendance').then(n => n.EmployeeAttendance),
             canActivate:[RouteGuard],
             data:{
                 expectedRole:['admin']

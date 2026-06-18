@@ -1,0 +1,21 @@
+<div class="form-section">
+  <h2>{{ selectedId ? 'Edit Supplier Payment' : 'Supplier Payment' }}</h2>
+  <form [formGroup]="form" class="module-form" (ngSubmit)="submit()">
+    <app-select-form-field [label]="'Supplier'" [options]="supplierOptions()" [formControl]="$any(form.controls['supplier_id'])"></app-select-form-field>
+    <app-select-form-field [label]="'Purchase No'" [options]="purchaseOptions()" [formControl]="$any(form.controls['purchase_id'])"></app-select-form-field>
+    <app-input-form-field [label]="'Purchased Amount'" [type]="'number'" [readonly]="true" [formControl]="$any(form.controls['purchased_amount'])"></app-input-form-field>
+    <app-input-form-field [label]="'Balance Amount'" [type]="'number'" [readonly]="true" [formControl]="$any(form.controls['balance_amount'])"></app-input-form-field>
+    <app-input-form-field [label]="'Amount'" [type]="'number'" [formControl]="$any(form.controls['amount'])"></app-input-form-field>
+    <app-input-form-field [label]="'Date'" [type]="'date'" [formControl]="$any(form.controls['payment_date'])"></app-input-form-field>
+    <app-select-form-field [label]="'Mode'" [options]="paymentModeOptions()" [formControl]="$any(form.controls['payment_mode'])"></app-select-form-field>
+    <app-input-form-field [label]="'Reference No'" [type]="'text'" [formControl]="$any(form.controls['reference_no'])"></app-input-form-field>
+    <app-select-form-field [label]="'Paid By'" [options]="employeeOptions()" [formControl]="$any(form.controls['paid_by_employee_id'])"></app-select-form-field>
+    <app-textarea-form-field class="span-3" [label]="'Narration'" [rows]="2" [control]="$any(form.controls['narration'])"></app-textarea-form-field>
+    <div class="form-actions span-3">
+      <button class="btn-no" type="button" (click)="reset()">Clear</button>
+      <button class="btn-yes" type="submit" [disabled]="form.invalid">{{ selectedId ? 'Update' : 'Save' }}</button>
+    </div>
+  </form>
+</div>
+
+<app-ag-grid-list title="Supplier Payments" [showAddButton]="false" [rowData]="rows" [columnDefs]="colDefs"></app-ag-grid-list>

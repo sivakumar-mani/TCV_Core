@@ -20,8 +20,7 @@
       <h2>Work Order Header</h2>
       <div class="row g-3">
         <div class="col-md-3">
-          <label class="form-label">Work Order No</label>
-          <input class="form-control" type="text" formControlName="work_order_no" readonly>
+          <app-input-form-field [label]="'Work Order No'" [type]="'text'" [readonly]="true" [formControl]="$any(workOrderForm.controls['work_order_no'])"></app-input-form-field>
         </div>
         <div class="col-md-3">
           <label class="form-label">Quotation</label>
@@ -33,86 +32,46 @@
           </select>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Customer</label>
-          <select class="form-control" formControlName="customer_id">
-            <option value="">Select customer</option>
-            <option *ngFor="let customer of customers" [value]="customer.customer_id">
-              {{ customer.display_customer_name || ((customer.salutation ? customer.salutation + ' ' : '') + customer.customer_name) }}
-            </option>
-          </select>
+          <app-select-form-field [label]="'Customer'" [options]="customerOptions()" [formControl]="$any(workOrderForm.controls['customer_id'])"></app-select-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Assigned To</label>
-          <select class="form-control" formControlName="assigned_to_employee_id">
-            <option value="">Select employee</option>
-            <option *ngFor="let employee of employees" [value]="employee.employee_id">
-              {{ employee.employee_code }} - {{ employee.employee_name }}
-            </option>
-          </select>
+          <app-select-form-field [label]="'Assigned To'" [options]="employeeOptions()" [formControl]="$any(workOrderForm.controls['assigned_to_employee_id'])"></app-select-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Work Type</label>
-          <select class="form-control" formControlName="work_type">
-            <option *ngFor="let type of workTypes" [value]="type">{{ type }}</option>
-          </select>
+          <app-select-form-field [label]="'Work Type'" [options]="optionList(workTypes)" [formControl]="$any(workOrderForm.controls['work_type'])"></app-select-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Status</label>
-          <select class="form-control" formControlName="work_status">
-            <option *ngFor="let status of workStatuses" [value]="status">{{ status }}</option>
-          </select>
+          <app-select-form-field [label]="'Status'" [options]="optionList(workStatuses)" [formControl]="$any(workOrderForm.controls['work_status'])"></app-select-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Priority</label>
-          <select class="form-control" formControlName="priority">
-            <option *ngFor="let priority of priorities" [value]="priority">{{ priority }}</option>
-          </select>
+          <app-select-form-field [label]="'Priority'" [options]="optionList(priorities)" [formControl]="$any(workOrderForm.controls['priority'])"></app-select-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Supervisor</label>
-          <select class="form-control" formControlName="supervisor_id">
-            <option value="">Select supervisor</option>
-            <option *ngFor="let employee of employees" [value]="employee.employee_id">
-              {{ employee.employee_code }} - {{ employee.employee_name }}
-            </option>
-          </select>
+          <app-select-form-field [label]="'Supervisor'" [options]="employeeOptions('Select supervisor')" [formControl]="$any(workOrderForm.controls['supervisor_id'])"></app-select-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Start Date</label>
-          <input class="form-control" type="date" formControlName="start_date">
+          <app-input-form-field [label]="'Start Date'" [type]="'date'" [formControl]="$any(workOrderForm.controls['start_date'])"></app-input-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Completion Date</label>
-          <input class="form-control" type="date" formControlName="completion_date">
+          <app-input-form-field [label]="'Completion Date'" [type]="'date'" [formControl]="$any(workOrderForm.controls['completion_date'])"></app-input-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Created By</label>
-          <select class="form-control" formControlName="created_by_employee_id">
-            <option value="">Select employee</option>
-            <option *ngFor="let employee of employees" [value]="employee.employee_id">
-              {{ employee.employee_code }} - {{ employee.employee_name }}
-            </option>
-          </select>
+          <app-select-form-field [label]="'Created By'" [options]="employeeOptions()" [formControl]="$any(workOrderForm.controls['created_by_employee_id'])"></app-select-form-field>
         </div>
         <div class="col-md-3">
-          <label class="form-label">Site Contact Phone</label>
-          <input class="form-control" type="text" formControlName="site_contact_phone">
+          <app-input-form-field [label]="'Site Contact Phone'" [type]="'text'" [formControl]="$any(workOrderForm.controls['site_contact_phone'])"></app-input-form-field>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Site Contact Person</label>
-          <input class="form-control" type="text" formControlName="site_contact_person">
+          <app-input-form-field [label]="'Site Contact Person'" [type]="'text'" [formControl]="$any(workOrderForm.controls['site_contact_person'])"></app-input-form-field>
         </div>
         <div class="col-md-8">
-          <label class="form-label">Site Address</label>
-          <input class="form-control" type="text" formControlName="site_address">
+          <app-input-form-field [label]="'Site Address'" [type]="'text'" [formControl]="$any(workOrderForm.controls['site_address'])"></app-input-form-field>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Work Notes</label>
-          <textarea class="form-control" rows="2" formControlName="work_notes"></textarea>
+          <app-textarea-form-field [label]="'Work Notes'" [rows]="2" [control]="$any(workOrderForm.controls['work_notes'])"></app-textarea-form-field>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Completion Remarks</label>
-          <textarea class="form-control" rows="2" formControlName="completion_remarks"></textarea>
+          <app-textarea-form-field [label]="'Completion Remarks'" [rows]="2" [control]="$any(workOrderForm.controls['completion_remarks'])"></app-textarea-form-field>
         </div>
       </div>
     </section>

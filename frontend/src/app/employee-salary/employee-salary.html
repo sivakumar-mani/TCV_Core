@@ -20,46 +20,28 @@
         <h2>Salary Header</h2>
         <div class="row g-3">
           <div class="col-md-4">
-            <label class="form-label">Employee</label>
-            <select class="form-control" formControlName="employee_id">
-              <option value="">Select employee</option>
-              <option *ngFor="let employee of employees" [value]="employee.employee_id">
-                {{ employee.employee_code }} - {{ employee.employee_name || (employee.first_name + ' ' + employee.last_name) }}
-              </option>
-            </select>
+            <app-select-form-field [label]="'Employee'" [options]="employeeOptions()" [formControl]="$any(salaryForm.controls['employee_id'])"></app-select-form-field>
           </div>
           <div class="col-md-4">
-            <label class="form-label">Company Name</label>
-            <input class="form-control" type="text" formControlName="company_name">
+            <app-input-form-field [label]="'Company Name'" [type]="'text'" [formControl]="$any(salaryForm.controls['company_name'])"></app-input-form-field>
           </div>
           <div class="col-md-2">
-            <label class="form-label">Salary Month</label>
-            <select class="form-control" formControlName="salary_month">
-              <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
-            </select>
+            <app-select-form-field [label]="'Salary Month'" [options]="months" [formControl]="$any(salaryForm.controls['salary_month'])"></app-select-form-field>
           </div>
           <div class="col-md-2">
-            <label class="form-label">Salary Year</label>
-            <input class="form-control" type="number" formControlName="salary_year">
+            <app-input-form-field [label]="'Salary Year'" [type]="'number'" [formControl]="$any(salaryForm.controls['salary_year'])"></app-input-form-field>
           </div>
           <div class="col-md-3">
-            <label class="form-label">Start Date</label>
-            <input class="form-control" type="date" formControlName="period_start_date">
+            <app-input-form-field [label]="'Start Date'" [type]="'date'" [formControl]="$any(salaryForm.controls['period_start_date'])"></app-input-form-field>
           </div>
           <div class="col-md-3">
-            <label class="form-label">End Date</label>
-            <input class="form-control" type="date" formControlName="period_end_date">
+            <app-input-form-field [label]="'End Date'" [type]="'date'" [formControl]="$any(salaryForm.controls['period_end_date'])"></app-input-form-field>
           </div>
           <div class="col-md-3">
-            <label class="form-label">Status</label>
-            <select class="form-control" formControlName="status">
-              <option value="FINAL">Final</option>
-              <option value="DRAFT">Draft</option>
-            </select>
+            <app-select-form-field [label]="'Status'" [options]="statusOptions()" [formControl]="$any(salaryForm.controls['status'])"></app-select-form-field>
           </div>
           <div class="col-md-3">
-            <label class="form-label">Remarks</label>
-            <input class="form-control" type="text" formControlName="remarks">
+            <app-input-form-field [label]="'Remarks'" [type]="'text'" [formControl]="$any(salaryForm.controls['remarks'])"></app-input-form-field>
           </div>
         </div>
       </div>

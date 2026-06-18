@@ -1,0 +1,23 @@
+<div class="form-section">
+  <h2>{{ selectedId ? 'Edit Warranty' : 'Warranty Master' }}</h2>
+  <form [formGroup]="form" class="module-form" (ngSubmit)="submit()">
+    <app-input-form-field [label]="'Warranty No'" [type]="'text'" [formControl]="$any(form.controls['warranty_no'])"></app-input-form-field>
+    <app-select-form-field [label]="'Customer'" [options]="customerOptions()" [formControl]="$any(form.controls['customer_id'])"></app-select-form-field>
+    <app-select-form-field [label]="'Product'" [options]="productOptions()" [formControl]="$any(form.controls['product_id'])"></app-select-form-field>
+    <app-input-form-field [label]="'Serial No'" [type]="'text'" [formControl]="$any(form.controls['serial_no'])"></app-input-form-field>
+    <app-input-form-field [label]="'Start Date'" [type]="'date'" [formControl]="$any(form.controls['warranty_start_date'])"></app-input-form-field>
+    <app-input-form-field [label]="'End Date'" [type]="'date'" [formControl]="$any(form.controls['warranty_end_date'])"></app-input-form-field>
+    <app-select-form-field [label]="'Type'" [options]="optionList(warrantyTypes)" [formControl]="$any(form.controls['warranty_type'])"></app-select-form-field>
+    <app-select-form-field [label]="'Status'" [options]="optionList(warrantyStatuses)" [formControl]="$any(form.controls['warranty_status'])"></app-select-form-field>
+    <app-input-form-field [label]="'Coverage'" [type]="'text'" [formControl]="$any(form.controls['coverage_type'])"></app-input-form-field>
+    <app-input-form-field [label]="'Cost'" [type]="'number'" [formControl]="$any(form.controls['warranty_cost'])"></app-input-form-field>
+    <app-input-form-field [label]="'Claims'" [type]="'number'" [formControl]="$any(form.controls['claims_count'])"></app-input-form-field>
+    <app-textarea-form-field class="span-3" [label]="'Remarks'" [rows]="2" [control]="$any(form.controls['remarks'])"></app-textarea-form-field>
+    <div class="form-actions span-3">
+      <button class="btn-no" type="button" (click)="reset()">Clear</button>
+      <button class="btn-yes" type="submit" [disabled]="form.invalid">{{ selectedId ? 'Update' : 'Save' }}</button>
+    </div>
+  </form>
+</div>
+
+<app-ag-grid-list title="Warranty Master" [showAddButton]="false" [rowData]="rows" [columnDefs]="colDefs"></app-ag-grid-list>

@@ -9,10 +9,13 @@ import { ProductService } from '../../services/product-service';
 import { QuotationServices } from '../../services/quotation-services';
 import { WorkOrderServices } from '../../services/work-order-services';
 import { CommonMethods } from '../../shared/common-methods';
+import { InputFormField } from '../../shared/input-form-field/input-form-field';
+import { SelectFormField } from '../../shared/select-form-field/select-form-field';
+import { TextareaFormField } from '../../shared/textarea-form-field/textarea-form-field';
 
 @Component({
   selector: 'app-work-order-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField],
   templateUrl: './work-order-form.html',
   styleUrl: './work-order-form.scss',
 })
@@ -148,6 +151,30 @@ export class WorkOrderForm {
       },
       error: (error: any) => this.commonMethods.handleError(error)
     });
+  }
+
+  customerOptions() {
+    return [
+      { label: 'Select customer', value: '' },
+      ...this.customers.map((customer) => ({
+        label: customer.display_customer_name || ((customer.salutation ? customer.salutation + ' ' : '') + customer.customer_name),
+        value: customer.customer_id
+      }))
+    ];
+  }
+
+  employeeOptions(label = 'Select employee') {
+    return [
+      { label, value: '' },
+      ...this.employees.map((employee) => ({
+        label: `${employee.employee_code} - ${employee.employee_name}`,
+        value: employee.employee_id
+      }))
+    ];
+  }
+
+  optionList(values: string[]) {
+    return values.map((value) => ({ label: value, value }));
   }
 
   loadWorkOrder(workOrderId: number) {

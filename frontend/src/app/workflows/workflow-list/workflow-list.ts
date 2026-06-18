@@ -29,11 +29,12 @@ export class WorkflowList {
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
     { field: 'module_name', headerName: 'Module', maxWidth: 140 },
     { field: 'reference_no', headerName: 'Reference No', maxWidth: 170 },
-    { field: 'customer_name', headerName: 'Customer' },
-    { field: 'quotation_date', headerName: 'Quotation Date', maxWidth: 150, valueFormatter: (params) => this.displayDate(params.value) },
+    { headerName: 'Party', valueGetter: (params: any) => params.data?.customer_name || params.data?.supplier_name || '' },
+    { headerName: 'Date', maxWidth: 150, valueGetter: (params: any) => params.data?.quotation_date || params.data?.purchase_date, valueFormatter: (params) => this.displayDate(params.value) },
     { field: 'net_amount', headerName: 'Amount', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
-    { field: 'quotation_status', headerName: 'Quote Status', maxWidth: 150 },
-    { field: 'workflow_status', headerName: 'Approval Status', maxWidth: 160 },
+    { field: 'balance_amount', headerName: 'Balance', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
+    { headerName: 'Status', maxWidth: 160, valueGetter: (params: any) => params.data?.quotation_status || params.data?.workflow_status },
+    { field: 'workflow_status', headerName: 'Workflow', maxWidth: 160 },
     { field: 'requested_at', headerName: 'Requested At', maxWidth: 180, valueFormatter: (params) => this.displayDateTime(params.value) },
     {
       headerName: 'Action',
@@ -77,6 +78,10 @@ export class WorkflowList {
   review(row: any) {
     if (row.module_name === 'QUOTATION') {
       this.router.navigate(['/quotations/preview', row.reference_id]);
+    } else if (row.module_name === 'SUPPLIER_PAYMENT') {
+      this.router.navigate(['/supplier-payments'], {
+        queryParams: { supplierId: row.supplier_id, purchaseId: row.reference_id }
+      });
     }
   }
 

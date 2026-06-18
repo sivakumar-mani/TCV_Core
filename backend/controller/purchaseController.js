@@ -376,7 +376,7 @@ const addPurchase = async (req, res) => {
                 summary.paid_amount,
                 summary.balance_amount,
                 purchaseStatus,
-                payload.payment_status || summary.payment_status,
+                summary.payment_status,
                 payload.remarks || null,
                 toSqlDate(receivedDate),
                 payload.created_by_employee_id || null
@@ -473,7 +473,7 @@ const updatePurchase = async (req, res) => {
                 summary.paid_amount,
                 summary.balance_amount,
                 purchaseStatus,
-                payload.payment_status || summary.payment_status,
+                summary.payment_status,
                 payload.remarks || null,
                 toSqlDate(receivedDate),
                 payload.created_by_employee_id || null,

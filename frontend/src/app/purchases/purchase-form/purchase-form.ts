@@ -73,6 +73,8 @@ export class PurchaseForm {
       this.purchaseId = Number(id);
       this.loadPurchase(this.purchaseId);
     } else {
+      const supplierId = this.route.snapshot.queryParamMap.get('supplierId');
+      if (supplierId) this.purchaseForm.patchValue({ supplier_id: supplierId });
       this.purchaseService.getNextPurchaseNo().subscribe({
         next: (response: any) => this.purchaseForm.get('purchase_no')?.setValue(response?.purchase_no || ''),
         error: (error: any) => this.commonMethods.handleError(error)
