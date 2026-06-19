@@ -22,10 +22,14 @@ export class Sales {
   form!: FormGroup;
   rows: any[] = [];
   customers: any[] = [];
+  customerOptionList: { label: string; value: string | number }[] = [{ label: 'Select customer', value: '' }];
   selectedId: number | null = null;
   paymentModes = ['CASH', 'CARD', 'UPI', 'BANK', 'CHEQUE', 'CREDIT'];
   paymentStatuses = ['PENDING', 'PARTIAL', 'PAID', 'OVERDUE'];
   salesStatuses = ['DRAFT', 'COMPLETED', 'CANCELLED', 'RETURNED'];
+  paymentModeOptions = this.optionList(this.paymentModes);
+  paymentStatusOptions = this.optionList(this.paymentStatuses);
+  salesStatusOptions = this.optionList(this.salesStatuses);
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
@@ -80,7 +84,16 @@ export class Sales {
 
   loadCustomers() {
     this.customerService.getCustomers().subscribe({
-      next: (response: any) => this.customers = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.customers = Array.isArray(response) ? response : response.data ?? [];
+        this.customerOptionList = [
+          { label: 'Select customer', value: '' },
+          ...this.customers.map((customer) => ({
+            label: customer.display_customer_name || customer.customer_name,
+            value: customer.customer_id
+          }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }
@@ -154,16 +167,6 @@ export class Sales {
 
   money(value: any) {
     return `Rs. ${(Number(value) || 0).toFixed(2)}`;
-  }
-
-  customerOptions() {
-    return [
-      { label: 'Select customer', value: '' },
-      ...this.customers.map((customer) => ({
-        label: customer.display_customer_name || customer.customer_name,
-        value: customer.customer_id
-      }))
-    ];
   }
 
   optionList(values: string[]) {

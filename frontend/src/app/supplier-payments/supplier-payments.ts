@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ColDef } from 'ag-grid-community';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { EmployeeServices } from '../services/employee-services';
@@ -27,8 +27,15 @@ export class SupplierPayments {
   suppliers: any[] = [];
   employees: any[] = [];
   purchases: any[] = [];
+  supplierOptionList: { label: string; value: string | number }[] = [{ label: 'Select supplier', value: '' }];
+  employeeOptionList: { label: string; value: string | number }[] = [{ label: 'Select employee', value: '' }];
+  purchaseOptionList: { label: string; value: string | number }[] = [{ label: 'Select purchase no', value: '' }];
   selectedId: number | null = null;
+  isListMode = true;
+  isEditMode = false;
+  private isApplyingRouteData = false;
   paymentModes = ['CASH', 'CARD', 'UPI', 'BANK', 'CHEQUE', 'ONLINE'];
+  paymentModeOptionList = this.paymentModes.map((mode) => ({ label: mode, value: mode }));
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
@@ -61,10 +68,13 @@ export class SupplierPayments {
     private employeeService: EmployeeServices,
     private ngxLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit() {
+    this.isEditMode = Boolean(this.route.snapshot.paramMap.get('id'));
+    this.isListMode = !this.router.url.includes('/supplier-payments/add') && !this.isEditMode;
     this.form = this.fb.group({
       supplier_id: ['', Validators.required],
       purchase_id: ['', Validators.required],
@@ -78,20 +88,40 @@ export class SupplierPayments {
       paid_by_employee_id: ['']
     });
     this.form.get('supplier_id')?.valueChanges.subscribe(() => {
+      if (this.isApplyingRouteData) return;
       this.form.patchValue({ purchase_id: '', purchased_amount: 0, balance_amount: 0 }, { emitEvent: false });
+      this.refreshPurchaseOptions();
     });
-    this.form.get('purchase_id')?.valueChanges.subscribe(() => this.updateSelectedPurchaseAmounts());
-    this.loadLookups();
-    this.loadRows();
+    this.form.get('purchase_id')?.valueChanges.subscribe(() => {
+      this.refreshPurchaseOptions();
+      this.updateSelectedPurchaseAmounts();
+    });
+    if (this.isListMode) {
+      this.loadRows();
+    } else {
+      this.loadLookups();
+    }
   }
 
   loadLookups() {
     this.supplierService.getSuppliers().subscribe({
-      next: (response: any) => this.suppliers = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.suppliers = Array.isArray(response) ? response : response.data ?? [];
+        this.supplierOptionList = [
+          { label: 'Select supplier', value: '' },
+          ...this.suppliers.map((supplier) => ({ label: supplier.supplier_name, value: supplier.supplier_id }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
     this.employeeService.getEmployees().subscribe({
-      next: (response: any) => this.employees = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.employees = Array.isArray(response) ? response : response.data ?? [];
+        this.employeeOptionList = [
+          { label: 'Select employee', value: '' },
+          ...this.employees.map((employee) => ({ label: employee.employee_name, value: employee.employee_id }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
     this.loadPurchases();
@@ -101,7 +131,8 @@ export class SupplierPayments {
     this.purchaseService.getPurchases().subscribe({
       next: (response: any) => {
         this.purchases = Array.isArray(response) ? response : response.data ?? [];
-        this.applyQueryParams();
+        this.applyRouteData();
+        this.refreshPurchaseOptions();
         this.updateSelectedPurchaseAmounts();
       },
       error: (error: any) => this.commonMethods.handleError(error)
@@ -136,21 +167,14 @@ export class SupplierPayments {
     request.subscribe({
       next: (response: any) => {
         this.commonMethods.handleTokenAndMessage(response);
-        this.reset();
-        this.loadPurchases();
-        this.loadRows();
+        this.router.navigateByUrl('/supplier-payments');
       },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }
 
   edit(row: any) {
-    this.selectedId = row.payment_id;
-    this.form.patchValue({
-      ...row,
-      payment_date: this.toInputDate(row.payment_date)
-    });
-    this.updateSelectedPurchaseAmounts();
+    this.router.navigate(['/supplier-payments/edit', row.payment_id]);
   }
 
   delete(row: any) {
@@ -170,17 +194,63 @@ export class SupplierPayments {
     this.form.reset({ amount: 0, payment_date: this.toInputDate(new Date()), payment_mode: 'CASH', purchased_amount: 0, balance_amount: 0 });
   }
 
-  applyQueryParams() {
+  addPayment() {
+    this.router.navigateByUrl('/supplier-payments/add');
+  }
+
+  cancel() {
+    this.router.navigateByUrl('/supplier-payments');
+  }
+
+  applyRouteData() {
+    if (this.isEditMode) {
+      this.loadPaymentForEdit(Number(this.route.snapshot.paramMap.get('id')));
+      return;
+    }
+
     const supplierId = this.route.snapshot.queryParamMap.get('supplierId');
     const purchaseId = this.route.snapshot.queryParamMap.get('purchaseId');
     if (!supplierId && !purchaseId) return;
 
     const purchase = purchaseId ? this.purchases.find((item) => Number(item.purchase_id) === Number(purchaseId)) : null;
+    this.isApplyingRouteData = true;
     this.form.patchValue({
-      supplier_id: supplierId || purchase?.supplier_id || '',
+      supplier_id: supplierId || purchase?.supplier_id ? Number(supplierId || purchase?.supplier_id) : '',
       purchase_id: purchaseId ? Number(purchaseId) : ''
-    });
+    }, { emitEvent: false });
+    this.isApplyingRouteData = false;
+    this.refreshPurchaseOptions();
     this.updateSelectedPurchaseAmounts();
+  }
+
+  loadPaymentForEdit(paymentId: number) {
+    if (!paymentId || this.selectedId === paymentId) return;
+    this.ngxLoader.start();
+    this.paymentService.getPayments().subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        const rows = response?.data ?? [];
+        const payment = rows.find((item: any) => Number(item.payment_id) === paymentId);
+        if (!payment) {
+          this.commonMethods.handleError({ error: { message: 'Supplier payment not found' } });
+          this.router.navigateByUrl('/supplier-payments');
+          return;
+        }
+        this.selectedId = payment.payment_id;
+        this.isApplyingRouteData = true;
+        this.form.patchValue({
+          ...payment,
+          payment_date: this.toInputDate(payment.payment_date)
+        }, { emitEvent: false });
+        this.isApplyingRouteData = false;
+        this.refreshPurchaseOptions();
+        this.updateSelectedPurchaseAmounts();
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleError(error);
+      }
+    });
   }
 
   filteredPurchases() {
@@ -191,6 +261,16 @@ export class SupplierPayments {
       Number(purchase.supplier_id) === supplierId &&
       (Number(purchase.balance_amount) > 0 || Number(purchase.purchase_id) === selectedPurchaseId)
     );
+  }
+
+  refreshPurchaseOptions() {
+    this.purchaseOptionList = [
+      { label: 'Select purchase no', value: '' },
+      ...this.filteredPurchases().map((purchase) => ({
+        label: `${purchase.purchase_no}`,
+        value: purchase.purchase_id
+      }))
+    ];
   }
 
   selectedPurchases() {
@@ -217,34 +297,6 @@ export class SupplierPayments {
 
   balanceAmount() {
     return this.toNumber(this.form?.get('balance_amount')?.value);
-  }
-
-  supplierOptions() {
-    return [
-      { label: 'Select supplier', value: '' },
-      ...this.suppliers.map((supplier) => ({ label: supplier.supplier_name, value: supplier.supplier_id }))
-    ];
-  }
-
-  purchaseOptions() {
-    return [
-      { label: 'Select purchase no', value: '' },
-      ...this.filteredPurchases().map((purchase) => ({
-        label: `${purchase.purchase_no} - Balance ${this.money(purchase.balance_amount)}`,
-        value: purchase.purchase_id
-      }))
-    ];
-  }
-
-  employeeOptions() {
-    return [
-      { label: 'Select employee', value: '' },
-      ...this.employees.map((employee) => ({ label: employee.employee_name, value: employee.employee_id }))
-    ];
-  }
-
-  paymentModeOptions() {
-    return this.paymentModes.map((mode) => ({ label: mode, value: mode }));
   }
 
   toInputDate(value: string | Date) {

@@ -22,9 +22,11 @@ export class EmployeeAttendance {
   form!: FormGroup;
   rows: any[] = [];
   employees: any[] = [];
+  employeeOptionList: { label: string; value: string | number }[] = [{ label: 'Select employee', value: '' }];
   selectedId: number | null = null;
 
   statuses = ['PRESENT', 'ABSENT', 'HALF_DAY', 'LEAVE', 'HOLIDAY'];
+  statusOptionList = this.statuses.map((status) => ({ label: status, value: status }));
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
@@ -73,7 +75,16 @@ export class EmployeeAttendance {
 
   loadEmployees() {
     this.employeeService.getEmployees().subscribe({
-      next: (response: any) => this.employees = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.employees = Array.isArray(response) ? response : response.data ?? [];
+        this.employeeOptionList = [
+          { label: 'Select employee', value: '' },
+          ...this.employees.map((employee) => ({
+            label: `${employee.employee_code} - ${employee.employee_name}`,
+            value: employee.employee_id
+          }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }
@@ -147,17 +158,4 @@ export class EmployeeAttendance {
     return `${`${date.getDate()}`.padStart(2, '0')}/${`${date.getMonth() + 1}`.padStart(2, '0')}/${date.getFullYear()}`;
   }
 
-  employeeOptions() {
-    return [
-      { label: 'Select employee', value: '' },
-      ...this.employees.map((employee) => ({
-        label: `${employee.employee_code} - ${employee.employee_name}`,
-        value: employee.employee_id
-      }))
-    ];
-  }
-
-  statusOptions() {
-    return this.statuses.map((status) => ({ label: status, value: status }));
-  }
 }

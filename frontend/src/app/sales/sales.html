@@ -3,15 +3,15 @@
   <form [formGroup]="form" class="module-form" (ngSubmit)="submit()">
     <app-input-form-field [label]="'Invoice No'" [type]="'text'" [formControl]="$any(form.controls['invoice_no'])"></app-input-form-field>
     <app-input-form-field [label]="'Date'" [type]="'date'" [formControl]="$any(form.controls['invoice_date'])"></app-input-form-field>
-    <app-select-form-field [label]="'Customer'" [options]="customerOptions()" [formControl]="$any(form.controls['customer_id'])"></app-select-form-field>
+    <app-select-form-field [label]="'Customer'" [options]="customerOptionList" [formControl]="$any(form.controls['customer_id'])"></app-select-form-field>
     <app-input-form-field [label]="'Total'" [type]="'number'" [formControl]="$any(form.controls['total_amount'])"></app-input-form-field>
     <app-input-form-field [label]="'Discount'" [type]="'number'" [formControl]="$any(form.controls['discount_amount'])"></app-input-form-field>
     <app-input-form-field [label]="'Tax'" [type]="'number'" [formControl]="$any(form.controls['tax_amount'])"></app-input-form-field>
     <app-input-form-field [label]="'Net'" [type]="'number'" [formControl]="$any(form.controls['net_amount'])"></app-input-form-field>
     <app-input-form-field [label]="'Paid'" [type]="'number'" [formControl]="$any(form.controls['paid_amount'])"></app-input-form-field>
-    <app-select-form-field [label]="'Payment Mode'" [options]="optionList(paymentModes)" [formControl]="$any(form.controls['payment_mode'])"></app-select-form-field>
-    <app-select-form-field [label]="'Payment Status'" [options]="optionList(paymentStatuses)" [formControl]="$any(form.controls['payment_status'])"></app-select-form-field>
-    <app-select-form-field [label]="'Sales Status'" [options]="optionList(salesStatuses)" [formControl]="$any(form.controls['sales_status'])"></app-select-form-field>
+    <app-select-form-field [label]="'Payment Mode'" [options]="paymentModeOptions" [formControl]="$any(form.controls['payment_mode'])"></app-select-form-field>
+    <app-select-form-field [label]="'Payment Status'" [options]="paymentStatusOptions" [formControl]="$any(form.controls['payment_status'])"></app-select-form-field>
+    <app-select-form-field [label]="'Sales Status'" [options]="salesStatusOptions" [formControl]="$any(form.controls['sales_status'])"></app-select-form-field>
     <app-input-form-field [label]="'Due Date'" [type]="'date'" [formControl]="$any(form.controls['due_date'])"></app-input-form-field>
     <app-textarea-form-field class="span-3" [label]="'Remarks'" [rows]="2" [control]="$any(form.controls['remarks'])"></app-textarea-form-field>
     <div class="form-actions span-3">

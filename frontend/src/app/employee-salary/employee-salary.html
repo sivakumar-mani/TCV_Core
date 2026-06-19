@@ -20,7 +20,7 @@
         <h2>Salary Header</h2>
         <div class="row g-3">
           <div class="col-md-4">
-            <app-select-form-field [label]="'Employee'" [options]="employeeOptions()" [formControl]="$any(salaryForm.controls['employee_id'])"></app-select-form-field>
+            <app-select-form-field [label]="'Employee'" [options]="employeeOptionList" [formControl]="$any(salaryForm.controls['employee_id'])"></app-select-form-field>
           </div>
           <div class="col-md-4">
             <app-input-form-field [label]="'Company Name'" [type]="'text'" [formControl]="$any(salaryForm.controls['company_name'])"></app-input-form-field>
@@ -38,7 +38,7 @@
             <app-input-form-field [label]="'End Date'" [type]="'date'" [formControl]="$any(salaryForm.controls['period_end_date'])"></app-input-form-field>
           </div>
           <div class="col-md-3">
-            <app-select-form-field [label]="'Status'" [options]="statusOptions()" [formControl]="$any(salaryForm.controls['status'])"></app-select-form-field>
+            <app-select-form-field [label]="'Status'" [options]="statusOptionList" [formControl]="$any(salaryForm.controls['status'])"></app-select-form-field>
           </div>
           <div class="col-md-3">
             <app-input-form-field [label]="'Remarks'" [type]="'text'" [formControl]="$any(salaryForm.controls['remarks'])"></app-input-form-field>

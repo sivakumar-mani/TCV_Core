@@ -2,7 +2,7 @@
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
-      <li class="breadcrumb-item active" aria-current="page">Suppliers</li>
+      <li class="breadcrumb-item"><a routerLink="/suppliers">Suppliers</a></li>
       <li class="breadcrumb-item active" aria-current="page">{{ isEditMode ? 'Edit Supplier' : 'Add Supplier' }}</li>
     </ol>
   </nav>
@@ -15,39 +15,53 @@
   </div>
 
   <form [formGroup]="supplierForm">
-    <div class="grid-2-col mt-4">
-      <app-input-form-field [label]="'Supplier Name'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-        [type]="'text'" [formControl]="$any(supplierForm.controls['supplier_name'])"></app-input-form-field>
+    <div class="form-section">
+      <h2>Basic Details</h2>
+      <div class="grid-2-col mt-4">
+        <app-input-form-field [label]="'Supplier Name'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(supplierForm.controls['supplier_name'])"></app-input-form-field>
 
-      <app-input-form-field [label]="'Contact Person'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-        [type]="'text'" [formControl]="$any(supplierForm.controls['contact_person'])"></app-input-form-field>
+        <app-input-form-field [label]="'Contact Person'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(supplierForm.controls['contact_person'])"></app-input-form-field>
 
-      <app-input-form-field [label]="'Phone'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-        [type]="'text'" [formControl]="$any(supplierForm.controls['phone'])"></app-input-form-field>
-
-      <app-input-form-field [label]="'Email'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-        [type]="'email'" [formControl]="$any(supplierForm.controls['email'])"></app-input-form-field>
-
-      <app-input-form-field [label]="'GST No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-        [type]="'text'" [formControl]="$any(supplierForm.controls['gst_no'])"></app-input-form-field>
-
-      <app-select-form-field [label]="'State'" [labelClass]="'form-label'" [selectClass]="'form-control'"
-        [options]="stateOptions" [formControl]="$any(supplierForm.controls['state'])"></app-select-form-field>
-
-      <app-select-form-field [label]="'City/District'" [labelClass]="'form-label'" [selectClass]="'form-control'"
-        [options]="districtOptions" [formControl]="$any(supplierForm.controls['city_district'])"></app-select-form-field>
-
-      <app-input-form-field [label]="'Pincode'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-        [type]="'text'" [formControl]="$any(supplierForm.controls['pincode'])"></app-input-form-field>
-
-      <app-select-form-field [label]="'Status'" [labelClass]="'form-label'" [selectClass]="'form-control'"
-        [options]="statusList" [formControl]="$any(supplierForm.controls['status'])"></app-select-form-field>
+        <app-select-form-field [label]="'Status'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="statusList" [formControl]="$any(supplierForm.controls['status'])"></app-select-form-field>
+      </div>
     </div>
 
-    <div class="grid-1-col mt-2">
-      <app-textarea-form-field [label]="'Address'" [classLabel]="'form-label'" [rows]="3"
-        [placeholder]="'Enter address'" [control]="$any(supplierForm.controls['address'])">
-      </app-textarea-form-field>
+    <div class="form-section">
+      <h2>Contact</h2>
+      <div class="grid-2-col mt-4">
+        <app-input-form-field [label]="'Phone'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'tel'" [maxLength]="10" [inputMode]="'numeric'" [numericOnly]="true"
+          [formControl]="$any(supplierForm.controls['phone'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'Email'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'email'" [formControl]="$any(supplierForm.controls['email'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'GST No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(supplierForm.controls['gst_no'])"></app-input-form-field>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Address</h2>
+      <div class="grid-1-col mt-4">
+        <app-textarea-form-field [label]="'Address'" [classLabel]="'form-label'" [rows]="3"
+          [placeholder]="'Enter address'" [control]="$any(supplierForm.controls['address'])">
+        </app-textarea-form-field>
+      </div>
+
+      <div class="grid-2-col mt-4">
+        <app-select-form-field [label]="'State'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="stateOptions" [formControl]="$any(supplierForm.controls['state'])"></app-select-form-field>
+
+        <app-select-form-field [label]="'City/District'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="districtOptions" [formControl]="$any(supplierForm.controls['city_district'])"></app-select-form-field>
+
+        <app-input-form-field [label]="'Pincode'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(supplierForm.controls['pincode'])"></app-input-form-field>
+      </div>
     </div>
 
     <div class="form-actions">

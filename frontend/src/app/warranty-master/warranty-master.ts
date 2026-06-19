@@ -24,9 +24,13 @@ export class WarrantyMaster {
   rows: any[] = [];
   customers: any[] = [];
   products: any[] = [];
+  customerOptionList: { label: string; value: string | number }[] = [{ label: 'Select customer', value: '' }];
+  productOptionList: { label: string; value: string | number }[] = [{ label: 'Select product', value: '' }];
   selectedId: number | null = null;
   warrantyTypes = ['MANUFACTURER', 'EXTENDED', 'VOID'];
   warrantyStatuses = ['ACTIVE', 'EXPIRED', 'CLAIMED', 'VOID'];
+  warrantyTypeOptionList = this.optionList(this.warrantyTypes);
+  warrantyStatusOptionList = this.optionList(this.warrantyStatuses);
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
@@ -81,8 +85,29 @@ export class WarrantyMaster {
   }
 
   loadLookups() {
-    this.customerService.getCustomers().subscribe({ next: (r: any) => this.customers = Array.isArray(r) ? r : r.data ?? [], error: (e: any) => this.commonMethods.handleError(e) });
-    this.productService.getProduct().subscribe({ next: (r: any) => this.products = Array.isArray(r) ? r : r.data ?? [], error: (e: any) => this.commonMethods.handleError(e) });
+    this.customerService.getCustomers().subscribe({
+      next: (r: any) => {
+        this.customers = Array.isArray(r) ? r : r.data ?? [];
+        this.customerOptionList = [
+          { label: 'Select customer', value: '' },
+          ...this.customers.map((customer) => ({
+            label: customer.display_customer_name || customer.customer_name,
+            value: customer.customer_id
+          }))
+        ];
+      },
+      error: (e: any) => this.commonMethods.handleError(e)
+    });
+    this.productService.getProduct().subscribe({
+      next: (r: any) => {
+        this.products = Array.isArray(r) ? r : r.data ?? [];
+        this.productOptionList = [
+          { label: 'Select product', value: '' },
+          ...this.products.map((product) => ({ label: product.product_name, value: product.product_id }))
+        ];
+      },
+      error: (e: any) => this.commonMethods.handleError(e)
+    });
   }
 
   loadRows() {
@@ -139,23 +164,6 @@ export class WarrantyMaster {
     if (!value) return '';
     const date = new Date(value);
     return `${`${date.getDate()}`.padStart(2, '0')}/${`${date.getMonth() + 1}`.padStart(2, '0')}/${date.getFullYear()}`;
-  }
-
-  customerOptions() {
-    return [
-      { label: 'Select customer', value: '' },
-      ...this.customers.map((customer) => ({
-        label: customer.display_customer_name || customer.customer_name,
-        value: customer.customer_id
-      }))
-    ];
-  }
-
-  productOptions() {
-    return [
-      { label: 'Select product', value: '' },
-      ...this.products.map((product) => ({ label: product.product_name, value: product.product_id }))
-    ];
   }
 
   optionList(values: string[]) {

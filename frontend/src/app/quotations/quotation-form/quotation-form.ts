@@ -8,10 +8,13 @@ import { EmployeeServices } from '../../services/employee-services';
 import { ProductService } from '../../services/product-service';
 import { QuotationServices } from '../../services/quotation-services';
 import { CommonMethods } from '../../shared/common-methods';
+import { InputFormField } from '../../shared/input-form-field/input-form-field';
+import { SelectFormField } from '../../shared/select-form-field/select-form-field';
+import { TextareaFormField } from '../../shared/textarea-form-field/textarea-form-field';
 
 @Component({
   selector: 'app-quotation-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField],
   templateUrl: './quotation-form.html',
   styleUrl: './quotation-form.scss',
 })
@@ -20,6 +23,8 @@ export class QuotationForm implements OnDestroy {
   customers: any[] = [];
   employees: any[] = [];
   products: any[] = [];
+  customerOptionList: { label: string; value: string | number }[] = [{ label: 'Select customer', value: '' }];
+  employeeOptionList: { label: string; value: string | number }[] = [{ label: 'Select employee', value: '' }];
   productSearchTerms: string[] = [];
   activeProductDropdownIndex: number | null = null;
   activeProductInputElement: Element | null = null;
@@ -118,7 +123,16 @@ export class QuotationForm implements OnDestroy {
 
   loadCustomers() {
     this.customerService.getCustomers().subscribe({
-      next: (response: any) => this.customers = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.customers = Array.isArray(response) ? response : response.data ?? [];
+        this.customerOptionList = [
+          { label: 'Select customer', value: '' },
+          ...this.customers.map((customer) => ({
+            label: customer.display_customer_name || ((customer.salutation ? customer.salutation + ' ' : '') + customer.customer_name),
+            value: customer.customer_id
+          }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }
@@ -135,7 +149,16 @@ export class QuotationForm implements OnDestroy {
 
   loadEmployees() {
     this.employeeService.getEmployees().subscribe({
-      next: (response: any) => this.employees = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.employees = Array.isArray(response) ? response : response.data ?? [];
+        this.employeeOptionList = [
+          { label: 'Select employee', value: '' },
+          ...this.employees.map((employee) => ({
+            label: `${employee.employee_code} - ${employee.employee_name}`,
+            value: employee.employee_id
+          }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }

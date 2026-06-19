@@ -20,6 +20,10 @@ export class AuditLogForm {
   isEditMode = false;
   auditId!: number;
   actions = ['CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'VIEW'];
+  actionOptionList = [
+    { label: 'Select Action', value: '' },
+    ...this.actions.map((action) => ({ label: action, value: action }))
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -108,10 +112,4 @@ export class AuditLogForm {
     this.router.navigateByUrl('/audit-logs');
   }
 
-  actionOptions() {
-    return [
-      { label: 'Select Action', value: '' },
-      ...this.actions.map((action) => ({ label: action, value: action }))
-    ];
-  }
 }

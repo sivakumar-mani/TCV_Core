@@ -26,9 +26,14 @@ export class ServiceTickets {
   customers: any[] = [];
   employees: any[] = [];
   products: any[] = [];
+  customerOptionList: { label: string; value: string | number }[] = [{ label: 'Select customer', value: '' }];
+  employeeOptionList: { label: string; value: string | number }[] = [{ label: 'Select employee', value: '' }];
+  productOptionList: { label: string; value: string | number }[] = [{ label: 'Select product', value: '' }];
   selectedId: number | null = null;
   statuses = ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'CANCELLED'];
   priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+  statusOptionList = this.optionList(this.statuses);
+  priorityOptionList = this.optionList(this.priorities);
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
@@ -81,9 +86,39 @@ export class ServiceTickets {
   }
 
   loadLookups() {
-    this.customerService.getCustomers().subscribe({ next: (r: any) => this.customers = Array.isArray(r) ? r : r.data ?? [], error: (e: any) => this.commonMethods.handleError(e) });
-    this.employeeService.getEmployees().subscribe({ next: (r: any) => this.employees = Array.isArray(r) ? r : r.data ?? [], error: (e: any) => this.commonMethods.handleError(e) });
-    this.productService.getProduct().subscribe({ next: (r: any) => this.products = Array.isArray(r) ? r : r.data ?? [], error: (e: any) => this.commonMethods.handleError(e) });
+    this.customerService.getCustomers().subscribe({
+      next: (r: any) => {
+        this.customers = Array.isArray(r) ? r : r.data ?? [];
+        this.customerOptionList = [
+          { label: 'Select customer', value: '' },
+          ...this.customers.map((customer) => ({
+            label: customer.display_customer_name || customer.customer_name,
+            value: customer.customer_id
+          }))
+        ];
+      },
+      error: (e: any) => this.commonMethods.handleError(e)
+    });
+    this.employeeService.getEmployees().subscribe({
+      next: (r: any) => {
+        this.employees = Array.isArray(r) ? r : r.data ?? [];
+        this.employeeOptionList = [
+          { label: 'Select employee', value: '' },
+          ...this.employees.map((employee) => ({ label: employee.employee_name, value: employee.employee_id }))
+        ];
+      },
+      error: (e: any) => this.commonMethods.handleError(e)
+    });
+    this.productService.getProduct().subscribe({
+      next: (r: any) => {
+        this.products = Array.isArray(r) ? r : r.data ?? [];
+        this.productOptionList = [
+          { label: 'Select product', value: '' },
+          ...this.products.map((product) => ({ label: product.product_name, value: product.product_id }))
+        ];
+      },
+      error: (e: any) => this.commonMethods.handleError(e)
+    });
   }
 
   loadRows() {
@@ -134,30 +169,6 @@ export class ServiceTickets {
     if (!value) return '';
     const date = new Date(value);
     return `${`${date.getDate()}`.padStart(2, '0')}/${`${date.getMonth() + 1}`.padStart(2, '0')}/${date.getFullYear()}`;
-  }
-
-  customerOptions() {
-    return [
-      { label: 'Select customer', value: '' },
-      ...this.customers.map((customer) => ({
-        label: customer.display_customer_name || customer.customer_name,
-        value: customer.customer_id
-      }))
-    ];
-  }
-
-  productOptions() {
-    return [
-      { label: 'Select product', value: '' },
-      ...this.products.map((product) => ({ label: product.product_name, value: product.product_id }))
-    ];
-  }
-
-  employeeOptions() {
-    return [
-      { label: 'Select employee', value: '' },
-      ...this.employees.map((employee) => ({ label: employee.employee_name, value: employee.employee_id }))
-    ];
   }
 
   optionList(values: string[]) {

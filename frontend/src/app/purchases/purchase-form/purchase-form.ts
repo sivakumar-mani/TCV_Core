@@ -7,10 +7,13 @@ import { ProductService } from '../../services/product-service';
 import { PurchaseServices } from '../../services/purchase-services';
 import { SupplierServices } from '../../services/supplier-services';
 import { CommonMethods } from '../../shared/common-methods';
+import { InputFormField } from '../../shared/input-form-field/input-form-field';
+import { SelectFormField } from '../../shared/select-form-field/select-form-field';
+import { TextareaFormField } from '../../shared/textarea-form-field/textarea-form-field';
 
 @Component({
   selector: 'app-purchase-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField],
   templateUrl: './purchase-form.html',
   styleUrl: './purchase-form.scss',
 })
@@ -18,11 +21,14 @@ export class PurchaseForm {
   purchaseForm!: FormGroup;
   suppliers: any[] = [];
   products: any[] = [];
+  supplierOptionList: { label: string; value: string | number }[] = [{ label: 'Select supplier', value: '' }];
   isEditMode = false;
   purchaseId!: number;
 
   purchaseStatuses = ['DRAFT', 'RECEIVED', 'COMPLETED', 'CANCELLED'];
   paymentStatuses = ['PENDING', 'PARTIAL', 'PAID'];
+  purchaseStatusOptions = this.optionList(this.purchaseStatuses);
+  paymentStatusOptions = this.optionList(this.paymentStatuses);
 
   constructor(
     private fb: FormBuilder,
@@ -84,7 +90,13 @@ export class PurchaseForm {
 
   loadSuppliers() {
     this.supplierService.getSuppliers().subscribe({
-      next: (response: any) => this.suppliers = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.suppliers = Array.isArray(response) ? response : response.data ?? [];
+        this.supplierOptionList = [
+          { label: 'Select supplier', value: '' },
+          ...this.suppliers.map((supplier) => ({ label: supplier.supplier_name, value: supplier.supplier_id }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }
@@ -243,6 +255,10 @@ export class PurchaseForm {
 
   money(value: number) {
     return `Rs. ${this.toNumber(value).toFixed(2)}`;
+  }
+
+  optionList(values: string[]) {
+    return values.map((value) => ({ label: value, value }));
   }
 
   toNumber(value: any) {

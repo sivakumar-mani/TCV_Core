@@ -24,8 +24,11 @@ export class CustomerPayments {
   rows: any[] = [];
   customers: any[] = [];
   employees: any[] = [];
+  customerOptionList: { label: string; value: string | number }[] = [{ label: 'Select customer', value: '' }];
+  employeeOptionList: { label: string; value: string | number }[] = [{ label: 'Select employee', value: '' }];
   selectedId: number | null = null;
   paymentModes = ['CASH', 'CARD', 'UPI', 'BANK', 'CHEQUE', 'ONLINE'];
+  paymentModeOptionList = this.paymentModes.map((mode) => ({ label: mode, value: mode }));
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
@@ -76,11 +79,26 @@ export class CustomerPayments {
 
   loadLookups() {
     this.customerService.getCustomers().subscribe({
-      next: (response: any) => this.customers = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.customers = Array.isArray(response) ? response : response.data ?? [];
+        this.customerOptionList = [
+          { label: 'Select customer', value: '' },
+          ...this.customers.map((customer) => ({
+            label: customer.display_customer_name || customer.customer_name,
+            value: customer.customer_id
+          }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
     this.employeeService.getEmployees().subscribe({
-      next: (response: any) => this.employees = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.employees = Array.isArray(response) ? response : response.data ?? [];
+        this.employeeOptionList = [
+          { label: 'Select employee', value: '' },
+          ...this.employees.map((employee) => ({ label: employee.employee_name, value: employee.employee_id }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
   }
@@ -152,24 +170,4 @@ export class CustomerPayments {
     return `Rs. ${(Number(value) || 0).toFixed(2)}`;
   }
 
-  customerOptions() {
-    return [
-      { label: 'Select customer', value: '' },
-      ...this.customers.map((customer) => ({
-        label: customer.display_customer_name || customer.customer_name,
-        value: customer.customer_id
-      }))
-    ];
-  }
-
-  employeeOptions() {
-    return [
-      { label: 'Select employee', value: '' },
-      ...this.employees.map((employee) => ({ label: employee.employee_name, value: employee.employee_id }))
-    ];
-  }
-
-  paymentModeOptions() {
-    return this.paymentModes.map((mode) => ({ label: mode, value: mode }));
-  }
 }

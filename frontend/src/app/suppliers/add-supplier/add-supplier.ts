@@ -5,7 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { SupplierServices } from '../../services/supplier-services';
 import { CommonMethods } from '../../shared/common-methods';
@@ -18,6 +18,7 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
   imports: [
     CommonModule,
     NgIf,
+    RouterLink,
     MatButtonModule,
     MatIconModule,
     MatToolbarModule,

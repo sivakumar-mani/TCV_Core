@@ -89,7 +89,7 @@ export class PurchaseList {
   }
 
   payPurchase(row: any) {
-    this.router.navigate(['/supplier-payments'], {
+    this.router.navigate(['/supplier-payments/add'], {
       queryParams: { supplierId: row.supplier_id, purchaseId: row.purchase_id }
     });
   }

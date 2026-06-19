@@ -1,12 +1,12 @@
 <div class="form-section">
   <h2>{{ selectedId ? 'Edit Customer Payment' : 'Customer Payment' }}</h2>
   <form [formGroup]="form" class="module-form" (ngSubmit)="submit()">
-    <app-select-form-field [label]="'Customer'" [options]="customerOptions()" [formControl]="$any(form.controls['customer_id'])"></app-select-form-field>
+    <app-select-form-field [label]="'Customer'" [options]="customerOptionList" [formControl]="$any(form.controls['customer_id'])"></app-select-form-field>
     <app-input-form-field [label]="'Amount'" [type]="'number'" [formControl]="$any(form.controls['amount'])"></app-input-form-field>
     <app-input-form-field [label]="'Date'" [type]="'date'" [formControl]="$any(form.controls['payment_date'])"></app-input-form-field>
-    <app-select-form-field [label]="'Mode'" [options]="paymentModeOptions()" [formControl]="$any(form.controls['payment_mode'])"></app-select-form-field>
+    <app-select-form-field [label]="'Mode'" [options]="paymentModeOptionList" [formControl]="$any(form.controls['payment_mode'])"></app-select-form-field>
     <app-input-form-field [label]="'Reference No'" [type]="'text'" [formControl]="$any(form.controls['reference_no'])"></app-input-form-field>
-    <app-select-form-field [label]="'Received By'" [options]="employeeOptions()" [formControl]="$any(form.controls['received_by_employee_id'])"></app-select-form-field>
+    <app-select-form-field [label]="'Received By'" [options]="employeeOptionList" [formControl]="$any(form.controls['received_by_employee_id'])"></app-select-form-field>
     <app-textarea-form-field class="span-3" [label]="'Narration'" [rows]="2" [control]="$any(form.controls['narration'])"></app-textarea-form-field>
     <div class="form-actions span-3">
       <button class="btn-no" type="button" (click)="reset()">Clear</button>

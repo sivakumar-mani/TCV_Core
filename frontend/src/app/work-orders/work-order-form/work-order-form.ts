@@ -28,12 +28,18 @@ export class WorkOrderForm {
   materials: any[] = [];
   existingIssues: any[] = [];
   existingReturns: any[] = [];
+  customerOptionList: { label: string; value: string | number }[] = [{ label: 'Select customer', value: '' }];
+  employeeOptionList: { label: string; value: string | number }[] = [{ label: 'Select employee', value: '' }];
+  supervisorOptionList: { label: string; value: string | number }[] = [{ label: 'Select supervisor', value: '' }];
   isEditMode = false;
   workOrderId!: number;
 
   workTypes = ['INSTALLATION', 'SERVICE', 'REPAIR', 'MAINTENANCE', 'OTHER'];
   workStatuses = ['PENDING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED'];
   priorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+  workTypeOptionList = this.optionList(this.workTypes);
+  workStatusOptionList = this.optionList(this.workStatuses);
+  priorityOptionList = this.optionList(this.priorities);
 
   constructor(
     private fb: FormBuilder,
@@ -123,11 +129,28 @@ export class WorkOrderForm {
 
   loadLookups() {
     this.customerService.getCustomers().subscribe({
-      next: (response: any) => this.customers = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.customers = Array.isArray(response) ? response : response.data ?? [];
+        this.customerOptionList = [
+          { label: 'Select customer', value: '' },
+          ...this.customers.map((customer) => ({
+            label: customer.display_customer_name || ((customer.salutation ? customer.salutation + ' ' : '') + customer.customer_name),
+            value: customer.customer_id
+          }))
+        ];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
     this.employeeService.getEmployees().subscribe({
-      next: (response: any) => this.employees = Array.isArray(response) ? response : response.data ?? [],
+      next: (response: any) => {
+        this.employees = Array.isArray(response) ? response : response.data ?? [];
+        const employeeOptions = this.employees.map((employee) => ({
+          label: `${employee.employee_code} - ${employee.employee_name}`,
+          value: employee.employee_id
+        }));
+        this.employeeOptionList = [{ label: 'Select employee', value: '' }, ...employeeOptions];
+        this.supervisorOptionList = [{ label: 'Select supervisor', value: '' }, ...employeeOptions];
+      },
       error: (error: any) => this.commonMethods.handleError(error)
     });
     this.productService.getProduct().subscribe({
@@ -151,26 +174,6 @@ export class WorkOrderForm {
       },
       error: (error: any) => this.commonMethods.handleError(error)
     });
-  }
-
-  customerOptions() {
-    return [
-      { label: 'Select customer', value: '' },
-      ...this.customers.map((customer) => ({
-        label: customer.display_customer_name || ((customer.salutation ? customer.salutation + ' ' : '') + customer.customer_name),
-        value: customer.customer_id
-      }))
-    ];
-  }
-
-  employeeOptions(label = 'Select employee') {
-    return [
-      { label, value: '' },
-      ...this.employees.map((employee) => ({
-        label: `${employee.employee_code} - ${employee.employee_name}`,
-        value: employee.employee_id
-      }))
-    ];
   }
 
   optionList(values: string[]) {

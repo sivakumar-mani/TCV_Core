@@ -23,6 +23,7 @@ export class EmployeeSalary {
   salaryForm!: FormGroup;
   salaries: any[] = [];
   employees: any[] = [];
+  employeeOptionList: { label: string; value: string | number }[] = [{ label: 'Select employee', value: '' }];
   selectedSalaryId: number | null = null;
 
   defaultColDef: ColDef = {
@@ -85,6 +86,10 @@ export class EmployeeSalary {
     { value: 11, label: 'November' },
     { value: 12, label: 'December' },
   ];
+  statusOptionList = [
+    { label: 'Final', value: 'FINAL' },
+    { label: 'Draft', value: 'DRAFT' }
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -127,6 +132,13 @@ export class EmployeeSalary {
     this.employeeService.getEmployees().subscribe({
       next: (response: any) => {
         this.employees = Array.isArray(response) ? response : response?.data || [];
+        this.employeeOptionList = [
+          { label: 'Select employee', value: '' },
+          ...this.employees.map((employee) => ({
+            label: `${employee.employee_code} - ${employee.employee_name || `${employee.first_name || ''} ${employee.last_name || ''}`.trim()}`,
+            value: employee.employee_id
+          }))
+        ];
       },
       error: (error: any) => this.commonMethods.handleError(error),
     });
@@ -144,23 +156,6 @@ export class EmployeeSalary {
         this.commonMethods.handleError(error);
       },
     });
-  }
-
-  employeeOptions() {
-    return [
-      { label: 'Select employee', value: '' },
-      ...this.employees.map((employee) => ({
-        label: `${employee.employee_code} - ${employee.employee_name || `${employee.first_name || ''} ${employee.last_name || ''}`.trim()}`,
-        value: employee.employee_id
-      }))
-    ];
-  }
-
-  statusOptions() {
-    return [
-      { label: 'Final', value: 'FINAL' },
-      { label: 'Draft', value: 'DRAFT' }
-    ];
   }
 
   addItem(type: SalaryItemType = 'EARNING', description = '') {

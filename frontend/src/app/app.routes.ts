@@ -163,6 +163,22 @@ export const routes: Routes = [
             }
         },
          {
+            path:'supplier-payments/add',
+            loadComponent: ()=> import('./supplier-payments/supplier-payments').then(n => n.SupplierPayments),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'supplier-payments/edit/:id',
+            loadComponent: ()=> import('./supplier-payments/supplier-payments').then(n => n.SupplierPayments),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
             path:'service-tickets',
             loadComponent: ()=> import('./service-tickets/service-tickets').then(n => n.ServiceTickets),
             canActivate:[RouteGuard],

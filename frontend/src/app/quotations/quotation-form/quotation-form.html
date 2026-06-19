@@ -27,61 +27,41 @@
   <form *ngIf="!isPreviewMode" [formGroup]="quotationForm" (ngSubmit)="saveDraft()">
     <section class="form-section">
       <h2>Quotation Header</h2>
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label">Quotation No</label>
-          <input class="form-control" type="text" formControlName="quotation_no" readonly>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Customer</label>
-          <select class="form-control" formControlName="customer_id">
-            <option value="">Select customer</option>
-            <option *ngFor="let customer of customers" [value]="customer.customer_id">
-              {{ customer.display_customer_name || ((customer.salutation ? customer.salutation + ' ' : '') + customer.customer_name) }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Quotation Date</label>
-          <input class="form-control" type="date" formControlName="quotation_date">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Valid Until</label>
-          <input class="form-control" type="date" formControlName="valid_until">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Prepared By</label>
-          <select class="form-control" formControlName="prepared_by_employee_id">
-            <option value="">Select employee</option>
-            <option *ngFor="let employee of employees" [value]="employee.employee_id">
-              {{ employee.employee_code }} - {{ employee.employee_name }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Header Discount Amount</label>
-          <input class="form-control text-end" type="number" min="0" step="0.01" formControlName="discount_amount">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Header Discount %</label>
-          <input class="form-control text-end" type="number" min="0" step="0.01" formControlName="discount_percent">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">CGST %</label>
-          <input class="form-control text-end" type="number" min="0" step="0.01" formControlName="cgst_percent">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">SGST %</label>
-          <input class="form-control text-end" type="number" min="0" step="0.01" formControlName="sgst_percent">
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Requirement Details</label>
-          <textarea class="form-control" rows="3" formControlName="requirement_details"></textarea>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">Remarks</label>
-          <textarea class="form-control" rows="3" formControlName="remarks"></textarea>
-        </div>
+      <div class="grid-2-col mt-4">
+        <app-input-form-field [label]="'Quotation No'" [type]="'text'" [readonly]="true"
+          [formControl]="$any(quotationForm.controls['quotation_no'])"></app-input-form-field>
+
+        <app-select-form-field [label]="'Customer'" [options]="customerOptionList"
+          [formControl]="$any(quotationForm.controls['customer_id'])"></app-select-form-field>
+
+        <app-input-form-field [label]="'Quotation Date'" [type]="'date'"
+          [formControl]="$any(quotationForm.controls['quotation_date'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'Valid Until'" [type]="'date'"
+          [formControl]="$any(quotationForm.controls['valid_until'])"></app-input-form-field>
+
+        <app-select-form-field [label]="'Prepared By'" [options]="employeeOptionList"
+          [formControl]="$any(quotationForm.controls['prepared_by_employee_id'])"></app-select-form-field>
+
+        <app-input-form-field [label]="'Header Discount Amount'" [type]="'number'"
+          [formControl]="$any(quotationForm.controls['discount_amount'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'Header Discount %'" [type]="'number'"
+          [formControl]="$any(quotationForm.controls['discount_percent'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'CGST %'" [type]="'number'"
+          [formControl]="$any(quotationForm.controls['cgst_percent'])"></app-input-form-field>
+
+        <app-input-form-field [label]="'SGST %'" [type]="'number'"
+          [formControl]="$any(quotationForm.controls['sgst_percent'])"></app-input-form-field>
+      </div>
+
+      <div class="grid-2-col mt-4">
+        <app-textarea-form-field [label]="'Requirement Details'" [rows]="3"
+          [control]="$any(quotationForm.controls['requirement_details'])"></app-textarea-form-field>
+
+        <app-textarea-form-field [label]="'Remarks'" [rows]="3"
+          [control]="$any(quotationForm.controls['remarks'])"></app-textarea-form-field>
       </div>
     </section>
 

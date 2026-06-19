@@ -21,7 +21,7 @@
         <app-input-form-field [label]="'Module'" [type]="'text'" [formControl]="$any(auditLogForm.controls['module'])"></app-input-form-field>
       </div>
       <div class="col-md-4">
-        <app-select-form-field [label]="'Action'" [options]="actionOptions()" [formControl]="$any(auditLogForm.controls['action'])"></app-select-form-field>
+        <app-select-form-field [label]="'Action'" [options]="actionOptionList" [formControl]="$any(auditLogForm.controls['action'])"></app-select-form-field>
       </div>
       <div class="col-md-4">
         <app-input-form-field [label]="'Table Name'" [type]="'text'" [formControl]="$any(auditLogForm.controls['table_name'])"></app-input-form-field>
