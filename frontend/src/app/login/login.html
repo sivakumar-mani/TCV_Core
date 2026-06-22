@@ -1,6 +1,6 @@
 <div class="login-page">
 
-    <form [formGroup]="loginForm">
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
         <mat-card>
     <mat-card-header>
         <h2 class="mb-0 text-center">Welcome, TCV User!</h2>
@@ -26,11 +26,22 @@
                <mat-icon>{{ hide() ? 'visibility_off' : 'visibility' }}</mat-icon>
             </a>
     </app-input-form-field>
+      <div class="captcha-field">
+        <label for="captchaAnswer" class="form-label">Security Code</label>
+        <div class="captcha-challenge">
+          <span aria-live="polite">{{ captchaQuestion }}</span>
+          <button type="button" mat-icon-button aria-label="Refresh CAPTCHA" (click)="refreshCaptcha()">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+        <input id="captchaAnswer" class="form-control" type="text" inputmode="numeric" maxlength="6" autocomplete="off" formControlName="captchaAnswer" placeholder="Enter the 6-digit code">
+        <small *ngIf="loginForm.get('captchaAnswer')?.touched && loginForm.get('captchaAnswer')?.invalid">Enter the six-digit CAPTCHA code.</small>
+      </div>
       {{responseMessage}}
    </div>
     </mat-card-content>
      <mat-card-footer class="action-btn">
-      <button matButton="filled" (click)="onLogin()">Login</button>
+      <button matButton="filled" type="submit" [disabled]="loginForm.invalid || !captchaToken">Login</button>
        <a class="mt-3" (click)="forgotPassword()">Forgot Password</a>
   </mat-card-footer>
 </mat-card>

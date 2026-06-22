@@ -33,6 +33,7 @@ export class WorkOrderList {
     { field: 'assigned_employee_name', headerName: 'Assigned To' },
     { field: 'work_type', headerName: 'Type', maxWidth: 140 },
     { field: 'work_status', headerName: 'Status', maxWidth: 140 },
+    { field: 'approval_status', headerName: 'Approval', maxWidth: 140 },
     { field: 'priority', headerName: 'Priority', maxWidth: 120 },
     { field: 'start_date', headerName: 'Start Date', maxWidth: 140, valueFormatter: (params) => this.displayDate(params.value) },
     { field: 'completion_date', headerName: 'Completion Date', maxWidth: 160, valueFormatter: (params) => this.displayDate(params.value) },
@@ -46,8 +47,11 @@ export class WorkOrderList {
       cellRendererParams: {
         dropdownMenu: [
           { label: 'Edit', action: (row: any) => this.editWorkOrder(row) },
+          { label: 'Preview / PDF', action: (row: any) => this.previewWorkOrder(row) },
           { label: 'Material Issue', action: (row: any) => this.openMaterialIssue(row) },
-          { label: 'Create Invoice', action: (row: any) => this.createInvoice(row) }
+          { label: 'Material Issue Preview / PDF', action: (row: any) => this.previewMaterialIssue(row) },
+          { label: 'Create Invoice', action: (row: any) => this.createInvoice(row) },
+          { label: 'Delete', action: (row: any) => this.deleteWorkOrder(row) }
         ]
       },
       filter: false,
@@ -89,7 +93,34 @@ export class WorkOrderList {
   }
 
   openMaterialIssue(row: any) {
+    if (row.approval_status !== 'APPROVED' || row.work_status !== 'IN_PROGRESS' || Number(row.item_count) === 0) {
+      alert('Material Issue is available only after the work order is moved to in progress and has work items.');
+      return;
+    }
     this.router.navigate(['/work-orders/material-issue', row.work_order_id]);
+  }
+
+  previewWorkOrder(row: any) {
+    this.router.navigate(['/work-orders/preview', row.work_order_id]);
+  }
+
+  previewMaterialIssue(row: any) {
+    if (Number(row.issue_count) === 0) {
+      alert('No material issue is available for preview.');
+      return;
+    }
+    this.router.navigate(['/work-orders/material-issue', row.work_order_id], { queryParams: { preview: true } });
+  }
+
+  deleteWorkOrder(row: any) {
+    if (!confirm(`Delete work order ${row.work_order_no}?`)) return;
+    this.workOrderService.deleteWorkOrder(row.work_order_id).subscribe({
+      next: (response: any) => {
+        this.commonMethods.handleTokenAndMessage(response);
+        this.loadWorkOrders();
+      },
+      error: (error: any) => this.commonMethods.handleError(error)
+    });
   }
 
   createInvoice(row: any) {

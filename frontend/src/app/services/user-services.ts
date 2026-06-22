@@ -17,6 +17,10 @@ export class UserServices {
     })
   }
 
+  getCaptcha() {
+    return this.http.get<{ question: string; token: string }>(`${this.url}/user/captcha`);
+  }
+
  signup( data:signupInterface ){
   return this.http.post(`${this.url}/user/signup`, data,{
     headers: new HttpHeaders().set('content-type', "application/json")

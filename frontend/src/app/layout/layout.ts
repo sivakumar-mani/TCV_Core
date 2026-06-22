@@ -1,10 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Header } from '../shared/header/header';
 import { Footer } from '../shared/footer/footer';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { Sidebar } from '../shared/sidebar/sidebar';
 import { RouterOutlet } from '@angular/router';
+import { IdleLogoutService } from '../services/idle-logout.service';
 
 @Component({
   selector: 'app-layout',
@@ -12,12 +13,15 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './layout.html',
   styleUrl: './layout.scss',
 })
-export class Layout {
+export class Layout implements OnInit, OnDestroy {
 opened = false;
 collapsed = false;
 isDesktop = false;
 
-constructor( private breakPointService : BreakpointObserver){
+constructor(
+  private breakPointService: BreakpointObserver,
+  private idleLogoutService: IdleLogoutService
+){
   // function is using show hide in mobile and web view
   this.breakPointService.observe(['(min-width:768px)']).subscribe( results=>{
     this.isDesktop = results.matches;
@@ -26,6 +30,14 @@ constructor( private breakPointService : BreakpointObserver){
       this.collapsed = false;
     }
   })
+}
+
+ngOnInit() {
+  this.idleLogoutService.start();
+}
+
+ngOnDestroy() {
+  this.idleLogoutService.stop();
 }
 
 toggleSidebar(sidenav: any) {

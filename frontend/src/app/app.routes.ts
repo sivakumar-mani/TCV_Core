@@ -107,6 +107,14 @@ export const routes: Routes = [
             }
         },
          {
+            path:'notifications',
+            loadComponent: ()=> import('./notifications/notification-list/notification-list').then(n => n.NotificationList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin','user']
+            }
+        },
+         {
             path:'work-orders',
             loadComponent: ()=> import('./work-orders/work-order-list/work-order-list').then(n => n.WorkOrderList),
             canActivate:[RouteGuard],
@@ -133,6 +141,14 @@ export const routes: Routes = [
          {
             path:'work-orders/material-issue/:id',
             loadComponent: ()=> import('./work-orders/work-order-material/work-order-material').then(n => n.WorkOrderMaterial),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin']
+            }
+        },
+         {
+            path:'work-orders/preview/:id',
+            loadComponent: ()=> import('./work-orders/work-order-form/work-order-form').then(n => n.WorkOrderForm),
             canActivate:[RouteGuard],
             data:{
                 expectedRole:['admin']

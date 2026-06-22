@@ -33,6 +33,33 @@ const ensureWorkOrderSupport = async (conn) => {
     await ensureCustomerSchema(conn);
     await ensureProductTypeColumn(conn);
 
+    const ensureColumn = async (table, column, definition) => {
+        const [columns] = await conn.query(
+            `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+            [table, column]
+        );
+        if (columns.length === 0) await conn.query(`ALTER TABLE ${table} ADD COLUMN ${definition}`);
+    };
+
+    await ensureColumn('work_orders', 'approval_status', "approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING' AFTER work_status");
+    await conn.query(`
+        CREATE TABLE IF NOT EXISTS workflow_approvals (
+            workflow_id INT AUTO_INCREMENT PRIMARY KEY,
+            module_name VARCHAR(50) NOT NULL,
+            reference_id INT NOT NULL,
+            reference_no VARCHAR(50) NOT NULL,
+            workflow_status ENUM('PENDING','APPROVED','REJECTED','CANCELLED') NOT NULL DEFAULT 'PENDING',
+            requested_by_employee_id INT, approved_by_employee_id INT,
+            requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            reviewed_at TIMESTAMP NULL, remarks TEXT,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY uk_workflow_reference (module_name, reference_id),
+            INDEX idx_module_status (module_name, workflow_status)
+        ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
     await conn.query(`
         CREATE TABLE IF NOT EXISTS stock_master (
             stock_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -137,6 +164,9 @@ const ensureWorkOrderSupport = async (conn) => {
             issued_to_employee_id INT,
             issued_by_employee_id INT,
             remarks TEXT,
+            approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
+            approved_by_employee_id INT,
+            approved_at TIMESTAMP NULL,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (work_order_id) REFERENCES work_orders(work_order_id) ON DELETE CASCADE ON UPDATE CASCADE,
             FOREIGN KEY (material_id) REFERENCES material_master(material_id) ON DELETE SET NULL,
@@ -149,6 +179,9 @@ const ensureWorkOrderSupport = async (conn) => {
             INDEX idx_issued_date (issued_date)
         ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
+    await ensureColumn('work_order_material_issues', 'approval_status', "approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING' AFTER remarks");
+    await ensureColumn('work_order_material_issues', 'approved_by_employee_id', 'approved_by_employee_id INT NULL AFTER approval_status');
+    await ensureColumn('work_order_material_issues', 'approved_at', 'approved_at TIMESTAMP NULL AFTER approved_by_employee_id');
 
     await conn.query(`
         CREATE TABLE IF NOT EXISTS work_order_material_returns (
@@ -338,9 +371,11 @@ const getMaterials = async (req, res) => {
         const conn = connection.promise();
         await ensureWorkOrderSupport(conn);
         const [rows] = await conn.query(
-            `SELECT mm.*, p.product_code, p.product_name, p.product_type
+            `SELECT mm.*, p.product_code, p.product_name, p.product_type,
+                    COALESCE(sm.available_qty, 0) AS available_qty
              FROM material_master mm
              LEFT JOIN products p ON p.product_id = mm.product_id
+             LEFT JOIN stock_master sm ON sm.product_id = mm.product_id
              WHERE COALESCE(p.product_type, 'MATERIAL') = 'MATERIAL'
              ORDER BY mm.material_name`
         );
@@ -461,8 +496,8 @@ const addWorkOrder = async (req, res) => {
             const [quotes] = await conn.query('SELECT * FROM quotation_master WHERE quotation_id = ? FOR UPDATE', [payload.quotation_id]);
             if (quotes.length === 0) throw new Error('Quotation not found');
             quote = quotes[0];
-            if (!['APPROVED', 'SENT', 'CONVERTED'].includes(quote.quotation_status)) {
-                throw new Error('Only approved quotations can be converted to work order');
+            if (quote.quotation_status !== 'ACCEPTED') {
+                throw new Error('Only customer-accepted quotations can be converted to work order');
             }
         }
 
@@ -519,7 +554,16 @@ const addWorkOrder = async (req, res) => {
             );
         }
 
+        await conn.query(
+            `INSERT INTO workflow_approvals (module_name, reference_id, reference_no, workflow_status, requested_by_employee_id, remarks)
+             VALUES ('WORK_ORDER', ?, ?, 'PENDING', ?, 'Work order awaiting approval')
+             ON DUPLICATE KEY UPDATE workflow_status = 'PENDING', requested_at = NOW(), reviewed_at = NULL,
+                 approved_by_employee_id = NULL, remarks = VALUES(remarks)`,
+            [workOrderId, workOrderNo, payload.created_by_employee_id || null]
+        );
+
         const materialIssues = payload.material_issues || [];
+        if (materialIssues.length) throw new Error('Approve the work order before adding material issues');
         for (const issue of materialIssues) {
             if (!issue.material_id && !issue.product_id) continue;
             const issueNo = issue.issue_no || await createSequenceNo(conn, 'work_order_material_issues', 'issue_no', 'MI');
@@ -579,7 +623,8 @@ const updateWorkOrder = async (req, res) => {
                 customer_id = ?, work_type = ?, work_status = ?, priority = ?,
                 start_date = ?, completion_date = ?, site_address = ?, site_contact_person = ?,
                 site_contact_phone = ?, work_notes = ?, assigned_to_employee_id = ?,
-                supervisor_id = ?, created_by_employee_id = ?, completion_remarks = ?, updated_at = NOW()
+                supervisor_id = ?, created_by_employee_id = ?, completion_remarks = ?,
+                approval_status = 'PENDING', updated_at = NOW()
              WHERE work_order_id = ?`,
             [
                 payload.customer_id,
@@ -612,12 +657,60 @@ const updateWorkOrder = async (req, res) => {
             );
         }
 
+
+        await conn.query(
+            `INSERT INTO workflow_approvals (module_name, reference_id, reference_no, workflow_status, requested_by_employee_id, remarks)
+             VALUES ('WORK_ORDER', ?, ?, 'PENDING', ?, 'Updated work order awaiting review')
+             ON DUPLICATE KEY UPDATE workflow_status = 'PENDING', requested_by_employee_id = VALUES(requested_by_employee_id),
+                 requested_at = NOW(), reviewed_at = NULL, approved_by_employee_id = NULL, remarks = VALUES(remarks)`,
+            [workOrderId, existing[0].work_order_no, payload.created_by_employee_id || existing[0].created_by_employee_id || null]
+        );
+
         await conn.commit();
         return res.json({ success: true, message: 'Work order updated successfully' });
     } catch (error) {
         await conn.rollback();
         console.error(error);
         return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
+const reviewWorkOrder = async (req, res) => {
+    const conn = connection.promise();
+    try {
+        await ensureWorkOrderSupport(conn);
+        const workOrderId = req.params.work_order_id || req.body.work_order_id;
+        const action = String(req.body.action || '').toUpperCase();
+        if (!['IN_PROGRESS', 'REJECTED'].includes(action)) {
+            return res.status(400).json({ success: false, message: 'Action must be IN_PROGRESS or REJECTED' });
+        }
+        await conn.beginTransaction();
+        const [orders] = await conn.query('SELECT * FROM work_orders WHERE work_order_id = ? FOR UPDATE', [workOrderId]);
+        if (!orders.length) throw new Error('Work order not found');
+        if (orders[0].approval_status !== 'PENDING') throw new Error('Only pending work orders can be reviewed');
+
+        if (action === 'IN_PROGRESS') {
+            await conn.query(
+                "UPDATE work_orders SET approval_status = 'APPROVED', work_status = 'IN_PROGRESS', updated_at = NOW() WHERE work_order_id = ?",
+                [workOrderId]
+            );
+        } else {
+            await conn.query(
+                "UPDATE work_orders SET approval_status = 'REJECTED', work_status = 'PENDING', updated_at = NOW() WHERE work_order_id = ?",
+                [workOrderId]
+            );
+        }
+        await conn.query("DELETE FROM workflow_approvals WHERE module_name = 'WORK_ORDER' AND reference_id = ?", [workOrderId]);
+        await conn.commit();
+        return res.json({
+            success: true,
+            message: action === 'IN_PROGRESS'
+                ? 'Work order moved to in progress. Material issue is now enabled.'
+                : 'Work order rejected and returned for update.'
+        });
+    } catch (error) {
+        await conn.rollback();
+        return res.status(400).json({ success: false, message: error.message || 'Server error' });
     }
 };
 
@@ -632,10 +725,13 @@ const addMaterialIssue = async (req, res) => {
         await conn.beginTransaction();
 
         const [orders] = await conn.query(
-            'SELECT work_order_id, work_order_no, assigned_to_employee_id, created_by_employee_id FROM work_orders WHERE work_order_id = ? FOR UPDATE',
+            'SELECT work_order_id, work_order_no, assigned_to_employee_id, created_by_employee_id, approval_status, work_status FROM work_orders WHERE work_order_id = ? FOR UPDATE',
             [workOrderId]
         );
         if (orders.length === 0) throw new Error('Work order not found');
+        if (orders[0].approval_status !== 'APPROVED' || orders[0].work_status !== 'IN_PROGRESS') {
+            throw new Error('Work order must be moved to in progress before material can be issued');
+        }
 
         const issueProductId = await resolveProductId(conn, payload.material_id, payload.product_id);
         if (!issueProductId) throw new Error('Material is required');
@@ -648,6 +744,10 @@ const addMaterialIssue = async (req, res) => {
 
         const issuedQty = toNumber(payload.issued_qty);
         if (issuedQty <= 0) throw new Error('Issued quantity is required');
+
+        const [stock] = await conn.query('SELECT available_qty FROM stock_master WHERE product_id = ?', [issueProductId]);
+        if (toNumber(stock[0]?.available_qty) <= 0) throw new Error('Material is out of stock');
+        if (issuedQty > toNumber(stock[0]?.available_qty)) throw new Error('Issued quantity exceeds available stock');
 
         const issueNo = payload.issue_no || await createSequenceNo(conn, 'work_order_material_issues', 'issue_no', 'MI');
         const [issueResult] = await conn.query(
@@ -668,21 +768,142 @@ const addMaterialIssue = async (req, res) => {
             ]
         );
 
-        await postStockMovement(conn, {
-            productId: issueProductId,
-            transactionType: 'INSTALLATION',
-            transactionId: issueResult.insertId,
-            referenceNo: issueNo,
-            qtyOut: issuedQty,
-            remarks: payload.remarks || `Material issued for ${orders[0].work_order_no}`,
-            employeeId: payload.issued_by_employee_id || payload.created_by_employee_id || orders[0].created_by_employee_id || null
-        });
+        await conn.query(
+            `INSERT INTO workflow_approvals (module_name, reference_id, reference_no, workflow_status, requested_by_employee_id, remarks)
+             VALUES ('MATERIAL_ISSUE', ?, ?, 'PENDING', ?, 'Material issue awaiting approval')
+             ON DUPLICATE KEY UPDATE workflow_status = 'PENDING', requested_at = NOW(), reviewed_at = NULL,
+                 approved_by_employee_id = NULL, remarks = VALUES(remarks)`,
+            [workOrderId, `MI-${orders[0].work_order_no}`, payload.issued_by_employee_id || payload.created_by_employee_id || orders[0].created_by_employee_id || null]
+        );
 
         await conn.commit();
-        return res.status(201).json({ success: true, message: 'Material issued successfully', issue_id: issueResult.insertId, issue_no: issueNo });
+        return res.status(201).json({ success: true, message: 'Material issue submitted for approval', issue_id: issueResult.insertId, issue_no: issueNo });
     } catch (error) {
         await conn.rollback();
         console.error(error);
+        return res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
+const submitMaterialIssueList = async (req, res) => {
+    const conn = connection.promise();
+    try {
+        await ensureWorkOrderSupport(conn);
+        const workOrderId = req.params.work_order_id || req.body.work_order_id;
+        const rows = Array.isArray(req.body.rows) ? req.body.rows : [];
+        if (!rows.length) return res.status(400).json({ success: false, message: 'At least one material is required' });
+        await conn.beginTransaction();
+        const [orders] = await conn.query(
+            'SELECT * FROM work_orders WHERE work_order_id = ? FOR UPDATE',
+            [workOrderId]
+        );
+        if (!orders.length) throw new Error('Work order not found');
+        const order = orders[0];
+        if (order.approval_status !== 'APPROVED' || order.work_status !== 'IN_PROGRESS') {
+            throw new Error('Work order must be in progress before submitting materials');
+        }
+        const [pending] = await conn.query(
+            "SELECT COUNT(*) AS count FROM work_order_material_issues WHERE work_order_id = ? AND approval_status = 'PENDING'",
+            [workOrderId]
+        );
+        if (Number(pending[0]?.count)) throw new Error('A material list is already awaiting admin review');
+
+        for (const row of rows) {
+            const productId = await resolveProductId(conn, row.material_id, row.product_id);
+            const materialId = await resolveMaterialId(conn, row.material_id, productId);
+            const qty = toNumber(row.issued_qty);
+            if (!productId || !materialId || qty <= 0 || !(await isMaterialProduct(conn, productId))) {
+                throw new Error('Every row requires a valid material and quantity');
+            }
+            const [stock] = await conn.query('SELECT available_qty FROM stock_master WHERE product_id = ?', [productId]);
+            if (qty > toNumber(stock[0]?.available_qty)) throw new Error('A material quantity exceeds available stock');
+            const issueNo = await createSequenceNo(conn, 'work_order_material_issues', 'issue_no', 'MI');
+            await conn.query(
+                `INSERT INTO work_order_material_issues (
+                    issue_no, work_order_id, material_id, product_id, issued_qty, issued_date,
+                    issued_to_employee_id, issued_by_employee_id, remarks, approval_status
+                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')`,
+                [issueNo, workOrderId, materialId, productId, qty,
+                    toSqlDate(row.issued_date) || toSqlDate(new Date().toISOString()),
+                    row.issued_to_employee_id || order.assigned_to_employee_id || null,
+                    row.issued_by_employee_id || order.created_by_employee_id || null,
+                    row.remarks || null]
+            );
+        }
+
+        await conn.query(
+            `INSERT INTO workflow_approvals (module_name, reference_id, reference_no, workflow_status, requested_by_employee_id, remarks)
+             VALUES ('MATERIAL_ISSUE', ?, ?, 'PENDING', ?, 'Material issue list awaiting approval')
+             ON DUPLICATE KEY UPDATE workflow_status = 'PENDING', requested_at = NOW(), reviewed_at = NULL,
+                 approved_by_employee_id = NULL, remarks = VALUES(remarks)`,
+            [workOrderId, `MI-${order.work_order_no}`, req.body.issued_by_employee_id || order.created_by_employee_id || null]
+        );
+        await conn.commit();
+        return res.status(201).json({ success: true, message: 'Material list submitted for admin review' });
+    } catch (error) {
+        await conn.rollback();
+        return res.status(400).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
+const reviewMaterialIssueList = async (req, res) => {
+    const conn = connection.promise();
+    try {
+        await ensureWorkOrderSupport(conn);
+        const workOrderId = req.params.work_order_id || req.body.work_order_id;
+        const action = String(req.body.action || '').toUpperCase();
+        if (!['ACCEPTED', 'REJECTED'].includes(action)) return res.status(400).json({ success: false, message: 'Invalid review action' });
+        await conn.beginTransaction();
+        const [issues] = await conn.query(
+            "SELECT * FROM work_order_material_issues WHERE work_order_id = ? AND approval_status = 'PENDING' ORDER BY issue_id FOR UPDATE",
+            [workOrderId]
+        );
+        if (!issues.length) throw new Error('No pending material list found');
+
+        if (action === 'ACCEPTED') {
+            for (const issue of issues) {
+                const [stock] = await conn.query('SELECT available_qty FROM stock_master WHERE product_id = ? FOR UPDATE', [issue.product_id]);
+                const currentQty = toNumber(stock[0]?.available_qty);
+                const qty = toNumber(issue.issued_qty);
+                if (currentQty < qty) throw new Error(`Insufficient stock for ${issue.issue_no}`);
+                await conn.query('UPDATE stock_master SET available_qty = available_qty - ?, last_stock_check_date = CURDATE() WHERE product_id = ?', [qty, issue.product_id]);
+                await conn.query(
+                    `INSERT INTO stock_ledger (product_id, transaction_type, transaction_id, reference_no, qty_in, qty_out, balance_qty, remarks, recorded_by_employee_id)
+                     VALUES (?, 'INSTALLATION', ?, ?, 0, ?, ?, ?, ?)`,
+                    [issue.product_id, issue.issue_id, issue.issue_no, qty, currentQty - qty, issue.remarks || 'Material issue accepted', req.body.reviewed_by_employee_id || null]
+                );
+            }
+            await conn.query(
+                "UPDATE work_order_material_issues SET approval_status = 'APPROVED', approved_by_employee_id = ?, approved_at = NOW() WHERE work_order_id = ? AND approval_status = 'PENDING'",
+                [req.body.reviewed_by_employee_id || null, workOrderId]
+            );
+        } else {
+            await conn.query("DELETE FROM work_order_material_issues WHERE work_order_id = ? AND approval_status = 'PENDING'", [workOrderId]);
+        }
+        await conn.query("DELETE FROM workflow_approvals WHERE module_name = 'MATERIAL_ISSUE' AND reference_id = ?", [workOrderId]);
+        await conn.commit();
+        return res.json({ success: true, message: action === 'ACCEPTED' ? 'Material list accepted and stock issued' : 'Material list rejected for correction' });
+    } catch (error) {
+        await conn.rollback();
+        return res.status(400).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
+const deleteWorkOrder = async (req, res) => {
+    const conn = connection.promise();
+    try {
+        await ensureWorkOrderSupport(conn);
+        const workOrderId = req.params.work_order_id || req.body.work_order_id;
+        const [issues] = await conn.query("SELECT COUNT(*) AS count FROM work_order_material_issues WHERE work_order_id = ? AND approval_status = 'APPROVED'", [workOrderId]);
+        if (Number(issues[0]?.count)) return res.status(400).json({ success: false, message: 'Work order with approved material issues cannot be deleted' });
+        await conn.beginTransaction();
+        await conn.query("DELETE FROM workflow_approvals WHERE (module_name = 'WORK_ORDER' AND reference_id = ?) OR (module_name = 'MATERIAL_ISSUE' AND reference_id IN (SELECT issue_id FROM work_order_material_issues WHERE work_order_id = ?))", [workOrderId, workOrderId]);
+        const [result] = await conn.query('DELETE FROM work_orders WHERE work_order_id = ?', [workOrderId]);
+        if (!result.affectedRows) throw new Error('Work order not found');
+        await conn.commit();
+        return res.json({ success: true, message: 'Work order deleted successfully' });
+    } catch (error) {
+        await conn.rollback();
         return res.status(500).json({ success: false, message: error.message || 'Server error' });
     }
 };
@@ -796,7 +1017,11 @@ module.exports = {
     getWorkOrderById,
     addWorkOrder,
     updateWorkOrder,
+    reviewWorkOrder,
+    deleteWorkOrder,
     addMaterialIssue,
+    submitMaterialIssueList,
+    reviewMaterialIssueList,
     addMaterialReturn,
     createInvoiceFromWorkOrder
 };

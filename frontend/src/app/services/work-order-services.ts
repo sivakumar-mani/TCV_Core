@@ -35,8 +35,24 @@ export class WorkOrderServices {
     return this.http.patch(this.endpoint, data, { headers: this.headers });
   }
 
+  deleteWorkOrder(workOrderId: number) {
+    return this.http.delete(`${this.endpoint}/${workOrderId}`, { headers: this.headers });
+  }
+
+  reviewWorkOrder(workOrderId: number, action: 'IN_PROGRESS' | 'REJECTED') {
+    return this.http.post(`${this.endpoint}/${workOrderId}/review`, { action }, { headers: this.headers });
+  }
+
   addMaterialIssue(workOrderId: number, data: any) {
     return this.http.post(`${this.endpoint}/${workOrderId}/material-issue`, data, { headers: this.headers });
+  }
+
+  submitMaterialIssueList(workOrderId: number, rows: any[]) {
+    return this.http.post(`${this.endpoint}/${workOrderId}/material-issues/submit`, { rows }, { headers: this.headers });
+  }
+
+  reviewMaterialIssueList(workOrderId: number, action: 'ACCEPTED' | 'REJECTED') {
+    return this.http.post(`${this.endpoint}/${workOrderId}/material-issues/review`, { action }, { headers: this.headers });
   }
 
   addMaterialReturn(workOrderId: number, data: any) {

@@ -2,6 +2,29 @@ const connection = require('../connection');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+
+const captchaSecret = () => process.env.CAPTCHA_SECRET || process.env.ACCESS_TOKEN || 'tcv-captcha-secret';
+const signCaptcha = (payload) => crypto.createHmac('sha256', captchaSecret()).update(payload).digest('base64url');
+
+const getCaptcha = (_req, res) => {
+  const code = crypto.randomInt(100000, 1000000);
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+  const payload = Buffer.from(`${code}.${expiresAt}.${crypto.randomBytes(8).toString('hex')}`).toString('base64url');
+  return res.json({ question: String(code), token: `${payload}.${signCaptcha(payload)}` });
+};
+
+const validateCaptcha = (token, answer) => {
+  if (!token || answer === undefined || answer === null || answer === '') return false;
+  const [payload, signature] = String(token).split('.');
+  if (!payload || !signature) return false;
+  const expectedSignature = signCaptcha(payload);
+  const supplied = Buffer.from(signature);
+  const expected = Buffer.from(expectedSignature);
+  if (supplied.length !== expected.length || !crypto.timingSafeEqual(supplied, expected)) return false;
+  const [expectedAnswer, expiresAt] = Buffer.from(payload, 'base64url').toString().split('.');
+  return Date.now() <= Number(expiresAt) && Number(answer) === Number(expectedAnswer);
+};
 
 const normalizeRole = (role) => {
   const value = String(role || 'EMPLOYEE').toUpperCase();
@@ -105,6 +128,9 @@ const login = async (req, res) => {
 
   if (!username || !user.password) {
     return res.status(400).json({ message: 'User name and password are required' });
+  }
+  if (!validateCaptcha(user.captchaToken, user.captchaAnswer)) {
+    return res.status(400).json({ message: 'Invalid or expired CAPTCHA. Please try again.' });
   }
 
   connection.query('SELECT * FROM users WHERE username = ?', [username], (error, results) => {
@@ -261,4 +287,4 @@ const deleteUser = async (req, res) => {
   });
 };
 
-module.exports = { login, forgotPassword, changePassword, signup, getAllUser, editUser, deleteUser };
+module.exports = { getCaptcha, login, forgotPassword, changePassword, signup, getAllUser, editUser, deleteUser };

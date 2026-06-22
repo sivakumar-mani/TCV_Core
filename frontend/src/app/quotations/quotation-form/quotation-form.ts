@@ -77,7 +77,7 @@ export class QuotationForm implements OnDestroy {
   }
 
   get canDownload() {
-    return this.isPreviewMode && ['APPROVED', 'SENT', 'CONVERTED'].includes(this.quotation?.quotation_status);
+    return this.isPreviewMode && Boolean(this.quotation);
   }
 
   get canCreateWorkOrder() {

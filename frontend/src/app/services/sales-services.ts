@@ -11,6 +11,10 @@ export class SalesServices {
     return this.http.get(this.endpoint);
   }
 
+  getSaleById(salesId: number) {
+    return this.http.get(`${this.endpoint}/${salesId}`);
+  }
+
   addSale(data: any) {
     return this.http.post(this.endpoint, data, {
       headers: new HttpHeaders().set('content-type', 'application/json')

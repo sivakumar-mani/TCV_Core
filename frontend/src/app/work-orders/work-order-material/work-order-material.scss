@@ -70,6 +70,41 @@
   padding-top: 0.75rem;
 }
 
+.material-work-items-dialog {
+  font-size: 0.78rem;
+  min-width: 0;
+}
+
+.material-work-items-dialog .modal-header,
+.material-work-items-dialog .modal-body,
+.material-work-items-dialog .modal-footer {
+  padding: 0.7rem 0.9rem;
+}
+
+.material-work-items-dialog .modal-title {
+  font-size: 0.95rem !important;
+}
+
+.material-work-items-dialog .table {
+  font-size: 0.76rem;
+  margin-bottom: 0;
+  min-width: 760px;
+}
+
+.material-work-items-dialog .table th,
+.material-work-items-dialog .table td {
+  padding: 0.35rem 0.45rem;
+}
+
+.material-work-items-dialog .btn {
+  font-size: 0.76rem;
+  padding: 0.3rem 0.65rem;
+}
+
+:host ::ng-deep .material-work-items-dialog-panel .mat-mdc-dialog-surface {
+  overflow: hidden;
+}
+
 @media (max-width: 768px) {
   .page-header {
     align-items: stretch;

@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    source_key VARCHAR(180) NOT NULL UNIQUE,
+    notification_type VARCHAR(50) NOT NULL,
+    title VARCHAR(180) NOT NULL,
+    message VARCHAR(500) NOT NULL,
+    severity ENUM('INFO','WARNING','CRITICAL') NOT NULL DEFAULT 'INFO',
+    reference_type VARCHAR(50),
+    reference_id INT,
+    reference_no VARCHAR(100),
+    navigation_url VARCHAR(500),
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    resolved_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_active_read (is_active, is_read),
+    INDEX idx_type_active (notification_type, is_active),
+    INDEX idx_severity (severity)
+) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -10,3 +10,32 @@
 .example-card-footer {
   padding: 16px;
 }
+
+.captcha-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.captcha-challenge {
+  align-items: center;
+  background: repeating-linear-gradient(135deg, #eef2f7, #eef2f7 8px, #dfe7f1 8px, #dfe7f1 10px);
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0.25rem 0.5rem 0.25rem 1rem;
+}
+
+.captcha-challenge span {
+  color: #17365d;
+  font-family: Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.16rem;
+  transform: rotate(-1deg);
+}
+
+.captcha-field small {
+  color: #b42318;
+}

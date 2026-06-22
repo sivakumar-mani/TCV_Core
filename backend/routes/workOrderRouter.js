@@ -7,7 +7,11 @@ const {
   getWorkOrderById,
   addWorkOrder,
   updateWorkOrder,
+  reviewWorkOrder,
+  deleteWorkOrder,
   addMaterialIssue,
+  submitMaterialIssueList,
+  reviewMaterialIssueList,
   addMaterialReturn,
   createInvoiceFromWorkOrder
 } = require('../controller/workOrderController');
@@ -26,7 +30,11 @@ router.patch('/:work_order_id', (req, res) => {
   req.body.work_order_id = req.body.work_order_id || req.params.work_order_id;
   return updateWorkOrder(req, res);
 });
+router.post('/:work_order_id/review', reviewWorkOrder);
+router.delete('/:work_order_id', deleteWorkOrder);
 router.post('/:work_order_id/material-issue', addMaterialIssue);
+router.post('/:work_order_id/material-issues/submit', submitMaterialIssueList);
+router.post('/:work_order_id/material-issues/review', reviewMaterialIssueList);
 router.post('/:work_order_id/material-return', addMaterialReturn);
 router.post('/:work_order_id/create-invoice', createInvoiceFromWorkOrder);
 

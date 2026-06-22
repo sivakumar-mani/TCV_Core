@@ -9,7 +9,11 @@
 <div class="material-page">
   <div class="page-header">
     <h1>Material Issue</h1>
-    <button type="button" class="btn btn-outline-secondary" (click)="back()">Back</button>
+    <div><button *ngIf="isPreviewMode" type="button" class="btn btn-dark me-2" (click)="downloadPdf()">Download PDF</button><button type="button" class="btn btn-outline-secondary" (click)="back()">Back</button></div>
+    <div *ngIf="isWorkflowPreview && hasPendingMaterialList" class="ms-auto">
+      <button type="button" class="btn btn-success me-2" (click)="reviewMaterialList('ACCEPTED')">Accept</button>
+      <button type="button" class="btn btn-danger" (click)="reviewMaterialList('REJECTED')">Reject</button>
+    </div>
   </div>
 
   <section class="summary-grid" *ngIf="workOrder">
@@ -52,6 +56,7 @@
             <th>Issue Date</th>
             <th>Issued To</th>
             <th>Remarks</th>
+            <th>Status</th>
             <th></th>
           </tr>
         </thead>
@@ -64,13 +69,14 @@
               </span>
               <select *ngIf="!row.get('issue_id')?.value" class="form-control" formControlName="material_id" (change)="onIssueMaterialChange(i)">
                 <option value="">Select material</option>
-                <option *ngFor="let material of materials; trackBy: trackById" [value]="material.material_id">
-                  {{ material.material_code }} - {{ material.material_name }}
+                <option *ngFor="let material of materials; trackBy: trackById" [value]="material.material_id" [disabled]="material.available_qty <= 0">
+                  {{ material.material_code }} - {{ material.material_name }} (Stock: {{ material.available_qty || 0 }})
                 </option>
               </select>
             </td>
             <td>
               <input class="form-control text-end" type="number" min="0.01" step="0.01" formControlName="issued_qty" [readonly]="row.get('issue_id')?.value">
+              <small class="text-danger" *ngIf="!row.get('issue_id')?.value && materialStock(row.get('material_id')?.value) <= 0">Stock: 0</small>
             </td>
             <td><input class="form-control" type="date" formControlName="issued_date" [readonly]="row.get('issue_id')?.value"></td>
             <td>
@@ -83,24 +89,27 @@
               </select>
             </td>
             <td><input class="form-control" type="text" formControlName="remarks" [readonly]="row.get('issue_id')?.value"></td>
+            <td>{{ row.get('issue_id')?.value ? row.getRawValue().approval_status : 'DRAFT' }}</td>
             <td class="text-end">
-              <button *ngIf="row.get('issue_id')?.value" type="button" class="btn btn-sm btn-outline-primary" (click)="selectReturnIssue(row.getRawValue())">Return</button>
-              <button *ngIf="!row.get('issue_id')?.value" type="button" class="btn btn-sm btn-primary" (click)="saveMaterialIssue(i)">Save</button>
+              <button *ngIf="row.get('issue_id')?.value && !isPreviewMode && row.getRawValue().approval_status === 'APPROVED'" type="button" class="btn btn-sm btn-outline-primary" (click)="selectReturnIssue(row.getRawValue())">Return</button>
+              <button *ngIf="!row.get('issue_id')?.value" type="button" class="btn btn-sm btn-outline-danger" (click)="removeMaterialRow(i)">Remove</button>
             </td>
           </tr>
           <tr *ngIf="!issueRows.length">
-            <td colspan="7" class="text-center text-muted py-3">No material issued yet. Use Add Material to create an issue.</td>
+            <td colspan="8" class="text-center text-muted py-3">No material issued yet. Load work item materials or add a material.</td>
           </tr>
         </tbody>
       </table>
     </div>
-    <div class="table-footer-actions">
+    <div class="table-footer-actions" *ngIf="!isPreviewMode">
       <button type="button" class="btn btn-outline-primary" (click)="addMaterialRow()">Add Material</button>
+      <button type="button" class="btn btn-outline-secondary ms-2" (click)="openMaterialWorkItemsDialog()">Load Material Work Items</button>
+      <button type="button" class="btn btn-primary ms-2" (click)="saveMaterialList()">Save Material List</button>
     </div>
     </form>
   </section>
 
-  <section class="form-section">
+  <section class="form-section" *ngIf="!isPreviewMode">
     <h2>Material Return</h2>
     <form [formGroup]="returnForm" (ngSubmit)="saveMaterialReturn()">
       <div class="row g-3">
@@ -201,4 +210,54 @@
       </table>
     </div>
   </section>
+
+  <ng-template #materialWorkItemsDialog>
+      <div class="material-work-items-dialog" role="dialog" aria-modal="true" aria-labelledby="materialWorkItemsTitle">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="materialWorkItemsTitle">Select Material Work Items</h2>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeMaterialWorkItemsDialog()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+              <thead>
+                <tr>
+                  <th class="selection-column">Select</th>
+                  <th>S.No</th>
+                  <th>Material</th>
+                  <th>Description</th>
+                  <th class="text-end">Work Qty</th>
+                  <th class="text-end">Available Stock</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of materialWorkItems; let i = index">
+                  <td>
+                    <input type="checkbox" [checked]="item.selected" (change)="item.selected = $any($event.target).checked" [disabled]="item.available_qty <= 0 || item.already_added" [attr.aria-label]="'Select ' + item.material_name">
+                  </td>
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ item.material_code }} - {{ item.material_name }}</td>
+                  <td>{{ item.description || '-' }}</td>
+                  <td class="text-end">{{ item.qty }}</td>
+                  <td class="text-end" [class.text-danger]="item.available_qty <= 0">{{ item.available_qty }}</td>
+                  <td>
+                    <span *ngIf="item.already_added" class="text-muted">Already added</span>
+                    <span *ngIf="!item.already_added && item.available_qty <= 0" class="text-danger">Out of stock</span>
+                    <span *ngIf="!item.already_added && item.available_qty > 0" class="text-success">Available</span>
+                  </td>
+                </tr>
+                <tr *ngIf="!materialWorkItems.length">
+                  <td colspan="7" class="text-center text-muted py-4">No material-type work items are available.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="closeMaterialWorkItemsDialog()">Cancel</button>
+          <button type="button" class="btn btn-primary" (click)="addSelectedWorkItems()">Add Material</button>
+        </div>
+      </div>
+  </ng-template>
 </div>

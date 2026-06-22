@@ -1,0 +1,30 @@
+<div class="notification-page">
+  <div class="notification-page-header">
+    <div><h1>Notifications</h1><p>Payments, stock alerts, approvals, and follow-ups</p></div>
+    <button type="button" class="btn btn-outline-primary" (click)="markAllRead()">Mark All Read</button>
+  </div>
+
+  <div class="notification-filters">
+    <select class="form-select" [(ngModel)]="selectedType">
+      <option value="">All notification types</option>
+      <option *ngFor="let type of types" [value]="type">{{ typeLabel(type) }}</option>
+    </select>
+    <label><input type="checkbox" [(ngModel)]="unreadOnly"> Unread only</label>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="loadNotifications()">Refresh</button>
+  </div>
+
+  <div class="notification-list">
+    <button type="button" class="notification-card" *ngFor="let item of filteredNotifications"
+      [class.unread]="!item.is_read" [class.critical]="item.severity === 'CRITICAL'"
+      [class.warning]="item.severity === 'WARNING'" (click)="openNotification(item)">
+      <span class="severity-dot"></span>
+      <span class="notification-content">
+        <span class="notification-title-row"><strong>{{ item.title }}</strong><small>{{ displayDateTime(item.updated_at) }}</small></span>
+        <span class="notification-message">{{ item.message }}</span>
+        <span class="notification-meta">{{ typeLabel(item.notification_type) }}<span *ngIf="item.reference_no"> · {{ item.reference_no }}</span></span>
+      </span>
+      <span class="unread-marker" *ngIf="!item.is_read"></span>
+    </button>
+    <div class="empty-state" *ngIf="!filteredNotifications.length">No active notifications match this filter.</div>
+  </div>
+</div>

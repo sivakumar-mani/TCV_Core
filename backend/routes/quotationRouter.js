@@ -8,6 +8,7 @@ const {
   updateQuotation,
   approveQuotation,
   submitQuotation,
+  updateCustomerResponse,
   deleteQuotation
 } = require('../controller/quotationController');
 
@@ -26,6 +27,7 @@ router.patch('/:quotation_id', (req, res) => {
 });
 router.patch('/:quotation_id/approve', approveQuotation);
 router.patch('/:quotation_id/submit', submitQuotation);
+router.patch('/:quotation_id/customer-response', updateCustomerResponse);
 router.delete('/', deleteQuotation);
 router.delete('/delete', deleteQuotation);
 router.delete('/:quotation_id', deleteQuotation);

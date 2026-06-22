@@ -42,7 +42,8 @@ export class WorkflowList {
       cellRenderer: ActionMenu,
       cellRendererParams: {
         dropdownMenu: [
-          { label: 'Review', action: (row: any) => this.review(row) }
+          { label: 'Review', action: (row: any) => this.review(row) },
+          { label: 'Approve', action: (row: any) => this.approve(row) }
         ]
       },
       filter: false,
@@ -78,11 +79,38 @@ export class WorkflowList {
   review(row: any) {
     if (row.module_name === 'QUOTATION') {
       this.router.navigate(['/quotations/preview', row.reference_id]);
+    } else if (row.module_name === 'WORK_ORDER') {
+      this.router.navigate(['/work-orders/preview', row.reference_id]);
+    } else if (row.module_name === 'MATERIAL_ISSUE') {
+      this.router.navigate(['/work-orders/material-issue', row.work_order_id], { queryParams: { preview: true, workflow: true } });
     } else if (row.module_name === 'SUPPLIER_PAYMENT') {
       this.router.navigate(['/supplier-payments'], {
         queryParams: { supplierId: row.supplier_id, purchaseId: row.reference_id }
       });
     }
+  }
+
+  approve(row: any) {
+    if (['WORK_ORDER', 'MATERIAL_ISSUE'].includes(row.module_name)) {
+      alert('Preview this request to choose its approval action.');
+      return;
+    }
+    if (row.module_name !== 'MATERIAL_ISSUE') {
+      alert('Approve this request from its review screen.');
+      return;
+    }
+    if (row.workflow_status !== 'PENDING') {
+      alert('This request has already been reviewed.');
+      return;
+    }
+    if (!confirm(`Approve ${row.reference_no}?`)) return;
+    this.workflowService.approveWorkflow(row.workflow_id).subscribe({
+      next: (response: any) => {
+        this.commonMethods.handleTokenAndMessage(response);
+        this.loadWorkflows();
+      },
+      error: (error: any) => this.commonMethods.handleError(error)
+    });
   }
 
   money(value: number | string) {

@@ -1,6 +1,8 @@
 export  interface loginData{
     userName: string,
-    password: string
+    password: string,
+    captchaToken: string,
+    captchaAnswer: number
 }
 
 export  interface forgotPasswordData{

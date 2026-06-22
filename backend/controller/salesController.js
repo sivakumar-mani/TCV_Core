@@ -44,6 +44,31 @@ const getSales = async (req, res) => {
     }
 };
 
+const getSaleById = async (req, res) => {
+    try {
+        const conn = connection.promise();
+        await ensureSalesTable(conn);
+        const [sales] = await conn.query(
+            `SELECT sm.*, c.customer_name, c.address, c.phone, c.email,
+                    qm.quotation_no, wo.work_order_no
+             FROM sales_master sm
+             JOIN customers c ON c.customer_id = sm.customer_id
+             LEFT JOIN quotation_master qm ON qm.quotation_id = sm.quotation_id
+             LEFT JOIN work_orders wo ON wo.work_order_id = sm.work_order_id
+             WHERE sm.sales_id = ?`,
+            [req.params.sales_id]
+        );
+        if (!sales.length) return res.status(404).json({ success: false, message: 'Invoice not found' });
+        const [items] = await conn.query(
+            `SELECT * FROM sales_items WHERE sales_id = ? ORDER BY line_no, sales_item_id`,
+            [req.params.sales_id]
+        );
+        return res.json({ success: true, data: { ...sales[0], items } });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
 const addSale = async (req, res) => {
     try {
         const conn = connection.promise();
@@ -146,6 +171,7 @@ const deleteSale = async (req, res) => {
 
 module.exports = {
     getSales,
+    getSaleById,
     addSale,
     updateSale,
     deleteSale

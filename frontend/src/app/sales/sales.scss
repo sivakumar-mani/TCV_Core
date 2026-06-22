@@ -4,3 +4,18 @@ span { font-size: 0.82rem; font-weight: 500; }
 .span-3 { grid-column: span 3; }
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; }
 @media (max-width: 768px) { .module-form { grid-template-columns: 1fr; } .span-3 { grid-column: span 1; } }
+
+.invoice-preview { font-size: 0.82rem; padding: 1rem; }
+.invoice-preview-header { align-items: center; border-bottom: 1px solid #dee2e6; display: flex; justify-content: space-between; padding-bottom: 0.75rem; }
+.invoice-preview-header h2 { font-size: 1.2rem; margin: 0; }
+.invoice-meta { display: grid; gap: 0.75rem; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 1rem 0; }
+.invoice-meta span, .invoice-summary span { color: #667085; display: block; font-size: 0.72rem; }
+.invoice-meta strong { display: block; overflow-wrap: anywhere; }
+.invoice-items { max-height: 320px; overflow: auto; }
+.invoice-items .table { font-size: 0.78rem; min-width: 720px; }
+.invoice-summary { display: grid; gap: 0.5rem; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-left: auto; max-width: 520px; padding-top: 1rem; }
+.invoice-summary div { border-bottom: 1px solid #e8eaed; padding: 0.35rem; text-align: right; }
+.invoice-preview-actions { border-top: 1px solid #dee2e6; display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem; padding-top: 0.75rem; }
+:host ::ng-deep .invoice-preview-dialog-panel .mat-mdc-dialog-surface { overflow: hidden; }
+
+@media (max-width: 768px) { .invoice-meta, .invoice-summary { grid-template-columns: 1fr; } }

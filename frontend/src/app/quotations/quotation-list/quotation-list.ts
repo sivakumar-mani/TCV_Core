@@ -51,6 +51,9 @@ export class QuotationList {
         dropdownMenu: [
           { label: 'Preview', action: (row: any) => this.previewQuotation(row) },
           { label: 'Edit', action: (row: any) => this.editQuotation(row) },
+          { label: 'Accepted', action: (row: any) => this.setCustomerResponse(row, 'ACCEPTED') },
+          { label: 'Cancelled', action: (row: any) => this.setCustomerResponse(row, 'CANCELLED') },
+          { label: 'Expired', action: (row: any) => this.setCustomerResponse(row, 'EXPIRED') },
           { label: 'Delete', action: (row: any) => this.deleteQuotation(row) }
         ]
       },
@@ -110,6 +113,21 @@ export class QuotationList {
         this.ngxLoader.stop();
         this.commonMethods.handleError(error);
       }
+    });
+  }
+
+  setCustomerResponse(row: any, status: 'ACCEPTED' | 'CANCELLED' | 'EXPIRED') {
+    if (row.quotation_status !== 'SENT') {
+      alert('Only quotations sent to the customer can be updated.');
+      return;
+    }
+    if (!confirm(`Mark ${row.quotation_no} as ${status.toLowerCase()}?`)) return;
+    this.quotationService.updateCustomerResponse(row.quotation_id, status).subscribe({
+      next: (response: any) => {
+        this.commonMethods.handleTokenAndMessage(response);
+        this.loadQuotations();
+      },
+      error: (error: any) => this.commonMethods.handleError(error)
     });
   }
 

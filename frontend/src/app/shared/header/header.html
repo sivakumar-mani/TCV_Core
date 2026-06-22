@@ -13,10 +13,26 @@
       <mat-icon>search</mat-icon>
     </div>
     <span class="mid-spacer"></span>
-    <button mat-icon-button class="header-icon" aria-label="Notifications">
+    <button mat-icon-button class="header-icon" aria-label="Notifications" [matMenuTriggerFor]="notificationMenu" (menuOpened)="loadNotifications()">
       <mat-icon>notifications_none</mat-icon>
-      <span class="badge-dot">4</span>
+      <span class="badge-dot" *ngIf="unreadCount">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
     </button>
+    <mat-menu #notificationMenu="matMenu" class="notification-menu-panel" xPosition="before">
+      <div class="notification-menu" (click)="$event.stopPropagation()">
+        <div class="notification-menu-header">
+          <strong>Notifications</strong>
+          <button type="button" (click)="markAllNotificationsRead()" [disabled]="!unreadCount">Mark all read</button>
+        </div>
+        <button type="button" class="notification-menu-item" *ngFor="let item of notifications"
+          [class.unread]="!item.is_read" [class.critical]="item.severity === 'CRITICAL'"
+          [class.warning]="item.severity === 'WARNING'" (click)="openNotification(item)">
+          <span class="menu-severity-dot"></span>
+          <span><strong>{{ item.title }}</strong><small>{{ item.message }}</small></span>
+        </button>
+        <div class="notification-menu-empty" *ngIf="!notifications.length">No active notifications</div>
+        <button type="button" class="notification-view-all" (click)="viewAllNotifications()">View all notifications</button>
+      </div>
+    </mat-menu>
     <button mat-icon-button class="header-icon" aria-label="Messages">
       <mat-icon>chat_bubble_outline</mat-icon>
       <span class="badge-dot success">3</span>

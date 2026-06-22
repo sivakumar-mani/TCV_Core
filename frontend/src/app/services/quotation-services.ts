@@ -43,6 +43,10 @@ export class QuotationServices {
     return this.http.patch(`${this.endpoint}/${quotationId}/submit`, {}, { headers: this.headers });
   }
 
+  updateCustomerResponse(quotationId: number, status: 'ACCEPTED' | 'CANCELLED' | 'EXPIRED') {
+    return this.http.patch(`${this.endpoint}/${quotationId}/customer-response`, { status }, { headers: this.headers });
+  }
+
   deleteQuotation(data: any) {
     return this.http.delete(this.endpoint, {
       body: data,

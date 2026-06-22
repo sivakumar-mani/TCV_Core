@@ -1,7 +1,7 @@
 const connection = require('../connection');
 const { ensureCustomerSchema } = require('../utils/customerSchema');
 
-const quotationStatuses = ['DRAFT', 'SENT', 'APPROVED', 'REJECTED', 'EXPIRED', 'CONVERTED'];
+const quotationStatuses = ['DRAFT', 'SENT', 'APPROVED', 'ACCEPTED', 'CANCELLED', 'REJECTED', 'EXPIRED', 'CONVERTED'];
 
 const toNumber = (value, fallback = 0) => {
     const number = Number(value);
@@ -26,6 +26,8 @@ const columnExists = async (conn, tableName, columnName) => {
 };
 
 const ensureQuotationSupport = async (conn) => {
+    await conn.query(`ALTER TABLE quotation_master MODIFY quotation_status
+        ENUM('DRAFT','SENT','APPROVED','ACCEPTED','CANCELLED','REJECTED','EXPIRED','CONVERTED') NOT NULL DEFAULT 'DRAFT'`);
     await ensureCustomerSchema(conn);
 
     const additions = [
@@ -463,6 +465,26 @@ const submitQuotation = async (req, res) => {
     }
 };
 
+const updateCustomerResponse = async (req, res) => {
+    try {
+        await ensureQuotationSupport(connection.promise());
+        const quotationId = req.body.quotation_id || req.params.quotation_id;
+        const status = String(req.body.status || '').toUpperCase();
+        if (!['ACCEPTED', 'CANCELLED', 'EXPIRED'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Status must be ACCEPTED, CANCELLED, or EXPIRED' });
+        }
+        const [result] = await connection.promise().query(
+            `UPDATE quotation_master SET quotation_status = ?, updated_at = NOW()
+             WHERE quotation_id = ? AND quotation_status = 'SENT'`,
+            [status, quotationId]
+        );
+        if (!result.affectedRows) return res.status(400).json({ success: false, message: 'Only sent quotations can receive a customer response' });
+        return res.json({ success: true, message: `Quotation marked ${status.toLowerCase()}` });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
+
 const deleteQuotation = async (req, res) => {
     try {
         await ensureQuotationSupport(connection.promise());
@@ -483,5 +505,6 @@ module.exports = {
     updateQuotation,
     approveQuotation,
     submitQuotation,
+    updateCustomerResponse,
     deleteQuotation
 };

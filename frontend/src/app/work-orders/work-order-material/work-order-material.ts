@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
@@ -8,20 +9,26 @@ import { WorkOrderServices } from '../../services/work-order-services';
 import { CommonMethods } from '../../shared/common-methods';
 import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { SelectFormField } from '../../shared/select-form-field/select-form-field';
+import { downloadSimplePdf } from '../../shared/simple-pdf';
 
 @Component({
   selector: 'app-work-order-material',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, MatDialogModule, InputFormField, SelectFormField],
   templateUrl: './work-order-material.html',
   styleUrl: './work-order-material.scss',
 })
 export class WorkOrderMaterial {
+  @ViewChild('materialWorkItemsDialog') materialWorkItemsDialog!: TemplateRef<unknown>;
   workOrderId!: number;
   workOrder: any;
   materials: any[] = [];
   employees: any[] = [];
   employeeOptions: any[] = [];
   returnIssueOptions: any[] = [];
+  materialWorkItems: any[] = [];
+  materialWorkItemsDialogRef?: MatDialogRef<unknown>;
+  isPreviewMode = false;
+  isWorkflowPreview = false;
   issueTableForm!: FormGroup;
   returnForm!: FormGroup;
 
@@ -31,12 +38,15 @@ export class WorkOrderMaterial {
     private employeeService: EmployeeServices,
     private ngxLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
+    private dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit() {
     this.workOrderId = Number(this.route.snapshot.paramMap.get('id'));
+    this.isPreviewMode = this.route.snapshot.queryParamMap.get('preview') === 'true';
+    this.isWorkflowPreview = this.route.snapshot.queryParamMap.get('workflow') === 'true';
     this.buildForms();
     this.loadLookups();
     this.loadWorkOrder();
@@ -115,8 +125,10 @@ export class WorkOrderMaterial {
 
   createIssueRow(source: any = {}, existing = false) {
     return this.fb.group({
+      selected: [source.selected ?? true],
       issue_id: [source.issue_id || ''],
       issue_no: [source.issue_no || ''],
+      approval_status: [source.approval_status || (existing ? 'PENDING' : 'DRAFT')],
       material_id: [source.material_id || '', Validators.required],
       material_code: [source.material_code || ''],
       material_name: [source.material_name || ''],
@@ -134,13 +146,71 @@ export class WorkOrderMaterial {
     if (!this.workOrder) return;
 
     this.issueRows.clear();
-    (this.workOrder.material_issues || []).forEach((issue: any) => {
+    const issues = this.isWorkflowPreview
+      ? (this.workOrder.material_issues || []).filter((issue: any) => issue.approval_status === 'PENDING')
+      : (this.workOrder.material_issues || []);
+    issues.forEach((issue: any) => {
       this.issueRows.push(this.createIssueRow(issue, true));
     });
   }
 
   addMaterialRow() {
     this.issueRows.push(this.createIssueRow({ issued_date: this.today() }));
+  }
+
+  openMaterialWorkItemsDialog() {
+    const existingProductIds = new Set(this.issueRows.controls.map((row) => Number(row.get('product_id')?.value)));
+    this.materialWorkItems = (this.workOrder?.items || []).map((item: any) => {
+      const material = this.materials.find((entry) => Number(entry.product_id) === Number(item.product_id));
+      if (!material) return null;
+      const availableQty = Number(material.available_qty || 0);
+      const alreadyAdded = existingProductIds.has(Number(item.product_id));
+      return {
+        ...item,
+        material_id: material.material_id,
+        material_code: material.material_code,
+        material_name: material.material_name,
+        available_qty: availableQty,
+        already_added: alreadyAdded,
+        selected: false
+      };
+    }).filter(Boolean);
+    this.materialWorkItemsDialogRef = this.dialog.open(this.materialWorkItemsDialog, {
+      width: 'min(1100px, 94vw)',
+      maxWidth: '94vw',
+      maxHeight: '86vh',
+      panelClass: 'material-work-items-dialog-panel'
+    });
+  }
+
+  addSelectedWorkItems() {
+    const selectedItems = this.materialWorkItems.filter((item) => item.selected && !item.already_added && item.available_qty > 0);
+    if (!selectedItems.length) {
+      alert('Select at least one available material item.');
+      return;
+    }
+    selectedItems.forEach((item) => {
+      this.issueRows.push(this.createIssueRow({
+        material_id: item.material_id,
+        material_code: item.material_code,
+        material_name: item.material_name,
+        product_id: item.product_id,
+        issued_qty: Number(item.qty),
+        issued_to_employee_id: this.workOrder.assigned_to_employee_id,
+        available_qty: item.available_qty
+      }));
+    });
+    this.closeMaterialWorkItemsDialog();
+  }
+
+  closeMaterialWorkItemsDialog() {
+    this.materialWorkItemsDialogRef?.close();
+    this.materialWorkItemsDialogRef = undefined;
+    this.materialWorkItems = [];
+  }
+
+  materialStock(materialId: any) {
+    return Number(this.materials.find((item) => Number(item.material_id) === Number(materialId))?.available_qty || 0);
   }
 
   onIssueMaterialChange(index: number) {
@@ -181,6 +251,11 @@ export class WorkOrderMaterial {
       row.markAllAsTouched();
       return;
     }
+    const available = this.materialStock(row.get('material_id')?.value);
+    if (available <= 0 || Number(row.get('issued_qty')?.value) > available) {
+      alert(available <= 0 ? 'Stock is 0. This material cannot be selected.' : `Only ${available} is available.`);
+      return;
+    }
 
     this.ngxLoader.start();
     this.workOrderService.addMaterialIssue(this.workOrderId, row.getRawValue()).subscribe({
@@ -188,6 +263,67 @@ export class WorkOrderMaterial {
         this.ngxLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
         this.loadWorkOrder();
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleError(error);
+      }
+    });
+  }
+
+  saveMaterialList() {
+    const newRows = this.issueRows.controls
+      .map((control) => control as FormGroup)
+      .filter((row) => !row.get('issue_id')?.value);
+    if (!newRows.length) {
+      alert('Add at least one material before saving.');
+      return;
+    }
+    for (const row of newRows) {
+      const available = this.materialStock(row.get('material_id')?.value);
+      if (row.invalid || available <= 0 || Number(row.get('issued_qty')?.value) > available) {
+        row.markAllAsTouched();
+        alert(available <= 0 ? 'A selected material has stock 0.' : 'Check selected material quantities.');
+        return;
+      }
+    }
+    this.ngxLoader.start();
+    this.workOrderService.submitMaterialIssueList(
+      this.workOrderId,
+      newRows.map((row) => row.getRawValue())
+    ).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleTokenAndMessage(response);
+        this.loadWorkOrder();
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleError(error);
+        this.loadWorkOrder();
+      }
+    });
+  }
+
+  removeMaterialRow(index: number) {
+    const row = this.issueRows.at(index);
+    if (row.get('issue_id')?.value) return;
+    this.issueRows.removeAt(index);
+  }
+
+  get hasPendingMaterialList() {
+    return (this.workOrder?.material_issues || []).some((issue: any) => issue.approval_status === 'PENDING');
+  }
+
+  reviewMaterialList(action: 'ACCEPTED' | 'REJECTED') {
+    if (!this.hasPendingMaterialList) return;
+    if (!confirm(`${action === 'ACCEPTED' ? 'Accept' : 'Reject'} this material issue list?`)) return;
+    this.ngxLoader.start();
+    this.workOrderService.reviewMaterialIssueList(this.workOrderId, action).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleTokenAndMessage(response);
+        this.router.navigateByUrl('/workflow-approval');
       },
       error: (error: any) => {
         this.ngxLoader.stop();
@@ -229,6 +365,29 @@ export class WorkOrderMaterial {
 
   back() {
     this.router.navigateByUrl('/work-orders');
+  }
+
+  downloadPdf() {
+    if (!this.workOrder) return;
+    const issues = this.issueRows.controls.map((row) => row.getRawValue());
+    downloadSimplePdf({
+      filename: `material-issue-${this.workOrder.work_order_no}.pdf`,
+      title: 'Material Issue',
+      details: [
+        ['Work Order No', this.workOrder.work_order_no],
+        ['Customer', this.workOrder.customer_name],
+        ['Work Status', this.workOrder.work_status],
+        ['Assigned To', this.workOrder.assigned_employee_name],
+        ['Site', this.workOrder.site_address],
+        ['Issue Status', issues[0]?.approval_status || '-']
+      ],
+      columns: ['S.No', 'Issue No', 'Material', 'Qty', 'Issue To', 'Status'],
+      rows: issues.map((issue: any, index: number) => [
+        index + 1, issue.issue_no, issue.material_name, issue.issued_qty,
+        issue.issued_to_employee_name || this.workOrder.assigned_employee_name,
+        issue.approval_status
+      ])
+    });
   }
 
   displayDate(value: string | Date) {

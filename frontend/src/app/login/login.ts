@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { MatCard, MatCardModule } from '@angular/material/card';
 import { InputFormField } from '../shared/input-form-field/input-form-field';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -15,7 +16,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ForgotPassword } from '../user/dialog/forgot-password/forgot-password';
 @Component({
   selector: 'app-login',
-  imports: [MatCardModule, InputFormField, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule],
+  imports: [CommonModule, MatCardModule, InputFormField, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
@@ -23,6 +24,8 @@ export class Login {
 
   loginForm: any = FormGroup;
   responseMessage: string = '';
+  captchaQuestion = '';
+  captchaToken = '';
   router = inject(Router)
   dialog = inject(MatDialog);
 
@@ -40,21 +43,29 @@ export class Login {
   ) { }
   ngOnInit(): void {
     this.initLoginForm();
+    this.refreshCaptcha();
   }
 
   initLoginForm() {
     this.loginForm = this.fb.group({
       userName: [null, Validators.required],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
+      captchaAnswer: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]]
     })
 
   }
   onLogin() {
+    if (this.loginForm.invalid || !this.captchaToken) {
+      this.loginForm.markAllAsTouched();
+      return;
+    }
     this.ngxLoader.start();
     var formData = this.loginForm.value,
       data = {
         userName: formData.userName,
-        password: formData.password
+        password: formData.password,
+        captchaToken: this.captchaToken,
+        captchaAnswer: Number(formData.captchaAnswer)
       }
     this.userService.login(data).subscribe({
       next: (response: any) => {
@@ -70,8 +81,23 @@ export class Login {
           this.responseMessage = globalConstants.genericError
         }
         this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex);
+        this.loginForm.get('captchaAnswer')?.reset('');
+        this.refreshCaptcha();
       }
     })
+  }
+
+  refreshCaptcha() {
+    this.userService.getCaptcha().subscribe({
+      next: (captcha) => {
+        this.captchaQuestion = captcha.question;
+        this.captchaToken = captcha.token;
+      },
+      error: () => {
+        this.captchaQuestion = 'Unable to load CAPTCHA';
+        this.captchaToken = '';
+      }
+    });
   }
 
   forgotPassword() {

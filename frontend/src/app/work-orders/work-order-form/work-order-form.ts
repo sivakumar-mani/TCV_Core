@@ -12,6 +12,7 @@ import { CommonMethods } from '../../shared/common-methods';
 import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { SelectFormField } from '../../shared/select-form-field/select-form-field';
 import { TextareaFormField } from '../../shared/textarea-form-field/textarea-form-field';
+import { downloadSimplePdf } from '../../shared/simple-pdf';
 
 @Component({
   selector: 'app-work-order-form',
@@ -32,7 +33,9 @@ export class WorkOrderForm {
   employeeOptionList: { label: string; value: string | number }[] = [{ label: 'Select employee', value: '' }];
   supervisorOptionList: { label: string; value: string | number }[] = [{ label: 'Select supervisor', value: '' }];
   isEditMode = false;
+  isPreviewMode = false;
   workOrderId!: number;
+  currentWorkOrder: any;
 
   workTypes = ['INSTALLATION', 'SERVICE', 'REPAIR', 'MAINTENANCE', 'OTHER'];
   workStatuses = ['PENDING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'CANCELLED'];
@@ -70,6 +73,11 @@ export class WorkOrderForm {
 
   get materialReturnForm() {
     return this.workOrderForm.get('material_return') as FormGroup;
+  }
+
+  get customerQuotations() {
+    const customerId = Number(this.workOrderForm?.get('customer_id')?.value);
+    return customerId ? this.quotations.filter((item) => Number(item.customer_id) === customerId) : [];
   }
 
   buildForm() {
@@ -111,7 +119,8 @@ export class WorkOrderForm {
   initializeForm() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.isEditMode = true;
+      this.isPreviewMode = this.router.url.includes('/preview/');
+      this.isEditMode = !this.isPreviewMode;
       this.workOrderId = Number(id);
       this.loadWorkOrder(this.workOrderId);
     } else {
@@ -163,7 +172,7 @@ export class WorkOrderForm {
     this.quotationService.getQuotations().subscribe({
       next: (response: any) => {
         const rows = Array.isArray(response) ? response : response.data ?? [];
-        this.quotations = rows.filter((item: any) => ['APPROVED', 'SENT'].includes(item.quotation_status));
+        this.quotations = rows.filter((item: any) => item.quotation_status === 'ACCEPTED');
       },
       error: (error: any) => this.commonMethods.handleError(error)
     });
@@ -186,6 +195,7 @@ export class WorkOrderForm {
       next: (response: any) => {
         this.ngxLoader.stop();
         const workOrder = response?.data ?? response;
+        this.currentWorkOrder = workOrder;
         this.items.clear();
         (workOrder.items || []).forEach((item: any) => this.addItem(item));
         this.materialIssues.clear();
@@ -197,6 +207,7 @@ export class WorkOrderForm {
           start_date: this.toInputDate(workOrder.start_date),
           completion_date: this.toInputDate(workOrder.completion_date)
         });
+        if (this.isPreviewMode) this.workOrderForm.disable();
       },
       error: (error: any) => {
         this.ngxLoader.stop();
@@ -235,6 +246,16 @@ export class WorkOrderForm {
     });
   }
 
+  onCustomerChange() {
+    const quotationId = Number(this.workOrderForm.get('quotation_id')?.value);
+    if (!quotationId) return;
+    const quotation = this.quotations.find((item) => Number(item.quotation_id) === quotationId);
+    if (quotation && Number(quotation.customer_id) !== Number(this.workOrderForm.get('customer_id')?.value)) {
+      this.workOrderForm.get('quotation_id')?.setValue('');
+      this.resetQuoteDerivedRows(false);
+    }
+  }
+
   addItem(item: any = {}) {
     this.items.push(this.fb.group({
       quotation_item_id: [item.quotation_item_id || ''],
@@ -250,12 +271,12 @@ export class WorkOrderForm {
     }));
   }
 
-  resetQuoteDerivedRows() {
+  resetQuoteDerivedRows(resetCustomer = true) {
     this.items.clear();
     this.addItem();
     this.materialIssues.clear();
     this.workOrderForm.patchValue({
-      customer_id: '',
+      ...(resetCustomer ? { customer_id: '' } : {}),
       site_address: '',
       site_contact_person: '',
       site_contact_phone: '',
@@ -472,6 +493,50 @@ export class WorkOrderForm {
 
   cancel() {
     this.router.navigateByUrl('/work-orders');
+  }
+
+  downloadPdf() {
+    const order = this.currentWorkOrder;
+    if (!order) return;
+    downloadSimplePdf({
+      filename: `work-order-${order.work_order_no}.pdf`,
+      title: 'Work Order',
+      details: [
+        ['Work Order No', order.work_order_no],
+        ['Status', order.work_status],
+        ['Customer', order.customer_name],
+        ['Assigned To', order.assigned_employee_name],
+        ['Start Date', this.toInputDate(order.start_date)],
+        ['Site', order.site_address]
+      ],
+      columns: ['S.No', 'Item', 'Description', 'Qty', 'Rate', 'Amount'],
+      rows: (order.items || []).map((item: any, index: number) => [
+        index + 1, item.item_name, item.description, item.qty,
+        Number(item.selling_price || 0).toFixed(2), Number(item.amount || 0).toFixed(2)
+      ])
+    });
+  }
+
+  reviewWorkOrder(action: 'IN_PROGRESS' | 'REJECTED') {
+    if (!this.workOrderId || this.currentWorkOrder?.approval_status !== 'PENDING') return;
+    const label = action === 'IN_PROGRESS' ? 'move this work order to in progress' : 'reject this work order';
+    if (!confirm(`Are you sure you want to ${label}?`)) return;
+    this.ngxLoader.start();
+    this.workOrderService.reviewWorkOrder(this.workOrderId, action).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleTokenAndMessage(response);
+        if (action === 'IN_PROGRESS') {
+          this.router.navigate(['/work-orders/material-issue', this.workOrderId]);
+        } else {
+          this.router.navigateByUrl('/work-orders');
+        }
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleError(error);
+      }
+    });
   }
 
   money(value: number | string) {

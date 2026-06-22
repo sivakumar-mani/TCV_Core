@@ -94,6 +94,25 @@
   background: #198754;
 }
 
+:host ::ng-deep .notification-menu-panel {
+  max-width: 390px !important;
+  min-width: 350px !important;
+}
+
+.notification-menu { max-height: 480px; overflow: auto; width: 370px; }
+.notification-menu-header { align-items: center; border-bottom: 1px solid #e4e9f0; display: flex; justify-content: space-between; padding: 0.75rem; }
+.notification-menu-header button { background: transparent; border: 0; color: #4154f1; font-size: 0.75rem; }
+.notification-menu-item { align-items: flex-start; background: #fff; border: 0; border-bottom: 1px solid #eef1f5; display: flex; gap: 0.6rem; padding: 0.7rem 0.75rem; text-align: left; width: 100%; }
+.notification-menu-item:hover, .notification-menu-item.unread { background: #f4f7ff; }
+.notification-menu-item > span:nth-child(2) { display: grid; gap: 0.2rem; }
+.notification-menu-item strong { color: #1d2939; font-size: 0.8rem; }
+.notification-menu-item small { color: #667085; font-size: 0.72rem; line-height: 1.3; }
+.menu-severity-dot { background: #6c8ebf; border-radius: 50%; flex: 0 0 8px; height: 8px; margin-top: 0.3rem; width: 8px; }
+.notification-menu-item.warning .menu-severity-dot { background: #e5a000; }
+.notification-menu-item.critical .menu-severity-dot { background: #d92d20; }
+.notification-menu-empty { color: #667085; padding: 1.5rem; text-align: center; }
+.notification-view-all { background: #fff; border: 0; color: #4154f1; font-size: 0.78rem; font-weight: 600; padding: 0.7rem; width: 100%; }
+
 .profile-trigger {
   color: #012970 !important;
   font-size: 0.86rem;
@@ -125,4 +144,7 @@
   .profile-name {
     display: none;
   }
+
+  :host ::ng-deep .notification-menu-panel { min-width: min(350px, 94vw) !important; }
+  .notification-menu { width: min(350px, 94vw); }
 }

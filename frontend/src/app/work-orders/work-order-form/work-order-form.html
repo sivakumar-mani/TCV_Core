@@ -8,9 +8,12 @@
 
 <div class="work-order-page">
   <div class="page-header">
-    <h1>{{ isEditMode ? 'Edit Work Order' : 'Add Work Order' }}</h1>
+    <h1>{{ isPreviewMode ? 'Work Order Preview' : (isEditMode ? 'Edit Work Order' : 'Add Work Order') }}</h1>
     <div class="header-actions">
       <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Back</button>
+      <button *ngIf="isPreviewMode" type="button" class="btn btn-dark" (click)="downloadPdf()">Download PDF</button>
+      <button *ngIf="isPreviewMode && currentWorkOrder?.approval_status === 'PENDING'" type="button" class="btn btn-success" (click)="reviewWorkOrder('IN_PROGRESS')">Move to In Progress</button>
+      <button *ngIf="isPreviewMode && currentWorkOrder?.approval_status === 'PENDING'" type="button" class="btn btn-danger" (click)="reviewWorkOrder('REJECTED')">Reject</button>
       <button *ngIf="isEditMode" type="button" class="btn btn-outline-primary" (click)="createInvoice()">Create Invoice</button>
     </div>
   </div>
@@ -24,15 +27,15 @@
         </div>
         <div class="col-md-3">
           <label class="form-label">Quotation</label>
-          <select class="form-control" formControlName="quotation_id" (change)="onQuotationChange()" [attr.disabled]="isEditMode ? true : null">
+          <select class="form-control" formControlName="quotation_id" (change)="onQuotationChange()" [attr.disabled]="isEditMode || !workOrderForm.get('customer_id')?.value ? true : null">
             <option value="">Direct work order</option>
-            <option *ngFor="let quotation of quotations" [value]="quotation.quotation_id">
+            <option *ngFor="let quotation of customerQuotations" [value]="quotation.quotation_id">
               {{ quotation.quotation_no }} - {{ quotation.customer_name }}
             </option>
           </select>
         </div>
         <div class="col-md-3">
-          <app-select-form-field [label]="'Customer'" [options]="customerOptionList" [formControl]="$any(workOrderForm.controls['customer_id'])"></app-select-form-field>
+          <app-select-form-field [label]="'Customer'" [options]="customerOptionList" [formControl]="$any(workOrderForm.controls['customer_id'])" (change)="onCustomerChange()"></app-select-form-field>
         </div>
         <div class="col-md-3">
           <app-select-form-field [label]="'Assigned To'" [options]="employeeOptionList" [formControl]="$any(workOrderForm.controls['assigned_to_employee_id'])"></app-select-form-field>
@@ -123,7 +126,7 @@
       </div>
     </section>
 
-    <div class="form-actions">
+    <div class="form-actions" *ngIf="!isPreviewMode">
       <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
       <button type="submit" class="btn btn-primary" [disabled]="workOrderForm.invalid">
         {{ isEditMode ? 'Update' : 'Create Work Order' }}

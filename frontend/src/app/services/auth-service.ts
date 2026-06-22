@@ -8,9 +8,17 @@ export class AuthService {
   
   router = inject(Router);
 
+  public hasToken(): boolean {
+    return Boolean(localStorage.getItem('token'));
+  }
+
+  public logout(): void {
+    localStorage.removeItem('token');
+    this.router.navigateByUrl('/login');
+  }
+
   public isAuthendicated(): boolean{
-    const token = localStorage.getItem('token');
-    if(!token){
+    if(!this.hasToken()){
       this.router.navigate(['/login']);
       return false;
     }else {
