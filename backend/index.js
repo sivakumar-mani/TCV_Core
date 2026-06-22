@@ -23,12 +23,21 @@ const salesRoute = require('./routes/salesRouter')
 const serviceTicketRoute = require('./routes/serviceTicketRouter')
 const warrantyRoute = require('./routes/warrantyRouter')
 const notificationRoute = require('./routes/notificationRouter')
+const permissionRoute = require('./routes/permissionRouter')
+const auth = require('./services/authendication');
+const { apiModules } = require('./utils/permissionCatalog');
 const app = express()
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/api/permissions', permissionRoute);
+Object.entries(apiModules).forEach(([pathName, permission]) => {
+  app.use(`/api/${pathName}`, auth.authendicateToken, auth.requirePermission(permission));
+  app.use(`/api/v1/${pathName}`, auth.authendicateToken, auth.requirePermission(permission));
+});
 
 app.use('/api/user', userRoute);
 app.use('/api/brand', brandRoute);

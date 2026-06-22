@@ -82,6 +82,21 @@ const getCustomers = async (req, res) => {
     }
 };
 
+const getMarketingEmployees = async (_req, res) => {
+  try {
+    const [rows] = await connection.promise().query(
+      `SELECT employee_id, employee_code,
+              CONCAT_WS(' ', first_name, last_name) AS employee_name, is_active
+       FROM employees
+       WHERE is_active = 1
+       ORDER BY first_name, last_name`
+    );
+    return res.json(rows);
+  } catch (error) {
+    return res.status(500).json({ message: 'Marketing employee lookup failed', error: error.message });
+  }
+};
+
 const getCustomerById = async (req, res) => {
     try {
         await ensureCustomerSchema(connection.promise());
@@ -287,6 +302,7 @@ const deleteCustomer = async (req, res) => {
 };
 
 module.exports = {
+  getMarketingEmployees,
     getCustomers,
     getCustomerById,
     addCustomer,

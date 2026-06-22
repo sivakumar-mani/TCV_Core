@@ -1,0 +1,26 @@
+<mat-toolbar class="p-0 border-bottom">
+  <nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><mat-icon>home</mat-icon></li><li class="breadcrumb-item">Administration</li><li class="breadcrumb-item active">Role Permissions</li></ol></nav>
+</mat-toolbar>
+
+<section class="permission-page">
+  <div class="page-heading">
+    <div><h1>Role Permissions</h1><p>Choose which screens and actions each role can use. Administrators always retain full access.</p></div>
+    <button type="button" class="save-button" (click)="save()" [disabled]="saving || !selectedRole">{{ saving ? 'Saving...' : 'Save Permissions' }}</button>
+  </div>
+
+  <div class="role-tabs" aria-label="Select role">
+    <button *ngFor="let role of roles" type="button" [class.active]="selectedRole === role" (click)="selectedRole = role; buildMatrix()">{{ role | titlecase }}</button>
+  </div>
+
+  <div class="permission-group" *ngFor="let group of groups()">
+    <h2>{{ group }}</h2>
+    <div class="permission-row header-row"><span>Screen Name</span><span>View</span><span>Create</span><span>Edit</span><span>Delete</span></div>
+    <div class="permission-row" *ngFor="let item of screens(group)">
+      <span class="screen"><strong>{{ item.label }}</strong><small>{{ item.route }}</small></span>
+      <label><input type="checkbox" [ngModel]="matrix[item.key].can_view" (ngModelChange)="setAction(item, 'can_view', $event)"><span>View</span></label>
+      <label><input type="checkbox" [ngModel]="matrix[item.key].can_create" (ngModelChange)="setAction(item, 'can_create', $event)"><span>Create</span></label>
+      <label><input type="checkbox" [ngModel]="matrix[item.key].can_update" (ngModelChange)="setAction(item, 'can_update', $event)"><span>Edit</span></label>
+      <label><input type="checkbox" [ngModel]="matrix[item.key].can_delete" (ngModelChange)="setAction(item, 'can_delete', $event)"><span>Delete</span></label>
+    </div>
+  </div>
+</section>

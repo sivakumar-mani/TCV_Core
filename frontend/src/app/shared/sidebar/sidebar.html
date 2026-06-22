@@ -1,115 +1,16 @@
 <mat-nav-list aria-label="Main navigation" [class.is-collapsed]="collapsed">
-  <a mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
-    <mat-icon matListIcon>dashboard</mat-icon>
-    <span matLine class="nav-label">Dashboard</span>
+  <a *ngIf="permissions.can('DASHBOARD')" mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
+    <mat-icon matListIcon>dashboard</mat-icon><span matLine class="nav-label">Dashboard</span>
   </a>
-
   <mat-accordion class="app-nav-accordion" [multi]="false" *ngIf="!collapsed">
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon matListIcon>groups</mat-icon>
-          <span matLine>Business Partners</span>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
+    <mat-expansion-panel *ngFor="let group of groups" [style.display]="visible(group) ? '' : 'none'">
+      <mat-expansion-panel-header><mat-panel-title><mat-icon matListIcon>{{ group.icon }}</mat-icon><span matLine>{{ group.label }}</span></mat-panel-title></mat-expansion-panel-header>
       <mat-nav-list>
-        <a mat-list-item routerLink="/customers" routerLinkActive="active-link">Customers</a>
-        <a mat-list-item routerLink="/suppliers" routerLinkActive="active-link">Suppliers</a>
-      </mat-nav-list>
-    </mat-expansion-panel>
-
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon matListIcon>inventory</mat-icon>
-          <span matLine>Inventory</span>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-nav-list>
-        <a mat-list-item routerLink="/brands" routerLinkActive="active-link">Brands</a>
-        <a mat-list-item routerLink="/categoriesLists" routerLinkActive="active-link">Categories</a>
-        <a mat-list-item routerLink="/productList" routerLinkActive="active-link">Products</a>
-        <a mat-list-item routerLink="/stock" routerLinkActive="active-link">Stock</a>
-        <a mat-list-item routerLink="/purchases" routerLinkActive="active-link">Purchases</a> 
-      </mat-nav-list>
-    </mat-expansion-panel>
-
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon matListIcon>request_quote</mat-icon>
-          <span matLine>Sales</span>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-nav-list>
-        <a mat-list-item routerLink="/quotations" routerLinkActive="active-link">Quotations</a>
-        <a mat-list-item routerLink="/sales" routerLinkActive="active-link">Sales</a>
-        <a mat-list-item routerLink="/work-orders" routerLinkActive="active-link">Work Orders</a>
-        <a mat-list-item routerLink="/customer-payments" routerLinkActive="active-link">Customer Payments</a>
-        <a mat-list-item routerLink="/supplier-payments" routerLinkActive="active-link">Supplier Payments</a>
-      </mat-nav-list>
-    </mat-expansion-panel>
-
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon matListIcon>support_agent</mat-icon>
-          <span matLine>Service</span>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-nav-list>
-        <a mat-list-item routerLink="/service-tickets" routerLinkActive="active-link">Service Tickets</a>
-        <a mat-list-item routerLink="/warranty-master" routerLinkActive="active-link">Warranty Master</a>
-      </mat-nav-list>
-    </mat-expansion-panel>
-
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon matListIcon>badge</mat-icon>
-          <span matLine>HR Process</span>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-nav-list>
-        <a mat-list-item routerLink="/employees" routerLinkActive="active-link">Employees</a>
-        <a mat-list-item routerLink="/employee-attendance" routerLinkActive="active-link">Employee Attendance</a>
-        <a mat-list-item routerLink="/employee-salary" routerLinkActive="active-link">Employee Salary</a>
-      </mat-nav-list>
-    </mat-expansion-panel>
-
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon matListIcon>admin_panel_settings</mat-icon>
-          <span matLine>Administration</span>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-nav-list>
-        <a mat-list-item routerLink="/workflow-approval" routerLinkActive="active-link">Workflow Approvals</a>
-        <a mat-list-item routerLink="/users" routerLinkActive="active-link">Users</a>
-        <a mat-list-item routerLink="/audit-logs" routerLinkActive="active-link">Audit Logs</a>
+        <a *ngFor="let item of group.items" [style.display]="permissions.can(item[2]) ? '' : 'none'" mat-list-item [routerLink]="item[1]" routerLinkActive="active-link">{{ item[0] }}</a>
       </mat-nav-list>
     </mat-expansion-panel>
   </mat-accordion>
-
   <div class="collapsed-links" *ngIf="collapsed">
-    <a mat-list-item routerLink="/customers" routerLinkActive="active-link" title="Business Partners">
-      <mat-icon matListIcon>groups</mat-icon>
-    </a>
-    <a mat-list-item routerLink="/productList" routerLinkActive="active-link" title="Inventory">
-      <mat-icon matListIcon>inventory</mat-icon>
-    </a>
-    <a mat-list-item routerLink="/work-orders" routerLinkActive="active-link" title="Sales">
-      <mat-icon matListIcon>request_quote</mat-icon>
-    </a>
-    <a mat-list-item routerLink="/employees" routerLinkActive="active-link" title="HR Process">
-      <mat-icon matListIcon>badge</mat-icon>
-    </a>
-    <a mat-list-item routerLink="/service-tickets" routerLinkActive="active-link" title="Service">
-      <mat-icon matListIcon>support_agent</mat-icon>
-    </a>
-    <a mat-list-item routerLink="/users" routerLinkActive="active-link" title="Administration">
-      <mat-icon matListIcon>admin_panel_settings</mat-icon>
-    </a>
+    <a *ngFor="let group of groups" [style.display]="visible(group) ? '' : 'none'" mat-list-item [routerLink]="group.items[0][1]" routerLinkActive="active-link" [title]="group.label"><mat-icon matListIcon>{{ group.icon }}</mat-icon></a>
   </div>
 </mat-nav-list>

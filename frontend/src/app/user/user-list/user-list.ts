@@ -13,6 +13,7 @@ import { ConfirmationPopup } from '../../shared/confirmation-popup/confirmation-
 import { Snackbar } from '../../services/snackbar';
 import { globalConstants } from '../../services/global-constants';
 import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
+import { PermissionService } from '../../services/permission.service';
 @Component({
   selector: 'app-user-list',
   imports: [MatIconModule, MatToolbarModule, AgGridList],
@@ -36,7 +37,8 @@ export class UserList {
   constructor(private userService: UserServices,
     private ngxLoader: NgxUiLoaderService,
     private router: Router,
-    private snackBarService :Snackbar
+    private snackBarService :Snackbar,
+    public permissions: PermissionService
   ) {
     this.rowSelection = {
       mode: 'multiRow',
@@ -181,10 +183,11 @@ delete(userData:any){
   maxWidth: 120,
   cellRenderer: ActionMenu,
   cellRendererParams: {
+    permissionKey: 'USERS',
     dropdownMenu: [
       { label: 'View', action: (userData:any) => this.viewUser(userData) },
-      { label: 'Edit', action: (userData:any) => this.editUser(userData) },
-      { label: 'Delete', action: (userData:any) => this.delete(userData) }
+      { label: 'Edit', permission: 'update', action: (userData:any) => this.editUser(userData) },
+      { label: 'Delete', permission: 'delete', action: (userData:any) => this.delete(userData) }
     ]
   },
   filter: false,

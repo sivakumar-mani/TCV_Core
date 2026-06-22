@@ -8,7 +8,7 @@
         placeholder="Search..."
         [(ngModel)]="quickFilterText">
       <button
-        *ngIf="showAddButton"
+        *ngIf="canAdd()"
         type="button"
         class="btn-yes"
         (click)="add.emit()">

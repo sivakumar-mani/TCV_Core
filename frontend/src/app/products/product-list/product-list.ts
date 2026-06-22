@@ -5,6 +5,7 @@ import { ProductService } from '../../services/product-service';
 import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 import { ActionMenu } from '../../shared/list-action-menu';
 import { Product } from '../dialog/product/product';
+import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-product-list',
@@ -65,8 +66,9 @@ export class ProductList {
       maxWidth: 110,
       cellRenderer: ActionMenu,
       cellRendererParams: {
+        permissionKey: 'PRODUCTS',
         dropdownMenu: [
-          { label: 'Edit', action: (row: any) => this.editProduct(row) }
+          { label: 'Edit', permission: 'update', action: (row: any) => this.editProduct(row) }
         ]
       },
       filter: false,
@@ -74,7 +76,7 @@ export class ProductList {
     }
   ];
 
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService, public permissions: PermissionService) {}
 
   ngOnInit(): void {
     this.loadProducts();

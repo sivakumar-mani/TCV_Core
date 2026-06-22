@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgGridModule } from 'ag-grid-angular';
 import { AllCommunityModule, ColDef, ModuleRegistry, themeBalham } from 'ag-grid-community';
+import { PermissionService } from '../../services/permission.service';
+import { Router } from '@angular/router';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -13,6 +15,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
   styleUrl: './ag-grid-list.scss',
 })
 export class AgGridList {
+  private permissions = inject(PermissionService);
+  private router = inject(Router);
   @Input() title = '';
   @Input() addButtonLabel = 'Add';
   @Input() showAddButton = true;
@@ -33,4 +37,8 @@ export class AgGridList {
 
   public theme = themeBalham;
   quickFilterText = '';
+  canAdd() {
+    const key = this.permissions.keyForRoute(this.router.url);
+    return this.showAddButton && Boolean(key) && this.permissions.can(key, 'create');
+  }
 }

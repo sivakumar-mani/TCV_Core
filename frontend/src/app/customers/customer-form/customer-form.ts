@@ -8,7 +8,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CustomerServices } from '../../services/customer-services';
-import { EmployeeServices } from '../../services/employee-services';
 import { CommonMethods } from '../../shared/common-methods';
 import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { SelectFormField } from '../../shared/select-form-field/select-form-field';
@@ -65,7 +64,6 @@ export class CustomerForm {
   constructor(
     private fb: FormBuilder,
     private customerService: CustomerServices,
-    private employeeService: EmployeeServices,
     private ngxUiLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
     private router: Router,
@@ -103,7 +101,7 @@ export class CustomerForm {
   }
 
   loadMarketingEmployees() {
-    this.employeeService.getEmployees().subscribe({
+    this.customerService.getMarketingEmployees().subscribe({
       next: (response: any) => {
         const employees = Array.isArray(response) ? response : response.data ?? [];
         this.marketingEmployeeOptions = [

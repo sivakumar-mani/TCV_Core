@@ -4,5 +4,6 @@
   [rowData]="products"
   [columnDefs]="colDefs"
   [defaultColDef]="defaultColDef"
+  [showAddButton]="permissions.can('PRODUCTS', 'create')"
   (add)="addProduct()">
 </app-ag-grid-list>

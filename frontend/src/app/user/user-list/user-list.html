@@ -16,5 +16,6 @@
   [pagination]="pagination"
   [paginationPageSize]="paginationPageSize"
   [paginationPageSizeSelector]="paginationPageSizeSelector"
+  [showAddButton]="permissions.can('USERS', 'create')"
   (add)="addUser()">
 </app-ag-grid-list>

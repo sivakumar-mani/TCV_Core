@@ -59,6 +59,12 @@ export const routes: Routes = [
             }
         },
          {
+            path:'role-permissions',
+            loadComponent: ()=> import('./administration/role-permissions/role-permissions').then(n => n.RolePermissions),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin'] }
+        },
+         {
             path:'purchases',
             loadComponent: ()=> import('./purchases/purchase-list/purchase-list').then(n => n.PurchaseList),
             canActivate:[RouteGuard],

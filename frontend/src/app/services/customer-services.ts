@@ -26,6 +26,10 @@ export class CustomerServices {
     return this.http.get(`${this.url}/location/districts/${stateId}`);
   }
 
+  getMarketingEmployees() {
+    return this.http.get(`${this.endpoint}/marketing-employees`);
+  }
+
   addCustomer(data: any) {
     return this.http.post(this.endpoint, data, {
       headers: new HttpHeaders().set('content-type', 'application/json')

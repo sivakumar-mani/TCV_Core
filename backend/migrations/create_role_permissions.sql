@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS role_permissions (
+    role ENUM('MANAGER','EMPLOYEE','SALES','SERVICE') NOT NULL,
+    permission_key VARCHAR(80) NOT NULL,
+    can_view TINYINT(1) NOT NULL DEFAULT 0,
+    can_create TINYINT(1) NOT NULL DEFAULT 0,
+    can_update TINYINT(1) NOT NULL DEFAULT 0,
+    can_delete TINYINT(1) NOT NULL DEFAULT 0,
+    updated_by INT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (role, permission_key),
+    CONSTRAINT fk_role_permissions_updated_by FOREIGN KEY (updated_by) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+INSERT IGNORE INTO role_permissions (role, permission_key, can_view, can_create, can_update, can_delete) VALUES
+('MANAGER', 'DASHBOARD', 1, 0, 0, 0),
+('MANAGER', 'NOTIFICATIONS', 1, 0, 1, 0),
+('EMPLOYEE', 'DASHBOARD', 1, 0, 0, 0),
+('EMPLOYEE', 'NOTIFICATIONS', 1, 0, 1, 0),
+('SALES', 'DASHBOARD', 1, 0, 0, 0),
+('SALES', 'CUSTOMERS', 1, 1, 1, 0),
+('SALES', 'QUOTATIONS', 1, 1, 1, 0),
+('SALES', 'SALES', 1, 1, 1, 0),
+('SALES', 'NOTIFICATIONS', 1, 0, 1, 0),
+('SERVICE', 'DASHBOARD', 1, 0, 0, 0),
+('SERVICE', 'WORK_ORDERS', 1, 0, 1, 0),
+('SERVICE', 'SERVICE_TICKETS', 1, 1, 1, 0),
+('SERVICE', 'WARRANTIES', 1, 1, 1, 0),
+('SERVICE', 'NOTIFICATIONS', 1, 0, 1, 0);

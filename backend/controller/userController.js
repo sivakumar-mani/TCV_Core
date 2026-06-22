@@ -149,18 +149,33 @@ const login = async (req, res) => {
       userId: existing.user_id,
       userName: existing.username,
       username: existing.username,
-      role: existing.role === 'ADMIN' ? 'admin' : 'user',
+      role: existing.role,
     };
-    const accessToken = jwt.sign(response, process.env.ACCESS_TOKEN, { expiresIn: '8h' });
-
-    connection.query('UPDATE users SET last_login = NOW() WHERE user_id = ?', [existing.user_id]);
-
-    return res.status(200).json({
-      result: true,
-      token: accessToken,
-      message: 'Logged in',
-    });
+    connection.query(
+      'SELECT permission_key, can_view, can_create, can_update, can_delete FROM role_permissions WHERE role = ?',
+      [existing.role],
+      (permissionError, permissions) => {
+        if (permissionError) return res.status(500).json({ message: 'Permission lookup failed' });
+        response.permissions = existing.role === 'ADMIN' ? ['*'] : permissions;
+        const accessToken = jwt.sign(response, process.env.ACCESS_TOKEN, { expiresIn: '8h' });
+        connection.query('UPDATE users SET last_login = NOW() WHERE user_id = ?', [existing.user_id]);
+        return res.status(200).json({ result: true, token: accessToken, message: 'Logged in' });
+      }
+    );
   });
+};
+
+const getMyPermissions = (req, res) => {
+  const role = String(res.locals.role || '').toUpperCase();
+  if (role === 'ADMIN') return res.json({ role, permissions: ['*'] });
+  connection.query(
+    'SELECT permission_key, can_view, can_create, can_update, can_delete FROM role_permissions WHERE role = ?',
+    [role],
+    (error, permissions) => {
+      if (error) return res.status(500).json({ message: 'Permission lookup failed' });
+      return res.json({ role, permissions });
+    }
+  );
 };
 
 var transporter = nodemailer.createTransport({
@@ -287,4 +302,4 @@ const deleteUser = async (req, res) => {
   });
 };
 
-module.exports = { getCaptcha, login, forgotPassword, changePassword, signup, getAllUser, editUser, deleteUser };
+module.exports = { getCaptcha, login, forgotPassword, changePassword, signup, getAllUser, getMyPermissions, editUser, deleteUser };

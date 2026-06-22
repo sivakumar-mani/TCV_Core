@@ -5,13 +5,15 @@ const {
   updateCustomer,
   deleteCustomer,
   getCustomerById,
-  getCustomers
+  getCustomers,
+  getMarketingEmployees
 } = require('../controller/customerController');
 
 router.post('/', addCustomer);
 router.post('/add', addCustomer);
 router.get('/', getCustomers);
 router.get('/get', getCustomers);
+router.get('/marketing-employees', getMarketingEmployees);
 router.get('/get/:customer_id', getCustomerById);
 router.get('/:customer_id', getCustomerById);
 router.patch('/', updateCustomer);

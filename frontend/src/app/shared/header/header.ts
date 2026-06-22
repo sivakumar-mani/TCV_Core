@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { ChangePassword } from '../../user/dialog/change-password/change-password';
 import { AuthService } from '../../services/auth-service';
 import { NotificationServices } from '../../services/notification-services';
+import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-header',
@@ -27,14 +28,17 @@ export class Header implements OnDestroy {
   router = inject(Router)
   authService = inject(AuthService);
   notificationService = inject(NotificationServices);
+  permissions = inject(PermissionService);
   isMobile = window.innerWidth < 768;
   notifications: any[] = [];
   unreadCount = 0;
   private notificationTimer?: ReturnType<typeof setInterval>;
 
   ngOnInit() {
-    this.loadNotifications();
-    this.notificationTimer = setInterval(() => this.loadNotifications(), 60000);
+    if (this.permissions.can('NOTIFICATIONS')) {
+      this.loadNotifications();
+      this.notificationTimer = setInterval(() => this.loadNotifications(), 60000);
+    }
   }
 
   ngOnDestroy() {
