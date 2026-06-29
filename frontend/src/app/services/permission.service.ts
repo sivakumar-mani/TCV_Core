@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { jwtDecode } from 'jwt-decode';
-import { environment } from '../../environments/environment.development';
+import { appConfig } from '../app-config';
 import { tap } from 'rxjs';
 
 export type PermissionAction = 'view' | 'create' | 'update' | 'delete';
@@ -52,13 +52,13 @@ export class PermissionService {
   }
 
   refreshPermissions() {
-    return this.http.get<any>(`${environment.apiUrl}/user/my-permissions`).pipe(
+    return this.http.get<any>(`${appConfig.apiUrl}/user/my-permissions`).pipe(
       tap(response => this.livePermissions = Array.isArray(response.permissions) ? response.permissions : [])
     );
   }
 
-  getRolePermissions() { return this.http.get<any>(`${environment.apiUrl}/permissions`); }
+  getRolePermissions() { return this.http.get<any>(`${appConfig.apiUrl}/permissions`); }
   updateRolePermissions(role: string, permissions: RolePermission[]) {
-    return this.http.put<any>(`${environment.apiUrl}/permissions/${role}`, { permissions });
+    return this.http.put<any>(`${appConfig.apiUrl}/permissions/${role}`, { permissions });
   }
 }

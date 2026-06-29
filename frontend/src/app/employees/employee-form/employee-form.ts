@@ -5,7 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { EmployeeServices } from '../../services/employee-services';
 import { CommonMethods } from '../../shared/common-methods';
-import { environment } from '../../../environments/environment.development';
+import { appConfig } from '../../app-config';
 import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { SelectFormField } from '../../shared/select-form-field/select-form-field';
 import { TextareaFormField } from '../../shared/textarea-form-field/textarea-form-field';
@@ -41,7 +41,7 @@ export class EmployeeForm {
   stateOptions: any[] = [];
   permanentDistrictOptions: any[] = [];
   temporaryDistrictOptions: any[] = [];
-  private assetBaseUrl = environment.apiUrl.replace('/api', '');
+  private assetBaseUrl = appConfig.apiUrl.replace('/api', '');
   private phoneRegex = /^[0-9]{10}$/;
 
   departmentOptions = [

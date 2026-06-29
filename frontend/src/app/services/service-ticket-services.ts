@@ -1,11 +1,11 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { environment } from '../../environments/environment.development';
+import { appConfig } from '../app-config';
 
 @Injectable({ providedIn: 'root' })
 export class ServiceTicketServices {
   private http = inject(HttpClient);
-  private endpoint = `${environment.apiUrl}/service-ticket`;
+  private endpoint = `${appConfig.apiUrl}/service-ticket`;
 
   getTickets() {
     return this.http.get(this.endpoint);

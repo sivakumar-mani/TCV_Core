@@ -6,7 +6,7 @@ import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { EmployeeServices } from '../../services/employee-services';
 import { CommonMethods } from '../../shared/common-methods';
 import { ActionMenu } from '../../shared/list-action-menu';
-import { environment } from '../../../environments/environment.development';
+import { appConfig } from '../../app-config';
 import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 
 @Component({
@@ -18,7 +18,7 @@ import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 export class EmployeeList {
   employees: any[] = [];
   selectedEmployee: any;
-  private assetBaseUrl = environment.apiUrl.replace('/api', '');
+  private assetBaseUrl = appConfig.apiUrl.replace('/api', '');
   pagination = true;
   paginationPageSize = 10;
   paginationPageSizeSelector = [10, 25, 50, 100];

@@ -1,11 +1,11 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { environment } from '../../environments/environment.development';
+import { appConfig } from '../app-config';
 
 @Injectable({ providedIn: 'root' })
 export class SupplierPaymentServices {
   private http = inject(HttpClient);
-  private endpoint = `${environment.apiUrl}/supplier-payment`;
+  private endpoint = `${appConfig.apiUrl}/supplier-payment`;
 
   getPayments() {
     return this.http.get(this.endpoint);

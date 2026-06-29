@@ -1,11 +1,11 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient } from '@angular/common/http'; 
-import { environment } from '../../environments/environment.development';
+import { appConfig } from '../app-config';
 @Injectable({
   providedIn: 'root',
 })
 export class BrandServices {
-   url = environment.apiUrl
+   url = appConfig.apiUrl
    http = inject(HttpClient)
    private endpoint = `${this.url}/v1/brands`;
 

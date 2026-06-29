@@ -1,11 +1,11 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { environment } from '../../environments/environment.development';
+import { appConfig } from '../app-config';
 
 @Injectable({ providedIn: 'root' })
 export class EmployeeAttendanceServices {
   private http = inject(HttpClient);
-  private endpoint = `${environment.apiUrl}/employee-attendance`;
+  private endpoint = `${appConfig.apiUrl}/employee-attendance`;
 
   getAttendance() {
     return this.http.get(this.endpoint);

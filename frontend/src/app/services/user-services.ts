@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment.development';
+import { appConfig } from '../app-config';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { loginData, forgotPasswordData, changePasswordData, signupInterface, deleteUserData  } from '../interfaces/user-interface'
 
@@ -7,7 +7,7 @@ import { loginData, forgotPasswordData, changePasswordData, signupInterface, del
   providedIn: 'root',
 })
 export class UserServices {
-  url =environment.apiUrl;
+  url =appConfig.apiUrl;
 
   constructor( private http: HttpClient){}
 
