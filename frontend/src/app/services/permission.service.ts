@@ -17,7 +17,7 @@ export interface RolePermission {
 export class PermissionService {
   private livePermissions: RolePermission[] | null = null;
   private readonly routePermissions: Record<string, string> = {
-    dashboard: 'DASHBOARD', notifications: 'NOTIFICATIONS', customers: 'CUSTOMERS', suppliers: 'SUPPLIERS',
+    dashboard: 'DASHBOARD', notifications: 'NOTIFICATIONS', customers: 'CUSTOMERS', 'cable-tv': 'CABLE_TV_CUSTOMERS', suppliers: 'SUPPLIERS',
     brands: 'BRANDS', categoriesLists: 'CATEGORIES', productList: 'PRODUCTS', stock: 'STOCK',
     purchases: 'PURCHASES', quotations: 'QUOTATIONS', sales: 'SALES', 'work-orders': 'WORK_ORDERS',
     'customer-payments': 'CUSTOMER_PAYMENTS', 'supplier-payments': 'SUPPLIER_PAYMENTS',

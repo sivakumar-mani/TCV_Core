@@ -2,6 +2,7 @@ const permissionCatalog = [
   ['General', 'DASHBOARD', 'Dashboard', '/dashboard'],
   ['General', 'NOTIFICATIONS', 'Notifications', '/notifications'],
   ['Business Partners', 'CUSTOMERS', 'Customers', '/customers'],
+  ['Business Partners', 'CABLE_TV_CUSTOMERS', 'Cable TV Customers', '/cable-tv/customers'],
   ['Business Partners', 'SUPPLIERS', 'Suppliers', '/suppliers'],
   ['Inventory', 'BRANDS', 'Brands', '/brands'],
   ['Inventory', 'CATEGORIES', 'Categories', '/categoriesLists'],
@@ -30,7 +31,7 @@ const apiModules = {
   workflow: 'WORKFLOW_APPROVAL', 'work-order': 'WORK_ORDERS', employee: 'EMPLOYEES',
   'employee-salary': 'EMPLOYEE_SALARY', 'employee-attendance': 'EMPLOYEE_ATTENDANCE',
   'audit-log': 'AUDIT_LOGS', 'customer-payment': 'CUSTOMER_PAYMENTS',
-  'supplier-payment': 'SUPPLIER_PAYMENTS', sales: 'SALES',
+  'supplier-payment': 'SUPPLIER_PAYMENTS', sales: 'SALES', 'cable-tv': 'CABLE_TV_CUSTOMERS',
   'service-ticket': 'SERVICE_TICKETS', warranty: 'WARRANTIES', notifications: 'NOTIFICATIONS'
 };
 
@@ -39,7 +40,7 @@ Object.assign(apiModules, {
   customers: 'CUSTOMERS', quotations: 'QUOTATIONS', workflows: 'WORKFLOW_APPROVAL',
   'work-orders': 'WORK_ORDERS', 'customer-payments': 'CUSTOMER_PAYMENTS',
   'supplier-payments': 'SUPPLIER_PAYMENTS', 'service-tickets': 'SERVICE_TICKETS',
-  warranties: 'WARRANTIES'
+  warranties: 'WARRANTIES', 'cable-tv': 'CABLE_TV_CUSTOMERS'
 });
 
 module.exports = { permissionCatalog, apiModules };

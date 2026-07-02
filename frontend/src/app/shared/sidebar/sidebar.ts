@@ -15,7 +15,7 @@ export class Sidebar {
   @Input() collapsed = false;
   readonly panelOpenState = signal(false);
   readonly groups = [
-    { label: 'Business Partners', icon: 'groups', items: [['Customers', '/customers', 'CUSTOMERS'], ['Suppliers', '/suppliers', 'SUPPLIERS']] },
+    { label: 'Business Partners', icon: 'groups', items: [['Customers', '/customers', 'CUSTOMERS'], ['Cable TV Customers', '/cable-tv/customers', 'CABLE_TV_CUSTOMERS'], ['Suppliers', '/suppliers', 'SUPPLIERS']] },
     { label: 'Inventory', icon: 'inventory', items: [['Brands', '/brands', 'BRANDS'], ['Categories', '/categoriesLists', 'CATEGORIES'], ['Products', '/productList', 'PRODUCTS'], ['Stock', '/stock', 'STOCK'], ['Purchases', '/purchases', 'PURCHASES']] },
     { label: 'Sales', icon: 'request_quote', items: [['Quotations', '/quotations', 'QUOTATIONS'], ['Sales', '/sales', 'SALES'], ['Work Orders', '/work-orders', 'WORK_ORDERS'], ['Customer Payments', '/customer-payments', 'CUSTOMER_PAYMENTS'], ['Supplier Payments', '/supplier-payments', 'SUPPLIER_PAYMENTS']] },
     { label: 'Service', icon: 'support_agent', items: [['Service Tickets', '/service-tickets', 'SERVICE_TICKETS'], ['Warranty Master', '/warranty-master', 'WARRANTIES']] },

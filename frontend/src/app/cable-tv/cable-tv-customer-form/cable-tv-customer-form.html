@@ -1,0 +1,260 @@
+<div class="page-shell">
+  <nav class="breadcrumb-line">
+    <a routerLink="/dashboard">Home</a>
+    <span>/</span>
+    <a routerLink="/cable-tv/customers">Cable TV Customers</a>
+    <span>/</span>
+    <strong>{{ isEditMode ? 'Edit' : 'Add' }}</strong>
+  </nav>
+
+  <div class="page-header">
+    <h1>{{ isEditMode ? 'Edit Cable TV Customer' : 'Add Cable TV Customer' }}</h1>
+    <button type="button" class="secondary-btn" (click)="cancel()">Cancel</button>
+  </div>
+
+  <form [formGroup]="form" class="module-form">
+    <section class="form-section">
+      <h2>Customer Details</h2>
+      <div class="form-grid">
+        <label>Network
+          <select formControlName="network_id">
+            <option [ngValue]="null">Select network</option>
+            <option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">{{ network.network_name }}</option>
+          </select>
+        </label>
+        <label>Legacy Customer No
+          <input type="text" formControlName="legacy_customer_no">
+        </label>
+        <label>Customer Code
+          <input type="text" formControlName="customer_code" placeholder="Auto generated">
+        </label>
+        <label>Full Name
+          <input type="text" formControlName="full_name">
+        </label>
+        <label>Door No
+          <input type="text" formControlName="door_no">
+        </label>
+        <label>Location
+          <select formControlName="location_id">
+            <option [ngValue]="null">Select location</option>
+            <option *ngFor="let location of lookups.locations || []" [ngValue]="location.location_id">{{ location.location_name }}</option>
+          </select>
+        </label>
+        <label>Area
+          <select formControlName="area_id">
+            <option [ngValue]="null">Select area</option>
+            <option *ngFor="let area of filteredAreas" [ngValue]="area.area_id">{{ area.area_name }}</option>
+          </select>
+        </label>
+        <label>Street
+          <select formControlName="street_id">
+            <option [ngValue]="null">Select street</option>
+            <option *ngFor="let street of filteredStreets" [ngValue]="street.street_id">{{ street.street_name }}</option>
+          </select>
+        </label>
+        <label>City
+          <input type="text" formControlName="city">
+        </label>
+        <label>Pincode
+          <input type="text" formControlName="pincode">
+        </label>
+        <label>Mobile No
+          <input type="tel" maxlength="10" formControlName="mobile_no">
+        </label>
+        <label>Aadhaar No
+          <input type="tel" maxlength="12" formControlName="aadhaar_no">
+        </label>
+        <label>Alternate Mobile
+          <input type="tel" maxlength="10" formControlName="alternate_mobile_no">
+        </label>
+        <label>Source
+          <select formControlName="source_id">
+            <option [ngValue]="null">Select source</option>
+            <option *ngFor="let source of lookups.sources || []" [ngValue]="source.source_id">{{ source.source_name }}</option>
+          </select>
+        </label>
+        <label>Installed By
+          <select formControlName="installed_by_employee_id">
+            <option [ngValue]="null">Select employee</option>
+            <option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option>
+          </select>
+        </label>
+        <label>Labour / Service Charge
+          <input type="number" formControlName="labour_service_charge">
+        </label>
+        <label>Status
+          <select formControlName="status">
+            <option *ngFor="let status of networkTypes" [ngValue]="status">{{ status }}</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="form-section" formGroupName="stb">
+      <h2>STB Details</h2>
+      <div class="form-grid">
+        <label>STB Type
+          <select formControlName="stb_type">
+            <option *ngFor="let type of stbTypes" [ngValue]="type">{{ type }}</option>
+          </select>
+        </label>
+        <label>Installed MSO
+          <select formControlName="installed_mso_id">
+            <option [ngValue]="null">Select MSO</option>
+            <option *ngFor="let mso of lookups.msos || []" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
+          </select>
+        </label>
+        <label>Exchange Original MSO
+          <select formControlName="exchange_original_mso_id">
+            <option [ngValue]="null">Select original MSO</option>
+            <option *ngFor="let mso of lookups.msos || []" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
+          </select>
+        </label>
+        <label>STB Number
+          <input type="text" formControlName="stb_no">
+        </label>
+        <label>STB Amount
+          <input type="number" formControlName="stb_amount">
+        </label>
+        <label>STB Discount
+          <input type="number" formControlName="stb_discount">
+        </label>
+        <label>Labour / Service Charge
+          <input type="number" formControlName="labour_service_charge">
+        </label>
+        <label>Installed Date
+          <input type="date" formControlName="installed_date">
+        </label>
+      </div>
+    </section>
+
+    <section class="form-section" formGroupName="connection">
+      <h2>Connection Details</h2>
+      <div class="form-grid">
+        <label>Connection Date
+          <input type="date" formControlName="connection_date">
+        </label>
+        <label>Disconnection Date
+          <input type="date" formControlName="disconnection_date">
+        </label>
+        <label>Connection Type
+          <select formControlName="connection_type">
+            <option *ngFor="let type of connectionTypes" [ngValue]="type">{{ type }}</option>
+          </select>
+        </label>
+        <label>Connection Charge
+          <input type="number" formControlName="connection_charge">
+        </label>
+        <label>Labour / Service Charge
+          <input type="number" formControlName="labour_service_charge">
+        </label>
+        <label>Remarks
+          <input type="text" formControlName="remarks">
+        </label>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="section-title-row">
+        <h2>Used Materials</h2>
+        <button type="button" class="secondary-btn small" (click)="addMaterialRow()">Add Row</button>
+      </div>
+      <div formArrayName="materials" class="material-table">
+        <div class="material-header">
+          <span>Product</span><span>Item</span><span>Qty</span><span>Unit</span><span>Rate</span><span>Amount</span><span></span>
+        </div>
+        <div *ngFor="let row of materials.controls; let i = index" [formGroupName]="i" class="material-row">
+          <select formControlName="product_id" (change)="selectMaterialProduct(i)">
+            <option [ngValue]="null">Select product</option>
+            <option *ngFor="let product of lookups.products || []" [ngValue]="product.product_id">{{ product.product_name }}</option>
+          </select>
+          <input type="text" formControlName="item_name">
+          <input type="number" formControlName="qty" (input)="calculateMaterialAmount(i)">
+          <input type="text" formControlName="unit">
+          <input type="number" formControlName="unit_rate" (input)="calculateMaterialAmount(i)">
+          <input type="number" formControlName="amount" readonly>
+          <button type="button" class="icon-btn" (click)="removeMaterialRow(i)">x</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section" formGroupName="package">
+      <h2>Package Details</h2>
+      <div class="form-grid">
+        <label>Package
+          <select formControlName="package_id">
+            <option [ngValue]="null">Select package</option>
+            <option *ngFor="let item of lookups.packages || []" [ngValue]="item.package_id">{{ item.package_name }} - {{ item.package_type }}</option>
+          </select>
+        </label>
+        <label>Price
+          <input type="number" formControlName="package_price" (input)="calculateSubscription()">
+        </label>
+        <label>Start Date
+          <input type="date" formControlName="start_date">
+        </label>
+        <label>End Date
+          <input type="date" formControlName="end_date">
+        </label>
+      </div>
+    </section>
+
+    <section class="form-section" formGroupName="subscription">
+      <h2>Subscription Details</h2>
+      <div class="form-grid">
+        <label>Month
+          <select formControlName="subscription_month">
+            <option *ngFor="let month of months" [ngValue]="month.value">{{ month.label }}</option>
+          </select>
+        </label>
+        <label>Year
+          <input type="number" formControlName="subscription_year">
+        </label>
+        <label>Billing Basis
+          <select formControlName="billing_basis">
+            <option *ngFor="let basis of billingBasis" [ngValue]="basis">{{ basis }}</option>
+          </select>
+        </label>
+        <label>Days In Month
+          <input type="number" formControlName="days_in_month" readonly>
+        </label>
+        <label>Number Of Days / Months
+          <input type="number" formControlName="number_of_days_or_months">
+        </label>
+        <label>Amount
+          <input type="number" formControlName="amount" readonly>
+        </label>
+        <label>Paid Amount
+          <input type="number" formControlName="paid_amount">
+        </label>
+        <label>Balance
+          <input type="number" formControlName="balance_amount" readonly>
+        </label>
+        <label>Collect Date
+          <input type="date" formControlName="collect_date">
+        </label>
+        <label>Start Date
+          <input type="date" formControlName="start_date">
+        </label>
+        <label>Expiry Date
+          <input type="date" formControlName="expiry_date">
+        </label>
+        <label>Payment Mode
+          <select formControlName="payment_mode">
+            <option *ngFor="let mode of paymentModes" [ngValue]="mode">{{ mode }}</option>
+          </select>
+        </label>
+        <label>Remarks
+          <input type="text" formControlName="remarks">
+        </label>
+      </div>
+    </section>
+
+    <div class="form-actions">
+      <button type="button" class="secondary-btn" (click)="cancel()">Cancel</button>
+      <button type="button" class="primary-btn" [disabled]="form.invalid" (click)="submit()">
+        {{ isEditMode ? 'Update' : 'Save' }}
+      </button>
+    </div>
+  </form>
+</div>

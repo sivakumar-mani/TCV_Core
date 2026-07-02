@@ -297,6 +297,30 @@ export const routes: Routes = [
             }
         },
          {
+            path:'cable-tv/customers',
+            loadComponent: ()=> import('./cable-tv/cable-tv-customer-list/cable-tv-customer-list').then(n => n.CableTvCustomerList),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin','user']
+            }
+        },
+         {
+            path:'cable-tv/customers/add',
+            loadComponent: ()=> import('./cable-tv/cable-tv-customer-form/cable-tv-customer-form').then(n => n.CableTvCustomerForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin','user']
+            }
+        },
+         {
+            path:'cable-tv/customers/edit/:id',
+            loadComponent: ()=> import('./cable-tv/cable-tv-customer-form/cable-tv-customer-form').then(n => n.CableTvCustomerForm),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin','user']
+            }
+        },
+         {
             path:'customers/add',
             loadComponent: ()=> import('./customers/customer-form/customer-form').then(n => n.CustomerForm),
             canActivate:[RouteGuard],

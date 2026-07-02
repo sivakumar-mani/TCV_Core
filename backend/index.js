@@ -24,6 +24,7 @@ const serviceTicketRoute = require('./routes/serviceTicketRouter')
 const warrantyRoute = require('./routes/warrantyRouter')
 const notificationRoute = require('./routes/notificationRouter')
 const permissionRoute = require('./routes/permissionRouter')
+const cableTvRoute = require('./routes/cableTvRouter')
 const auth = require('./services/authendication');
 const { apiModules } = require('./utils/permissionCatalog');
 const app = express()
@@ -72,6 +73,7 @@ app.use('/api/sales', salesRoute);
 app.use('/api/service-ticket', serviceTicketRoute);
 app.use('/api/warranty', warrantyRoute);
 app.use('/api/notifications', notificationRoute);
+app.use('/api/cable-tv', cableTvRoute);
 app.use('/api/v1/employee-attendance', employeeAttendanceRoute);
 app.use('/api/v1/customer-payments', customerPaymentRoute);
 app.use('/api/v1/supplier-payments', supplierPaymentRoute);
@@ -79,4 +81,5 @@ app.use('/api/v1/sales', salesRoute);
 app.use('/api/v1/service-tickets', serviceTicketRoute);
 app.use('/api/v1/warranties', warrantyRoute);
 app.use('/api/v1/notifications', notificationRoute);
+app.use('/api/v1/cable-tv', cableTvRoute);
 module.exports = app;

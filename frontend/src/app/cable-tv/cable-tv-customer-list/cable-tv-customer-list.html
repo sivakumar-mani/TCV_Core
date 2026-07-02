@@ -1,0 +1,8 @@
+<app-ag-grid-list
+  title="Cable TV Customers"
+  addButtonLabel="Add Cable Customer"
+  [rowData]="customers"
+  [columnDefs]="colDefs"
+  [defaultColDef]="defaultColDef"
+  (add)="addCustomer()">
+</app-ag-grid-list>

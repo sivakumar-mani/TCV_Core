@@ -1,0 +1,160 @@
+:host {
+  display: block;
+}
+
+.page-shell {
+  padding: 18px;
+}
+
+.breadcrumb-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+
+  a {
+    color: #1769aa;
+    text-decoration: none;
+  }
+}
+
+.page-header,
+.section-title-row,
+.form-actions {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.page-header {
+  margin-bottom: 16px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 650;
+    margin: 0;
+  }
+}
+
+.module-form {
+  display: grid;
+  gap: 16px;
+}
+
+.form-section {
+  background: #fff;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  padding: 16px;
+
+  h2 {
+    color: #263238;
+    font-size: 16px;
+    font-weight: 650;
+    margin: 0 0 14px;
+  }
+}
+
+.form-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+label {
+  color: #344054;
+  display: grid;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+}
+
+input,
+select {
+  border: 1px solid #c8d0dc;
+  border-radius: 5px;
+  color: #111827;
+  font: inherit;
+  min-height: 38px;
+  padding: 7px 9px;
+  width: 100%;
+}
+
+input[readonly] {
+  background: #f5f7fb;
+}
+
+.material-table {
+  display: grid;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.material-header,
+.material-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(180px, 1.2fr) minmax(180px, 1.2fr) 90px 90px 110px 120px 42px;
+  min-width: 860px;
+}
+
+.material-header {
+  color: #475467;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.primary-btn,
+.secondary-btn,
+.icon-btn {
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 650;
+  min-height: 36px;
+  padding: 8px 14px;
+}
+
+.primary-btn {
+  background: #1565c0;
+  color: #fff;
+
+  &:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+  }
+}
+
+.secondary-btn {
+  background: #e9eef5;
+  color: #243447;
+}
+
+.secondary-btn.small {
+  min-height: 32px;
+  padding: 6px 10px;
+}
+
+.icon-btn {
+  background: #f3d7d7;
+  color: #8a1f1f;
+  min-width: 36px;
+  padding: 0;
+}
+
+.form-actions {
+  justify-content: flex-end;
+  padding-bottom: 8px;
+}
+
+@media (max-width: 760px) {
+  .page-header,
+  .section-title-row,
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
