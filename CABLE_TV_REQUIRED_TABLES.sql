@@ -539,7 +539,8 @@ VALUES
     ('TCV', 'TCV', 1001, NULL, 'TCV customer range: 1001-2000 and 6001 onward'),
     ('PAMMAL', 'Pammal', 101, 999, 'Legacy customer range: 101-999'),
     ('MURUGAN', 'Murugan', 101, 999, 'Legacy customer range: 101-999'),
-    ('SVN', 'SVN', 3001, 6000, 'Legacy customer range: 3001-6000');
+    ('SVN', 'SVN', 3001, 6000, 'Legacy customer range: 3001-6000'),
+    ('LEASE', 'Lease', NULL, NULL, 'Lease cable network');
 
 INSERT IGNORE INTO cable_connection_sources (source_name)
 VALUES
@@ -547,11 +548,32 @@ VALUES
     ('Referral'),
     ('Field Canvassing'),
     ('Phone Call'),
-    ('Existing Customer Reference');
+    ('Existing Customer Reference'),
+    ('Customer Approach Office'),
+    ('Customer Approach Engineer');
 
 INSERT IGNORE INTO cable_mso_master (mso_name)
 VALUES
     ('VK'),
-    ('JAK');
+    ('DM'),
+    ('ARISTO'),
+    ('JAK'),
+    ('SCV'),
+    ('TCCL');
+
+INSERT IGNORE INTO cable_locations (location_name, city, pincode)
+VALUES
+    ('Chromept', 'Chromept', NULL),
+    ('Pammal', 'Pammal', NULL);
+
+INSERT IGNORE INTO cable_areas (location_id, area_name)
+SELECT location_id, location_name
+FROM cable_locations
+WHERE location_name IN ('Chromept', 'Pammal');
+
+INSERT IGNORE INTO cable_streets (area_id, street_name)
+SELECT area_id, 'Main Street'
+FROM cable_areas
+WHERE area_name IN ('Chromept', 'Pammal');
 
 SET FOREIGN_KEY_CHECKS = 1;

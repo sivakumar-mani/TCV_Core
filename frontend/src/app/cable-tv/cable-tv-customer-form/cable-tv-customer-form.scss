@@ -87,21 +87,35 @@ input[readonly] {
   background: #f5f7fb;
 }
 
-.material-table {
+.material-table,
+.package-table {
   display: grid;
   gap: 8px;
   overflow-x: auto;
 }
 
 .material-header,
-.material-row {
+.material-row,
+.package-header,
+.package-row {
   display: grid;
   gap: 8px;
+}
+
+.material-header,
+.material-row {
   grid-template-columns: minmax(180px, 1.2fr) minmax(180px, 1.2fr) 90px 90px 110px 120px 42px;
   min-width: 860px;
 }
 
-.material-header {
+.package-header,
+.package-row {
+  grid-template-columns: minmax(220px, 1.4fr) 110px 140px 140px 90px 120px 120px 42px;
+  min-width: 980px;
+}
+
+.material-header,
+.package-header {
   color: #475467;
   font-size: 12px;
   font-weight: 700;

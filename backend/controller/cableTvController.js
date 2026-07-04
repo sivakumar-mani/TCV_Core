@@ -12,11 +12,44 @@ const intOrNull = (value) => {
 };
 
 const isAdmin = (req) => String(req.res?.locals?.role || '').toUpperCase() === 'ADMIN';
-const currentUserId = (req) => intOrNull(req.res?.locals?.user_id || req.res?.locals?.id);
+const currentUserId = (req) => intOrNull(req.res?.locals?.userId || req.res?.locals?.user_id || req.res?.locals?.id);
 
 const approvalStatusFor = (req, override) => {
   if (override) return override;
   return isAdmin(req) ? 'APPROVED' : 'PENDING';
+};
+
+const dateOnly = (value) => new Date(value).toISOString().slice(0, 10);
+const daysInMonth = (month, year) => new Date(year, month, 0).getDate();
+const inclusiveDays = (startDate, endDate) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 0;
+  return Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+};
+
+const resolveSourceId = async (db, value) => {
+  const id = intOrNull(value);
+  if (id) return id;
+  if (!value) return null;
+  const sourceName = String(value).trim();
+  await db.query('INSERT IGNORE INTO cable_connection_sources (source_name) VALUES (?)', [sourceName]);
+  const [[source]] = await db.query('SELECT source_id FROM cable_connection_sources WHERE source_name = ?', [sourceName]);
+  return source?.source_id || null;
+};
+
+const resolveEmployeeId = async (db, req, payloadEmployeeId) => {
+  if (isAdmin(req)) return intOrNull(payloadEmployeeId);
+  const username = req.res?.locals?.username || req.res?.locals?.userName;
+  if (!username) return intOrNull(payloadEmployeeId);
+  const [[employee]] = await db.query(
+    `SELECT employee_id
+     FROM employees
+     WHERE employee_code = ? OR email = ? OR CONCAT_WS(' ', first_name, last_name) = ?
+     LIMIT 1`,
+    [username, username, username]
+  );
+  return employee?.employee_id || intOrNull(payloadEmployeeId);
 };
 
 const generateCustomerCode = async (db, networkId) => {
@@ -126,7 +159,15 @@ const getCableCustomerById = async (req, res) => {
     const [materials] = connectionIds.length
       ? await db.query('SELECT * FROM cable_connection_materials WHERE connection_id IN (?) ORDER BY connection_material_id', [connectionIds])
       : [[]];
-    const [customerPackages] = await db.query('SELECT * FROM cable_customer_packages WHERE cable_customer_id = ? ORDER BY customer_package_id DESC', [id]);
+    const [customerPackages] = await db.query(
+      `SELECT cp.*, sub.subscription_month, sub.subscription_year, sub.days_in_month,
+              sub.number_of_days_or_months, sub.amount, sub.paid_amount, sub.balance_amount
+       FROM cable_customer_packages cp
+       LEFT JOIN cable_subscriptions sub ON sub.customer_package_id = cp.customer_package_id
+       WHERE cp.cable_customer_id = ?
+       ORDER BY cp.customer_package_id DESC`,
+      [id]
+    );
     const [subscriptions] = await db.query('SELECT * FROM cable_subscriptions WHERE cable_customer_id = ? ORDER BY subscription_year DESC, subscription_month DESC', [id]);
 
     return res.json({ customer, stbs, connections, materials, customerPackages, subscriptions });
@@ -160,7 +201,12 @@ const addCableCustomer = async (req, res) => {
     );
     const approvalGroupId = approvalResult.insertId;
 
-    const employeeId = intOrNull(payload.installed_by_employee_id || payload.connected_by_employee_id || payload.collected_by_employee_id);
+    const employeeId = await resolveEmployeeId(
+      db,
+      req,
+      payload.installed_by_employee_id || payload.connected_by_employee_id || payload.collected_by_employee_id
+    );
+    const sourceId = await resolveSourceId(db, payload.source_id || payload.source_name);
     const [customerResult] = await db.query(
       `INSERT INTO cable_tv_customers (
         approval_group_id, network_id, legacy_customer_no, customer_code, full_name, door_no,
@@ -171,7 +217,7 @@ const addCableCustomer = async (req, res) => {
       [
         approvalGroupId, networkId, nullable(payload.legacy_customer_no), customerCode, payload.full_name, payload.door_no,
         Number(payload.location_id), Number(payload.area_id), Number(payload.street_id), payload.city || '', nullable(payload.pincode),
-        payload.mobile_no, nullable(payload.aadhaar_no), nullable(payload.alternate_mobile_no), intOrNull(payload.source_id),
+        payload.mobile_no, nullable(payload.aadhaar_no), nullable(payload.alternate_mobile_no), sourceId,
         employeeId, money(payload.labour_service_charge), payload.status || 'ACTIVE', approvalStatus, createdBy,
         approvalStatus === 'APPROVED' ? createdBy : null
       ]
@@ -230,27 +276,37 @@ const addCableCustomer = async (req, res) => {
       }
     }
 
-    let customerPackageId = null;
-    if (payload.package?.package_id) {
-      const [packageRows] = await db.query('SELECT price FROM cable_package_master WHERE package_id = ?', [payload.package.package_id]);
-      const packagePrice = money(payload.package.package_price ?? packageRows[0]?.price);
+    const packageRowsPayload = Array.isArray(payload.packages)
+      ? payload.packages
+      : payload.package?.package_id
+        ? [payload.package]
+        : [];
+
+    for (const packageItem of packageRowsPayload.filter((item) => item.package_id)) {
+      const [packageRows] = await db.query('SELECT price FROM cable_package_master WHERE package_id = ?', [packageItem.package_id]);
+      const packagePrice = money(packageItem.package_price ?? packageRows[0]?.price);
+      const startDate = packageItem.start_date || new Date();
+      const start = new Date(startDate);
+      const subscriptionMonth = Number(packageItem.subscription_month) || start.getMonth() + 1;
+      const subscriptionYear = Number(packageItem.subscription_year) || start.getFullYear();
+      const monthDays = Number(packageItem.days_in_month) || daysInMonth(subscriptionMonth, subscriptionYear);
+      const endDate = packageItem.end_date || `${subscriptionYear}-${String(subscriptionMonth).padStart(2, '0')}-${monthDays}`;
+      const numberOfDays = money(packageItem.number_of_days_or_months || inclusiveDays(startDate, endDate));
+      const amount = money(packageItem.amount || (packagePrice / monthDays) * numberOfDays);
+      const paidAmount = money(packageItem.paid_amount || amount);
+      const balanceAmount = money(packageItem.balance_amount ?? amount - paidAmount);
       const [packageResult] = await db.query(
         `INSERT INTO cable_customer_packages (
           approval_group_id, cable_customer_id, package_id, package_price, start_date, end_date,
           is_active, approval_status, created_by_user_id
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          approvalGroupId, cableCustomerId, Number(payload.package.package_id), packagePrice,
-          payload.package.start_date || new Date(), nullable(payload.package.end_date),
-          payload.package.is_active ?? 1, approvalStatus, createdBy
+          approvalGroupId, cableCustomerId, Number(packageItem.package_id), packagePrice,
+          startDate, nullable(endDate),
+          packageItem.is_active ?? 1, approvalStatus, createdBy
         ]
       );
-      customerPackageId = packageResult.insertId;
-    }
-
-    if (customerPackageId && payload.subscription?.subscription_month && payload.subscription?.subscription_year) {
-      const amount = money(payload.subscription.amount);
-      const paidAmount = money(payload.subscription.paid_amount);
+      const customerPackageId = packageResult.insertId;
       await db.query(
         `INSERT INTO cable_subscriptions (
           approval_group_id, cable_customer_id, customer_package_id, subscription_month, subscription_year,
@@ -259,13 +315,13 @@ const addCableCustomer = async (req, res) => {
           approval_status, remarks, created_by_user_id
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          approvalGroupId, cableCustomerId, customerPackageId, Number(payload.subscription.subscription_month),
-          Number(payload.subscription.subscription_year), Number(payload.subscription.days_in_month || 30),
-          payload.subscription.billing_basis || 'MONTH', money(payload.subscription.number_of_days_or_months || 1),
-          amount, paidAmount, amount - paidAmount, nullable(payload.subscription.collect_date),
-          nullable(payload.subscription.start_date), nullable(payload.subscription.expiry_date), employeeId,
-          nullable(payload.subscription.payment_mode), payload.subscription.payment_status || (amount - paidAmount <= 0 ? 'PAID' : paidAmount > 0 ? 'PARTIAL' : 'PENDING'),
-          approvalStatus, nullable(payload.subscription.remarks), createdBy
+          approvalGroupId, cableCustomerId, customerPackageId, subscriptionMonth,
+          subscriptionYear, monthDays,
+          'DAY', numberOfDays,
+          amount, paidAmount, balanceAmount, nullable(payload.subscription?.collect_date),
+          dateOnly(startDate), dateOnly(endDate), employeeId,
+          nullable(payload.subscription?.payment_mode), packageItem.payment_status || (balanceAmount <= 0 ? 'PAID' : paidAmount > 0 ? 'PARTIAL' : 'PENDING'),
+          approvalStatus, nullable(payload.subscription?.remarks), createdBy
         ]
       );
     }

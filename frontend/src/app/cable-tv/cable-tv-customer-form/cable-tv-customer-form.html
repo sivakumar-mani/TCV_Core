@@ -70,21 +70,24 @@
         <label>Source
           <select formControlName="source_id">
             <option [ngValue]="null">Select source</option>
-            <option *ngFor="let source of lookups.sources || []" [ngValue]="source.source_id">{{ source.source_name }}</option>
+            <option *ngFor="let source of sourceOptions" [ngValue]="source.source_name">{{ source.source_name }}</option>
           </select>
         </label>
-        <label>Installed By
+        <label *ngIf="permissions.isAdmin()">Installed By
           <select formControlName="installed_by_employee_id">
             <option [ngValue]="null">Select employee</option>
             <option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option>
           </select>
+        </label>
+        <label *ngIf="!permissions.isAdmin()">Installed By
+          <input type="text" [value]="permissions.username()" readonly>
         </label>
         <label>Labour / Service Charge
           <input type="number" formControlName="labour_service_charge">
         </label>
         <label>Status
           <select formControlName="status">
-            <option *ngFor="let status of networkTypes" [ngValue]="status">{{ status }}</option>
+            <option *ngFor="let status of statusTypes" [ngValue]="status">{{ status }}</option>
           </select>
         </label>
       </div>
@@ -178,54 +181,39 @@
       </div>
     </section>
 
-    <section class="form-section" formGroupName="package">
-      <h2>Package Details</h2>
-      <div class="form-grid">
-        <label>Package
-          <select formControlName="package_id">
+    <section class="form-section">
+      <div class="section-title-row">
+        <h2>Package Details</h2>
+        <button type="button" class="secondary-btn small" (click)="addPackageRow()">Add Row</button>
+      </div>
+      <div formArrayName="packages" class="package-table">
+        <div class="package-header">
+          <span>Package</span><span>Price</span><span>Start</span><span>End</span><span>Days</span><span>Amount</span><span>Paid</span><span></span>
+        </div>
+        <div *ngFor="let row of packages.controls; let i = index" [formGroupName]="i" class="package-row">
+          <select formControlName="package_id" (change)="selectPackage(i)">
             <option [ngValue]="null">Select package</option>
             <option *ngFor="let item of lookups.packages || []" [ngValue]="item.package_id">{{ item.package_name }} - {{ item.package_type }}</option>
           </select>
-        </label>
-        <label>Price
-          <input type="number" formControlName="package_price" (input)="calculateSubscription()">
-        </label>
-        <label>Start Date
-          <input type="date" formControlName="start_date">
-        </label>
-        <label>End Date
-          <input type="date" formControlName="end_date">
-        </label>
+          <input type="number" formControlName="package_price" (input)="calculatePackageRow(i)">
+          <input type="date" formControlName="start_date" (change)="calculatePackageRow(i)">
+          <input type="date" formControlName="end_date" (change)="calculatePackageRow(i)">
+          <input type="number" formControlName="number_of_days_or_months" readonly>
+          <input type="number" formControlName="amount" readonly>
+          <input type="number" formControlName="paid_amount" readonly>
+          <button type="button" class="icon-btn" (click)="removePackageRow(i)">x</button>
+        </div>
       </div>
     </section>
 
     <section class="form-section" formGroupName="subscription">
       <h2>Subscription Details</h2>
       <div class="form-grid">
-        <label>Month
-          <select formControlName="subscription_month">
-            <option *ngFor="let month of months" [ngValue]="month.value">{{ month.label }}</option>
-          </select>
-        </label>
-        <label>Year
-          <input type="number" formControlName="subscription_year">
-        </label>
-        <label>Billing Basis
-          <select formControlName="billing_basis">
-            <option *ngFor="let basis of billingBasis" [ngValue]="basis">{{ basis }}</option>
-          </select>
-        </label>
-        <label>Days In Month
-          <input type="number" formControlName="days_in_month" readonly>
-        </label>
-        <label>Number Of Days / Months
-          <input type="number" formControlName="number_of_days_or_months">
-        </label>
-        <label>Amount
+        <label>Total Amount
           <input type="number" formControlName="amount" readonly>
         </label>
-        <label>Paid Amount
-          <input type="number" formControlName="paid_amount">
+        <label>Total Paid
+          <input type="number" formControlName="paid_amount" readonly>
         </label>
         <label>Balance
           <input type="number" formControlName="balance_amount" readonly>

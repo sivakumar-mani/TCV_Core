@@ -829,3 +829,24 @@ The following points were reviewed after the latest business updates.
 | Should rejected records be editable and resubmitted? | Recommended: yes, keep `REJECTED` status with reason and allow resubmission as `PENDING`. |
 | Should subscription support partial payment? | Recommended: yes, because `balance_amount` is now required. |
 | Should STB image be mandatory? | Recommended: optional in database, configurable as mandatory in frontend validation if business requires it later. |
+
+
+
+Network:  TCV/SVN/ PAMMAL/  LEASE add this select 
+Location : Chromept, Pammal should map with area 
+Area: required to add in table to fetch , this required in administration module, duplication ignored, map with location
+Street :map with area, need to add in table at administration level and validation required
+Source : Customer Approach Office / Customer Approach Engineer, add object in ts
+Installed By : fetch employee to select by admin, if not admin logged user name captured
+Installed MSO : VK / DM 
+Exchange Original MSO: VK / DM / ARISTO / JAK / SCV / TCCL
+
+Used Materials : should fetch from product 
+Package : required data from table 
+Package Details : UI also like the used material 
+can add any number of package can add by adding new row
+package fetch from package details
+
+Subscription Details : Number Of Days / Months will be calculate based on start date to end of the month
+Paid Amount : to be filled by calcuation package amount to be collect the numbers of days
+if admin not doing this addition, workflow required review the details and approve
