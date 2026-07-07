@@ -862,6 +862,15 @@ body {
   box-shadow: 0 0 20px rgba(1, 41, 112, 0.08);
 }
 
+.app-shell .mat-drawer-side {
+  z-index: 1200 !important;
+}
+
+.app-shell .mat-drawer-content {
+  position: relative;
+  z-index: 1300 !important;
+}
+
 .main-content {
   background: var(--tcv-shell-bg) !important;
 }

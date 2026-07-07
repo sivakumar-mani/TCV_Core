@@ -1,0 +1,56 @@
+.page-shell {
+  padding: 18px;
+}
+
+.page-header {
+  margin-bottom: 16px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 650;
+    margin: 0;
+  }
+}
+
+.account-panel {
+  background: #fff;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  overflow-x: auto;
+  padding: 16px;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 980px;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid #e4e9f0;
+  font-size: 13px;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  color: #475467;
+  font-weight: 700;
+}
+
+button {
+  background: #1565c0;
+  border: 0;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 650;
+  min-height: 32px;
+  padding: 6px 10px;
+}
+
+.empty-row {
+  color: #667085;
+  text-align: center;
+}

@@ -24,7 +24,8 @@ export class PermissionService {
     'service-tickets': 'SERVICE_TICKETS', 'warranty-master': 'WARRANTIES', employees: 'EMPLOYEES',
     'employee-attendance': 'EMPLOYEE_ATTENDANCE', 'employee-salary': 'EMPLOYEE_SALARY',
     'workflow-approval': 'WORKFLOW_APPROVAL', workflow: 'WORKFLOW_APPROVAL', users: 'USERS',
-    'audit-logs': 'AUDIT_LOGS', 'role-permissions': 'ROLE_PERMISSIONS'
+    'audit-logs': 'AUDIT_LOGS', 'role-permissions': 'ROLE_PERMISSIONS', 'cable-tv-masters': 'CABLE_TV_MASTERS',
+    'cable-tv-packages': 'CABLE_TV_MASTERS'
   };
 
   constructor(private http: HttpClient) {}

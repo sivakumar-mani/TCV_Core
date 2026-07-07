@@ -1,0 +1,204 @@
+.page-shell {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.page-header,
+.section-header,
+.modal-header,
+.form-actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.page-header {
+  h1 {
+    font-size: 24px;
+    font-weight: 650;
+    margin: 0;
+  }
+}
+
+.section-header {
+  flex-wrap: wrap;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.global-search {
+  max-width: 320px;
+}
+
+.master-panel {
+  background: #fff;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+
+  h2 {
+    font-size: 16px;
+    margin: 0;
+  }
+}
+
+.empty-row {
+  color: #667085;
+  text-align: center;
+}
+
+.actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 180px;
+}
+
+:host ::ng-deep .p-treetable {
+  min-width: 920px;
+}
+
+:host ::ng-deep .p-treetable-wrapper {
+  border: 1px solid #e4e9f0;
+  border-radius: 6px;
+}
+
+:host ::ng-deep .p-treetable-thead > tr > th,
+:host ::ng-deep .p-treetable-tbody > tr > td {
+  font-size: 13px;
+}
+
+:host ::ng-deep .p-treetable-thead > tr > .col-code,
+:host ::ng-deep .p-treetable-tbody > tr > .col-code {
+  width: 10%;
+}
+
+:host ::ng-deep .p-treetable-scrollable-body {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.ellipsis-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-form {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+label {
+  color: #344054;
+  display: grid;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+}
+
+input,
+select {
+  border: 1px solid #c8d0dc;
+  border-radius: 5px;
+  font: inherit;
+  min-height: 36px;
+  padding: 7px 9px;
+}
+
+button {
+  background: #1565c0;
+  border: 0;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 650;
+  min-height: 34px;
+  padding: 7px 12px;
+}
+
+.secondary-btn {
+  background: #e9eef5;
+  color: #243447;
+}
+
+.danger-btn {
+  background: #f3d7d7;
+  color: #8a1f1f;
+}
+
+.icon-btn {
+  background: #f3d7d7;
+  color: #8a1f1f;
+  min-width: 36px;
+  padding: 0;
+}
+
+.icon-action {
+  align-items: center;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  min-width: 34px;
+  padding: 0;
+  width: 34px;
+
+  mat-icon {
+    font-size: 19px;
+    height: 19px;
+    line-height: 19px;
+    width: 19px;
+  }
+}
+
+.form-actions {
+  justify-content: flex-end;
+}
+
+.modal-backdrop {
+  align-items: center;
+  background: rgba(16, 24, 40, 0.42);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 18px;
+  position: fixed;
+  z-index: 3000;
+}
+
+.modal-panel {
+  background: #fff;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  display: grid;
+  gap: 14px;
+  max-width: 860px;
+  padding: 16px;
+  width: min(860px, 100%);
+
+  h2 {
+    font-size: 18px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-header,
+  .section-header,
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .global-search {
+    max-width: none;
+  }
+}

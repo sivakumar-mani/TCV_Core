@@ -1,0 +1,116 @@
+<div class="page-shell">
+  <div class="page-header">
+    <h1>Location Info</h1>
+    <button type="button" (click)="addNew()">Add New</button>
+  </div>
+
+  <section class="master-panel">
+    <div class="section-header">
+      <h2>Location Info List</h2>
+      <input
+        type="search"
+        class="global-search"
+        placeholder="Search location info"
+        [value]="globalSearch"
+        (input)="applyGlobalSearch($any($event.target).value)">
+    </div>
+
+    <p-treeTable
+      [value]="filteredLocationTree"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 20, 50]">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Network</th>
+          <th>Postal Area</th>
+          <th class="col-code">Code</th>
+          <th>Pincode</th>
+          <th>Local Area</th>
+          <th>Street</th>
+          <th>Action</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+        <tr>
+          <td>
+            <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+            {{ rowData.level === 'network' ? rowData.network_name : '' }}
+          </td>
+          <td>
+            {{ rowData.level === 'postal' ? rowData.location_name : '' }}
+          </td>
+          <td class="col-code"><span class="ellipsis-text">{{ rowData.level === 'postal' ? rowData.post_short_code : '' }}</span></td>
+          <td>{{ rowData.level === 'postal' ? rowData.pincode : '' }}</td>
+          <td>{{ rowData.level === 'area' ? rowData.area_name : '' }}</td>
+          <td>{{ rowData.level === 'street' ? rowData.street_name : '' }}</td>
+          <td class="actions-cell">
+            <ng-container *ngIf="rowData.level === 'street'">
+              <button type="button" class="icon-action secondary-btn" title="View" aria-label="View" (click)="viewRow(rowData)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button type="button" class="icon-action secondary-btn" title="Edit" aria-label="Edit" (click)="editRow(rowData)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button type="button" class="icon-action danger-btn" title="Delete" aria-label="Delete" (click)="deleteRow(rowData)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </ng-container>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="empty-row">No location info added yet.</td>
+        </tr>
+      </ng-template>
+    </p-treeTable>
+  </section>
+
+  <div class="modal-backdrop" *ngIf="showModal">
+    <section class="modal-panel">
+      <div class="modal-header">
+        <h2>{{ mode === 'edit' ? 'Edit Location Info' : mode === 'view' ? 'View Location Info' : 'Add Location Info' }}</h2>
+        <button type="button" class="icon-btn" (click)="closeModal()">x</button>
+      </div>
+
+      <form [formGroup]="locationInfoForm" class="entry-form">
+        <label>Network
+          <select formControlName="network_id">
+            <option [ngValue]="null">Select network</option>
+            <option *ngFor="let network of networkOptions" [ngValue]="network.network_id">
+              {{ network.network_label }}
+            </option>
+          </select>
+        </label>
+        <label>Postal Area
+          <select formControlName="location_id" (change)="selectPostalArea()">
+            <option [ngValue]="null">Select postal area</option>
+            <option *ngFor="let postalArea of masters.locations" [ngValue]="postalArea.location_id">
+              {{ postalArea.location_name }}
+            </option>
+          </select>
+        </label>
+        <label>Post Short Code
+          <input type="text" formControlName="post_short_code">
+        </label>
+        <label>Pincode
+          <input type="text" maxlength="6" formControlName="pincode">
+        </label>
+        <label>Local Area
+          <input type="text" formControlName="area_name">
+        </label>
+        <label>Street
+          <input type="text" formControlName="street_name">
+        </label>
+      </form>
+
+      <div class="form-actions">
+        <button type="button" class="secondary-btn" (click)="closeModal()">Cancel</button>
+        <button type="button" (click)="saveLocationInfo()">
+          {{ mode === 'view' ? 'Back' : mode === 'edit' ? 'Update' : 'Save' }}
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

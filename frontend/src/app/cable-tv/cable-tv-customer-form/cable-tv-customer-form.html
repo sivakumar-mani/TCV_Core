@@ -34,15 +34,15 @@
         <label>Door No
           <input type="text" formControlName="door_no">
         </label>
-        <label>Location
+        <label>Postal Area
           <select formControlName="location_id">
-            <option [ngValue]="null">Select location</option>
+            <option [ngValue]="null">Select postal area</option>
             <option *ngFor="let location of lookups.locations || []" [ngValue]="location.location_id">{{ location.location_name }}</option>
           </select>
         </label>
-        <label>Area
+        <label>Location
           <select formControlName="area_id">
-            <option [ngValue]="null">Select area</option>
+            <option [ngValue]="null">Select location</option>
             <option *ngFor="let area of filteredAreas" [ngValue]="area.area_id">{{ area.area_name }}</option>
           </select>
         </label>
@@ -70,7 +70,7 @@
         <label>Source
           <select formControlName="source_id">
             <option [ngValue]="null">Select source</option>
-            <option *ngFor="let source of sourceOptions" [ngValue]="source.source_name">{{ source.source_name }}</option>
+            <option *ngFor="let source of lookups.sources || sourceOptions" [ngValue]="source.source_id">{{ source.source_name }}</option>
           </select>
         </label>
         <label *ngIf="permissions.isAdmin()">Installed By
@@ -81,9 +81,6 @@
         </label>
         <label *ngIf="!permissions.isAdmin()">Installed By
           <input type="text" [value]="permissions.username()" readonly>
-        </label>
-        <label>Labour / Service Charge
-          <input type="number" formControlName="labour_service_charge">
         </label>
         <label>Status
           <select formControlName="status">
@@ -101,10 +98,18 @@
             <option *ngFor="let type of stbTypes" [ngValue]="type">{{ type }}</option>
           </select>
         </label>
+        <label>STB Number
+          <select formControlName="stb_master_id">
+            <option [ngValue]="null">Select STB</option>
+            <option *ngFor="let stb of lookups.stbMasters || []" [ngValue]="stb.stb_master_id">
+              {{ stb.stb_number }} - {{ stb.box_type }} - {{ stb.stock_type }} - {{ stb.mso_name }}
+            </option>
+          </select>
+        </label>
         <label>Installed MSO
           <select formControlName="installed_mso_id">
             <option [ngValue]="null">Select MSO</option>
-            <option *ngFor="let mso of lookups.msos || []" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
+            <option *ngFor="let mso of lookups.installedMsos || []" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
           </select>
         </label>
         <label>Exchange Original MSO
@@ -113,7 +118,7 @@
             <option *ngFor="let mso of lookups.msos || []" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
           </select>
         </label>
-        <label>STB Number
+        <label>Selected STB No
           <input type="text" formControlName="stb_no">
         </label>
         <label>STB Amount
@@ -137,19 +142,10 @@
         <label>Connection Date
           <input type="date" formControlName="connection_date">
         </label>
-        <label>Disconnection Date
-          <input type="date" formControlName="disconnection_date">
-        </label>
         <label>Connection Type
           <select formControlName="connection_type">
             <option *ngFor="let type of connectionTypes" [ngValue]="type">{{ type }}</option>
           </select>
-        </label>
-        <label>Connection Charge
-          <input type="number" formControlName="connection_charge">
-        </label>
-        <label>Labour / Service Charge
-          <input type="number" formControlName="labour_service_charge">
         </label>
         <label>Remarks
           <input type="text" formControlName="remarks">
@@ -209,14 +205,13 @@
     <section class="form-section" formGroupName="subscription">
       <h2>Subscription Details</h2>
       <div class="form-grid">
-        <label>Total Amount
-          <input type="number" formControlName="amount" readonly>
+        <label>Month Name
+          <select formControlName="subscription_month">
+            <option *ngFor="let month of months" [ngValue]="month.value">{{ month.label }}</option>
+          </select>
         </label>
-        <label>Total Paid
-          <input type="number" formControlName="paid_amount" readonly>
-        </label>
-        <label>Balance
-          <input type="number" formControlName="balance_amount" readonly>
+        <label>Year
+          <input type="number" formControlName="subscription_year">
         </label>
         <label>Collect Date
           <input type="date" formControlName="collect_date">
@@ -227,13 +222,40 @@
         <label>Expiry Date
           <input type="date" formControlName="expiry_date">
         </label>
-        <label>Payment Mode
-          <select formControlName="payment_mode">
-            <option *ngFor="let mode of paymentModes" [ngValue]="mode">{{ mode }}</option>
-          </select>
+      </div>
+    </section>
+
+    <section class="form-section" formGroupName="account">
+      <h2>Account Details</h2>
+      <div class="form-grid">
+        <label>STB Amount
+          <input type="number" formControlName="stb_amount" (input)="calculateAccountTotals()">
         </label>
-        <label>Remarks
-          <input type="text" formControlName="remarks">
+        <label>Connection Amount
+          <input type="number" formControlName="connection_amount">
+        </label>
+        <label>Labor
+          <input type="number" formControlName="labor_amount">
+        </label>
+        <label>Material Cost
+          <input type="number" formControlName="material_cost" readonly>
+        </label>
+        <label>Subscription Amount
+          <input type="number" formControlName="subscription_amount" readonly>
+        </label>
+        <label>Sub Total
+          <input type="number" formControlName="sub_total" readonly>
+        </label>
+        <label>Discount
+          <input type="number" formControlName="discount">
+        </label>
+        <label>Grand Total
+          <input type="number" formControlName="grand_total" readonly>
+        </label>
+        <label>Status
+          <select formControlName="account_status" [disabled]="!permissions.isAdmin()">
+            <option *ngFor="let status of accountStatuses" [ngValue]="status">{{ status }}</option>
+          </select>
         </label>
       </div>
     </section>

@@ -1,0 +1,72 @@
+<div class="page-shell">
+  <div class="page-header">
+    <h1>STB Master</h1>
+    <button type="button" (click)="openStbModal()">Add STB</button>
+  </div>
+
+  <section class="stb-panel">
+    <table>
+      <tr>
+        <th>STB Number</th>
+        <th>Signal</th>
+        <th>Type</th>
+        <th>MSO</th>
+        <th>Amount</th>
+        <th>Status</th>
+      </tr>
+      <tr *ngFor="let item of stbs">
+        <td>{{ item.stb_number }}</td>
+        <td>{{ item.box_type }}</td>
+        <td>{{ item.stock_type }}</td>
+        <td>{{ item.mso_name }}</td>
+        <td>{{ item.stb_amount }}</td>
+        <td><span class="status-pill" [class.not-available]="item.status === 'NOT_AVAILABLE'">{{ item.status }}</span></td>
+      </tr>
+      <tr *ngIf="!stbs.length">
+        <td colspan="6" class="empty-row">No STB stock added yet.</td>
+      </tr>
+    </table>
+  </section>
+
+  <div class="modal-backdrop" *ngIf="showStbModal">
+    <section class="modal-panel">
+      <div class="modal-header">
+        <h2>Add STB</h2>
+        <button type="button" class="icon-btn" (click)="closeStbModal()">x</button>
+      </div>
+      <form [formGroup]="stbForm" class="entry-form">
+        <label>STB Number
+          <input type="text" formControlName="stb_number">
+        </label>
+        <label>STB Type
+          <select formControlName="box_type">
+            <option *ngFor="let type of boxTypes" [ngValue]="type">{{ type }}</option>
+          </select>
+        </label>
+        <label>Stock Type
+          <select formControlName="stock_type">
+            <option *ngFor="let type of stockTypes" [ngValue]="type">{{ type }}</option>
+          </select>
+        </label>
+        <label>MSO
+          <select formControlName="mso_id">
+            <option [ngValue]="null">Select MSO</option>
+            <option *ngFor="let mso of msos" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
+          </select>
+        </label>
+        <label>STB Amount
+          <input type="number" formControlName="stb_amount">
+        </label>
+        <label>Status
+          <select formControlName="status">
+            <option *ngFor="let status of statuses" [ngValue]="status">{{ status }}</option>
+          </select>
+        </label>
+      </form>
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" (click)="closeStbModal()">Cancel</button>
+        <button type="button" (click)="saveStb()">Save</button>
+      </div>
+    </section>
+  </div>
+</div>

@@ -832,7 +832,7 @@ The following points were reviewed after the latest business updates.
 
 
 
-Network:  TCV/SVN/ PAMMAL/  LEASE add this select 
+Network:  TCV/SVN/PAMMAL/LO static add this select 
 Location : Chromept, Pammal should map with area 
 Area: required to add in table to fetch , this required in administration module, duplication ignored, map with location
 Street :map with area, need to add in table at administration level and validation required

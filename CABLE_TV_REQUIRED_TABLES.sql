@@ -41,6 +41,7 @@ COMMENT='Cable TV network master: TCV, PAMMAL, MURUGAN, SVN';
 CREATE TABLE IF NOT EXISTS cable_locations (
     location_id INT AUTO_INCREMENT PRIMARY KEY,
     location_name VARCHAR(150) NOT NULL,
+    post_short_code VARCHAR(20) NULL,
     city VARCHAR(100) NOT NULL,
     pincode VARCHAR(10) NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -48,6 +49,8 @@ CREATE TABLE IF NOT EXISTS cable_locations (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
     UNIQUE KEY uk_cable_location_city (location_name, city),
+    UNIQUE KEY uk_cable_location_short_code (post_short_code),
+    UNIQUE KEY uk_cable_location_pincode (pincode),
     INDEX idx_cable_location_city (city),
     INDEX idx_cable_location_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -59,17 +62,22 @@ COMMENT='Cable TV location master';
 
 CREATE TABLE IF NOT EXISTS cable_areas (
     area_id INT AUTO_INCREMENT PRIMARY KEY,
+    network_id INT NULL,
     location_id INT NOT NULL,
     area_name VARCHAR(150) NOT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+    CONSTRAINT fk_cable_areas_network
+        FOREIGN KEY (network_id) REFERENCES cable_network_master(network_id)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_cable_areas_location
         FOREIGN KEY (location_id) REFERENCES cable_locations(location_id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    UNIQUE KEY uk_cable_location_area (location_id, area_name),
+    UNIQUE KEY uk_cable_network_location_area (network_id, location_id, area_name),
+    INDEX idx_cable_area_network (network_id),
     INDEX idx_cable_area_location (location_id),
     INDEX idx_cable_area_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -257,14 +265,41 @@ CREATE TABLE IF NOT EXISTS cable_tv_customers (
 COMMENT='Combined Cable TV customer table for all networks';
 
 -- =====================================================
--- 10. CABLE CUSTOMER STBS
+-- 10. CABLE STB MASTER
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS cable_stb_master (
+    stb_master_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    stb_number VARCHAR(100) NOT NULL,
+    box_type ENUM('HD','SD') NOT NULL DEFAULT 'HD',
+    stock_type ENUM('NEW','SERVICED','RETURNED','FAULT') NOT NULL DEFAULT 'NEW',
+    mso_id INT NULL,
+    stb_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (stb_amount >= 0),
+    status ENUM('AVAILABLE','NOT_AVAILABLE') NOT NULL DEFAULT 'AVAILABLE',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_cable_stb_master_mso
+        FOREIGN KEY (mso_id) REFERENCES cable_mso_master(mso_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
+
+    UNIQUE KEY uk_cable_stb_master_number (stb_number),
+    INDEX idx_cable_stb_master_status (status),
+    INDEX idx_cable_stb_master_stock_type (stock_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Office STB stock master';
+
+-- =====================================================
+-- 11. CABLE CUSTOMER STBS
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS cable_customer_stbs (
     customer_stb_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     approval_group_id BIGINT NULL,
     cable_customer_id BIGINT NOT NULL,
-    stb_type ENUM('NEW','FAULT','REPLACED','EXCHANGE','CUSTOMER_OWNED') NOT NULL DEFAULT 'NEW',
+    stb_master_id BIGINT NULL,
+    stb_type ENUM('NEW','SERVICED','RETURNED','FAULT','REPLACED','EXCHANGE','CUSTOMER_OWNED') NOT NULL DEFAULT 'NEW',
     installed_mso_id INT NULL,
     exchange_original_mso_id INT NULL,
     stb_no VARCHAR(100) NOT NULL,
@@ -289,6 +324,9 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
     CONSTRAINT fk_cable_stbs_customer
         FOREIGN KEY (cable_customer_id) REFERENCES cable_tv_customers(cable_customer_id)
         ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_cable_stbs_master
+        FOREIGN KEY (stb_master_id) REFERENCES cable_stb_master(stb_master_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT fk_cable_stbs_installed_mso
         FOREIGN KEY (installed_mso_id) REFERENCES cable_mso_master(mso_id)
         ON DELETE SET NULL ON UPDATE CASCADE,
@@ -308,6 +346,7 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
     UNIQUE KEY uk_cable_stb_no (stb_no),
     INDEX idx_cable_stbs_approval_group (approval_group_id),
     INDEX idx_cable_stbs_customer (cable_customer_id),
+    INDEX idx_cable_stbs_master (stb_master_id),
     INDEX idx_cable_stbs_type (stb_type),
     INDEX idx_cable_stbs_status (status),
     INDEX idx_cable_stbs_approval_status (approval_status)
@@ -315,7 +354,7 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
 COMMENT='Customer STB details and exchange history';
 
 -- =====================================================
--- 11. CABLE CONNECTIONS
+-- 12. CABLE CONNECTIONS
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS cable_connections (
@@ -530,6 +569,76 @@ CREATE TABLE IF NOT EXISTS cable_subscriptions (
 COMMENT='Cable TV monthly/yearly subscription billing and collection';
 
 -- =====================================================
+-- 17. CABLE STB ISSUE MASTER
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS cable_stb_issue_master (
+    stb_issue_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    stb_master_id BIGINT NOT NULL,
+    cable_customer_id BIGINT NOT NULL,
+    customer_stb_id BIGINT NULL,
+    issued_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    issued_by_employee_id INT NULL,
+    issue_status ENUM('ISSUED','RETURNED','CANCELLED') NOT NULL DEFAULT 'ISSUED',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_cable_stb_issue_master
+        FOREIGN KEY (stb_master_id) REFERENCES cable_stb_master(stb_master_id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_cable_stb_issue_customer
+        FOREIGN KEY (cable_customer_id) REFERENCES cable_tv_customers(cable_customer_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_cable_stb_issue_customer_stb
+        FOREIGN KEY (customer_stb_id) REFERENCES cable_customer_stbs(customer_stb_id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+    CONSTRAINT fk_cable_stb_issue_employee
+        FOREIGN KEY (issued_by_employee_id) REFERENCES employees(employee_id)
+        ON UPDATE CASCADE ON DELETE SET NULL,
+
+    INDEX idx_cable_stb_issue_customer (cable_customer_id),
+    INDEX idx_cable_stb_issue_stb (stb_master_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='STB issue register for customer installations';
+
+-- =====================================================
+-- 18. CABLE CUSTOMER ACCOUNTS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS cable_customer_accounts (
+    account_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    approval_group_id BIGINT NOT NULL,
+    cable_customer_id BIGINT NOT NULL,
+    stb_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    connection_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    labor_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    material_cost DECIMAL(12,2) NOT NULL DEFAULT 0,
+    subscription_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    sub_total DECIMAL(12,2) NOT NULL DEFAULT 0,
+    discount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    grand_total DECIMAL(12,2) NOT NULL DEFAULT 0,
+    account_status ENUM('PENDING','RECEIVED') NOT NULL DEFAULT 'PENDING',
+    received_by_user_id INT NULL,
+    received_at TIMESTAMP NULL,
+    approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
+    created_by_user_id INT NULL,
+    approved_by_user_id INT NULL,
+    approved_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_cable_accounts_approval_group
+        FOREIGN KEY (approval_group_id) REFERENCES cable_approval_groups(approval_group_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT fk_cable_accounts_customer
+        FOREIGN KEY (cable_customer_id) REFERENCES cable_tv_customers(cable_customer_id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+
+    INDEX idx_cable_customer_accounts_customer (cable_customer_id),
+    INDEX idx_cable_customer_accounts_status (account_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Account handover totals for cable customer installation';
+
+-- =====================================================
 -- INITIAL MASTER DATA
 -- =====================================================
 
@@ -540,6 +649,7 @@ VALUES
     ('PAMMAL', 'Pammal', 101, 999, 'Legacy customer range: 101-999'),
     ('MURUGAN', 'Murugan', 101, 999, 'Legacy customer range: 101-999'),
     ('SVN', 'SVN', 3001, 6000, 'Legacy customer range: 3001-6000'),
+    ('LO', 'LO', NULL, NULL, 'Local operator cable network'),
     ('LEASE', 'Lease', NULL, NULL, 'Lease cable network');
 
 INSERT IGNORE INTO cable_connection_sources (source_name)
@@ -561,19 +671,17 @@ VALUES
     ('SCV'),
     ('TCCL');
 
-INSERT IGNORE INTO cable_locations (location_name, city, pincode)
+UPDATE cable_locations
+SET location_name = 'Chromepet', post_short_code = COALESCE(post_short_code, 'CMP'), city = 'Chromepet', pincode = '600044'
+WHERE location_name IN ('Chromept', 'Chroempet');
+
+UPDATE cable_locations
+SET post_short_code = COALESCE(post_short_code, 'PAM'), city = 'Pammal', pincode = '600075'
+WHERE location_name = 'Pammal';
+
+INSERT IGNORE INTO cable_locations (location_name, post_short_code, city, pincode)
 VALUES
-    ('Chromept', 'Chromept', NULL),
-    ('Pammal', 'Pammal', NULL);
-
-INSERT IGNORE INTO cable_areas (location_id, area_name)
-SELECT location_id, location_name
-FROM cable_locations
-WHERE location_name IN ('Chromept', 'Pammal');
-
-INSERT IGNORE INTO cable_streets (area_id, street_name)
-SELECT area_id, 'Main Street'
-FROM cable_areas
-WHERE area_name IN ('Chromept', 'Pammal');
+    ('Chromepet', 'CMP', 'Chromepet', '600044'),
+    ('Pammal', 'PAM', 'Pammal', '600075');
 
 SET FOREIGN_KEY_CHECKS = 1;

@@ -20,6 +20,7 @@ const permissionCatalog = [
   ['HR Process', 'EMPLOYEE_ATTENDANCE', 'Employee Attendance', '/employee-attendance'],
   ['HR Process', 'EMPLOYEE_SALARY', 'Employee Salary', '/employee-salary'],
   ['Administration', 'WORKFLOW_APPROVAL', 'Workflow Approvals', '/workflow-approval'],
+  ['Administration', 'CABLE_TV_MASTERS', 'Cable TV Masters', '/cable-tv-masters'],
   ['Administration', 'USERS', 'Users', '/users'],
   ['Administration', 'AUDIT_LOGS', 'Audit Logs', '/audit-logs'],
   ['Administration', 'ROLE_PERMISSIONS', 'Role Permissions', '/role-permissions'],

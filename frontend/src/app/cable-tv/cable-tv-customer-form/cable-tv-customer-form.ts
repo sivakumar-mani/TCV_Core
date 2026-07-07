@@ -22,13 +22,12 @@ export class CableTvCustomerForm {
   filteredStreets: any[] = [];
 
   readonly statusTypes = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED'];
-  readonly stbTypes = ['NEW', 'FAULT', 'REPLACED', 'EXCHANGE', 'CUSTOMER_OWNED'];
+  readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly connectionTypes = ['NEW', 'SHIFTED', 'TRANSFERRED'];
-  readonly billingBasis = ['MONTH', 'DAY'];
-  readonly paymentModes = ['CASH', 'UPI', 'CARD', 'BANK', 'CHEQUE'];
+  readonly accountStatuses = ['PENDING', 'RECEIVED'];
   readonly sourceOptions = [
-    { source_name: 'Customer Approach Office' },
-    { source_name: 'Customer Approach Engineer' }
+    { source_id: 'Customer Approach Office', source_name: 'Customer Approach Office' },
+    { source_id: 'Customer Approach Engineer', source_name: 'Customer Approach Engineer' }
   ];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
@@ -85,6 +84,7 @@ export class CableTvCustomerForm {
       labour_service_charge: [0],
       status: ['ACTIVE', Validators.required],
       stb: this.fb.group({
+        stb_master_id: [null],
         stb_type: ['NEW'],
         installed_mso_id: [null],
         exchange_original_mso_id: [null],
@@ -106,19 +106,40 @@ export class CableTvCustomerForm {
       materials: this.fb.array([this.createMaterialRow()]),
       packages: this.fb.array([this.createPackageRow()]),
       subscription: this.fb.group({
+        subscription_month: [Number(today.slice(5, 7))],
+        subscription_year: [Number(today.slice(0, 4))],
         collect_date: [today],
+        start_date: [today],
+        expiry_date: [today],
         payment_mode: ['CASH'],
         amount: [0],
         paid_amount: [0],
         balance_amount: [0],
         remarks: ['']
+      }),
+      account: this.fb.group({
+        stb_amount: [0],
+        connection_amount: [0],
+        labor_amount: [0],
+        material_cost: [0],
+        subscription_amount: [0],
+        sub_total: [0],
+        discount: [0],
+        grand_total: [0],
+        account_status: ['PENDING']
       })
     });
   }
 
   setupDependencies() {
+    this.form.get('network_id')?.valueChanges.subscribe(() => {
+      this.refreshAreaOptions();
+      this.filteredStreets = [];
+      this.form.patchValue({ area_id: null, street_id: null }, { emitEvent: false });
+    });
+
     this.form.get('location_id')?.valueChanges.subscribe((locationId: number) => {
-      this.filteredAreas = (this.lookups.areas || []).filter((area: any) => Number(area.location_id) === Number(locationId));
+      this.refreshAreaOptions(locationId);
       this.filteredStreets = [];
       this.form.patchValue({ area_id: null, street_id: null }, { emitEvent: false });
       const location = (this.lookups.locations || []).find((item: any) => Number(item.location_id) === Number(locationId));
@@ -130,7 +151,34 @@ export class CableTvCustomerForm {
       this.form.patchValue({ street_id: null }, { emitEvent: false });
     });
 
-    this.form.get('subscription.payment_mode')?.valueChanges.subscribe(() => this.calculateSubscriptionTotals());
+    this.form.get('stb.stb_master_id')?.valueChanges.subscribe((stbMasterId: number) => this.selectStbMaster(stbMasterId));
+    this.form.get('stb.stb_amount')?.valueChanges.subscribe((value: number) => {
+      this.account.patchValue({ stb_amount: Number(value) || 0 }, { emitEvent: false });
+      this.calculateAccountTotals();
+    });
+    this.form.get('stb.stb_discount')?.valueChanges.subscribe((value: number) => {
+      this.account.patchValue({ discount: Number(value) || 0 }, { emitEvent: false });
+      this.calculateAccountTotals();
+    });
+    this.form.get('stb.labour_service_charge')?.valueChanges.subscribe((value: number) => {
+      this.account.patchValue({ labor_amount: Number(value) || 0 }, { emitEvent: false });
+      this.calculateAccountTotals();
+    });
+    ['account.connection_amount', 'account.labor_amount', 'account.discount'].forEach((path) => {
+      this.form.get(path)?.valueChanges.subscribe(() => this.calculateAccountTotals());
+    });
+  }
+
+  get account(): FormGroup {
+    return this.form.get('account') as FormGroup;
+  }
+
+  refreshAreaOptions(locationId = this.form.get('location_id')?.value) {
+    const networkId = this.form.get('network_id')?.value;
+    this.filteredAreas = (this.lookups.areas || []).filter((area: any) =>
+      Number(area.location_id) === Number(locationId) &&
+      (!area.network_id || Number(area.network_id) === Number(networkId))
+    );
   }
 
   loadLookups() {
@@ -139,10 +187,14 @@ export class CableTvCustomerForm {
       next: (response: any) => {
         this.ngxLoader.stop();
         this.lookups = response || {};
-        const allowedNetworks = ['TCV', 'SVN', 'PAMMAL', 'LEASE'];
+        const allowedNetworks = ['TCV', 'SVN', 'PAMMAL', 'LO'];
         this.lookups.networks = (this.lookups.networks || []).filter((network: any) =>
           allowedNetworks.includes(String(network.network_code).toUpperCase())
         );
+        this.lookups.sources = this.normalizeSources(this.lookups.sources);
+        this.lookups.installedMsos = this.lookups.installedMsos?.length
+          ? this.lookups.installedMsos
+          : (this.lookups.msos || []).filter((mso: any) => ['VK', 'DM'].includes(String(mso.mso_name).toUpperCase()));
         if (this.isEditMode) this.loadCustomerDetails();
       },
       error: (error: any) => {
@@ -159,10 +211,14 @@ export class CableTvCustomerForm {
         this.ngxLoader.stop();
         const customer = response.customer || {};
         this.form.patchValue(customer);
-        this.filteredAreas = (this.lookups.areas || []).filter((area: any) => Number(area.location_id) === Number(customer.location_id));
+        this.filteredAreas = (this.lookups.areas || []).filter((area: any) =>
+          Number(area.location_id) === Number(customer.location_id) &&
+          (!area.network_id || Number(area.network_id) === Number(customer.network_id))
+        );
         this.filteredStreets = (this.lookups.streets || []).filter((street: any) => Number(street.area_id) === Number(customer.area_id));
         if (response.stbs?.[0]) this.form.get('stb')?.patchValue(response.stbs[0]);
         if (response.connections?.[0]) this.form.get('connection')?.patchValue(response.connections[0]);
+        if (response.accounts?.[0]) this.account.patchValue(response.accounts[0]);
         if (response.customerPackages?.length) {
           this.packages.clear();
           response.customerPackages.forEach((item: any) => this.packages.push(this.createPackageRow(item)));
@@ -172,6 +228,7 @@ export class CableTvCustomerForm {
           response.materials.forEach((material: any) => this.materials.push(this.createMaterialRow(material)));
         }
         this.calculateSubscriptionTotals();
+        this.calculateAccountTotals();
       },
       error: (error: any) => {
         this.ngxLoader.stop();
@@ -245,6 +302,19 @@ export class CableTvCustomerForm {
     this.calculatePackageRow(index);
   }
 
+  selectStbMaster(stbMasterId: number) {
+    const selectedStb = (this.lookups.stbMasters || []).find((item: any) => Number(item.stb_master_id) === Number(stbMasterId));
+    if (!selectedStb) return;
+    this.form.get('stb')?.patchValue({
+      stb_type: selectedStb.stock_type,
+      installed_mso_id: selectedStb.mso_id,
+      stb_no: selectedStb.stb_number,
+      stb_amount: Number(selectedStb.stb_amount) || 0
+    }, { emitEvent: false });
+    this.account.patchValue({ stb_amount: Number(selectedStb.stb_amount) || 0 }, { emitEvent: false });
+    this.calculateAccountTotals();
+  }
+
   selectMaterialProduct(index: number) {
     const row = this.materials.at(index) as FormGroup;
     const productId = row.get('product_id')?.value;
@@ -263,6 +333,7 @@ export class CableTvCustomerForm {
     const qty = Number(row.get('qty')?.value) || 0;
     const rate = Number(row.get('unit_rate')?.value) || 0;
     row.patchValue({ amount: Number((qty * rate).toFixed(2)) }, { emitEvent: false });
+    this.calculateAccountTotals();
   }
 
   calculatePackageRow(index: number) {
@@ -295,12 +366,49 @@ export class CableTvCustomerForm {
   calculateSubscriptionTotals() {
     const totalAmount = this.packages.controls.reduce((sum, row) => sum + (Number(row.get('amount')?.value) || 0), 0);
     const totalPaid = this.packages.controls.reduce((sum, row) => sum + (Number(row.get('paid_amount')?.value) || 0), 0);
+    const starts = this.packages.controls.map((row) => row.get('start_date')?.value).filter(Boolean).sort();
+    const ends = this.packages.controls.map((row) => row.get('end_date')?.value).filter(Boolean).sort();
     const sub = this.form.get('subscription') as FormGroup;
     sub.patchValue({
       amount: Number(totalAmount.toFixed(2)),
       paid_amount: Number(totalPaid.toFixed(2)),
-      balance_amount: Number((totalAmount - totalPaid).toFixed(2))
+      balance_amount: Number((totalAmount - totalPaid).toFixed(2)),
+      subscription_month: starts[0] ? Number(starts[0].slice(5, 7)) : Number(this.today().slice(5, 7)),
+      subscription_year: starts[0] ? Number(starts[0].slice(0, 4)) : Number(this.today().slice(0, 4)),
+      start_date: starts[0] || this.today(),
+      expiry_date: ends[ends.length - 1] || this.today()
     }, { emitEvent: false });
+    this.calculateAccountTotals();
+  }
+
+  calculateAccountTotals() {
+    if (!this.form) return;
+    const materialCost = this.materials.controls.reduce((sum, row) => sum + (Number(row.get('amount')?.value) || 0), 0);
+    const subscriptionAmount = this.packages.controls.reduce((sum, row) => sum + (Number(row.get('amount')?.value) || 0), 0);
+    const stbAmount = Number(this.account.get('stb_amount')?.value ?? this.form.get('stb.stb_amount')?.value) || 0;
+    const connectionAmount = Number(this.account.get('connection_amount')?.value) || 0;
+    const laborAmount = Number(this.account.get('labor_amount')?.value) || 0;
+    const discount = Number(this.account.get('discount')?.value) || 0;
+    const subTotal = Number((stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount).toFixed(2));
+    this.account.patchValue({
+      stb_amount: Number(stbAmount.toFixed(2)),
+      material_cost: Number(materialCost.toFixed(2)),
+      subscription_amount: Number(subscriptionAmount.toFixed(2)),
+      sub_total: subTotal,
+      grand_total: Number(Math.max(subTotal - discount, 0).toFixed(2))
+    }, { emitEvent: false });
+  }
+
+  normalizeSources(sources: any[] = []) {
+    const defaultSources = this.sourceOptions;
+    const lookupSources = sources.map((source: any) => ({
+      source_id: source.source_id || source.source_name,
+      source_name: source.source_name
+    }));
+    const merged = [...lookupSources, ...defaultSources];
+    return merged.filter((source, index, list) =>
+      source.source_name && list.findIndex((item) => item.source_name === source.source_name) === index
+    );
   }
 
   submit() {
