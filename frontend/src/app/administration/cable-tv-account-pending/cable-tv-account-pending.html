@@ -14,6 +14,9 @@
         <th>Material</th>
         <th>Subscription</th>
         <th>Total</th>
+        <th>Paid</th>
+        <th>Balance</th>
+        <th>Due Date</th>
         <th>Action</th>
       </tr>
       <tr *ngFor="let item of accounts">
@@ -25,10 +28,13 @@
         <td>{{ item.material_cost }}</td>
         <td>{{ item.subscription_amount }}</td>
         <td>{{ item.grand_total }}</td>
+        <td>{{ item.customer_paid_amount }}</td>
+        <td>{{ item.balance_amount }}</td>
+        <td>{{ item.due_date }}</td>
         <td><button type="button" (click)="markReceived(item.account_id)">Received</button></td>
       </tr>
       <tr *ngIf="!accounts.length">
-        <td colspan="9" class="empty-row">No pending account handovers.</td>
+        <td colspan="12" class="empty-row">No pending account handovers.</td>
       </tr>
     </table>
   </section>

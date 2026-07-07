@@ -41,4 +41,21 @@ function requirePermission(permissionKey) {
   };
 }
 
-module.exports = { authendicateToken, requireAdmin, requirePermission };
+function requireAnyPermission(permissionKeys) {
+  return (req, res, next) => {
+    if (String(res.locals.role).toUpperCase() === 'ADMIN') return next();
+    const action = actionForMethod(req.method);
+    if (!action) return next();
+    connection.query(
+      `SELECT 1 FROM role_permissions WHERE role = ? AND permission_key IN (?) AND ${action} = 1 LIMIT 1`,
+      [String(res.locals.role).toUpperCase(), permissionKeys],
+      (error, rows) => {
+        if (error) return res.status(500).json({ message: 'Permission check failed' });
+        if (!rows.length) return res.status(403).json({ message: 'You do not have permission for this action' });
+        next();
+      }
+    );
+  };
+}
+
+module.exports = { authendicateToken, requireAdmin, requirePermission, requireAnyPermission };

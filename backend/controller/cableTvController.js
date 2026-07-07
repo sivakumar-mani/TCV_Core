@@ -95,7 +95,11 @@ const ensureCableTvExtendedTables = async (db) => {
       subscription_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
       sub_total DECIMAL(12,2) NOT NULL DEFAULT 0,
       discount DECIMAL(12,2) NOT NULL DEFAULT 0,
+      overall_discount DECIMAL(12,2) NOT NULL DEFAULT 0,
       grand_total DECIMAL(12,2) NOT NULL DEFAULT 0,
+      customer_paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+      balance_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+      due_date DATE NULL,
       account_status ENUM('PENDING','RECEIVED') NOT NULL DEFAULT 'PENDING',
       received_by_user_id INT NULL,
       received_at TIMESTAMP NULL,
@@ -128,6 +132,76 @@ const ensureCableTvExtendedTables = async (db) => {
   } catch (_error) {
     // Existing installations may already have the expanded enum.
   }
+
+  const [[connectionDiscountColumn]] = await db.query(
+    `SELECT COUNT(*) AS count
+     FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_connections' AND COLUMN_NAME = 'connection_discount'`
+  );
+  if (!connectionDiscountColumn.count) {
+    await db.query('ALTER TABLE cable_connections ADD COLUMN connection_discount DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER connection_charge');
+  }
+
+  const accountColumns = [
+    ['overall_discount', 'ALTER TABLE cable_customer_accounts ADD COLUMN overall_discount DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER discount'],
+    ['customer_paid_amount', 'ALTER TABLE cable_customer_accounts ADD COLUMN customer_paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER grand_total'],
+    ['balance_amount', 'ALTER TABLE cable_customer_accounts ADD COLUMN balance_amount DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER customer_paid_amount'],
+    ['due_date', 'ALTER TABLE cable_customer_accounts ADD COLUMN due_date DATE NULL AFTER balance_amount']
+  ];
+  for (const [columnName, alterSql] of accountColumns) {
+    const [[column]] = await db.query(
+      `SELECT COUNT(*) AS count
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_customer_accounts' AND COLUMN_NAME = ?`,
+      [columnName]
+    );
+    if (!column.count) await db.query(alterSql);
+  }
+
+  const [[networkTypeColumn]] = await db.query(
+    `SELECT COUNT(*) AS count
+     FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_tv_customers' AND COLUMN_NAME = 'network_type'`
+  );
+  if (!networkTypeColumn.count) {
+    await db.query('ALTER TABLE cable_tv_customers ADD COLUMN network_type VARCHAR(20) NULL AFTER network_id');
+    await db.query(`
+      UPDATE cable_tv_customers c
+      INNER JOIN cable_network_master n ON n.network_id = c.network_id
+      SET c.network_type = n.network_code
+      WHERE c.network_type IS NULL
+    `);
+  }
+
+  const [prefixedCustomers] = await db.query(
+    `SELECT cable_customer_id
+     FROM cable_tv_customers
+     WHERE customer_code IS NULL OR customer_code NOT REGEXP '^[0-9]+$'
+     ORDER BY cable_customer_id`
+  );
+  if (prefixedCustomers.length) {
+    const [[maxNumeric]] = await db.query(
+      `SELECT COALESCE(MAX(CAST(customer_code AS UNSIGNED)), 1000) AS max_code
+       FROM cable_tv_customers
+       WHERE customer_code REGEXP '^[0-9]+$'`
+    );
+    let nextCode = Math.max(Number(maxNumeric.max_code) || 1000, 1000) + 1;
+    for (const customer of prefixedCustomers) {
+      await db.query(
+        'UPDATE cable_tv_customers SET customer_code = ? WHERE cable_customer_id = ?',
+        [String(nextCode++), customer.cable_customer_id]
+      );
+    }
+  }
+
+  const [[customerCodeColumn]] = await db.query(
+    `SELECT DATA_TYPE AS data_type
+     FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_tv_customers' AND COLUMN_NAME = 'customer_code'`
+  );
+  if (customerCodeColumn?.data_type !== 'int') {
+    await db.query('ALTER TABLE cable_tv_customers MODIFY customer_code INT NOT NULL');
+  }
 };
 
 const resolveSourceId = async (db, value) => {
@@ -154,16 +228,24 @@ const resolveEmployeeId = async (db, req, payloadEmployeeId) => {
   return employee?.employee_id || intOrNull(payloadEmployeeId);
 };
 
-const generateCustomerCode = async (db, networkId) => {
-  const [networkRows] = await db.query(
-    'SELECT network_code FROM cable_network_master WHERE network_id = ?',
+const generateCustomerCode = async (db) => {
+  const [[row]] = await db.query(
+    `SELECT COALESCE(MAX(customer_code), 1000) + 1 AS next_code
+     FROM cable_tv_customers`
+  );
+  return Number(row.next_code || 1001);
+};
+
+const resolveNetworkType = async (db, networkId) => {
+  const [[network]] = await db.query(
+    `SELECT network_code
+     FROM cable_network_master
+     WHERE network_id = ? AND network_code IN ('TCV', 'SVN', 'PAMMAL', 'LO') AND is_active = 1
+     LIMIT 1`,
     [networkId]
   );
-  const networkCode = networkRows[0]?.network_code || 'CTV';
-  const [rows] = await db.query(
-    'SELECT COALESCE(MAX(cable_customer_id), 0) + 1 AS next_id FROM cable_tv_customers'
-  );
-  return `${networkCode}-${String(rows[0].next_id).padStart(6, '0')}`;
+  if (!network) return null;
+  return String(network.network_code).toUpperCase() === 'PAMMAL' ? 'Pammal' : network.network_code;
 };
 
 const getLookups = async (_req, res) => {
@@ -675,7 +757,13 @@ const receiveAccount = async (req, res) => {
 
     await db.query(
       `UPDATE cable_customer_accounts
-       SET account_status = 'RECEIVED', received_by_user_id = ?, received_at = NOW(), updated_at = NOW()
+       SET account_status = 'RECEIVED',
+           customer_paid_amount = grand_total,
+           balance_amount = 0,
+           due_date = NULL,
+           received_by_user_id = ?,
+           received_at = NOW(),
+           updated_at = NOW()
        WHERE account_id = ?`,
       [currentUserId(req), accountId]
     );
@@ -688,6 +776,8 @@ const receiveAccount = async (req, res) => {
 
 const getCableCustomers = async (req, res) => {
   try {
+    const db = connection.promise();
+    await ensureCableTvExtendedTables(db);
     const status = req.query.approval_status || 'APPROVED';
     const values = [];
     let where = 'WHERE 1 = 1';
@@ -697,12 +787,16 @@ const getCableCustomers = async (req, res) => {
       values.push(status);
     }
 
-    const [rows] = await connection.promise().query(
+    const [rows] = await db.query(
       `SELECT c.cable_customer_id, c.customer_code, c.legacy_customer_no, c.full_name,
               c.door_no, c.city, c.pincode, c.mobile_no, c.aadhaar_no, c.alternate_mobile_no,
               c.status, c.approval_status, c.created_at,
-              n.network_name, l.location_name, a.area_name, s.street_name, src.source_name,
-              CONCAT_WS(' ', e.first_name, e.last_name) AS installed_by_name
+              c.network_type, n.network_name, l.location_name, a.area_name, s.street_name, src.source_name,
+              CONCAT_WS(' ', e.first_name, e.last_name) AS installed_by_name,
+              stb.stb_amount, stb.stb_discount, conn.connection_charge,
+              conn.connection_discount, conn.labour_service_charge,
+              acc.subscription_amount, acc.overall_discount, acc.grand_total, acc.customer_paid_amount,
+              acc.balance_amount, acc.due_date, acc.account_status
        FROM cable_tv_customers c
        INNER JOIN cable_network_master n ON n.network_id = c.network_id
        INNER JOIN cable_locations l ON l.location_id = c.location_id
@@ -710,6 +804,15 @@ const getCableCustomers = async (req, res) => {
        INNER JOIN cable_streets s ON s.street_id = c.street_id
        LEFT JOIN cable_connection_sources src ON src.source_id = c.source_id
        LEFT JOIN employees e ON e.employee_id = c.installed_by_employee_id
+       LEFT JOIN cable_customer_stbs stb ON stb.customer_stb_id = (
+         SELECT MAX(customer_stb_id) FROM cable_customer_stbs WHERE cable_customer_id = c.cable_customer_id
+       )
+       LEFT JOIN cable_connections conn ON conn.connection_id = (
+         SELECT MAX(connection_id) FROM cable_connections WHERE cable_customer_id = c.cable_customer_id
+       )
+       LEFT JOIN cable_customer_accounts acc ON acc.account_id = (
+         SELECT MAX(account_id) FROM cable_customer_accounts WHERE cable_customer_id = c.cable_customer_id
+       )
        ${where}
        ORDER BY c.cable_customer_id DESC`,
       values
@@ -772,7 +875,13 @@ const addCableCustomer = async (req, res) => {
       return res.status(400).json({ message: 'Network, customer name, door no, mobile, location, area and street are required' });
     }
 
-    const customerCode = payload.customer_code || await generateCustomerCode(db, networkId);
+    const networkType = await resolveNetworkType(db, networkId);
+    if (!networkType) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Selected network must be TCV, SVN, Pammal or LO' });
+    }
+
+    const customerCode = await generateCustomerCode(db);
     const approvalGroupNo = `CTV-${Date.now()}`;
     const [approvalResult] = await db.query(
       `INSERT INTO cable_approval_groups
@@ -790,13 +899,13 @@ const addCableCustomer = async (req, res) => {
     const sourceId = await resolveSourceId(db, payload.source_id || payload.source_name);
     const [customerResult] = await db.query(
       `INSERT INTO cable_tv_customers (
-        approval_group_id, network_id, legacy_customer_no, customer_code, full_name, door_no,
+        approval_group_id, network_id, network_type, legacy_customer_no, customer_code, full_name, door_no,
         location_id, area_id, street_id, city, pincode, mobile_no, aadhaar_no, alternate_mobile_no,
         source_id, installed_by_employee_id, labour_service_charge, status, approval_status,
         created_by_user_id, approved_by_user_id, approved_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${approvalStatus === 'APPROVED' ? 'NOW()' : 'NULL'})`,
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${approvalStatus === 'APPROVED' ? 'NOW()' : 'NULL'})`,
       [
-        approvalGroupId, networkId, nullable(payload.legacy_customer_no), customerCode, payload.full_name, payload.door_no,
+        approvalGroupId, networkId, networkType, nullable(payload.legacy_customer_no), customerCode, payload.full_name, payload.door_no,
         Number(payload.location_id), Number(payload.area_id), Number(payload.street_id), payload.city || '', nullable(payload.pincode),
         payload.mobile_no, nullable(payload.aadhaar_no), nullable(payload.alternate_mobile_no), sourceId,
         employeeId, money(payload.labour_service_charge), payload.status || 'ACTIVE', approvalStatus, createdBy,
@@ -870,13 +979,14 @@ const addCableCustomer = async (req, res) => {
       const [connectionResult] = await db.query(
         `INSERT INTO cable_connections (
           approval_group_id, cable_customer_id, connection_date, disconnection_date, connection_type,
-          connected_by_employee_id, connection_charge, labour_service_charge, status, approval_status,
+          connected_by_employee_id, connection_charge, connection_discount, labour_service_charge, status, approval_status,
           remarks, created_by_user_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           approvalGroupId, cableCustomerId, payload.connection.connection_date,
           nullable(payload.connection.disconnection_date), payload.connection.connection_type || 'NEW',
-          employeeId, money(payload.connection.connection_charge), money(payload.connection.labour_service_charge),
+          employeeId, money(payload.connection.connection_charge), money(payload.connection.connection_discount),
+          money(payload.connection.labour_service_charge),
           payload.connection.status || 'ACTIVE', approvalStatus, nullable(payload.connection.remarks), createdBy
         ]
       );
@@ -955,25 +1065,32 @@ const addCableCustomer = async (req, res) => {
     const materialCost = Array.isArray(payload.materials)
       ? payload.materials.reduce((sum, item) => sum + money(item.amount), 0)
       : money(accountPayload.material_cost);
-    const subscriptionAmount = packageRowsPayload.reduce((sum, item) => sum + money(item.amount), 0);
+    const subscriptionAmount = Math.round(packageRowsPayload.reduce((sum, item) => sum + money(item.amount), 0));
     const accountStbAmount = money(accountPayload.stb_amount ?? payload.stb?.stb_amount);
-    const connectionAmount = money(accountPayload.connection_amount);
-    const laborAmount = money(accountPayload.labor_amount ?? payload.stb?.labour_service_charge);
-    const discount = money(accountPayload.discount ?? payload.stb?.stb_discount);
+    const connectionAmount = money(payload.connection?.connection_charge ?? accountPayload.connection_amount);
+    const laborAmount = money(payload.connection?.labour_service_charge ?? accountPayload.labor_amount);
+    const overallDiscount = money(accountPayload.overall_discount);
+    const discount = money(payload.stb?.stb_discount) + money(payload.connection?.connection_discount) + overallDiscount;
     const subTotal = money(accountPayload.sub_total || (accountStbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount));
     const grandTotal = money(accountPayload.grand_total || (subTotal - discount));
+    const normalizedGrandTotal = Math.max(grandTotal, 0);
+    const customerPaidAmount = money(accountPayload.customer_paid_amount);
+    const balanceAmount = Math.max(normalizedGrandTotal - customerPaidAmount, 0);
+    const dueDate = balanceAmount > 0 ? nullable(accountPayload.due_date) : null;
     const accountStatus = String(accountPayload.account_status || 'PENDING').toUpperCase() === 'RECEIVED' && isAdmin(req)
       ? 'RECEIVED'
       : 'PENDING';
     await db.query(
       `INSERT INTO cable_customer_accounts (
         approval_group_id, cable_customer_id, stb_amount, connection_amount, labor_amount,
-        material_cost, subscription_amount, sub_total, discount, grand_total, account_status,
+        material_cost, subscription_amount, sub_total, discount, overall_discount, grand_total, customer_paid_amount,
+        balance_amount, due_date, account_status,
         received_by_user_id, received_at, approval_status, created_by_user_id, approved_by_user_id, approved_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${accountStatus === 'RECEIVED' ? 'NOW()' : 'NULL'}, ?, ?, ?, ${approvalStatus === 'APPROVED' ? 'NOW()' : 'NULL'})`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ${accountStatus === 'RECEIVED' ? 'NOW()' : 'NULL'}, ?, ?, ?, ${approvalStatus === 'APPROVED' ? 'NOW()' : 'NULL'})`,
       [
         approvalGroupId, cableCustomerId, accountStbAmount, connectionAmount, laborAmount,
-        materialCost, subscriptionAmount, subTotal, discount, Math.max(grandTotal, 0), accountStatus,
+        materialCost, subscriptionAmount, subTotal, discount, overallDiscount, normalizedGrandTotal, customerPaidAmount,
+        balanceAmount, dueDate, accountStatus,
         accountStatus === 'RECEIVED' ? createdBy : null, approvalStatus, createdBy,
         approvalStatus === 'APPROVED' ? createdBy : null
       ]
@@ -994,17 +1111,21 @@ const updateCableCustomer = async (req, res) => {
 
     const payload = req.body;
     const db = connection.promise();
+    await ensureCableTvExtendedTables(db);
+    const networkId = Number(payload.network_id);
+    const networkType = await resolveNetworkType(db, networkId);
+    if (!networkType) return res.status(400).json({ message: 'Selected network must be TCV, SVN, Pammal or LO' });
     const sourceId = await resolveSourceId(db, payload.source_id || payload.source_name);
     const employeeId = await resolveEmployeeId(db, req, payload.installed_by_employee_id);
     await db.query(
       `UPDATE cable_tv_customers SET
-        network_id = ?, legacy_customer_no = ?, full_name = ?, door_no = ?, location_id = ?,
+        network_id = ?, network_type = ?, legacy_customer_no = ?, full_name = ?, door_no = ?, location_id = ?,
         area_id = ?, street_id = ?, city = ?, pincode = ?, mobile_no = ?, aadhaar_no = ?,
         alternate_mobile_no = ?, source_id = ?, installed_by_employee_id = ?,
         labour_service_charge = ?, status = ?, updated_at = NOW()
        WHERE cable_customer_id = ?`,
       [
-        Number(payload.network_id), nullable(payload.legacy_customer_no), payload.full_name, payload.door_no,
+        networkId, networkType, nullable(payload.legacy_customer_no), payload.full_name, payload.door_no,
         Number(payload.location_id), Number(payload.area_id), Number(payload.street_id), payload.city || '',
         nullable(payload.pincode), payload.mobile_no, nullable(payload.aadhaar_no), nullable(payload.alternate_mobile_no),
         sourceId, employeeId, money(payload.labour_service_charge),

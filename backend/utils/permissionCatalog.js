@@ -32,7 +32,7 @@ const apiModules = {
   workflow: 'WORKFLOW_APPROVAL', 'work-order': 'WORK_ORDERS', employee: 'EMPLOYEES',
   'employee-salary': 'EMPLOYEE_SALARY', 'employee-attendance': 'EMPLOYEE_ATTENDANCE',
   'audit-log': 'AUDIT_LOGS', 'customer-payment': 'CUSTOMER_PAYMENTS',
-  'supplier-payment': 'SUPPLIER_PAYMENTS', sales: 'SALES', 'cable-tv': 'CABLE_TV_CUSTOMERS',
+  'supplier-payment': 'SUPPLIER_PAYMENTS', sales: 'SALES',
   'service-ticket': 'SERVICE_TICKETS', warranty: 'WARRANTIES', notifications: 'NOTIFICATIONS'
 };
 
@@ -41,7 +41,7 @@ Object.assign(apiModules, {
   customers: 'CUSTOMERS', quotations: 'QUOTATIONS', workflows: 'WORKFLOW_APPROVAL',
   'work-orders': 'WORK_ORDERS', 'customer-payments': 'CUSTOMER_PAYMENTS',
   'supplier-payments': 'SUPPLIER_PAYMENTS', 'service-tickets': 'SERVICE_TICKETS',
-  warranties: 'WARRANTIES', 'cable-tv': 'CABLE_TV_CUSTOMERS'
+  warranties: 'WARRANTIES'
 });
 
 module.exports = { permissionCatalog, apiModules };

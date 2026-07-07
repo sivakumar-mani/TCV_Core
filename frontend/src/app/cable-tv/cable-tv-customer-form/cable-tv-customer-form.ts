@@ -26,6 +26,7 @@ export class CableTvCustomerForm {
   readonly connectionTypes = ['NEW', 'SHIFTED', 'TRANSFERRED'];
   readonly accountStatuses = ['PENDING', 'RECEIVED'];
   readonly sourceOptions = [
+    { source_id: 'Direct', source_name: 'Direct' },
     { source_id: 'Customer Approach Office', source_name: 'Customer Approach Office' },
     { source_id: 'Customer Approach Engineer', source_name: 'Customer Approach Engineer' }
   ];
@@ -79,7 +80,7 @@ export class CableTvCustomerForm {
       mobile_no: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       aadhaar_no: ['', Validators.pattern(/^[0-9]{12}$/)],
       alternate_mobile_no: ['', Validators.pattern(/^[0-9]{10}$/)],
-      source_id: [null],
+      source_id: ['Direct'],
       installed_by_employee_id: [null],
       labour_service_charge: [0],
       status: ['ACTIVE', Validators.required],
@@ -99,6 +100,7 @@ export class CableTvCustomerForm {
         disconnection_date: [''],
         connection_type: ['NEW'],
         connection_charge: [0],
+        connection_discount: [0],
         labour_service_charge: [0],
         status: ['ACTIVE'],
         remarks: ['']
@@ -119,13 +121,19 @@ export class CableTvCustomerForm {
       }),
       account: this.fb.group({
         stb_amount: [0],
+        stb_discount: [0],
         connection_amount: [0],
+        connection_discount: [0],
         labor_amount: [0],
         material_cost: [0],
         subscription_amount: [0],
         sub_total: [0],
         discount: [0],
+        overall_discount: [0],
         grand_total: [0],
+        customer_paid_amount: [0],
+        balance_amount: [0],
+        due_date: [''],
         account_status: ['PENDING']
       })
     });
@@ -157,14 +165,22 @@ export class CableTvCustomerForm {
       this.calculateAccountTotals();
     });
     this.form.get('stb.stb_discount')?.valueChanges.subscribe((value: number) => {
-      this.account.patchValue({ discount: Number(value) || 0 }, { emitEvent: false });
+      this.account.patchValue({ stb_discount: Number(value) || 0 }, { emitEvent: false });
       this.calculateAccountTotals();
     });
-    this.form.get('stb.labour_service_charge')?.valueChanges.subscribe((value: number) => {
+    this.form.get('connection.connection_charge')?.valueChanges.subscribe((value: number) => {
+      this.account.patchValue({ connection_amount: Number(value) || 0 }, { emitEvent: false });
+      this.calculateAccountTotals();
+    });
+    this.form.get('connection.connection_discount')?.valueChanges.subscribe((value: number) => {
+      this.account.patchValue({ connection_discount: Number(value) || 0 }, { emitEvent: false });
+      this.calculateAccountTotals();
+    });
+    this.form.get('connection.labour_service_charge')?.valueChanges.subscribe((value: number) => {
       this.account.patchValue({ labor_amount: Number(value) || 0 }, { emitEvent: false });
       this.calculateAccountTotals();
     });
-    ['account.connection_amount', 'account.labor_amount', 'account.discount'].forEach((path) => {
+    ['account.customer_paid_amount', 'account.overall_discount', 'account.account_status'].forEach((path) => {
       this.form.get(path)?.valueChanges.subscribe(() => this.calculateAccountTotals());
     });
   }
@@ -364,15 +380,15 @@ export class CableTvCustomerForm {
   }
 
   calculateSubscriptionTotals() {
-    const totalAmount = this.packages.controls.reduce((sum, row) => sum + (Number(row.get('amount')?.value) || 0), 0);
-    const totalPaid = this.packages.controls.reduce((sum, row) => sum + (Number(row.get('paid_amount')?.value) || 0), 0);
+    const totalAmount = Math.round(this.packages.controls.reduce((sum, row) => sum + (Number(row.get('amount')?.value) || 0), 0));
+    const totalPaid = Math.round(this.packages.controls.reduce((sum, row) => sum + (Number(row.get('paid_amount')?.value) || 0), 0));
     const starts = this.packages.controls.map((row) => row.get('start_date')?.value).filter(Boolean).sort();
     const ends = this.packages.controls.map((row) => row.get('end_date')?.value).filter(Boolean).sort();
     const sub = this.form.get('subscription') as FormGroup;
     sub.patchValue({
-      amount: Number(totalAmount.toFixed(2)),
-      paid_amount: Number(totalPaid.toFixed(2)),
-      balance_amount: Number((totalAmount - totalPaid).toFixed(2)),
+      amount: totalAmount,
+      paid_amount: totalPaid,
+      balance_amount: totalAmount - totalPaid,
       subscription_month: starts[0] ? Number(starts[0].slice(5, 7)) : Number(this.today().slice(5, 7)),
       subscription_year: starts[0] ? Number(starts[0].slice(0, 4)) : Number(this.today().slice(0, 4)),
       start_date: starts[0] || this.today(),
@@ -384,18 +400,39 @@ export class CableTvCustomerForm {
   calculateAccountTotals() {
     if (!this.form) return;
     const materialCost = this.materials.controls.reduce((sum, row) => sum + (Number(row.get('amount')?.value) || 0), 0);
-    const subscriptionAmount = this.packages.controls.reduce((sum, row) => sum + (Number(row.get('amount')?.value) || 0), 0);
+    const subscriptionAmount = Math.round(this.packages.controls.reduce((sum, row) => sum + (Number(row.get('amount')?.value) || 0), 0));
     const stbAmount = Number(this.account.get('stb_amount')?.value ?? this.form.get('stb.stb_amount')?.value) || 0;
-    const connectionAmount = Number(this.account.get('connection_amount')?.value) || 0;
-    const laborAmount = Number(this.account.get('labor_amount')?.value) || 0;
-    const discount = Number(this.account.get('discount')?.value) || 0;
+    const stbDiscount = Number(this.form.get('stb.stb_discount')?.value) || 0;
+    const connectionAmount = Number(this.form.get('connection.connection_charge')?.value) || 0;
+    const connectionDiscount = Number(this.form.get('connection.connection_discount')?.value) || 0;
+    const laborAmount = Number(this.form.get('connection.labour_service_charge')?.value) || 0;
+    const overallDiscount = Number(this.account.get('overall_discount')?.value) || 0;
+    const discount = stbDiscount + connectionDiscount + overallDiscount;
     const subTotal = Number((stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount).toFixed(2));
+    const grandTotal = Number(Math.max(subTotal - discount, 0).toFixed(2));
+    const paidAmount = Number(this.account.get('customer_paid_amount')?.value) || 0;
+    const balanceAmount = Number(Math.max(grandTotal - paidAmount, 0).toFixed(2));
+    const dueDate = this.account.get('due_date');
+    if (balanceAmount > 0) {
+      dueDate?.setValidators([Validators.required]);
+    } else {
+      dueDate?.clearValidators();
+      dueDate?.setValue('', { emitEvent: false });
+    }
+    dueDate?.updateValueAndValidity({ emitEvent: false });
     this.account.patchValue({
       stb_amount: Number(stbAmount.toFixed(2)),
+      stb_discount: Number(stbDiscount.toFixed(2)),
+      connection_amount: Number(connectionAmount.toFixed(2)),
+      connection_discount: Number(connectionDiscount.toFixed(2)),
+      labor_amount: Number(laborAmount.toFixed(2)),
       material_cost: Number(materialCost.toFixed(2)),
-      subscription_amount: Number(subscriptionAmount.toFixed(2)),
+      subscription_amount: subscriptionAmount,
       sub_total: subTotal,
-      grand_total: Number(Math.max(subTotal - discount, 0).toFixed(2))
+      discount: Number(discount.toFixed(2)),
+      overall_discount: Number(overallDiscount.toFixed(2)),
+      grand_total: grandTotal,
+      balance_amount: balanceAmount
     }, { emitEvent: false });
   }
 
