@@ -58,11 +58,11 @@
         <label>Mobile No
           <input type="tel" maxlength="10" formControlName="mobile_no">
         </label>
-        <label>Aadhaar No
-          <input type="tel" maxlength="12" formControlName="aadhaar_no">
-        </label>
         <label>Alternate Mobile
           <input type="tel" maxlength="10" formControlName="alternate_mobile_no">
+        </label>
+        <label>Aadhaar No
+          <input type="tel" maxlength="12" formControlName="aadhaar_no">
         </label>
         <label>Source
           <select formControlName="source_id">
@@ -79,11 +79,6 @@
         <label *ngIf="!permissions.isAdmin()">Installed By
           <input type="text" [value]="permissions.username()" readonly>
         </label>
-        <label>Status
-          <select formControlName="status">
-            <option *ngFor="let status of statusTypes" [ngValue]="status">{{ status }}</option>
-          </select>
-        </label>
       </div>
     </section>
 
@@ -98,7 +93,7 @@
         <label>STB Number
           <select formControlName="stb_master_id">
             <option [ngValue]="null">Select STB</option>
-            <option *ngFor="let stb of lookups.stbMasters || []" [ngValue]="stb.stb_master_id">
+            <option *ngFor="let stb of filteredStbMasters" [ngValue]="stb.stb_master_id">
               {{ stb.stb_number }} - {{ stb.box_type }} - {{ stb.stock_type }} - {{ stb.mso_name }}
             </option>
           </select>
@@ -116,7 +111,7 @@
           </select>
         </label>
         <label>Selected STB No
-          <input type="text" formControlName="stb_no">
+          <input type="text" formControlName="stb_no" readonly>
         </label>
         <label>STB Amount
           <input type="number" formControlName="stb_amount">
@@ -127,15 +122,32 @@
         <label>Installed Date
           <input type="date" formControlName="installed_date">
         </label>
+        <label>Status
+          <select formControlName="status">
+            <option *ngFor="let status of stbStatuses" [ngValue]="status">{{ status }}</option>
+          </select>
+        </label>
+      </div>
+      <div class="accessory-box" formArrayName="accessories">
+        <h3>Accessories</h3>
+        <div class="accessory-grid" *ngIf="stbAccessories.length; else noStbAccessories">
+          <label class="checkbox-card" *ngFor="let accessory of stbAccessories.controls; let i = index" [formGroupName]="i">
+            <input type="checkbox" formControlName="selected">
+            <span>
+              <strong>{{ accessory.get('product_name')?.value }}</strong>
+              <small>Stock: {{ accessory.get('available_qty')?.value | number:'1.0-2' }} {{ accessory.get('unit')?.value }}</small>
+            </span>
+          </label>
+        </div>
+        <ng-template #noStbAccessories>
+          <p class="empty-note">No CATV accessories available.</p>
+        </ng-template>
       </div>
     </section>
 
     <section class="form-section" formGroupName="connection">
       <h2>Connection Details</h2>
       <div class="form-grid">
-        <label>Connection Date
-          <input type="date" formControlName="connection_date">
-        </label>
         <label>Connection Type
           <select formControlName="connection_type">
             <option *ngFor="let type of connectionTypes" [ngValue]="type">{{ type }}</option>
@@ -187,7 +199,7 @@
       </div>
       <div formArrayName="packages" class="package-table">
         <div class="package-header">
-          <span>Package</span><span>Price</span><span>Start</span><span>End</span><span>Days</span><span>Amount</span><span>Paid</span><span></span>
+          <span>Package</span><span>Price</span><span>Start</span><span>End</span><span>Period</span><span>Amount</span><span>Paid</span><span></span>
         </div>
         <div *ngFor="let row of packages.controls; let i = index" [formGroupName]="i" class="package-row">
           <select formControlName="package_id" (change)="selectPackage(i)">
@@ -214,7 +226,29 @@
           </select>
         </label>
         <label>Year
-          <input type="number" formControlName="subscription_year">
+          <select formControlName="subscription_year">
+            <option *ngFor="let year of yearOptions" [ngValue]="year">{{ year }}</option>
+          </select>
+        </label>
+        <label>Period
+          <select formControlName="payment_type">
+            <option value="DAY">Days</option>
+            <option value="MONTH">Month</option>
+            <option value="YEAR">Year</option>
+          </select>
+        </label>
+        <label>Number of Days
+          <input type="number" [value]="subscriptionDayCount()" readonly>
+        </label>
+        <label *ngIf="form.get('subscription.payment_type')?.value === 'MONTH'">Select No of Month
+          <select formControlName="no_of_months">
+            <option *ngFor="let count of periodCounts" [ngValue]="count">{{ count }}</option>
+          </select>
+        </label>
+        <label *ngIf="form.get('subscription.payment_type')?.value === 'YEAR'">Select No of Year
+          <select formControlName="no_of_years">
+            <option *ngFor="let count of periodCounts" [ngValue]="count">{{ count }}</option>
+          </select>
         </label>
         <label>Collect Date
           <input type="date" formControlName="collect_date">
@@ -227,6 +261,15 @@
         </label>
         <label>Subscription Amount
           <input type="number" formControlName="amount" readonly>
+        </label>
+        <label *ngIf="permissions.isAdmin()">Subscription Status
+          <select formControlName="payment_status">
+            <option value="PENDING">Unpaid</option>
+            <option value="PAID">Paid</option>
+          </select>
+        </label>
+        <label *ngIf="!permissions.isAdmin()">Subscription Status
+          <input type="text" value="Unpaid" readonly>
         </label>
       </div>
     </section>
@@ -242,6 +285,7 @@
           <div class="account-row"><span>Connection Discount</span><span>- {{ account.get('connection_discount')?.value | number:'1.2-2' }}</span></div>
           <div class="account-row"><span>Labour / Service Charge</span><span>{{ account.get('labor_amount')?.value | number:'1.2-2' }}</span></div>
           <div class="account-row"><span>Material Charge</span><span>{{ account.get('material_cost')?.value | number:'1.2-2' }}</span></div>
+          <div class="account-row editable-row"><span>Material Discount</span><span><input type="number" formControlName="material_discount"></span></div>
           <div class="account-row"><span>Monthly Subscription Amount</span><span>{{ account.get('subscription_amount')?.value | number:'1.2-2' }}</span></div>
         </div>
 

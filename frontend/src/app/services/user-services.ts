@@ -18,7 +18,12 @@ export class UserServices {
   }
 
   getCaptcha() {
-    return this.http.get<{ question: string; token: string }>(`${this.url}/user/captcha`);
+    return this.http.get<{ question: string; token: string }>(`${this.url}/user/captcha`, {
+      params: { t: String(Date.now()) },
+      headers: new HttpHeaders()
+        .set('Cache-Control', 'no-cache')
+        .set('Pragma', 'no-cache')
+    });
   }
 
  signup( data:signupInterface ){

@@ -1,3 +1,42 @@
+<section class="customer-filter-panel">
+  <div class="filter-grid">
+    <label>Customer No
+      <input type="search" [(ngModel)]="filters.customerNo" (ngModelChange)="applyFilters()" placeholder="Customer No">
+    </label>
+    <label>Network
+      <select [(ngModel)]="filters.networkId" (ngModelChange)="onNetworkChange()">
+        <option value="">All Networks</option>
+        <option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">{{ network.network_name }}</option>
+      </select>
+    </label>
+    <label>Name
+      <input type="search" [(ngModel)]="filters.name" (ngModelChange)="applyFilters()" placeholder="Customer name">
+    </label>
+    <label>Mobile No
+      <input type="search" [(ngModel)]="filters.mobile" (ngModelChange)="applyFilters()" placeholder="Mobile / alternate">
+    </label>
+    <label>Area
+      <select [(ngModel)]="filters.areaId" (ngModelChange)="onAreaChange()">
+        <option value="">All Areas</option>
+        <option *ngFor="let area of areaOptions" [ngValue]="area.area_id">{{ area.area_name }}</option>
+      </select>
+    </label>
+    <label>Street
+      <select [(ngModel)]="filters.streetId" (ngModelChange)="applyFilters()">
+        <option value="">All Streets</option>
+        <option *ngFor="let street of streetOptions" [ngValue]="street.street_id">{{ street.street_name }}</option>
+      </select>
+    </label>
+    <label>Status
+      <select [(ngModel)]="filters.status" (ngModelChange)="applyFilters()">
+        <option value="">All Status</option>
+        <option *ngFor="let status of statusOptions" [ngValue]="status">{{ status }}</option>
+      </select>
+    </label>
+    <button type="button" class="reset-btn" (click)="resetFilters()">Clear</button>
+  </div>
+</section>
+
 <app-ag-grid-list
   title="Cable TV Customers"
   addButtonLabel="Add Cable Customer"
@@ -6,3 +45,28 @@
   [defaultColDef]="defaultColDef"
   (add)="addCustomer()">
 </app-ag-grid-list>
+
+<div class="modal-backdrop" *ngIf="selectedPackageInfo" (click)="closePackageInfo()">
+  <section class="package-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Package Information</h2>
+      <button type="button" class="close-btn" (click)="closePackageInfo()">x</button>
+    </div>
+    <div class="package-detail-row">
+      <span>Package Name</span>
+      <strong>{{ selectedPackageInfo.package_name }}</strong>
+    </div>
+    <div class="package-detail-row">
+      <span>Package Type</span>
+      <strong>{{ selectedPackageInfo.package_type }}</strong>
+    </div>
+    <div class="package-detail-row">
+      <span>Package Price</span>
+      <strong>{{ selectedPackageInfo.package_price !== null && selectedPackageInfo.package_price !== undefined ? (selectedPackageInfo.package_price | number:'1.2-2') : '-' }}</strong>
+    </div>
+    <div class="package-detail-row">
+      <span>Subscription Amount</span>
+      <strong>{{ selectedPackageInfo.subscription_amount !== null && selectedPackageInfo.subscription_amount !== undefined ? (selectedPackageInfo.subscription_amount | number:'1.2-2') : '-' }}</strong>
+    </div>
+  </section>
+</div>

@@ -399,4 +399,44 @@ const updateProduct = async (req, res) => {
 
 }
 
-module.exports = { getProducts, addProduct, updateProduct };
+const deleteProduct = async (req, res) => {
+    try {
+        const productId = Number(req.params.product_id || req.params.id || req.body.product_id);
+        if (!productId) {
+            return res.status(400).json({
+                success: false,
+                message: "Product id is required"
+            });
+        }
+
+        const [product] = await connection.promise().query(
+            "SELECT product_id FROM products WHERE product_id = ? LIMIT 1",
+            [productId]
+        );
+        if (!product.length) {
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            });
+        }
+
+        await connection.promise().query(
+            "DELETE FROM products WHERE product_id = ?",
+            [productId]
+        );
+
+        return res.json({ message: "Product deleted successfully" });
+    } catch (error) {
+        if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.errno === 1451) {
+            return res.status(409).json({
+                success: false,
+                message: "Product is already used in transactions, so it cannot be deleted"
+            });
+        }
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
+module.exports = { getProducts, addProduct, updateProduct, deleteProduct };

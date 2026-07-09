@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS cable_tv_customers (
     source_id INT NULL,
     installed_by_employee_id INT NULL,
     labour_service_charge DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (labour_service_charge >= 0),
-    status ENUM('ACTIVE','INACTIVE','DISCONNECTED','SHIFTED','TRANSFERRED') NOT NULL DEFAULT 'ACTIVE',
+    status ENUM('ACTIVE','INACTIVE','DISCONNECTED','SHIFTED','TRANSFERRED','RETRIEVED','FAULT','UPGRADE') NOT NULL DEFAULT 'ACTIVE',
     approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
     created_by_user_id INT NULL,
     approved_by_user_id INT NULL,
@@ -300,7 +300,7 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
     approval_group_id BIGINT NULL,
     cable_customer_id BIGINT NOT NULL,
     stb_master_id BIGINT NULL,
-    stb_type ENUM('NEW','SERVICED','RETURNED','FAULT','REPLACED','EXCHANGE','CUSTOMER_OWNED') NOT NULL DEFAULT 'NEW',
+    stb_type ENUM('NEW','SERVICED','RETURNED','FAULT','DAMAGED','UPGRADE','REPLACED','EXCHANGE','CUSTOMER_OWNED') NOT NULL DEFAULT 'NEW',
     installed_mso_id INT NULL,
     exchange_original_mso_id INT NULL,
     stb_no VARCHAR(100) NOT NULL,
@@ -309,8 +309,9 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
     stb_discount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (stb_discount >= 0),
     labour_service_charge DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (labour_service_charge >= 0),
     installed_by_employee_id INT NULL,
+    entered_by_employee_id INT NULL,
     installed_date DATE NOT NULL DEFAULT (CURDATE()),
-    status ENUM('ACTIVE','RETURNED','FAULTY','REPLACED') NOT NULL DEFAULT 'ACTIVE',
+    status ENUM('ACTIVE','RETRIEVED','FAULT','DISCONNECTED','UPGRADE','RETURNED','FAULTY','REPLACED') NOT NULL DEFAULT 'ACTIVE',
     approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
     created_by_user_id INT NULL,
     approved_by_user_id INT NULL,
@@ -355,7 +356,49 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
 COMMENT='Customer STB details and exchange history';
 
 -- =====================================================
--- 12. CABLE CONNECTIONS
+-- 12. CABLE CUSTOMER STB ACCESSORIES
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS cable_customer_stb_accessories (
+    stb_accessory_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    approval_group_id BIGINT NULL,
+    cable_customer_id BIGINT NOT NULL,
+    customer_stb_id BIGINT NOT NULL,
+    product_id INT NOT NULL,
+    accessory_name VARCHAR(200) NOT NULL,
+    qty DECIMAL(10,2) NOT NULL DEFAULT 1,
+    unit VARCHAR(20) NOT NULL DEFAULT 'PCS',
+    issued_by_employee_id INT NULL,
+    issued_date DATE NULL,
+    approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
+    created_by_user_id INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_cable_stb_accessories_group
+        FOREIGN KEY (approval_group_id) REFERENCES cable_approval_groups(approval_group_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_cable_stb_accessories_customer
+        FOREIGN KEY (cable_customer_id) REFERENCES cable_tv_customers(cable_customer_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_cable_stb_accessories_stb
+        FOREIGN KEY (customer_stb_id) REFERENCES cable_customer_stbs(customer_stb_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_cable_stb_accessories_product
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
+        ON UPDATE CASCADE,
+    CONSTRAINT fk_cable_stb_accessories_employee
+        FOREIGN KEY (issued_by_employee_id) REFERENCES employees(employee_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
+
+    INDEX idx_cable_stb_accessories_customer (cable_customer_id),
+    INDEX idx_cable_stb_accessories_stb (customer_stb_id),
+    INDEX idx_cable_stb_accessories_product (product_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Accessories issued with customer STB installation';
+
+-- =====================================================
+-- 13. CABLE CONNECTIONS
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS cable_connections (
@@ -364,8 +407,9 @@ CREATE TABLE IF NOT EXISTS cable_connections (
     cable_customer_id BIGINT NOT NULL,
     connection_date DATE NOT NULL DEFAULT (CURDATE()),
     disconnection_date DATE NULL,
-    connection_type ENUM('NEW','SHIFTED','TRANSFERRED') NOT NULL DEFAULT 'NEW',
+    connection_type ENUM('NEW','RECONNECTION','SHIFTED','TRANSFERRED') NOT NULL DEFAULT 'NEW',
     connected_by_employee_id INT NULL,
+    entered_by_employee_id INT NULL,
     connection_charge DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (connection_charge >= 0),
     connection_discount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (connection_discount >= 0),
     labour_service_charge DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (labour_service_charge >= 0),
@@ -420,6 +464,8 @@ CREATE TABLE IF NOT EXISTS cable_connection_materials (
     unit_rate DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (unit_rate >= 0),
     amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (amount >= 0),
     issued_by_employee_id INT NULL,
+    updated_by_employee_id INT NULL,
+    updated_date DATE NULL,
     approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
     created_by_user_id INT NULL,
     approved_by_user_id INT NULL,
@@ -515,7 +561,7 @@ CREATE TABLE IF NOT EXISTS cable_subscriptions (
     subscription_month TINYINT NOT NULL CHECK (subscription_month BETWEEN 1 AND 12),
     subscription_year SMALLINT NOT NULL CHECK (subscription_year >= 2000),
     days_in_month INT NOT NULL CHECK (days_in_month BETWEEN 28 AND 31),
-    billing_basis ENUM('MONTH','DAY') NOT NULL DEFAULT 'MONTH',
+    billing_basis ENUM('DAY','MONTH','YEAR') NOT NULL DEFAULT 'MONTH',
     number_of_days_or_months DECIMAL(8,2) NOT NULL DEFAULT 1 CHECK (number_of_days_or_months > 0),
     amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (amount >= 0),
     paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (paid_amount >= 0),
@@ -614,6 +660,7 @@ CREATE TABLE IF NOT EXISTS cable_customer_accounts (
     connection_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
     labor_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
     material_cost DECIMAL(12,2) NOT NULL DEFAULT 0,
+    material_discount DECIMAL(12,2) NOT NULL DEFAULT 0,
     subscription_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
     sub_total DECIMAL(12,2) NOT NULL DEFAULT 0,
     discount DECIMAL(12,2) NOT NULL DEFAULT 0,

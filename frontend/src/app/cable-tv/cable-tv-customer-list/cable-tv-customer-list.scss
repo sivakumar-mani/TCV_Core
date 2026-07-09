@@ -1,3 +1,138 @@
 :host {
   display: block;
 }
+
+.customer-filter-panel {
+  background: #fff;
+  border: 1px solid #d7dee8;
+  border-radius: 8px;
+  margin: 0 0 14px;
+  padding: 14px;
+}
+
+.filter-grid {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+label {
+  color: #344054;
+  display: grid;
+  font-size: 13px;
+  font-weight: 650;
+  gap: 6px;
+}
+
+input,
+select {
+  border: 1px solid #c8d0dc;
+  border-radius: 6px;
+  color: #111827;
+  font: inherit;
+  min-height: 38px;
+  padding: 7px 9px;
+  width: 100%;
+}
+
+.reset-btn {
+  background: #e9eef5;
+  border: 0;
+  border-radius: 6px;
+  color: #243447;
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 38px;
+  padding: 7px 14px;
+}
+
+:host ::ng-deep .package-cell {
+  align-items: center;
+  display: inline-flex;
+  gap: 8px;
+}
+
+:host ::ng-deep .package-info {
+  align-items: center;
+  border: 0;
+  background: #e8f0fe;
+  border-radius: 50%;
+  color: #1d4ed8;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 800;
+  height: 18px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 18px;
+}
+
+.modal-backdrop {
+  align-items: center;
+  background: rgba(15, 23, 42, .48);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  padding: 20px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1200;
+}
+
+.package-modal {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, .22);
+  max-width: 420px;
+  padding: 18px;
+  width: min(420px, 100%);
+}
+
+.modal-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.modal-header h2 {
+  color: #101828;
+  font-size: 18px;
+  margin: 0;
+}
+
+.close-btn {
+  align-items: center;
+  background: #eef3f9;
+  border: 0;
+  border-radius: 50%;
+  color: #243447;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 800;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.package-detail-row {
+  border-top: 1px solid #e5ebf2;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.package-detail-row span {
+  color: #667085;
+}
+
+.package-detail-row strong {
+  color: #101828;
+  text-align: right;
+}

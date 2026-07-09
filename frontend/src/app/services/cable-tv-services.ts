@@ -34,6 +34,54 @@ export class CableTvServices {
     return this.http.patch(`${this.endpoint}/customers/${customerId}`, data, { headers: this.jsonHeaders });
   }
 
+  addCustomerConnection(customerId: number, data: any) {
+    return this.http.post(`${this.endpoint}/customers/${customerId}/connections`, data, { headers: this.jsonHeaders });
+  }
+
+  updateCustomerConnection(customerId: number, connectionId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/customers/${customerId}/connections/${connectionId}`, data, { headers: this.jsonHeaders });
+  }
+
+  deleteCustomerConnection(customerId: number, connectionId: number) {
+    return this.http.delete(`${this.endpoint}/customers/${customerId}/connections/${connectionId}`);
+  }
+
+  addCustomerStb(customerId: number, data: any) {
+    return this.http.post(`${this.endpoint}/customers/${customerId}/stbs`, data, { headers: this.jsonHeaders });
+  }
+
+  updateCustomerStb(customerId: number, stbId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/customers/${customerId}/stbs/${stbId}`, data, { headers: this.jsonHeaders });
+  }
+
+  deleteCustomerStb(customerId: number, stbId: number) {
+    return this.http.delete(`${this.endpoint}/customers/${customerId}/stbs/${stbId}`);
+  }
+
+  addCustomerPackage(customerId: number, data: any) {
+    return this.http.post(`${this.endpoint}/customers/${customerId}/packages`, data, { headers: this.jsonHeaders });
+  }
+
+  updateCustomerPackage(customerId: number, packageId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/customers/${customerId}/packages/${packageId}`, data, { headers: this.jsonHeaders });
+  }
+
+  deleteCustomerPackage(customerId: number, packageId: number) {
+    return this.http.delete(`${this.endpoint}/customers/${customerId}/packages/${packageId}`);
+  }
+
+  addCustomerSubscription(customerId: number, data: any) {
+    return this.http.post(`${this.endpoint}/customers/${customerId}/subscriptions`, data, { headers: this.jsonHeaders });
+  }
+
+  updateCustomerSubscription(customerId: number, subscriptionId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/customers/${customerId}/subscriptions/${subscriptionId}`, data, { headers: this.jsonHeaders });
+  }
+
+  deleteCustomerSubscription(customerId: number, subscriptionId: number) {
+    return this.http.delete(`${this.endpoint}/customers/${customerId}/subscriptions/${subscriptionId}`);
+  }
+
   addLocation(data: any) {
     return this.http.post(`${this.endpoint}/masters/locations`, data, { headers: this.jsonHeaders });
   }

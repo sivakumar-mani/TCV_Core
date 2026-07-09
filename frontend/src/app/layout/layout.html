@@ -3,7 +3,7 @@
     <mat-sidenav #sidenav mode="side" [(opened)]="opened" [class.collapsed]="collapsed" [style.width.px]="collapsed ? 72 : 260">
 <app-sidebar [collapsed]="collapsed"></app-sidebar>
     </mat-sidenav>
-    <mat-sidenav-content class="main-content"> 
+    <mat-sidenav-content class="main-content example-sidenav-content"> 
         <router-outlet></router-outlet>
     </mat-sidenav-content>
 </mat-sidenav-container>

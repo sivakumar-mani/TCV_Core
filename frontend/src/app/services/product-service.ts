@@ -24,4 +24,8 @@ export class ProductService {
       headers: new HttpHeaders().set('content-type', "application/json")
     })
   }
+
+  deleteProduct(productId: number) {
+    return this.http.delete(`${this.endpoint}/${productId}`);
+  }
 }

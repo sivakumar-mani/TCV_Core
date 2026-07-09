@@ -84,6 +84,12 @@ const addBrand = async (req, res) => {
             brand_id: result.insertId
         });
     } catch (error) {
+        if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.errno === 1451) {
+            return res.status(409).json({
+                success: false,
+                message: "Brand is already used in products, so it cannot be deleted"
+            });
+        }
         return res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -110,7 +116,7 @@ const getBrands = async (req, res) => {
 
 const deleteBrand = async (req, res) => {
     try {
-        const brand_id = req.body.brand_id || req.params.brand_id;
+        const brand_id = req.body?.brand_id || req.params?.brand_id || req.query?.brand_id;
 
         if (!brand_id) {
             return res.status(400).json({
@@ -141,9 +147,15 @@ const deleteBrand = async (req, res) => {
             message: "Brand deleted successfully"
         });
     } catch (error) {
+        if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.errno === 1451) {
+            return res.status(409).json({
+                success: false,
+                message: "Brand is already used in products, so it cannot be deleted"
+            });
+        }
         return res.status(500).json({
             success: false,
-            message: "Internal server error",
+            message: error.message || "Brand delete failed",
             error: error.message
         });
     }

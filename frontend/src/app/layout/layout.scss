@@ -6,16 +6,16 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+  overflow: visible;
 }
 
 .app-shell {
   background: #f6f9ff;
   flex: 1 1 auto;
   height: auto !important;
-  min-height: 0;
-  overflow: hidden;
+  min-height: calc(100vh - 90px);
+  overflow: visible;
 }
 
 .mat-drawer-side {
@@ -51,7 +51,17 @@
 
 .main-content {
   background: #f6f9ff;
-  min-height: 0;
-  overflow-y: auto;
+  display: block;
+  height: auto !important;
+  min-height: calc(100vh - 90px);
+  overflow-y: visible;
   padding: 1.25rem 1.4rem;
+}
+
+.example-sidenav-content {
+  box-sizing: border-box;
+  display: block;
+  height: auto !important;
+  min-height: calc(100vh - 90px);
+  overflow: visible !important;
 }

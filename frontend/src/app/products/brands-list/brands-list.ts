@@ -197,7 +197,7 @@ export class BrandsList {
   }
 
   private handleError(error: any) {
-    this.responseMessage = error?.error?.message || globalConstants.genericError;
+    this.responseMessage = error?.error?.message || error?.error?.error || error?.message || globalConstants.genericError;
     this.snackbarService.openSnackbar(this.responseMessage, globalConstants.errorRegex);
   }
 }

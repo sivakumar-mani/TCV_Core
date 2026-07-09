@@ -11,6 +11,9 @@ const getCaptcha = (_req, res) => {
   const code = crypto.randomInt(100000, 1000000);
   const expiresAt = Date.now() + 5 * 60 * 1000;
   const payload = Buffer.from(`${code}.${expiresAt}.${crypto.randomBytes(8).toString('hex')}`).toString('base64url');
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
   return res.json({ question: String(code), token: `${payload}.${signCaptcha(payload)}` });
 };
 

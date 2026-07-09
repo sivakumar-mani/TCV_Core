@@ -30,7 +30,7 @@
         <label for="captchaAnswer" class="form-label">Security Code</label>
         <div class="captcha-challenge">
           <span aria-live="polite">{{ captchaQuestion }}</span>
-          <button type="button" mat-icon-button aria-label="Refresh CAPTCHA" (click)="refreshCaptcha()">
+          <button type="button" mat-icon-button aria-label="Refresh CAPTCHA" (click)="refreshCaptcha()" [disabled]="captchaLoading">
             <mat-icon>refresh</mat-icon>
           </button>
         </div>
@@ -41,7 +41,7 @@
    </div>
     </mat-card-content>
      <mat-card-footer class="action-btn">
-      <button matButton="filled" type="submit" [disabled]="loginForm.invalid || !captchaToken">Login</button>
+      <button matButton="filled" type="submit" [disabled]="loginForm.invalid || !captchaToken || captchaLoading">Login</button>
        <a class="mt-3" (click)="forgotPassword()">Forgot Password</a>
   </mat-card-footer>
 </mat-card>

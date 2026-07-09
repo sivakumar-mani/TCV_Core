@@ -21,10 +21,14 @@ export class CableTvCustomerForm {
   filteredAreas: any[] = [];
   filteredStreets: any[] = [];
 
-  readonly statusTypes = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED'];
+  readonly statusTypes = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED', 'RETRIEVED', 'FAULT', 'UPGRADE'];
+  readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly connectionTypes = ['NEW', 'SHIFTED', 'TRANSFERRED'];
   readonly accountStatuses = ['PENDING', 'RECEIVED'];
+  readonly paymentTypes = ['DAY', 'MONTH', 'YEAR'];
+  readonly periodCounts = Array.from({ length: 12 }, (_value, index) => index + 1);
+  readonly yearOptions = Array.from({ length: 12 }, (_value, index) => new Date().getFullYear() + index);
   readonly sourceOptions = [
     { source_id: 'Direct', source_name: 'Direct' },
     { source_id: 'Customer Approach Office', source_name: 'Customer Approach Office' },
@@ -81,9 +85,9 @@ export class CableTvCustomerForm {
       aadhaar_no: ['', Validators.pattern(/^[0-9]{12}$/)],
       alternate_mobile_no: ['', Validators.pattern(/^[0-9]{10}$/)],
       source_id: ['Direct'],
-      installed_by_employee_id: [null],
+      installed_by_employee_id: [null, this.permissions.isAdmin() ? Validators.required : []],
       labour_service_charge: [0],
-      status: ['ACTIVE', Validators.required],
+      status: ['ACTIVE'],
       stb: this.fb.group({
         stb_master_id: [null],
         stb_type: ['NEW'],
@@ -93,7 +97,9 @@ export class CableTvCustomerForm {
         stb_amount: [0],
         stb_discount: [0],
         labour_service_charge: [0],
-        installed_date: [today]
+        installed_date: [today],
+        status: ['ACTIVE', Validators.required],
+        accessories: this.fb.array([])
       }),
       connection: this.fb.group({
         connection_date: [today],
@@ -108,12 +114,16 @@ export class CableTvCustomerForm {
       materials: this.fb.array([this.createMaterialRow()]),
       packages: this.fb.array([this.createPackageRow()]),
       subscription: this.fb.group({
+        payment_type: ['DAY', Validators.required],
+        no_of_months: [1],
+        no_of_years: [1],
         subscription_month: [Number(today.slice(5, 7))],
         subscription_year: [Number(today.slice(0, 4))],
         collect_date: [today],
         start_date: [today],
         expiry_date: [today],
         payment_mode: ['CASH'],
+        payment_status: ['PENDING'],
         amount: [0],
         paid_amount: [0],
         balance_amount: [0],
@@ -126,6 +136,7 @@ export class CableTvCustomerForm {
         connection_discount: [0],
         labor_amount: [0],
         material_cost: [0],
+        material_discount: [0],
         subscription_amount: [0],
         sub_total: [0],
         discount: [0],
@@ -160,6 +171,27 @@ export class CableTvCustomerForm {
     });
 
     this.form.get('stb.stb_master_id')?.valueChanges.subscribe((stbMasterId: number) => this.selectStbMaster(stbMasterId));
+    this.form.get('stb.stb_type')?.valueChanges.subscribe(() => {
+      this.form.get('stb')?.patchValue({
+        stb_master_id: null,
+        installed_mso_id: null,
+        stb_no: '',
+        stb_amount: 0
+      }, { emitEvent: false });
+      this.account.patchValue({ stb_amount: 0 }, { emitEvent: false });
+      this.calculateAccountTotals();
+    });
+    this.form.get('stb.installed_date')?.valueChanges.subscribe((value: string) => {
+      this.form.get('connection.connection_date')?.setValue(value || this.today(), { emitEvent: false });
+      this.packages.controls.forEach((row) => {
+        row.get('start_date')?.setValue(value || this.today(), { emitEvent: false });
+        this.calculatePackageRow(this.packages.controls.indexOf(row));
+      });
+    });
+    this.form.get('stb.status')?.valueChanges.subscribe((value: string) => {
+      this.form.get('status')?.setValue(value || 'ACTIVE', { emitEvent: false });
+      this.form.get('connection.status')?.setValue(value === 'DISCONNECTED' ? 'DISCONNECTED' : 'ACTIVE', { emitEvent: false });
+    });
     this.form.get('stb.stb_amount')?.valueChanges.subscribe((value: number) => {
       this.account.patchValue({ stb_amount: Number(value) || 0 }, { emitEvent: false });
       this.calculateAccountTotals();
@@ -180,13 +212,32 @@ export class CableTvCustomerForm {
       this.account.patchValue({ labor_amount: Number(value) || 0 }, { emitEvent: false });
       this.calculateAccountTotals();
     });
-    ['account.customer_paid_amount', 'account.overall_discount', 'account.account_status'].forEach((path) => {
+    ['account.customer_paid_amount', 'account.overall_discount', 'account.material_discount', 'account.account_status'].forEach((path) => {
       this.form.get(path)?.valueChanges.subscribe(() => this.calculateAccountTotals());
     });
+    [
+      'subscription.payment_type',
+      'subscription.no_of_months',
+      'subscription.no_of_years',
+      'subscription.subscription_year',
+      'subscription.start_date',
+      'subscription.payment_status'
+    ].forEach((path) => this.form.get(path)?.valueChanges.subscribe(() => this.applySubscriptionPeriod()));
   }
 
   get account(): FormGroup {
     return this.form.get('account') as FormGroup;
+  }
+
+  get stbAccessories(): FormArray {
+    return this.form.get('stb.accessories') as FormArray;
+  }
+
+  get filteredStbMasters() {
+    const selectedType = String(this.form?.get('stb.stb_type')?.value || '').toUpperCase();
+    return (this.lookups.stbMasters || []).filter((stb: any) =>
+      !selectedType || String(stb.stock_type || '').toUpperCase() === selectedType
+    );
   }
 
   refreshAreaOptions(locationId = this.form.get('location_id')?.value) {
@@ -211,6 +262,7 @@ export class CableTvCustomerForm {
         this.lookups.installedMsos = this.lookups.installedMsos?.length
           ? this.lookups.installedMsos
           : (this.lookups.msos || []).filter((mso: any) => ['VK', 'DM'].includes(String(mso.mso_name).toUpperCase()));
+        this.buildStbAccessoryRows();
         if (this.isEditMode) this.loadCustomerDetails();
       },
       error: (error: any) => {
@@ -233,6 +285,7 @@ export class CableTvCustomerForm {
         );
         this.filteredStreets = (this.lookups.streets || []).filter((street: any) => Number(street.area_id) === Number(customer.area_id));
         if (response.stbs?.[0]) this.form.get('stb')?.patchValue(response.stbs[0]);
+        if (response.stbAccessories?.length) this.buildStbAccessoryRows(response.stbAccessories);
         if (response.connections?.[0]) this.form.get('connection')?.patchValue(response.connections[0]);
         if (response.accounts?.[0]) this.account.patchValue(response.accounts[0]);
         if (response.customerPackages?.length) {
@@ -273,16 +326,18 @@ export class CableTvCustomerForm {
   }
 
   createPackageRow(data: any = {}) {
-    const startDate = this.toDateInput(data.start_date) || this.today();
+    const startDate = this.toDateInput(data.start_date) || this.subscriptionStartDate();
     const month = Number(data.subscription_month) || Number(startDate.slice(5, 7));
     const year = Number(data.subscription_year) || Number(startDate.slice(0, 4));
     const daysInMonth = this.daysInMonth(month, year);
-    const endDate = this.toDateInput(data.end_date) || `${year}-${String(month).padStart(2, '0')}-${daysInMonth}`;
+    const endDate = this.toDateInput(data.end_date) || this.subscriptionExpiryDate(startDate);
     const row = this.fb.group({
       package_id: [data.package_id || null],
       package_price: [data.package_price || 0],
       start_date: [startDate],
       end_date: [endDate],
+      billing_basis: [data.billing_basis || data.payment_type || this.form?.get('subscription.payment_type')?.value || 'DAY'],
+      payment_status: [data.payment_status || this.form?.get('subscription.payment_status')?.value || 'PENDING'],
       subscription_month: [month],
       subscription_year: [year],
       days_in_month: [daysInMonth],
@@ -316,6 +371,41 @@ export class CableTvCustomerForm {
     if (!selectedPackage) return;
     row.patchValue({ package_price: Number(selectedPackage.price) || 0 });
     this.calculatePackageRow(index);
+  }
+
+  buildStbAccessoryRows(selectedAccessories: any[] = []) {
+    this.stbAccessories.clear();
+    (this.lookups.stbAccessories || []).forEach((product: any) => {
+      const selected = selectedAccessories.find((item: any) => Number(item.product_id) === Number(product.product_id));
+      this.stbAccessories.push(this.fb.group({
+        product_id: [product.product_id],
+        product_name: [product.product_name],
+        available_qty: [Number(product.available_qty) || 0],
+        unit: [product.unit || 'PCS'],
+        qty: [selected?.qty || 1],
+        selected: [!!selected]
+      }));
+    });
+  }
+
+  applySubscriptionPeriod() {
+    const sub = this.form.get('subscription') as FormGroup;
+    const type = sub.get('payment_type')?.value || 'DAY';
+    const selectedYear = Number(sub.get('subscription_year')?.value) || new Date().getFullYear();
+    const rawStart = sub.get('start_date')?.value || this.today();
+    const startWithYear = type === 'DAY' ? this.today() : `${selectedYear}-${rawStart.slice(5, 7)}-${rawStart.slice(8, 10)}`;
+    const startDate = this.normalizedSubscriptionStartDate(startWithYear, type);
+    const expiryDate = this.subscriptionExpiryDate(startDate);
+    sub.patchValue({
+      start_date: startDate,
+      expiry_date: expiryDate,
+      subscription_month: Number(startDate.slice(5, 7)),
+      subscription_year: Number(startDate.slice(0, 4))
+    }, { emitEvent: false });
+    this.packages.controls.forEach((row) => {
+      row.patchValue({ start_date: startDate, end_date: expiryDate, billing_basis: type }, { emitEvent: false });
+      this.calculatePackageRow(this.packages.controls.indexOf(row));
+    });
   }
 
   selectStbMaster(stbMasterId: number) {
@@ -357,24 +447,38 @@ export class CableTvCustomerForm {
     const row = this.packages.at(index) as FormGroup;
     if (!row) return;
 
-    const startDate = row.get('start_date')?.value || this.today();
+    const type = this.form.get('subscription.payment_type')?.value || row.get('billing_basis')?.value || 'DAY';
+    const startDate = this.normalizedSubscriptionStartDate(row.get('start_date')?.value || this.subscriptionStartDate(), type);
     const start = new Date(startDate);
     const month = start.getMonth() + 1;
     const year = start.getFullYear();
     const daysInMonth = this.daysInMonth(month, year);
-    const endDate = row.get('end_date')?.value || `${year}-${String(month).padStart(2, '0')}-${daysInMonth}`;
-    const numberOfDays = this.inclusiveDays(startDate, endDate);
+    const endDate = this.subscriptionExpiryDate(startDate);
+    const periodCount = type === 'MONTH'
+      ? Number(this.form.get('subscription.no_of_months')?.value) || 1
+      : type === 'YEAR'
+        ? Number(this.form.get('subscription.no_of_years')?.value) || 1
+        : this.inclusiveDays(startDate, endDate);
     const packagePrice = Number(row.get('package_price')?.value) || 0;
-    const amount = Number(((packagePrice / daysInMonth) * numberOfDays).toFixed(2));
+    const amount = type === 'MONTH'
+      ? Number((packagePrice * periodCount).toFixed(2))
+      : type === 'YEAR'
+        ? Number((packagePrice * 12 * periodCount).toFixed(2))
+        : Number(((packagePrice / daysInMonth) * periodCount).toFixed(2));
+    const paidAmount = this.form.get('subscription.payment_status')?.value === 'PAID' ? amount : 0;
 
     row.patchValue({
+      start_date: startDate,
+      end_date: endDate,
+      billing_basis: type,
       subscription_month: month,
       subscription_year: year,
       days_in_month: daysInMonth,
-      number_of_days_or_months: numberOfDays,
+      number_of_days_or_months: periodCount,
       amount,
-      paid_amount: amount,
-      balance_amount: 0
+      paid_amount: paidAmount,
+      balance_amount: amount - paidAmount,
+      payment_status: paidAmount >= amount ? 'PAID' : 'PENDING'
     }, { emitEvent: false });
     this.calculateSubscriptionTotals();
   }
@@ -406,8 +510,9 @@ export class CableTvCustomerForm {
     const connectionAmount = Number(this.form.get('connection.connection_charge')?.value) || 0;
     const connectionDiscount = Number(this.form.get('connection.connection_discount')?.value) || 0;
     const laborAmount = Number(this.form.get('connection.labour_service_charge')?.value) || 0;
+    const materialDiscount = Number(this.account.get('material_discount')?.value) || 0;
     const overallDiscount = Number(this.account.get('overall_discount')?.value) || 0;
-    const discount = stbDiscount + connectionDiscount + overallDiscount;
+    const discount = stbDiscount + connectionDiscount + materialDiscount + overallDiscount;
     const subTotal = Number((stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount).toFixed(2));
     const grandTotal = Number(Math.max(subTotal - discount, 0).toFixed(2));
     const paidAmount = Number(this.account.get('customer_paid_amount')?.value) || 0;
@@ -427,6 +532,7 @@ export class CableTvCustomerForm {
       connection_discount: Number(connectionDiscount.toFixed(2)),
       labor_amount: Number(laborAmount.toFixed(2)),
       material_cost: Number(materialCost.toFixed(2)),
+      material_discount: Number(materialDiscount.toFixed(2)),
       subscription_amount: subscriptionAmount,
       sub_total: subTotal,
       discount: Number(discount.toFixed(2)),
@@ -455,6 +561,7 @@ export class CableTvCustomerForm {
     }
 
     this.ngxLoader.start();
+    this.applySubscriptionPeriod();
     const payload = this.form.getRawValue();
     const request = this.isEditMode
       ? this.cableTvService.updateCustomer(this.customerId, payload)
@@ -487,6 +594,52 @@ export class CableTvCustomerForm {
 
   daysInMonth(month: number, year: number) {
     return new Date(year, month, 0).getDate();
+  }
+
+  subscriptionStartDate() {
+    return this.normalizedSubscriptionStartDate(this.form?.get('subscription.start_date')?.value || this.today(), this.form?.get('subscription.payment_type')?.value || 'DAY');
+  }
+
+  normalizedSubscriptionStartDate(value: string, type: string) {
+    const fallback = this.today();
+    const raw = value || fallback;
+    if (type === 'DAY') return this.today();
+    return `${raw.slice(0, 7)}-01`;
+  }
+
+  subscriptionDayCount() {
+    const startDate = this.form?.get('subscription.start_date')?.value || this.today();
+    const expiryDate = this.form?.get('subscription.expiry_date')?.value || this.subscriptionExpiryDate(startDate);
+    return this.inclusiveDays(startDate, expiryDate);
+  }
+
+  subscriptionExpiryDate(startDate: string) {
+    const type = this.form?.get('subscription.payment_type')?.value || 'DAY';
+    const start = new Date(startDate);
+    if (Number.isNaN(start.getTime())) return this.today();
+    if (type === 'DAY') {
+      const year = start.getFullYear();
+      const month = start.getMonth() + 1;
+      return `${year}-${String(month).padStart(2, '0')}-${this.daysInMonth(month, year)}`;
+    }
+    if (type === 'MONTH') {
+      return this.endDateAfterMonths(startDate, Number(this.form.get('subscription.no_of_months')?.value) || 1);
+    }
+    return this.endDateAfterMonths(startDate, (Number(this.form.get('subscription.no_of_years')?.value) || 1) * 12);
+  }
+
+  endDateAfterMonths(startDate: string, months: number) {
+    const start = new Date(startDate);
+    const endMonthIndex = start.getMonth() + months - 1;
+    const end = new Date(start.getFullYear(), endMonthIndex + 1, 0);
+    return this.toLocalDateInput(end);
+  }
+
+  toLocalDateInput(date: Date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   inclusiveDays(startDate: string, endDate: string) {

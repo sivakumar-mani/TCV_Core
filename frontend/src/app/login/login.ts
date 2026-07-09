@@ -26,6 +26,8 @@ export class Login {
   responseMessage: string = '';
   captchaQuestion = '';
   captchaToken = '';
+  captchaLoading = false;
+  private captchaRequestId = 0;
   router = inject(Router)
   dialog = inject(MatDialog);
 
@@ -88,12 +90,21 @@ export class Login {
   }
 
   refreshCaptcha() {
+    const requestId = ++this.captchaRequestId;
+    this.captchaLoading = true;
+    this.captchaQuestion = 'Loading CAPTCHA...';
+    this.captchaToken = '';
+    this.loginForm?.get('captchaAnswer')?.reset('');
     this.userService.getCaptcha().subscribe({
       next: (captcha) => {
+        if (requestId !== this.captchaRequestId) return;
+        this.captchaLoading = false;
         this.captchaQuestion = captcha.question;
         this.captchaToken = captcha.token;
       },
       error: () => {
+        if (requestId !== this.captchaRequestId) return;
+        this.captchaLoading = false;
         this.captchaQuestion = 'Unable to load CAPTCHA';
         this.captchaToken = '';
       }

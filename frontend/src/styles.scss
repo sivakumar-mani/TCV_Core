@@ -848,11 +848,15 @@ body {
 
 .mat-drawer-container {
   background: var(--tcv-shell-bg) !important;
-  height: calc(100vh - 56px) !important;
+  height: auto !important;
+  min-height: calc(100vh - 56px) !important;
 }
 
 .mat-drawer-content {
   background: var(--tcv-shell-bg) !important;
+  height: auto !important;
+  min-height: calc(100vh - 56px) !important;
+  overflow: visible !important;
   padding: 1.25rem 1.4rem !important;
 }
 
@@ -873,6 +877,14 @@ body {
 
 .main-content {
   background: var(--tcv-shell-bg) !important;
+  min-height: calc(100vh - 56px) !important;
+}
+
+.example-sidenav-content {
+  display: block !important;
+  height: auto !important;
+  min-height: calc(100vh - 56px) !important;
+  overflow: visible !important;
 }
 
 .form-section,
@@ -1034,4 +1046,8 @@ button,
 
 .table.table-sm > :not(caption) > * > * {
   padding: 0.55rem 0.7rem;
+}
+
+.final-qc-advSearch + .srchPad {
+  padding-top: 0px !important;
 }

@@ -68,7 +68,8 @@ export class ProductList {
       cellRendererParams: {
         permissionKey: 'PRODUCTS',
         dropdownMenu: [
-          { label: 'Edit', permission: 'update', action: (row: any) => this.editProduct(row) }
+          { label: 'Edit', permission: 'update', action: (row: any) => this.editProduct(row) },
+          { label: 'Delete', permission: 'delete', action: (row: any) => this.deleteProduct(row) }
         ]
       },
       filter: false,
@@ -127,6 +128,17 @@ export class ProductList {
       if (result === 'success') {
         this.loadProducts();
       }
+    });
+  }
+
+  deleteProduct(row: any) {
+    if (!row?.product_id) return;
+    const confirmed = confirm(`Delete product "${row.product_name}"?`);
+    if (!confirmed) return;
+
+    this.productService.deleteProduct(row.product_id).subscribe({
+      next: () => this.loadProducts(),
+      error: (error: any) => alert(error?.error?.message || error?.error?.error || 'Product delete failed')
     });
   }
 

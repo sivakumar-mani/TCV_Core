@@ -345,6 +345,14 @@ export const routes: Routes = [
             }
         },
          {
+            path:'cable-tv/customers/:id/:section',
+            loadComponent: ()=> import('./cable-tv/cable-tv-customer-history/cable-tv-customer-history').then(n => n.CableTvCustomerHistory),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin','user']
+            }
+        },
+         {
             path:'customers/add',
             loadComponent: ()=> import('./customers/customer-form/customer-form').then(n => n.CustomerForm),
             canActivate:[RouteGuard],

@@ -4,12 +4,20 @@ const router = express.Router();
 const {
   addArea,
   addCableCustomer,
+  addCustomerConnection,
+  addCustomerPackage,
+  addCustomerStb,
+  addCustomerSubscription,
   addLocation,
   addLocationInfo,
   addPackage,
   addStbMaster,
   addStreet,
   deleteLocationInfo,
+  deleteCustomerConnection,
+  deleteCustomerPackage,
+  deleteCustomerStb,
+  deleteCustomerSubscription,
   getCableCustomerById,
   getCableCustomers,
   getLookups,
@@ -17,7 +25,11 @@ const {
   getPendingAccounts,
   receiveAccount,
   updateLocationInfo,
-  updateCableCustomer
+  updateCableCustomer,
+  updateCustomerConnection,
+  updateCustomerPackage,
+  updateCustomerStb,
+  updateCustomerSubscription
 } = require('../controller/cableTvController');
 
 router.use(auth.authendicateToken);
@@ -42,5 +54,17 @@ router.get('/customers', getCableCustomers);
 router.get('/customers/:id', getCableCustomerById);
 router.post('/customers', addCableCustomer);
 router.patch('/customers/:id', updateCableCustomer);
+router.post('/customers/:id/connections', addCustomerConnection);
+router.patch('/customers/:id/connections/:connectionId', updateCustomerConnection);
+router.delete('/customers/:id/connections/:connectionId', deleteCustomerConnection);
+router.post('/customers/:id/stbs', addCustomerStb);
+router.patch('/customers/:id/stbs/:stbId', updateCustomerStb);
+router.delete('/customers/:id/stbs/:stbId', deleteCustomerStb);
+router.post('/customers/:id/packages', addCustomerPackage);
+router.patch('/customers/:id/packages/:packageId', updateCustomerPackage);
+router.delete('/customers/:id/packages/:packageId', deleteCustomerPackage);
+router.post('/customers/:id/subscriptions', addCustomerSubscription);
+router.patch('/customers/:id/subscriptions/:subscriptionId', updateCustomerSubscription);
+router.delete('/customers/:id/subscriptions/:subscriptionId', deleteCustomerSubscription);
 
 module.exports = router;

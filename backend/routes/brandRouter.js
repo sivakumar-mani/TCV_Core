@@ -11,11 +11,19 @@ router.get('/get',auth.authendicateToken, getBrands);
 router.patch("/", auth.authendicateToken, editBrand);
 router.patch("/edit",auth.authendicateToken, editBrand);
 router.patch("/:brand_id", auth.authendicateToken, (req, res) => {
+  req.body = req.body || {};
   req.body.brand_id = req.body.brand_id || req.params.brand_id;
   return editBrand(req, res);
 });
+router.delete("/", auth.authendicateToken, deleteBrand);
 router.delete("/delete",auth.authendicateToken, deleteBrand);
+router.delete("/delete/:brand_id", auth.authendicateToken, (req, res) => {
+  req.body = req.body || {};
+  req.body.brand_id = req.body.brand_id || req.params.brand_id;
+  return deleteBrand(req, res);
+});
 router.delete("/:brand_id", auth.authendicateToken, (req, res) => {
+  req.body = req.body || {};
   req.body.brand_id = req.body.brand_id || req.params.brand_id;
   return deleteBrand(req, res);
 });

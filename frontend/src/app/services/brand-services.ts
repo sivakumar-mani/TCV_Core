@@ -26,9 +26,9 @@ export class BrandServices {
     }
 
     deleteBrand(data:any){
-      return this.http.delete(this.endpoint,{
-        body: data,
-         headers: new HttpHeaders().set('content-type',"application/json")
+      const brandId = data?.brand_id || data?.id;
+      return this.http.delete(`${this.endpoint}/${brandId}`,{
+        headers: new HttpHeaders().set('content-type',"application/json")
       })
     }
 }

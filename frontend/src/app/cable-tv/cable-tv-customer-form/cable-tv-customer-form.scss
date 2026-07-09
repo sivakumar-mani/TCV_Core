@@ -87,6 +87,58 @@ input[readonly] {
   background: #f5f7fb;
 }
 
+.accessory-box {
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  margin-top: 14px;
+  padding: 12px;
+
+  h3 {
+    color: #263238;
+    font-size: 14px;
+    font-weight: 650;
+    margin: 0 0 10px;
+  }
+}
+
+.accessory-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.checkbox-card {
+  align-items: center;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 10px;
+
+  input {
+    min-height: auto;
+    width: auto;
+  }
+
+  span {
+    display: grid;
+    gap: 2px;
+  }
+
+  small {
+    color: #667085;
+    font-weight: 500;
+  }
+}
+
+.empty-note {
+  color: #667085;
+  font-size: 13px;
+  margin: 0;
+}
+
 .material-table,
 .package-table {
   display: grid;
@@ -126,6 +178,13 @@ input[readonly] {
 .account-head span:last-child,
 .account-row span:last-child {
   border-left: 1px solid #8d96a3;
+  text-align: right;
+}
+
+.account-row.editable-row input {
+  border: 0;
+  min-height: 34px;
+  padding: 4px 8px;
   text-align: right;
 }
 
