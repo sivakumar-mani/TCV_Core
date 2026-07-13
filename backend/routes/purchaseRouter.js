@@ -6,7 +6,8 @@ const {
   getNextPurchaseNo,
   addPurchase,
   updatePurchase,
-  deletePurchase
+  deletePurchase,
+  approvePurchase
 } = require('../controller/purchaseController');
 
 router.get('/', getPurchases);
@@ -22,6 +23,8 @@ router.patch('/:purchase_id', (req, res) => {
   req.body.purchase_id = req.body.purchase_id || req.params.purchase_id;
   return updatePurchase(req, res);
 });
+router.patch('/:purchase_id/approve', approvePurchase);
+router.post('/:purchase_id/approve', approvePurchase);
 router.delete('/delete', deletePurchase);
 router.delete('/:purchase_id', (req, res) => {
   req.body.purchase_id = req.body.purchase_id || req.params.purchase_id;

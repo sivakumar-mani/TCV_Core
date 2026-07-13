@@ -147,6 +147,28 @@ const ensureStockTables = async () => {
     `);
 };
 
+const ensurePurchaseApprovalColumns = async (conn = connection.promise()) => {
+    const columns = [
+        ['approval_status', "ALTER TABLE purchase_master ADD COLUMN approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING' AFTER payment_status"],
+        ['approved_by_employee_id', 'ALTER TABLE purchase_master ADD COLUMN approved_by_employee_id INT NULL AFTER approval_status'],
+        ['approved_at', 'ALTER TABLE purchase_master ADD COLUMN approved_at TIMESTAMP NULL AFTER approved_by_employee_id']
+    ];
+
+    for (const [columnName, alterSql] of columns) {
+        const [rows] = await conn.query(
+            `SELECT COUNT(*) AS count
+             FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = 'purchase_master'
+               AND COLUMN_NAME = ?`,
+            [columnName]
+        );
+        if (!Number(rows[0]?.count)) {
+            await conn.query(alterSql);
+        }
+    }
+};
+
 const getNextPurchaseNo = async (req, res) => {
     try {
         const prefix = `PO-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-`;
@@ -177,11 +199,13 @@ const createPurchaseNo = async (conn) => {
 
 const getPurchases = async (req, res) => {
     try {
+        await ensurePurchaseApprovalColumns();
         const [rows] = await connection.promise().query(
             `SELECT pm.purchase_id, pm.purchase_no, pm.supplier_id, s.supplier_name,
                     pm.invoice_no, pm.invoice_date, pm.purchase_date, pm.total_amount,
                     pm.discount_amount, pm.discount_percent, pm.tax_amount, pm.net_amount,
                     pm.paid_amount, pm.balance_amount, pm.purchase_status, pm.payment_status,
+                    pm.approval_status, pm.approved_by_employee_id, pm.approved_at,
                     pm.remarks, pm.received_date, pm.created_by_employee_id, pm.created_at, pm.updated_at,
                     COALESCE(item_counts.item_count, 0) AS item_count,
                     COALESCE(item_counts.total_qty, 0) AS total_qty,
@@ -208,6 +232,7 @@ const getPurchases = async (req, res) => {
 
 const getPurchaseById = async (req, res) => {
     try {
+        await ensurePurchaseApprovalColumns();
         const { purchase_id } = req.params;
 
         const [purchases] = await connection.promise().query(
@@ -336,6 +361,7 @@ const addPurchase = async (req, res) => {
     const conn = connection.promise();
 
     try {
+        await ensurePurchaseApprovalColumns(conn);
         const payload = req.body;
         const items = (payload.items || []).map(calculateLine);
         const errors = validatePurchase(payload, items);
@@ -423,6 +449,7 @@ const updatePurchase = async (req, res) => {
     const conn = connection.promise();
 
     try {
+        await ensurePurchaseApprovalColumns(conn);
         const payload = req.body;
         const purchaseId = payload.purchase_id;
         const items = (payload.items || []).map(calculateLine);
@@ -521,6 +548,7 @@ const updatePurchase = async (req, res) => {
 
 const deletePurchase = async (req, res) => {
     try {
+        await ensurePurchaseApprovalColumns();
         const { purchase_id } = req.body;
         if (!purchase_id) return res.status(400).json({ success: false, message: 'purchase_id is required' });
 
@@ -543,11 +571,70 @@ const deletePurchase = async (req, res) => {
     }
 };
 
+const approvePurchase = async (req, res) => {
+    const conn = connection.promise();
+    try {
+        await ensureStockTables();
+        await ensurePurchaseApprovalColumns(conn);
+        await conn.beginTransaction();
+
+        const purchaseId = Number(req.params.purchase_id || req.body.purchase_id);
+        if (!purchaseId) throw new Error('purchase_id is required');
+
+        const [purchases] = await conn.query(
+            'SELECT * FROM purchase_master WHERE purchase_id = ? FOR UPDATE',
+            [purchaseId]
+        );
+        if (!purchases.length) throw new Error('Purchase not found');
+
+        const purchase = purchases[0];
+        if (purchase.approval_status === 'APPROVED') {
+            throw new Error('Purchase invoice is already approved');
+        }
+        if (purchase.purchase_status === 'CANCELLED') {
+            throw new Error('Cancelled purchase cannot be approved');
+        }
+
+        const [items] = await conn.query(
+            `SELECT product_id, qty, purchase_price, discount_amount, discount_percent,
+                    tax_percent, tax_amount, amount, received_qty, remarks
+             FROM purchase_items
+             WHERE purchase_id = ?
+             ORDER BY purchase_item_id`,
+            [purchaseId]
+        );
+        if (!items.length) throw new Error('Purchase has no items to approve');
+
+        const approvedBy = req.body.approved_by_employee_id || null;
+        await applyStockReceipt(conn, purchaseId, purchase.purchase_no, items, approvedBy);
+
+        await conn.query(
+            `UPDATE purchase_master
+             SET approval_status = 'APPROVED',
+                 approved_by_employee_id = ?,
+                 approved_at = NOW(),
+                 purchase_status = CASE WHEN purchase_status = 'DRAFT' THEN 'RECEIVED' ELSE purchase_status END,
+                 received_date = COALESCE(received_date, CURDATE()),
+                 updated_at = NOW()
+             WHERE purchase_id = ?`,
+            [approvedBy, purchaseId]
+        );
+
+        await conn.commit();
+        return res.json({ success: true, message: 'Purchase invoice approved successfully' });
+    } catch (error) {
+        await conn.rollback();
+        console.error(error);
+        return res.status(400).json({ success: false, message: error.message || 'Purchase approval failed' });
+    }
+};
+
 module.exports = {
     getPurchases,
     getPurchaseById,
     getNextPurchaseNo,
     addPurchase,
     updatePurchase,
-    deletePurchase
+    deletePurchase,
+    approvePurchase
 };

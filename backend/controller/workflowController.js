@@ -41,6 +41,9 @@ const ensureWorkflowTable = async () => {
     await ensureColumn('work_order_material_issues', 'approval_status', "approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING' AFTER remarks");
     await ensureColumn('work_order_material_issues', 'approved_by_employee_id', 'approved_by_employee_id INT NULL AFTER approval_status');
     await ensureColumn('work_order_material_issues', 'approved_at', 'approved_at TIMESTAMP NULL AFTER approved_by_employee_id');
+    await ensureColumn('purchase_master', 'approval_status', "approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING' AFTER payment_status");
+    await ensureColumn('purchase_master', 'approved_by_employee_id', 'approved_by_employee_id INT NULL AFTER approval_status');
+    await ensureColumn('purchase_master', 'approved_at', 'approved_at TIMESTAMP NULL AFTER approved_by_employee_id');
 };
 
 const getWorkflowApprovals = async (req, res) => {
@@ -73,8 +76,8 @@ const getWorkflowApprovals = async (req, res) => {
                     NULL AS work_order_status, NULL AS approval_status, NULL AS work_order_id
              FROM purchase_master pm
              JOIN suppliers s ON s.supplier_id = pm.supplier_id
-             WHERE pm.balance_amount > 0
-               AND pm.payment_status IN ('PENDING', 'PARTIAL')
+             WHERE pm.approval_status = 'PENDING'
+               AND pm.purchase_status <> 'CANCELLED'
              UNION ALL
              SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
                     wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,

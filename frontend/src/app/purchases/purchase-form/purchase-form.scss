@@ -13,7 +13,19 @@
 
 .page-header h1 {
   font-size: 24px;
+  margin: 0 0 6px;
+}
+
+.page-header p {
+  color: #667085;
+  font-size: 14px;
   margin: 0 0 16px;
+}
+
+.header-actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
 }
 
 .form-section,

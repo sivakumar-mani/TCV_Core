@@ -31,6 +31,10 @@ export class PurchaseServices {
     return this.http.patch(this.endpoint, data, { headers: this.headers });
   }
 
+  approvePurchase(purchaseId: number, data: any = {}) {
+    return this.http.patch(`${this.endpoint}/${purchaseId}/approve`, data, { headers: this.headers });
+  }
+
   deletePurchase(data: any) {
     return this.http.delete(this.endpoint, {
       body: data,

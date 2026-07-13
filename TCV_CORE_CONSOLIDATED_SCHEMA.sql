@@ -1,10 +1,21 @@
--- Consolidated schema generated from current Workbench database: tcvonedb
--- Generated on: 2026-07-09T09:43:26.407Z
--- Contains table definitions only. Master/data rows are not included.
 
-SET FOREIGN_KEY_CHECKS = 0;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `tcvonedb` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+USE `tcvonedb`;
 DROP TABLE IF EXISTS `audit_log`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `audit_log` (
   `audit_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int DEFAULT NULL,
@@ -26,8 +37,10 @@ CREATE TABLE `audit_log` (
   KEY `idx_record` (`table_name`,`record_id`),
   CONSTRAINT `audit_log_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `brands`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `brands` (
   `brand_id` int NOT NULL AUTO_INCREMENT,
   `brand_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -42,9 +55,11 @@ CREATE TABLE `brands` (
   UNIQUE KEY `brand_code` (`brand_code`),
   KEY `idx_brand_name` (`brand_name`),
   KEY `idx_active` (`is_active`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Product brands master';
-
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Product brands master';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_approval_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_approval_groups` (
   `approval_group_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -66,9 +81,11 @@ CREATE TABLE `cable_approval_groups` (
   KEY `idx_cable_approval_group_status` (`approval_status`),
   CONSTRAINT `fk_cable_approval_groups_approved_by` FOREIGN KEY (`approved_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_cable_approval_groups_requested_by` FOREIGN KEY (`requested_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Groups Cable TV records for single workflow approval. New customer onboarding uses one group for customer, STB, connection, materials, package and subscription.';
-
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Groups Cable TV records for single workflow approval. New customer onboarding uses one group for customer, STB, connection, materials, package and subscription.';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_areas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_areas` (
   `area_id` int NOT NULL AUTO_INCREMENT,
   `network_id` int DEFAULT NULL,
@@ -84,8 +101,10 @@ CREATE TABLE `cable_areas` (
   CONSTRAINT `fk_cable_areas_location` FOREIGN KEY (`location_id`) REFERENCES `cable_locations` (`location_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_cable_areas_network` FOREIGN KEY (`network_id`) REFERENCES `cable_network_master` (`network_id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV area master mapped to location';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_connection_materials`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_connection_materials` (
   `connection_material_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_id` bigint DEFAULT NULL,
@@ -126,9 +145,11 @@ CREATE TABLE `cable_connection_materials` (
   CONSTRAINT `cable_connection_materials_chk_1` CHECK ((`qty` > 0)),
   CONSTRAINT `cable_connection_materials_chk_2` CHECK ((`unit_rate` >= 0)),
   CONSTRAINT `cable_connection_materials_chk_3` CHECK ((`amount` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Materials used for Cable TV connection, entered as add-row items';
-
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Materials used for Cable TV connection, entered as add-row items';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_connection_sources`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_connection_sources` (
   `source_id` int NOT NULL AUTO_INCREMENT,
   `source_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -138,9 +159,11 @@ CREATE TABLE `cable_connection_sources` (
   PRIMARY KEY (`source_id`),
   UNIQUE KEY `uk_cable_source_name` (`source_name`),
   KEY `idx_cable_source_active` (`is_active`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV source of connection master';
-
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV source of connection master';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_connections` (
   `connection_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_id` bigint DEFAULT NULL,
@@ -179,9 +202,11 @@ CREATE TABLE `cable_connections` (
   CONSTRAINT `fk_cable_connections_customer` FOREIGN KEY (`cable_customer_id`) REFERENCES `cable_tv_customers` (`cable_customer_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `cable_connections_chk_1` CHECK ((`connection_charge` >= 0)),
   CONSTRAINT `cable_connections_chk_2` CHECK ((`labour_service_charge` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV connection, disconnection, shifted and transferred history';
-
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV connection, disconnection, shifted and transferred history';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_customer_accounts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_customer_accounts` (
   `account_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_id` bigint NOT NULL,
@@ -214,18 +239,22 @@ CREATE TABLE `cable_customer_accounts` (
   KEY `fk_cable_accounts_approval_group` (`approval_group_id`),
   CONSTRAINT `fk_cable_accounts_approval_group` FOREIGN KEY (`approval_group_id`) REFERENCES `cable_approval_groups` (`approval_group_id`),
   CONSTRAINT `fk_cable_accounts_customer` FOREIGN KEY (`cable_customer_id`) REFERENCES `cable_tv_customers` (`cable_customer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_customer_packages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_customer_packages` (
   `customer_package_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_id` bigint DEFAULT NULL,
   `cable_customer_id` bigint NOT NULL,
   `package_id` int NOT NULL,
+  `package_type` enum('ADDON','ALACARTE','BROADCASTER') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ADDON',
   `package_price` decimal(12,2) NOT NULL DEFAULT '0.00',
   `start_date` date NOT NULL DEFAULT (curdate()),
   `end_date` date DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `updated_by_employee_id` int DEFAULT NULL,
   `approval_status` enum('PENDING','APPROVED','REJECTED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
   `created_by_user_id` int DEFAULT NULL,
   `approved_by_user_id` int DEFAULT NULL,
@@ -241,15 +270,20 @@ CREATE TABLE `cable_customer_packages` (
   KEY `idx_cable_customer_packages_package` (`package_id`),
   KEY `idx_cable_customer_packages_active` (`is_active`),
   KEY `idx_cable_customer_packages_approval_status` (`approval_status`),
+  KEY `idx_cable_customer_packages_type` (`package_type`),
+  KEY `idx_cable_customer_packages_updated_by` (`updated_by_employee_id`),
   CONSTRAINT `fk_cable_customer_packages_approval_group` FOREIGN KEY (`approval_group_id`) REFERENCES `cable_approval_groups` (`approval_group_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_cable_customer_packages_approved_by_user` FOREIGN KEY (`approved_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_cable_customer_packages_created_by_user` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_cable_customer_packages_customer` FOREIGN KEY (`cable_customer_id`) REFERENCES `cable_tv_customers` (`cable_customer_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_cable_customer_packages_package` FOREIGN KEY (`package_id`) REFERENCES `cable_package_master` (`package_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_cable_customer_packages_updated_by` FOREIGN KEY (`updated_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `cable_customer_packages_chk_1` CHECK ((`package_price` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV package assigned to customer with snapshot package price';
-
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV package assigned to customer with snapshot package price';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_customer_stb_accessories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_customer_stb_accessories` (
   `stb_accessory_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_id` bigint DEFAULT NULL,
@@ -276,9 +310,11 @@ CREATE TABLE `cable_customer_stb_accessories` (
   CONSTRAINT `fk_cable_stb_accessories_group` FOREIGN KEY (`approval_group_id`) REFERENCES `cable_approval_groups` (`approval_group_id`),
   CONSTRAINT `fk_cable_stb_accessories_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`),
   CONSTRAINT `fk_cable_stb_accessories_stb` FOREIGN KEY (`customer_stb_id`) REFERENCES `cable_customer_stbs` (`customer_stb_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_customer_stbs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_customer_stbs` (
   `customer_stb_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_id` bigint DEFAULT NULL,
@@ -295,6 +331,9 @@ CREATE TABLE `cable_customer_stbs` (
   `installed_by_employee_id` int DEFAULT NULL,
   `entered_by_employee_id` int DEFAULT NULL,
   `installed_date` date NOT NULL DEFAULT (curdate()),
+  `updated_date` date DEFAULT NULL,
+  `update_reason` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reason_remarks` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('ACTIVE','RETRIEVED','FAULT','DISCONNECTED','UPGRADE','RETURNED','FAULTY','REPLACED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ACTIVE',
   `approval_status` enum('PENDING','APPROVED','REJECTED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
   `created_by_user_id` int DEFAULT NULL,
@@ -304,7 +343,6 @@ CREATE TABLE `cable_customer_stbs` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`customer_stb_id`),
-  UNIQUE KEY `uk_cable_stb_no` (`stb_no`),
   KEY `fk_cable_stbs_installed_mso` (`installed_mso_id`),
   KEY `fk_cable_stbs_exchange_mso` (`exchange_original_mso_id`),
   KEY `fk_cable_stbs_installed_by` (`installed_by_employee_id`),
@@ -327,9 +365,11 @@ CREATE TABLE `cable_customer_stbs` (
   CONSTRAINT `cable_customer_stbs_chk_1` CHECK ((`stb_amount` >= 0)),
   CONSTRAINT `cable_customer_stbs_chk_2` CHECK ((`stb_discount` >= 0)),
   CONSTRAINT `cable_customer_stbs_chk_3` CHECK ((`labour_service_charge` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Customer STB details and exchange history';
-
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Customer STB details and exchange history';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_locations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_locations` (
   `location_id` int NOT NULL AUTO_INCREMENT,
   `location_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -346,8 +386,10 @@ CREATE TABLE `cable_locations` (
   KEY `idx_cable_location_city` (`city`),
   KEY `idx_cable_location_active` (`is_active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV location master';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_mso_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_mso_master` (
   `mso_id` int NOT NULL AUTO_INCREMENT,
   `mso_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -358,8 +400,10 @@ CREATE TABLE `cable_mso_master` (
   UNIQUE KEY `uk_cable_mso_name` (`mso_name`),
   KEY `idx_cable_mso_active` (`is_active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='MSO/operator master for STB installed and exchange tracking';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_network_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_network_master` (
   `network_id` int NOT NULL AUTO_INCREMENT,
   `network_code` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -374,8 +418,10 @@ CREATE TABLE `cable_network_master` (
   UNIQUE KEY `uk_cable_network_code` (`network_code`),
   KEY `idx_cable_network_active` (`is_active`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV network master: TCV, PAMMAL, MURUGAN, SVN';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_package_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_package_master` (
   `package_id` int NOT NULL AUTO_INCREMENT,
   `package_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -391,8 +437,10 @@ CREATE TABLE `cable_package_master` (
   KEY `idx_cable_package_active` (`is_active`),
   CONSTRAINT `cable_package_master_chk_1` CHECK ((`price` >= 0))
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV package master with package type and price';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_stb_issue_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_stb_issue_master` (
   `stb_issue_id` bigint NOT NULL AUTO_INCREMENT,
   `stb_master_id` bigint NOT NULL,
@@ -411,9 +459,11 @@ CREATE TABLE `cable_stb_issue_master` (
   CONSTRAINT `fk_cable_stb_issue_customer_stb` FOREIGN KEY (`customer_stb_id`) REFERENCES `cable_customer_stbs` (`customer_stb_id`),
   CONSTRAINT `fk_cable_stb_issue_employee` FOREIGN KEY (`issued_by_employee_id`) REFERENCES `employees` (`employee_id`),
   CONSTRAINT `fk_cable_stb_issue_master` FOREIGN KEY (`stb_master_id`) REFERENCES `cable_stb_master` (`stb_master_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_stb_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_stb_master` (
   `stb_master_id` bigint NOT NULL AUTO_INCREMENT,
   `stb_number` varchar(100) NOT NULL,
@@ -432,8 +482,10 @@ CREATE TABLE `cable_stb_master` (
   KEY `fk_cable_stb_master_mso` (`mso_id`),
   CONSTRAINT `fk_cable_stb_master_mso` FOREIGN KEY (`mso_id`) REFERENCES `cable_mso_master` (`mso_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_streets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_streets` (
   `street_id` int NOT NULL AUTO_INCREMENT,
   `area_id` int NOT NULL,
@@ -447,8 +499,10 @@ CREATE TABLE `cable_streets` (
   KEY `idx_cable_street_active` (`is_active`),
   CONSTRAINT `fk_cable_streets_area` FOREIGN KEY (`area_id`) REFERENCES `cable_areas` (`area_id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV street master mapped to area';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_subscriptions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_subscriptions` (
   `subscription_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_id` bigint DEFAULT NULL,
@@ -500,9 +554,11 @@ CREATE TABLE `cable_subscriptions` (
   CONSTRAINT `cable_subscriptions_chk_4` CHECK ((`number_of_days_or_months` > 0)),
   CONSTRAINT `cable_subscriptions_chk_5` CHECK ((`amount` >= 0)),
   CONSTRAINT `cable_subscriptions_chk_6` CHECK ((`paid_amount` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV monthly/yearly subscription billing and collection';
-
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Cable TV monthly/yearly subscription billing and collection';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cable_tv_customers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cable_tv_customers` (
   `cable_customer_id` bigint NOT NULL AUTO_INCREMENT,
   `approval_group_id` bigint DEFAULT NULL,
@@ -560,9 +616,11 @@ CREATE TABLE `cable_tv_customers` (
   CONSTRAINT `fk_cable_customers_source` FOREIGN KEY (`source_id`) REFERENCES `cable_connection_sources` (`source_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_cable_customers_street` FOREIGN KEY (`street_id`) REFERENCES `cable_streets` (`street_id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `cable_tv_customers_chk_1` CHECK ((`labour_service_charge` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Combined Cable TV customer table for all networks';
-
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Combined Cable TV customer table for all networks';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `categories` (
   `category_id` int NOT NULL AUTO_INCREMENT,
   `category_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -582,9 +640,11 @@ CREATE TABLE `categories` (
   KEY `idx_active` (`is_active`),
   KEY `idx_parent_active` (`parent_id`,`is_active`),
   CONSTRAINT `categories_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `categories` (`category_id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Hierarchical product categories';
-
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Hierarchical product categories';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `customer_payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `customer_payments` (
   `payment_id` int NOT NULL AUTO_INCREMENT,
   `customer_id` int NOT NULL,
@@ -608,8 +668,10 @@ CREATE TABLE `customer_payments` (
   CONSTRAINT `customer_payments_ibfk_3` FOREIGN KEY (`received_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL,
   CONSTRAINT `customer_payments_chk_1` CHECK ((`amount` > 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Customer payment records';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `customers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `customers` (
   `customer_id` int NOT NULL AUTO_INCREMENT,
   `salutation` enum('Mr/Mrs/Ms','Mr.','Mrs.','Ms.','M/S') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Mr/Mrs/Ms',
@@ -644,8 +706,10 @@ CREATE TABLE `customers` (
   CONSTRAINT `fk_customers_marketing_employee` FOREIGN KEY (`marketing_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `customers_chk_1` CHECK ((`credit_limit` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Customer master data with credit management';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `employee_attendance`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employee_attendance` (
   `attendance_id` int NOT NULL AUTO_INCREMENT,
   `employee_id` int NOT NULL,
@@ -662,8 +726,10 @@ CREATE TABLE `employee_attendance` (
   KEY `idx_attendance_status` (`status`),
   CONSTRAINT `employee_attendance_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `employee_salary`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employee_salary` (
   `salary_id` int NOT NULL AUTO_INCREMENT,
   `employee_id` int NOT NULL,
@@ -692,8 +758,10 @@ CREATE TABLE `employee_salary` (
   CONSTRAINT `employee_salary_chk_4` CHECK ((`earnings_total` >= 0)),
   CONSTRAINT `employee_salary_chk_5` CHECK ((`deductions_total` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Employee monthly salary slip header';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `employee_salary_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employee_salary_items` (
   `salary_item_id` int NOT NULL AUTO_INCREMENT,
   `salary_id` int NOT NULL,
@@ -712,8 +780,10 @@ CREATE TABLE `employee_salary_items` (
   CONSTRAINT `employee_salary_items_chk_2` CHECK ((`price` >= 0)),
   CONSTRAINT `employee_salary_items_chk_3` CHECK ((`total` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Employee salary slip earning and deduction lines';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `employees`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employees` (
   `employee_id` int NOT NULL AUTO_INCREMENT,
   `employee_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Auto generated employee code, e.g. TCV1',
@@ -755,8 +825,10 @@ CREATE TABLE `employees` (
   KEY `idx_active` (`is_active`),
   KEY `idx_joining_date` (`joining_date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Employee master data with department assignment';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `material_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `material_master` (
   `material_id` int NOT NULL AUTO_INCREMENT,
   `product_id` int DEFAULT NULL COMMENT 'Optional linked inventory product',
@@ -779,8 +851,10 @@ CREATE TABLE `material_master` (
   CONSTRAINT `material_master_chk_1` CHECK ((`standard_rate` >= 0)),
   CONSTRAINT `material_master_chk_2` CHECK ((`gst_percent` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Material catalog for work order issue and return';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `notifications` (
   `notification_id` int NOT NULL AUTO_INCREMENT,
   `source_key` varchar(180) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -802,9 +876,11 @@ CREATE TABLE `notifications` (
   KEY `idx_active_read` (`is_active`,`is_read`),
   KEY `idx_type_active` (`notification_type`,`is_active`),
   KEY `idx_severity` (`severity`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+) ENGINE=InnoDB AUTO_INCREMENT=371 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `products`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `products` (
   `product_id` int NOT NULL AUTO_INCREMENT,
   `product_name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -838,9 +914,11 @@ CREATE TABLE `products` (
   CONSTRAINT `products_chk_2` CHECK ((`selling_price` >= 0)),
   CONSTRAINT `products_chk_3` CHECK (((`gst_percent` >= 0) and (`gst_percent` <= 100))),
   CONSTRAINT `products_chk_4` CHECK ((`reorder_level` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Product catalog with pricing and classification';
-
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Product catalog with pricing and classification';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `purchase_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `purchase_items` (
   `purchase_item_id` int NOT NULL AUTO_INCREMENT,
   `purchase_id` int NOT NULL,
@@ -866,9 +944,11 @@ CREATE TABLE `purchase_items` (
   CONSTRAINT `purchase_items_chk_4` CHECK ((`tax_percent` >= 0)),
   CONSTRAINT `purchase_items_chk_5` CHECK ((`tax_amount` >= 0)),
   CONSTRAINT `purchase_items_chk_6` CHECK ((`amount` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Line items for each purchase order';
-
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Line items for each purchase order';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `purchase_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `purchase_master` (
   `purchase_id` int NOT NULL AUTO_INCREMENT,
   `purchase_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Purchase order number',
@@ -885,6 +965,9 @@ CREATE TABLE `purchase_master` (
   `balance_amount` decimal(12,2) NOT NULL DEFAULT '0.00',
   `purchase_status` enum('DRAFT','RECEIVED','COMPLETED','CANCELLED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
   `payment_status` enum('PENDING','PARTIAL','PAID') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
+  `approval_status` enum('PENDING','APPROVED','REJECTED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
+  `approved_by_employee_id` int DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
   `remarks` text COLLATE utf8mb4_unicode_ci,
   `received_date` date DEFAULT NULL,
   `created_by_employee_id` int DEFAULT NULL,
@@ -906,9 +989,11 @@ CREATE TABLE `purchase_master` (
   CONSTRAINT `purchase_master_chk_3` CHECK ((`tax_amount` >= 0)),
   CONSTRAINT `purchase_master_chk_4` CHECK ((`net_amount` >= 0)),
   CONSTRAINT `purchase_master_chk_5` CHECK ((`paid_amount` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Purchase order header from suppliers';
-
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Purchase order header from suppliers';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `quotation_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `quotation_items` (
   `quotation_item_id` int NOT NULL AUTO_INCREMENT,
   `quotation_id` int NOT NULL,
@@ -937,8 +1022,10 @@ CREATE TABLE `quotation_items` (
   CONSTRAINT `quotation_items_chk_5` CHECK ((`tax_amount` >= 0)),
   CONSTRAINT `quotation_items_chk_6` CHECK ((`amount` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Line items in each quotation';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `quotation_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `quotation_master` (
   `quotation_id` int NOT NULL AUTO_INCREMENT,
   `quotation_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -981,8 +1068,10 @@ CREATE TABLE `quotation_master` (
   CONSTRAINT `quotation_master_chk_3` CHECK ((`tax_amount` >= 0)),
   CONSTRAINT `quotation_master_chk_4` CHECK ((`net_amount` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Customer quotations/proposals';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `role_permissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `role_permissions` (
   `role` enum('MANAGER','EMPLOYEE','SALES','SERVICE') NOT NULL,
   `permission_key` varchar(80) NOT NULL,
@@ -996,8 +1085,10 @@ CREATE TABLE `role_permissions` (
   KEY `fk_role_permissions_updated_by` (`updated_by`),
   CONSTRAINT `fk_role_permissions_updated_by` FOREIGN KEY (`updated_by`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `sales_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sales_items` (
   `sales_item_id` int NOT NULL AUTO_INCREMENT,
   `sales_id` int NOT NULL,
@@ -1025,8 +1116,10 @@ CREATE TABLE `sales_items` (
   CONSTRAINT `sales_items_chk_5` CHECK ((`tax_amount` >= 0)),
   CONSTRAINT `sales_items_chk_6` CHECK ((`amount` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Line items in each sales invoice';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `sales_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sales_master` (
   `sales_id` int NOT NULL AUTO_INCREMENT,
   `invoice_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1072,8 +1165,10 @@ CREATE TABLE `sales_master` (
   CONSTRAINT `sales_master_chk_4` CHECK ((`net_amount` >= 0)),
   CONSTRAINT `sales_master_chk_5` CHECK ((`paid_amount` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Sales invoices';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `service_tickets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `service_tickets` (
   `service_ticket_id` int NOT NULL AUTO_INCREMENT,
   `ticket_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1109,8 +1204,10 @@ CREATE TABLE `service_tickets` (
   CONSTRAINT `service_tickets_ibfk_4` FOREIGN KEY (`assigned_to_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL,
   CONSTRAINT `service_tickets_ibfk_5` FOREIGN KEY (`created_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Customer service tickets';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `stock_ledger`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `stock_ledger` (
   `stock_ledger_id` int NOT NULL AUTO_INCREMENT,
   `product_id` int NOT NULL,
@@ -1134,9 +1231,11 @@ CREATE TABLE `stock_ledger` (
   KEY `idx_reference` (`reference_no`),
   CONSTRAINT `stock_ledger_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON UPDATE CASCADE,
   CONSTRAINT `stock_ledger_ibfk_2` FOREIGN KEY (`recorded_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `stock_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `stock_master` (
   `stock_id` int NOT NULL AUTO_INCREMENT,
   `product_id` int NOT NULL,
@@ -1156,9 +1255,11 @@ CREATE TABLE `stock_master` (
   KEY `idx_below_minimum` (`available_qty`,`minimum_stock`),
   KEY `idx_last_updated` (`last_updated`),
   CONSTRAINT `stock_master_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `supplier_payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `supplier_payments` (
   `payment_id` int NOT NULL AUTO_INCREMENT,
   `supplier_id` int NOT NULL,
@@ -1181,8 +1282,10 @@ CREATE TABLE `supplier_payments` (
   CONSTRAINT `supplier_payments_ibfk_3` FOREIGN KEY (`paid_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL,
   CONSTRAINT `supplier_payments_chk_1` CHECK ((`amount` > 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Supplier payment records';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `suppliers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `suppliers` (
   `supplier_id` int NOT NULL AUTO_INCREMENT,
   `supplier_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1211,9 +1314,11 @@ CREATE TABLE `suppliers` (
   KEY `idx_city` (`city`),
   KEY `idx_active` (`is_active`),
   KEY `idx_email` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Supplier master data with payment terms';
-
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Supplier master data with payment terms';
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1238,8 +1343,10 @@ CREATE TABLE `users` (
   KEY `idx_role` (`role`),
   KEY `idx_active_date` (`is_active`,`date_registered`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User authentication and role management';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `warranty_master`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `warranty_master` (
   `warranty_id` int NOT NULL AUTO_INCREMENT,
   `warranty_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1270,8 +1377,10 @@ CREATE TABLE `warranty_master` (
   CONSTRAINT `warranty_master_ibfk_2` FOREIGN KEY (`sales_id`) REFERENCES `sales_master` (`sales_id`) ON DELETE SET NULL,
   CONSTRAINT `warranty_master_ibfk_3` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Product warranty tracking';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `work_order_employees`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `work_order_employees` (
   `work_order_employee_id` int NOT NULL AUTO_INCREMENT,
   `work_order_id` int NOT NULL,
@@ -1289,8 +1398,10 @@ CREATE TABLE `work_order_employees` (
   CONSTRAINT `work_order_employees_ibfk_1` FOREIGN KEY (`work_order_id`) REFERENCES `work_orders` (`work_order_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `work_order_employees_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`employee_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Employee assignment to work orders';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `work_order_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `work_order_items` (
   `work_order_item_id` int NOT NULL AUTO_INCREMENT,
   `work_order_id` int NOT NULL,
@@ -1321,8 +1432,10 @@ CREATE TABLE `work_order_items` (
   CONSTRAINT `work_order_items_chk_5` CHECK ((`tax_amount` >= 0)),
   CONSTRAINT `work_order_items_chk_6` CHECK ((`amount` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Billable work items used to create invoices after work completion';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `work_order_material_issues`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `work_order_material_issues` (
   `issue_id` int NOT NULL AUTO_INCREMENT,
   `issue_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1353,8 +1466,10 @@ CREATE TABLE `work_order_material_issues` (
   CONSTRAINT `work_order_material_issues_ibfk_5` FOREIGN KEY (`issued_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL,
   CONSTRAINT `work_order_material_issues_chk_1` CHECK ((`issued_qty` > 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Materials issued against work orders';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `work_order_material_returns`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `work_order_material_returns` (
   `return_id` int NOT NULL AUTO_INCREMENT,
   `return_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1386,8 +1501,10 @@ CREATE TABLE `work_order_material_returns` (
   CONSTRAINT `work_order_material_returns_ibfk_6` FOREIGN KEY (`received_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL,
   CONSTRAINT `work_order_material_returns_chk_1` CHECK ((`returned_qty` > 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Returned material tracking after work completion';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `work_orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `work_orders` (
   `work_order_id` int NOT NULL AUTO_INCREMENT,
   `work_order_no` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1426,8 +1543,10 @@ CREATE TABLE `work_orders` (
   CONSTRAINT `work_orders_ibfk_4` FOREIGN KEY (`supervisor_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL,
   CONSTRAINT `work_orders_ibfk_5` FOREIGN KEY (`created_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Installation and service work orders';
-
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `workflow_approvals`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `workflow_approvals` (
   `workflow_id` int NOT NULL AUTO_INCREMENT,
   `module_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1450,5 +1569,14 @@ CREATE TABLE `workflow_approvals` (
   CONSTRAINT `workflow_approvals_ibfk_1` FOREIGN KEY (`requested_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL,
   CONSTRAINT `workflow_approvals_ibfk_2` FOREIGN KEY (`approved_by_employee_id`) REFERENCES `employees` (`employee_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-SET FOREIGN_KEY_CHECKS = 1;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+

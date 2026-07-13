@@ -39,8 +39,13 @@
 table { border-collapse: collapse; min-width: 860px; width: 100%; }
 th, td { border: 1px solid #d7dee8; padding: 8px 10px; text-align: left; }
 th { background: #f5f7fb; color: #344054; font-size: 13px; }
-.actions { display: flex; gap: 8px; }
+.actions { display: flex; gap: 6px; width: fit-content; }
 .actions button, .primary-btn, .secondary-btn, .icon-btn { border: 0; border-radius: 5px; cursor: pointer; font-weight: 650; min-height: 34px; padding: 7px 12px; }
+.table-icon-btn { align-items: center; border: 0; border-radius: 5px; cursor: pointer; display: inline-flex; height: 30px; justify-content: center; padding: 0; width: 30px; }
+.table-icon-btn mat-icon { font-size: 17px; height: 17px; line-height: 17px; width: 17px; }
+.table-icon-btn.edit { background: #eaf1ff; color: #175cd3; }
+.table-icon-btn.deactivate { background: #fff4e6; color: #b54708; }
+.table-icon-btn.delete { background: #fee4e2; color: #b42318; }
 .primary-btn { background: #1565c0; color: #fff; }
 .secondary-btn { background: #e9eef5; color: #243447; }
 .secondary-btn.small { min-height: 30px; padding: 5px 9px; }
@@ -49,8 +54,11 @@ th { background: #f5f7fb; color: #344054; font-size: 13px; }
 .modal-panel { max-width: 980px; width: min(980px, 100%); }
 .form-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
 label { color: #344054; display: grid; font-size: 13px; font-weight: 600; gap: 6px; }
-input, select { border: 1px solid #c8d0dc; border-radius: 5px; color: #111827; font: inherit; min-height: 38px; padding: 7px 9px; width: 100%; }
+input, select, textarea { border: 1px solid #c8d0dc; border-radius: 5px; color: #111827; font: inherit; min-height: 38px; padding: 7px 9px; width: 100%; }
 input[readonly] { background: #f5f7fb; }
+textarea { resize: vertical; }
+.wide-field { grid-column: 1 / -1; }
+.wide-field small { color: #667085; font-size: 12px; font-weight: 500; justify-self: end; }
 .accessory-box { border: 1px solid #d7dee8; border-radius: 6px; margin-top: 16px; padding: 12px; }
 .accessory-box h3 { color: #263238; font-size: 14px; font-weight: 650; margin: 0 0 10px; }
 .accessory-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
@@ -60,6 +68,13 @@ input[readonly] { background: #f5f7fb; }
 .checkbox-card small { color: #667085; font-weight: 500; }
 .empty-note { color: #667085; font-size: 13px; margin: 0; }
 .material-box { margin-top: 16px; }
+.additional-box { border: 1px solid #d7dee8; border-radius: 6px; margin-top: 16px; padding: 12px; }
+.additional-box h2 { color: #263238; font-size: 14px; font-weight: 650; margin: 0 0 10px; }
+.account-box { border: 1px solid #d7dee8; border-radius: 6px; margin-top: 16px; max-width: 460px; padding: 12px; }
+.account-box h2 { color: #263238; font-size: 14px; font-weight: 650; margin: 0 0 10px; }
+.account-line { align-items: center; border-top: 1px solid #edf1f5; display: flex; justify-content: space-between; min-height: 34px; padding: 6px 0; }
+.account-line:first-of-type { border-top: 0; }
+.account-line.total { border-top: 1px solid #c8d1dc; font-size: 15px; font-weight: 750; margin-top: 4px; }
 .material-table { display: grid; gap: 8px; overflow-x: auto; }
 .material-row { display: grid; gap: 8px; grid-template-columns: minmax(170px, 1.2fr) minmax(160px, 1.2fr) 80px 80px 100px 110px 38px; min-width: 800px; }
 .form-actions { justify-content: flex-end; margin-top: 16px; }

@@ -2,14 +2,20 @@
   <ol class="breadcrumb mb-0">
     <li class="breadcrumb-item"><a routerLink="/dashboard">Home</a></li>
     <li class="breadcrumb-item"><a routerLink="/purchases">Purchases</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ isEditMode ? 'Edit' : 'Add' }}</li>
+    <li class="breadcrumb-item active" aria-current="page">{{ isReviewMode ? 'Review' : isEditMode ? 'Edit' : 'Add' }}</li>
   </ol>
 </nav>
 
 <div class="purchase-form-page">
   <div class="page-header">
-    <h1>{{ isEditMode ? 'Edit Purchase' : 'Add Purchase' }}</h1>
-    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    <div>
+      <h1>{{ isReviewMode ? 'Purchase Invoice Review' : isEditMode ? 'Edit Purchase' : 'Add Purchase' }}</h1>
+      <p *ngIf="purchase">Status: <strong>{{ purchase.purchase_status }}</strong> | Approval: <strong>{{ purchase.approval_status || 'PENDING' }}</strong></p>
+    </div>
+    <div class="header-actions">
+      <button *ngIf="canApprove" type="button" class="btn btn-success" (click)="approvePurchase()">Approve</button>
+      <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    </div>
   </div>
 
   <form [formGroup]="purchaseForm" (ngSubmit)="submit()">
@@ -114,7 +120,8 @@
 
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
-      <button type="submit" class="btn btn-primary" [disabled]="purchaseForm.invalid">
+      <button *ngIf="canApprove" type="button" class="btn btn-success" (click)="approvePurchase()">Approve</button>
+      <button *ngIf="!isReviewMode" type="submit" class="btn btn-primary" [disabled]="purchaseForm.invalid">
         {{ isEditMode ? 'Update' : 'Save' }}
       </button>
     </div>

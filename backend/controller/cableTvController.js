@@ -36,6 +36,23 @@ const installedStbTypes = ['NEW', 'SERVICED', 'RETURNED'];
 const stbBoxTypes = ['HD', 'SD'];
 const stbStockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT'];
 const stbStatuses = ['AVAILABLE', 'NOT_AVAILABLE'];
+const normalizePackageType = (value) => {
+  const type = String(value || '').trim().toUpperCase().replace(/\s+/g, '_');
+  if (type === 'ALA_CARTE' || type === 'ALACARTE') return 'ALACARTE';
+  if (type === 'BROADCAST' || type === 'BROADCASTER') return 'BROADCASTER';
+  if (type === 'ADDON') return type;
+  return 'ADDON';
+};
+const customerStatusForStbStatus = (status) => ({
+  ACTIVE: 'ACTIVE',
+  RETRIEVED: 'RETRIEVED',
+  FAULT: 'FAULT',
+  DISCONNECTED: 'DISCONNECTED',
+  UPGRADE: 'UPGRADE',
+  RETURNED: 'DISCONNECTED',
+  FAULTY: 'FAULT',
+  REPLACED: 'ACTIVE'
+}[String(status || '').toUpperCase()] || 'DISCONNECTED');
 
 const safeLookup = async (db, sql, values = []) => {
   try {
@@ -154,6 +171,18 @@ const ensureCableTvExtendedTables = async (db) => {
     await db.query('ALTER TABLE cable_customer_stbs ADD CONSTRAINT fk_cable_stbs_master FOREIGN KEY (stb_master_id) REFERENCES cable_stb_master(stb_master_id)');
   }
 
+  const [[stbNoUniqueIndex]] = await db.query(
+    `SELECT COUNT(*) AS count
+     FROM INFORMATION_SCHEMA.STATISTICS
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'cable_customer_stbs'
+       AND INDEX_NAME = 'uk_cable_stb_no'
+       AND NON_UNIQUE = 0`
+  );
+  if (stbNoUniqueIndex.count) {
+    await db.query('ALTER TABLE cable_customer_stbs DROP INDEX uk_cable_stb_no');
+  }
+
   try {
     await db.query("ALTER TABLE cable_tv_customers MODIFY status ENUM('ACTIVE','INACTIVE','DISCONNECTED','SHIFTED','TRANSFERRED','RETRIEVED','FAULT','UPGRADE') NOT NULL DEFAULT 'ACTIVE'");
     await db.query("ALTER TABLE cable_customer_stbs MODIFY stb_type ENUM('NEW','SERVICED','RETURNED','FAULT','DAMAGED','UPGRADE','REPLACED','EXCHANGE','CUSTOMER_OWNED') NOT NULL DEFAULT 'NEW'");
@@ -249,6 +278,21 @@ const ensureCableTvExtendedTables = async (db) => {
     if (!column.count) await db.query(alterSql);
   }
 
+  const stbHistoryColumns = [
+    ['updated_date', 'ALTER TABLE cable_customer_stbs ADD COLUMN updated_date DATE NULL AFTER installed_date'],
+    ['update_reason', 'ALTER TABLE cable_customer_stbs ADD COLUMN update_reason VARCHAR(50) NULL AFTER updated_date'],
+    ['reason_remarks', 'ALTER TABLE cable_customer_stbs ADD COLUMN reason_remarks VARCHAR(500) NULL AFTER update_reason']
+  ];
+  for (const [columnName, alterSql] of stbHistoryColumns) {
+    const [[column]] = await db.query(
+      `SELECT COUNT(*) AS count
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_customer_stbs' AND COLUMN_NAME = ?`,
+      [columnName]
+    );
+    if (!column.count) await db.query(alterSql);
+  }
+
   const materialColumns = [
     ['updated_by_employee_id', 'ALTER TABLE cable_connection_materials ADD COLUMN updated_by_employee_id INT NULL AFTER issued_by_employee_id'],
     ['updated_date', 'ALTER TABLE cable_connection_materials ADD COLUMN updated_date DATE NULL AFTER updated_by_employee_id']
@@ -258,6 +302,20 @@ const ensureCableTvExtendedTables = async (db) => {
       `SELECT COUNT(*) AS count
        FROM INFORMATION_SCHEMA.COLUMNS
        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_connection_materials' AND COLUMN_NAME = ?`,
+      [columnName]
+    );
+    if (!column.count) await db.query(alterSql);
+  }
+
+  const packageColumns = [
+    ['package_type', "ALTER TABLE cable_customer_packages ADD COLUMN package_type ENUM('ADDON','ALACARTE','BROADCASTER') NOT NULL DEFAULT 'ADDON' AFTER package_id"],
+    ['updated_by_employee_id', 'ALTER TABLE cable_customer_packages ADD COLUMN updated_by_employee_id INT NULL AFTER is_active']
+  ];
+  for (const [columnName, alterSql] of packageColumns) {
+    const [[column]] = await db.query(
+      `SELECT COUNT(*) AS count
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_customer_packages' AND COLUMN_NAME = ?`,
       [columnName]
     );
     if (!column.count) await db.query(alterSql);
@@ -1030,7 +1088,13 @@ const getCableCustomers = async (req, res) => {
        LEFT JOIN cable_connection_sources src ON src.source_id = c.source_id
        LEFT JOIN employees e ON e.employee_id = c.installed_by_employee_id
        LEFT JOIN cable_customer_stbs stb ON stb.customer_stb_id = (
-         SELECT MAX(customer_stb_id) FROM cable_customer_stbs WHERE cable_customer_id = c.cable_customer_id
+         SELECT latest_stb.customer_stb_id
+         FROM cable_customer_stbs latest_stb
+         WHERE latest_stb.cable_customer_id = c.cable_customer_id
+         ORDER BY COALESCE(latest_stb.updated_date, latest_stb.installed_date) DESC,
+                  latest_stb.updated_at DESC,
+                  latest_stb.customer_stb_id DESC
+         LIMIT 1
        )
        LEFT JOIN cable_stb_master sm ON sm.stb_master_id = stb.stb_master_id
        LEFT JOIN employees stb_emp ON stb_emp.employee_id = stb.installed_by_employee_id
@@ -1073,7 +1137,9 @@ const getCableCustomerById = async (req, res) => {
        LEFT JOIN employees installed ON installed.employee_id = stb.installed_by_employee_id
        LEFT JOIN employees entered ON entered.employee_id = stb.entered_by_employee_id
        WHERE stb.cable_customer_id = ?
-       ORDER BY stb.customer_stb_id DESC`,
+       ORDER BY COALESCE(stb.updated_date, stb.installed_date) DESC,
+                stb.updated_at DESC,
+                stb.customer_stb_id DESC`,
       [id]
     );
     const [connections] = await db.query(
@@ -1104,8 +1170,12 @@ const getCableCustomerById = async (req, res) => {
     const [customerPackages] = await db.query(
       `SELECT cp.*, sub.subscription_month, sub.subscription_year, sub.days_in_month,
               sub.billing_basis, sub.number_of_days_or_months, sub.amount, sub.paid_amount,
-              sub.balance_amount, sub.payment_status
+              sub.balance_amount, sub.payment_status, pkg.package_name,
+              pkg.package_type AS master_package_type,
+              CONCAT_WS(' ', updated.first_name, updated.last_name) AS updated_by_name
        FROM cable_customer_packages cp
+       LEFT JOIN cable_package_master pkg ON pkg.package_id = cp.package_id
+       LEFT JOIN employees updated ON updated.employee_id = cp.updated_by_employee_id
        LEFT JOIN cable_subscriptions sub ON sub.customer_package_id = cp.customer_package_id
        WHERE cp.cable_customer_id = ?
        ORDER BY cp.customer_package_id DESC`,
@@ -1440,7 +1510,7 @@ const addCustomerConnection = async (req, res) => {
         approvalGroupId, cableCustomerId, payload.connection_date || new Date(),
         nullable(payload.disconnection_date), payload.connection_type || 'RECONNECTION',
         employeeId, employeeId, money(payload.connection_charge), money(payload.connection_discount),
-        money(payload.labour_service_charge), payload.status || 'ACTIVE', approvalStatus,
+        money(payload.labour_service_charge), 'ACTIVE', approvalStatus,
         nullable(payload.remarks), createdBy
       ]
     );
@@ -1470,16 +1540,18 @@ const addCustomerConnection = async (req, res) => {
       labor_amount: payload.labour_service_charge,
       material_cost: materialCost,
       discount: payload.connection_discount,
+      overall_discount: payload.overall_discount,
       customer_paid_amount: payload.customer_paid_amount,
       due_date: payload.due_date,
       approval_status: approvalStatus,
       created_by_user_id: createdBy
     });
-    await db.query('UPDATE cable_tv_customers SET status = ? WHERE cable_customer_id = ?', [payload.status || 'ACTIVE', cableCustomerId]);
+    await db.query('UPDATE cable_tv_customers SET status = ? WHERE cable_customer_id = ?', ['ACTIVE', cableCustomerId]);
     await db.commit();
     return res.status(201).json({ message: 'Connection details saved successfully' });
   } catch (error) {
     await db.rollback();
+    console.error('Connection save failed:', error);
     return res.status(500).json({ message: 'Connection save failed', error: error.message });
   }
 };
@@ -1526,6 +1598,66 @@ const addCustomerStb = async (req, res) => {
     const payload = req.body || {};
     const { approvalGroupId, approvalStatus, createdBy } = await createApprovalGroup(db, req, 'STB_UPDATE');
     const employeeId = await resolveEmployeeId(db, req, payload.installed_by_employee_id || payload.entered_by_employee_id);
+    const updateReason = String(payload.reason || payload.update_reason || 'DISCONNECT').toUpperCase();
+    const remarks = textOrNull(payload.remarks || payload.reason_remarks);
+    const updatedDate = payload.updated_date || payload.installed_date || new Date();
+    const isReplacement = updateReason === 'REPLACED';
+    const selectedStbStatus = String(payload.status || (updateReason === 'REACTIVATE' ? 'ACTIVE' : isReplacement ? 'ACTIVE' : 'DISCONNECTED')).toUpperCase();
+    const customerStatus = customerStatusForStbStatus(selectedStbStatus);
+
+    const [activeStbs] = await db.query(
+      `SELECT customer_stb_id, stb_master_id, stb_type, installed_mso_id, exchange_original_mso_id,
+              stb_no, stb_image_path, installed_by_employee_id, installed_date
+       FROM cable_customer_stbs
+       WHERE cable_customer_id = ? AND status = 'ACTIVE'
+       ORDER BY COALESCE(updated_date, installed_date) DESC,
+                updated_at DESC,
+                customer_stb_id DESC
+       LIMIT 1`,
+      [cableCustomerId]
+    );
+
+    if (!isReplacement) {
+      let targetStbs = activeStbs;
+      if (!targetStbs.length) {
+        const [latestStbs] = await db.query(
+          `SELECT customer_stb_id, stb_master_id, stb_type, installed_mso_id, exchange_original_mso_id,
+                  stb_no, stb_image_path, installed_by_employee_id, installed_date
+           FROM cable_customer_stbs
+           WHERE cable_customer_id = ?
+           ORDER BY COALESCE(updated_date, installed_date) DESC,
+                    updated_at DESC,
+                    customer_stb_id DESC
+           LIMIT 1`,
+          [cableCustomerId]
+        );
+        targetStbs = latestStbs;
+      }
+      if (!targetStbs.length) {
+        await db.rollback();
+        return res.status(400).json({ message: 'No STB history found for this customer' });
+      }
+      const targetStb = targetStbs[0];
+      await db.query(
+        `INSERT INTO cable_customer_stbs (
+          approval_group_id, cable_customer_id, stb_master_id, stb_type, installed_mso_id, exchange_original_mso_id,
+          stb_no, stb_image_path, stb_amount, stb_discount, labour_service_charge,
+          installed_by_employee_id, entered_by_employee_id, installed_date, updated_date,
+          update_reason, reason_remarks, status, approval_status, created_by_user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          approvalGroupId, cableCustomerId, targetStb.stb_master_id, targetStb.stb_type || 'NEW',
+          targetStb.installed_mso_id, targetStb.exchange_original_mso_id,
+          targetStb.stb_no, targetStb.stb_image_path, employeeId || targetStb.installed_by_employee_id,
+          employeeId, targetStb.installed_date || updatedDate, updatedDate, updateReason, remarks,
+          selectedStbStatus, approvalStatus, createdBy
+        ]
+      );
+      await db.query('UPDATE cable_tv_customers SET status = ? WHERE cable_customer_id = ?', [customerStatus, cableCustomerId]);
+      await db.commit();
+      return res.status(201).json({ message: 'STB status details saved successfully' });
+    }
+
     const stbMasterId = intOrNull(payload.stb_master_id);
     let selectedStb = null;
     if (stbMasterId) {
@@ -1544,6 +1676,10 @@ const addCustomerStb = async (req, res) => {
         await db.rollback();
         return res.status(400).json({ message: 'Selected STB is not available for installation' });
       }
+      if (String(stbRow.stock_type || '').toUpperCase() !== String(payload.stb_type || 'NEW').toUpperCase()) {
+        await db.rollback();
+        return res.status(400).json({ message: 'Selected STB number does not match the selected STB type' });
+      }
       selectedStb = stbRow;
     }
 
@@ -1553,43 +1689,22 @@ const addCustomerStb = async (req, res) => {
       return res.status(400).json({ message: 'STB number is required' });
     }
 
-    const [activeStbs] = await db.query(
-      `SELECT customer_stb_id, stb_master_id
-       FROM cable_customer_stbs
-       WHERE cable_customer_id = ? AND status = 'ACTIVE'
-       ORDER BY customer_stb_id DESC`,
-      [cableCustomerId]
-    );
     if (activeStbs.length) {
-      const previousStatus = String(payload.previous_status || '').toUpperCase();
-      if (!['FAULT', 'UPGRADE', 'DISCONNECTED'].includes(previousStatus)) {
-        await db.rollback();
-        return res.status(400).json({ message: 'Current STB status must be Fault, Upgrade or Disconnected before changing STB number' });
-      }
       const activeIds = activeStbs.map((item) => item.customer_stb_id);
       await db.query(
         `UPDATE cable_customer_stbs
-         SET status = ?, updated_at = NOW()
-         WHERE cable_customer_id = ? AND status = 'ACTIVE'`,
-        [previousStatus, cableCustomerId]
+         SET status = 'REPLACED', updated_date = ?, update_reason = ?, reason_remarks = ?, updated_at = NOW()
+         WHERE customer_stb_id IN (?)`,
+        [updatedDate, updateReason, remarks, activeIds]
       );
       const oldMasterIds = activeStbs.map((item) => item.stb_master_id).filter(Boolean);
       if (oldMasterIds.length) {
-        if (previousStatus === 'FAULT') {
-          await db.query(
-            `UPDATE cable_stb_master
-             SET status = 'AVAILABLE', stock_type = 'FAULT', updated_at = NOW()
-             WHERE stb_master_id IN (?)`,
-            [oldMasterIds]
-          );
-        } else {
-          await db.query(
-            `UPDATE cable_stb_master
-             SET status = 'AVAILABLE', updated_at = NOW()
-             WHERE stb_master_id IN (?)`,
-            [oldMasterIds]
-          );
-        }
+        await db.query(
+          `UPDATE cable_stb_master
+           SET status = 'AVAILABLE', updated_at = NOW()
+           WHERE stb_master_id IN (?)`,
+          [oldMasterIds]
+        );
         await db.query(
           `UPDATE cable_stb_issue_master
            SET issue_status = 'RETURNED'
@@ -1603,13 +1718,13 @@ const addCustomerStb = async (req, res) => {
       `INSERT INTO cable_customer_stbs (
         approval_group_id, cable_customer_id, stb_master_id, stb_type, installed_mso_id, exchange_original_mso_id,
         stb_no, stb_amount, stb_discount, labour_service_charge, installed_by_employee_id, entered_by_employee_id,
-        installed_date, status, approval_status, created_by_user_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`,
+        installed_date, updated_date, update_reason, reason_remarks, status, approval_status, created_by_user_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         approvalGroupId, cableCustomerId, stbMasterId, payload.stb_type || selectedStb?.stock_type || 'NEW',
         intOrNull(payload.installed_mso_id || selectedStb?.mso_id), intOrNull(payload.exchange_original_mso_id), stbNo,
-        money(payload.stb_amount ?? selectedStb?.stb_amount), money(payload.stb_discount), employeeId, employeeId,
-        payload.installed_date || new Date(), 'ACTIVE', approvalStatus, createdBy
+        money(payload.stb_amount ?? selectedStb?.stb_amount), money(payload.stb_discount), money(payload.labour_service_charge),
+        employeeId, employeeId, updatedDate, updatedDate, updateReason, remarks, selectedStbStatus, approvalStatus, createdBy
       ]
     );
     await saveStbAccessories(db, req, {
@@ -1634,17 +1749,25 @@ const addCustomerStb = async (req, res) => {
         [selectedStb.stb_master_id, cableCustomerId, stbResult.insertId, employeeId]
       );
     }
-    await addPendingAccount(db, req, {
-      approval_group_id: approvalGroupId,
-      cable_customer_id: cableCustomerId,
-      stb_amount: payload.stb_amount ?? selectedStb?.stb_amount,
-      discount: payload.stb_discount,
-      customer_paid_amount: payload.customer_paid_amount,
-      due_date: payload.due_date,
-      approval_status: approvalStatus,
-      created_by_user_id: createdBy
-    });
-    await db.query("UPDATE cable_tv_customers SET status = 'ACTIVE' WHERE cable_customer_id = ?", [cableCustomerId]);
+    const pendingTotal = money(payload.stb_amount ?? selectedStb?.stb_amount)
+      + money(payload.labour_service_charge)
+      - money(payload.stb_discount)
+      - money(payload.overall_discount);
+    if (pendingTotal > 0 || money(payload.customer_paid_amount) > 0) {
+      await addPendingAccount(db, req, {
+        approval_group_id: approvalGroupId,
+        cable_customer_id: cableCustomerId,
+        stb_amount: payload.stb_amount ?? selectedStb?.stb_amount,
+        labor_amount: payload.labour_service_charge,
+        discount: payload.stb_discount,
+        overall_discount: payload.overall_discount,
+        customer_paid_amount: payload.customer_paid_amount,
+        due_date: payload.due_date,
+        approval_status: approvalStatus,
+        created_by_user_id: createdBy
+      });
+    }
+    await db.query('UPDATE cable_tv_customers SET status = ? WHERE cable_customer_id = ?', [customerStatus, cableCustomerId]);
     await db.commit();
     return res.status(201).json({ message: 'STB details saved successfully' });
   } catch (error) {
@@ -1655,16 +1778,26 @@ const addCustomerStb = async (req, res) => {
 
 const updateCustomerStb = async (req, res) => {
   try {
-    await connection.promise().query(
+    await ensureCableTvExtendedTables(connection.promise());
+    const db = connection.promise();
+    const stbStatus = String(req.body.status || 'ACTIVE').toUpperCase();
+    await db.query(
       `UPDATE cable_customer_stbs
-       SET stb_type = ?, stb_no = ?, stb_amount = ?, stb_discount = ?, installed_date = ?,
+       SET stb_type = ?, stb_no = ?, stb_amount = ?, stb_discount = ?, labour_service_charge = ?,
+           installed_date = ?, updated_date = ?, update_reason = ?, reason_remarks = ?,
            installed_by_employee_id = ?, status = ?, updated_at = NOW()
        WHERE customer_stb_id = ? AND cable_customer_id = ?`,
       [
         req.body.stb_type || 'NEW', req.body.stb_no, money(req.body.stb_amount), money(req.body.stb_discount),
-        req.body.installed_date || new Date(), intOrNull(req.body.installed_by_employee_id), req.body.status || 'ACTIVE',
+        money(req.body.labour_service_charge), req.body.installed_date || req.body.updated_date || new Date(),
+        req.body.updated_date || req.body.installed_date || new Date(), req.body.reason || req.body.update_reason || null,
+        nullable(req.body.remarks || req.body.reason_remarks), intOrNull(req.body.installed_by_employee_id), stbStatus,
         Number(req.params.stbId), Number(req.params.id)
       ]
+    );
+    await db.query(
+      'UPDATE cable_tv_customers SET status = ? WHERE cable_customer_id = ?',
+      [customerStatusForStbStatus(stbStatus), Number(req.params.id)]
     );
     return res.json({ message: 'STB details updated successfully' });
   } catch (error) {
@@ -1687,21 +1820,34 @@ const deleteCustomerStb = async (req, res) => {
 const addCustomerPackage = async (req, res) => {
   const db = connection.promise();
   try {
+    await ensureCableTvExtendedTables(db);
     await db.beginTransaction();
     const cableCustomerId = Number(req.params.id);
     const payload = req.body || {};
     const { approvalGroupId, approvalStatus, createdBy } = await createApprovalGroup(db, req, 'PACKAGE_UPDATE');
+    const packageType = normalizePackageType(payload.package_type);
+    const employeeId = await resolveEmployeeId(db, req, payload.updated_by_employee_id);
+    const [[activeSameType]] = await db.query(
+      `SELECT customer_package_id
+       FROM cable_customer_packages
+       WHERE cable_customer_id = ? AND package_type = ? AND is_active = 1
+       LIMIT 1`,
+      [cableCustomerId, packageType]
+    );
+    if (activeSameType) {
+      await db.rollback();
+      return res.status(400).json({ message: `Previous active ${packageType} package exists. Please deactivate previous package before adding another.` });
+    }
     const [[pkg]] = await db.query('SELECT price FROM cable_package_master WHERE package_id = ?', [payload.package_id]);
     const packagePrice = money(payload.package_price ?? pkg?.price);
-    await db.query('UPDATE cable_customer_packages SET is_active = 0 WHERE cable_customer_id = ?', [cableCustomerId]);
     await db.query(
       `INSERT INTO cable_customer_packages (
-        approval_group_id, cable_customer_id, package_id, package_price, start_date, end_date,
-        is_active, approval_status, created_by_user_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        approval_group_id, cable_customer_id, package_id, package_type, package_price, start_date, end_date,
+        is_active, updated_by_employee_id, approval_status, created_by_user_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        approvalGroupId, cableCustomerId, Number(payload.package_id), packagePrice,
-        payload.start_date || new Date(), nullable(payload.end_date), payload.is_active ?? 1, approvalStatus, createdBy
+        approvalGroupId, cableCustomerId, Number(payload.package_id), packageType, packagePrice,
+        payload.start_date || new Date(), nullable(payload.end_date), 1, employeeId, approvalStatus, createdBy
       ]
     );
     await db.commit();
@@ -1714,13 +1860,36 @@ const addCustomerPackage = async (req, res) => {
 
 const updateCustomerPackage = async (req, res) => {
   try {
-    await connection.promise().query(
+    const db = connection.promise();
+    await ensureCableTvExtendedTables(db);
+    const cableCustomerId = Number(req.params.id);
+    const customerPackageId = Number(req.params.packageId);
+    const packageType = normalizePackageType(req.body.package_type);
+    const isActive = Number(req.body.is_active ?? 1) === 1 ? 1 : 0;
+    const employeeId = await resolveEmployeeId(db, req, req.body.updated_by_employee_id);
+    if (isActive) {
+      const [[activeSameType]] = await db.query(
+        `SELECT customer_package_id
+         FROM cable_customer_packages
+         WHERE cable_customer_id = ? AND package_type = ? AND is_active = 1 AND customer_package_id <> ?
+         LIMIT 1`,
+        [cableCustomerId, packageType, customerPackageId]
+      );
+      if (activeSameType) {
+        return res.status(400).json({ message: `Previous active ${packageType} package exists. Please deactivate previous package before adding another.` });
+      }
+    }
+    const [[pkg]] = await db.query('SELECT price FROM cable_package_master WHERE package_id = ?', [req.body.package_id]);
+    const endDate = isActive ? nullable(req.body.end_date) : dateOnly(new Date());
+    const packagePrice = isActive ? money(req.body.package_price || pkg?.price) : 0;
+    await db.query(
       `UPDATE cable_customer_packages
-       SET package_id = ?, package_price = ?, start_date = ?, end_date = ?, is_active = ?, updated_at = NOW()
+       SET package_id = ?, package_type = ?, package_price = ?, start_date = ?, end_date = ?,
+           is_active = ?, updated_by_employee_id = ?, updated_at = NOW()
        WHERE customer_package_id = ? AND cable_customer_id = ?`,
       [
-        Number(req.body.package_id), money(req.body.package_price), req.body.start_date || new Date(),
-        nullable(req.body.end_date), req.body.is_active ?? 1, Number(req.params.packageId), Number(req.params.id)
+        Number(req.body.package_id), packageType, packagePrice, req.body.start_date || new Date(),
+        endDate, isActive, employeeId, customerPackageId, cableCustomerId
       ]
     );
     return res.json({ message: 'Package details updated successfully' });

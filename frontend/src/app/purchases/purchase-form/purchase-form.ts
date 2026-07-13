@@ -23,6 +23,8 @@ export class PurchaseForm {
   products: any[] = [];
   supplierOptionList: { label: string; value: string | number }[] = [{ label: 'Select supplier', value: '' }];
   isEditMode = false;
+  isReviewMode = false;
+  purchase: any;
   purchaseId!: number;
 
   purchaseStatuses = ['DRAFT', 'RECEIVED', 'COMPLETED', 'CANCELLED'];
@@ -52,6 +54,10 @@ export class PurchaseForm {
     return this.purchaseForm.get('items') as FormArray;
   }
 
+  get canApprove() {
+    return this.isReviewMode && this.purchase?.approval_status !== 'APPROVED';
+  }
+
   buildForm() {
     this.purchaseForm = this.fb.group({
       purchase_no: [{ value: '', disabled: true }],
@@ -74,6 +80,7 @@ export class PurchaseForm {
 
   initializeForm() {
     const id = this.route.snapshot.paramMap.get('id');
+    this.isReviewMode = this.route.snapshot.queryParamMap.get('review') === 'true';
     if (id) {
       this.isEditMode = true;
       this.purchaseId = Number(id);
@@ -114,6 +121,7 @@ export class PurchaseForm {
       next: (response: any) => {
         this.ngxLoader.stop();
         const purchase = response?.data ?? response;
+        this.purchase = purchase;
         this.items.clear();
         (purchase.items || []).forEach((item: any) => this.addItem(item));
         this.purchaseForm.patchValue({
@@ -122,6 +130,7 @@ export class PurchaseForm {
           purchase_date: this.toInputDate(purchase.purchase_date),
           received_date: this.toInputDate(purchase.received_date)
         });
+        if (this.isReviewMode) this.purchaseForm.disable();
       },
       error: (error: any) => {
         this.ngxLoader.stop();
@@ -207,6 +216,7 @@ export class PurchaseForm {
   }
 
   submit() {
+    if (this.isReviewMode) return;
     if (this.purchaseForm.invalid) {
       this.purchaseForm.markAllAsTouched();
       return;
@@ -250,7 +260,25 @@ export class PurchaseForm {
   }
 
   cancel() {
-    this.router.navigateByUrl('/purchases');
+    this.router.navigateByUrl(this.isReviewMode ? '/workflow-approval' : '/purchases');
+  }
+
+  approvePurchase() {
+    if (!this.purchaseId || !this.canApprove) return;
+    if (!confirm(`Approve purchase invoice ${this.purchase?.purchase_no || ''}?`)) return;
+
+    this.ngxLoader.start();
+    this.purchaseService.approvePurchase(this.purchaseId).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleTokenAndMessage(response);
+        this.router.navigateByUrl('/workflow-approval');
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleError(error);
+      }
+    });
   }
 
   money(value: number) {

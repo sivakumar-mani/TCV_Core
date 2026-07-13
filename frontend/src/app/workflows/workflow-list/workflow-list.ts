@@ -84,13 +84,22 @@ export class WorkflowList {
     } else if (row.module_name === 'MATERIAL_ISSUE') {
       this.router.navigate(['/work-orders/material-issue', row.work_order_id], { queryParams: { preview: true, workflow: true } });
     } else if (row.module_name === 'SUPPLIER_PAYMENT') {
-      this.router.navigate(['/supplier-payments'], {
-        queryParams: { supplierId: row.supplier_id, purchaseId: row.reference_id }
+      this.router.navigate(['/purchases/edit', row.reference_id], {
+        queryParams: { review: true, workflowId: row.workflow_id }
+      });
+    } else if (row.module_name === 'SUPPLIER') {
+      const supplierId = row.supplier_id || row.reference_id;
+      this.router.navigate(['/suppliers/edit', supplierId], {
+        queryParams: { review: true, workflowId: row.workflow_id }
       });
     }
   }
 
   approve(row: any) {
+    if (row.module_name === 'SUPPLIER_PAYMENT') {
+      this.review(row);
+      return;
+    }
     if (['WORK_ORDER', 'MATERIAL_ISSUE'].includes(row.module_name)) {
       alert('Preview this request to choose its approval action.');
       return;

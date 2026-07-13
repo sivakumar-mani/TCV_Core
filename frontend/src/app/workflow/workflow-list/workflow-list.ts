@@ -77,8 +77,15 @@ export class WorkflowList {
 
   review(row: any) {
     if (row.module_name === 'SUPPLIER_PAYMENT') {
-      this.router.navigate(['/supplier-payments'], {
-        queryParams: { supplierId: row.supplier_id, purchaseId: row.reference_id }
+      this.router.navigate(['/purchases/edit', row.reference_id], {
+        queryParams: { review: true, workflowId: row.workflow_id }
+      });
+      return;
+    }
+    if (row.module_name === 'SUPPLIER') {
+      const supplierId = row.supplier_id || row.reference_id;
+      this.router.navigate(['/suppliers/edit', supplierId], {
+        queryParams: { review: true, workflowId: row.workflow_id }
       });
       return;
     }

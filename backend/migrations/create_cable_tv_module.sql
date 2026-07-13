@@ -311,6 +311,9 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
     installed_by_employee_id INT NULL,
     entered_by_employee_id INT NULL,
     installed_date DATE NOT NULL DEFAULT (CURDATE()),
+    updated_date DATE NULL,
+    update_reason VARCHAR(50) NULL,
+    reason_remarks VARCHAR(500) NULL,
     status ENUM('ACTIVE','RETRIEVED','FAULT','DISCONNECTED','UPGRADE','RETURNED','FAULTY','REPLACED') NOT NULL DEFAULT 'ACTIVE',
     approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
     created_by_user_id INT NULL,
@@ -345,7 +348,6 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
         FOREIGN KEY (approved_by_user_id) REFERENCES users(user_id)
         ON DELETE SET NULL ON UPDATE CASCADE,
 
-    UNIQUE KEY uk_cable_stb_no (stb_no),
     INDEX idx_cable_stbs_approval_group (approval_group_id),
     INDEX idx_cable_stbs_customer (cable_customer_id),
     INDEX idx_cable_stbs_master (stb_master_id),
@@ -513,10 +515,12 @@ CREATE TABLE IF NOT EXISTS cable_customer_packages (
     approval_group_id BIGINT NULL,
     cable_customer_id BIGINT NOT NULL,
     package_id INT NOT NULL,
+    package_type ENUM('ADDON','ALACARTE','BROADCASTER') NOT NULL DEFAULT 'ADDON',
     package_price DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (package_price >= 0),
     start_date DATE NOT NULL DEFAULT (CURDATE()),
     end_date DATE NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
+    updated_by_employee_id INT NULL,
     approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
     created_by_user_id INT NULL,
     approved_by_user_id INT NULL,
@@ -540,11 +544,16 @@ CREATE TABLE IF NOT EXISTS cable_customer_packages (
     CONSTRAINT fk_cable_customer_packages_approved_by_user
         FOREIGN KEY (approved_by_user_id) REFERENCES users(user_id)
         ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_cable_customer_packages_updated_by
+        FOREIGN KEY (updated_by_employee_id) REFERENCES employees(employee_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
 
     INDEX idx_cable_customer_packages_customer (cable_customer_id),
     INDEX idx_cable_customer_packages_approval_group (approval_group_id),
     INDEX idx_cable_customer_packages_package (package_id),
+    INDEX idx_cable_customer_packages_type (package_type),
     INDEX idx_cable_customer_packages_active (is_active),
+    INDEX idx_cable_customer_packages_updated_by (updated_by_employee_id),
     INDEX idx_cable_customer_packages_approval_status (approval_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Cable TV package assigned to customer with snapshot package price';
