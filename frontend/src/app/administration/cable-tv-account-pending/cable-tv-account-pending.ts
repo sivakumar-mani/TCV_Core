@@ -4,6 +4,7 @@ import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CableTvServices } from '../../services/cable-tv-services';
 import { Snackbar } from '../../services/snackbar';
 import { globalConstants } from '../../services/global-constants';
+import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-account-pending',
@@ -17,7 +18,8 @@ export class CableTvAccountPending {
   constructor(
     private cableTvService: CableTvServices,
     private ngxLoader: NgxUiLoaderService,
-    private snackbar: Snackbar
+    private snackbar: Snackbar,
+    public permissions: PermissionService
   ) {}
 
   ngOnInit() {

@@ -25,8 +25,8 @@ export class PermissionService {
     'employee-attendance': 'EMPLOYEE_ATTENDANCE', 'employee-salary': 'EMPLOYEE_SALARY',
     'workflow-approval': 'WORKFLOW_APPROVAL', workflow: 'WORKFLOW_APPROVAL', users: 'USERS',
     'audit-logs': 'AUDIT_LOGS', 'role-permissions': 'ROLE_PERMISSIONS', 'cable-tv-masters': 'CABLE_TV_MASTERS',
-    'cable-tv-packages': 'CABLE_TV_MASTERS', 'cable-tv-stbs': 'CABLE_TV_MASTERS',
-    'cable-tv-account-pending': 'CABLE_TV_MASTERS'
+    'cable-tv-packages': 'CABLE_TV_PACKAGES', 'cable-tv-stbs': 'CABLE_TV_STBS',
+    'cable-tv-account-pending': 'CABLE_TV_ACCOUNTS'
   };
 
   constructor(private http: HttpClient) {}
@@ -34,6 +34,8 @@ export class PermissionService {
   isAdmin(): boolean { return String(this.payload()?.role).toUpperCase() === 'ADMIN'; }
   role(): string { return String(this.payload()?.role || ''); }
   username(): string { return this.payload()?.username || this.payload()?.userName || ''; }
+  employeeId(): number | null { return this.payload()?.employee_id ? Number(this.payload().employee_id) : null; }
+  employeeCode(): string { return this.payload()?.employee_code || ''; }
 
   can(key: string, action: PermissionAction = 'view'): boolean {
     if (this.isAdmin()) return true;

@@ -377,6 +377,33 @@ body {
 
 }
 
+.user-signup-dialog {
+  .mat-mdc-dialog-title,
+  .mdc-dialog__title,
+  .mat-mdc-dialog-actions,
+  .mdc-dialog__actions {
+    background: #f8f9fb !important;
+    color: #000 !important;
+  }
+
+  .mat-mdc-dialog-title,
+  .mdc-dialog__title {
+    margin: 0 !important;
+  }
+
+  .mat-mdc-dialog-content,
+  .mdc-dialog__content {
+    background: #fff !important;
+    color: #111827;
+    padding: 10px 20px 4px !important;
+  }
+
+  .mat-mdc-dialog-actions,
+  .mdc-dialog__actions {
+    margin: 0 !important;
+  }
+}
+
 // --------------- Action area -------------
 
 .action-btn {

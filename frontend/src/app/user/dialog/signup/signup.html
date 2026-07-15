@@ -3,12 +3,21 @@
 </h5>
 <mat-dialog-content  >
  <form [formGroup]="signupForm">
-    <div class="grid-2-col mt-4">
+    <div class="signup-grid">
+      <app-select-form-field
+        class="employee-field"
+        [label]="'Employee'"
+        [labelClass]="'form-label'"
+        [selectClass]="'form-control'"
+        [options]="employeeOptions"
+        [formControl]="$any(signupForm.controls['employee_id'])">
+      </app-select-form-field>
         <app-input-form-field 
       [label]="'First Name'"
       [classLabel]="'form-label'"
       [inputClass]="'form-control'"
       [type]="'text'"
+      [readonly]="true"
       [formControl]="$any(signupForm.controls['firstName'])"
       ></app-input-form-field>
          <app-input-form-field 
@@ -16,6 +25,7 @@
       [classLabel]="'form-label'"
       [inputClass]="'form-control'"
       [type]="'text'"
+      [readonly]="true"
       [formControl]="$any(signupForm.controls['lastName'])"
       ></app-input-form-field>
           <app-input-form-field 
@@ -37,6 +47,7 @@
       [classLabel]="'form-label'"
       [inputClass]="'form-control'"
       [type]="'text'"
+      [readonly]="true"
       [formControl]="$any(signupForm.controls['email'])"
       ></app-input-form-field>
         <app-input-form-field 
@@ -44,6 +55,7 @@
       [classLabel]="'form-label'"
       [inputClass]="'form-control'"
       [type]="'text'"
+      [readonly]="true"
       [formControl]="$any(signupForm.controls['contactNumber'])"
       ></app-input-form-field>
       <app-select-form-field

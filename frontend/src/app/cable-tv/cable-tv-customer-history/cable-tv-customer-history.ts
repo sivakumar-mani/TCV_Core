@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -12,7 +13,7 @@ type Section = 'connections' | 'stbs' | 'packages' | 'subscriptions';
 
 @Component({
   selector: 'app-cable-tv-customer-history',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, MatIconModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, MatIconModule],
   templateUrl: './cable-tv-customer-history.html',
   styleUrl: './cable-tv-customer-history.scss'
 })
@@ -26,6 +27,7 @@ export class CableTvCustomerHistory {
   form!: FormGroup;
   showModal = false;
   editId = 0;
+  customerSearchNo = '';
 
   readonly titles: Record<Section, string> = {
     connections: 'Connection Details',
@@ -33,6 +35,12 @@ export class CableTvCustomerHistory {
     packages: 'Package Details',
     subscriptions: 'Subscription Details'
   };
+  readonly tabs: { key: Section; label: string }[] = [
+    { key: 'connections', label: 'Connection' },
+    { key: 'stbs', label: 'STB' },
+    { key: 'packages', label: 'Package' },
+    { key: 'subscriptions', label: 'Subscription' }
+  ];
   readonly connectionTypes = ['RECONNECTION', 'SHIFTED', 'TRANSFERRED', 'NEW'];
   readonly packageTypes = ['ADDON', 'ALACARTE', 'BROADCASTER'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
@@ -54,6 +62,10 @@ export class CableTvCustomerHistory {
     value: index + 1,
     label: new Date(2026, index, 1).toLocaleString('en-US', { month: 'long' })
   }));
+  readonly billingBasisOptions = ['MONTH', 'YEAR', 'DAY'];
+  readonly paymentModes = ['CASH', 'ONLINE', 'OFFICE'];
+  readonly periodCountOptions = Array.from({ length: 12 }, (_value, index) => index + 1);
+  readonly yearOptions = Array.from({ length: 7 }, (_value, index) => new Date().getFullYear() - 1 + index);
 
   constructor(
     private route: ActivatedRoute,
@@ -67,7 +79,7 @@ export class CableTvCustomerHistory {
 
   ngOnInit() {
     this.customerId = Number(this.route.snapshot.paramMap.get('id'));
-    this.section = (this.route.snapshot.paramMap.get('section') || 'connections') as Section;
+    this.section = this.asSection(this.route.snapshot.paramMap.get('section'));
     this.buildForm();
     this.loadData();
   }
@@ -75,7 +87,12 @@ export class CableTvCustomerHistory {
   get title() { return this.titles[this.section]; }
   get materials(): FormArray { return this.form.get('materials') as FormArray; }
   get stbAccessories(): FormArray { return this.form.get('accessories') as FormArray; }
-  get addButtonLabel() { return this.section === 'connections' ? 'Add Connection Details' : `Add ${this.title}`; }
+  get addButtonLabel() {
+    if (this.section === 'connections') return 'Add Connection Details';
+    if (this.section === 'stbs') return 'Add STB';
+    if (this.section === 'packages') return 'Add Package';
+    return 'Add Subscription';
+  }
   get latestConnection() { return (this.details.connections || [])[0] || {}; }
   get latestStb() { return (this.details.stbs || [])[0] || {}; }
   get currentActiveStb() {
@@ -98,6 +115,15 @@ export class CableTvCustomerHistory {
     return [this.customer.door_no, this.customer.street_name, this.customer.area_name, this.customer.city]
       .filter(Boolean)
       .join(', ') || '-';
+  }
+  get loggedInEmployeeName() {
+    const username = String(this.permissions.username() || '').trim().toLowerCase();
+    if (!username) return '';
+    const employee = (this.lookups.employees || []).find((item: any) =>
+      String(item.employee_code || '').trim().toLowerCase() === username
+      || String(item.employee_name || '').trim().toLowerCase() === username
+    );
+    return employee?.employee_name || '';
   }
 
   buildForm() {
@@ -165,19 +191,52 @@ export class CableTvCustomerHistory {
       return;
     }
     this.form = this.fb.group({
-      customer_package_id: [null, Validators.required],
+      customer_package_id: [this.defaultCustomerPackageId()],
       subscription_month: [Number(today.slice(5, 7))],
       subscription_year: [Number(today.slice(0, 4))],
+      billing_basis: ['MONTH'],
+      number_of_days_or_months: [1],
+      days_in_month: [Number(today.slice(8, 10))],
+      received_count: [1],
       start_date: [today],
       expiry_date: [today],
       collect_date: [today],
+      collected_by_employee_id: [null, Validators.required],
+      package_amount: [0],
       amount: [0],
       paid_amount: [0],
       balance_amount: [0],
-      due_date: [''],
+      payment_status: ['PENDING'],
       payment_mode: ['CASH'],
+      payment_reference: [''],
       remarks: ['']
     });
+    if (!this.permissions.isAdmin()) {
+      this.form.patchValue({ collect_date: today, payment_mode: 'CASH' }, { emitEvent: false });
+      this.form.get('payment_mode')?.disable({ emitEvent: false });
+    }
+    this.form.get('received_count')?.disable({ emitEvent: false });
+    this.form.get('customer_package_id')?.valueChanges.subscribe(() => this.applySubscriptionPackage());
+    this.form.get('billing_basis')?.valueChanges.subscribe((basis) => {
+      const selectedBasis = String(basis || '').toUpperCase();
+      if (selectedBasis === 'DAY') {
+        const todayDate = this.today();
+        const today = new Date(todayDate);
+        this.form.patchValue({
+          subscription_month: today.getMonth() + 1,
+          subscription_year: today.getFullYear(),
+          start_date: todayDate,
+          expiry_date: this.monthLastDate(today.getMonth() + 1, today.getFullYear())
+        }, { emitEvent: false });
+      } else {
+        this.form.patchValue({ number_of_days_or_months: 1, received_count: 1 }, { emitEvent: false });
+      }
+      this.calculateSubscription();
+    });
+    ['subscription_month', 'subscription_year', 'number_of_days_or_months', 'start_date', 'expiry_date', 'paid_amount'].forEach((path) => {
+      this.form.get(path)?.valueChanges.subscribe(() => this.calculateSubscription());
+    });
+    this.applySubscriptionPackage();
   }
 
   createMaterialRow(data: any = {}) {
@@ -208,6 +267,10 @@ export class CableTvCustomerHistory {
     });
   }
 
+  accessoryDisplayName(name: string) {
+    return String(name || '').replace(/\s*STB\s+Accessories\s*/i, ' ').replace(/\s+/g, ' ').trim();
+  }
+
   loadData() {
     this.ngxLoader.start();
     this.cableTvService.getLookups().subscribe({
@@ -218,6 +281,8 @@ export class CableTvCustomerHistory {
             this.ngxLoader.stop();
             this.details = response || {};
             this.customer = response.customer || {};
+            this.customerSearchNo = this.customer.customer_code || this.customerSearchNo;
+            if (this.section === 'subscriptions' && !this.permissions.isAdmin()) this.applyLoggedInEmployee();
             this.refreshRows();
           },
           error: (error: any) => this.handleError(error)
@@ -225,6 +290,44 @@ export class CableTvCustomerHistory {
       },
       error: (error: any) => this.handleError(error)
     });
+  }
+
+  searchCustomerByNumber() {
+    const customerNo = String(this.customerSearchNo || '').trim().toLowerCase();
+    if (!customerNo) {
+      this.commonMethods.handleError({ error: { message: 'Enter customer number' } });
+      return;
+    }
+    this.ngxLoader.start();
+    this.cableTvService.getCustomers().subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        const customers = Array.isArray(response) ? response : response.data ?? [];
+        const match = customers.find((customer: any) => String(customer.customer_code || '').trim().toLowerCase() === customerNo);
+        if (!match) {
+          this.commonMethods.handleError({ error: { message: 'Customer number not found' } });
+          return;
+        }
+        this.router.navigate(['/cable-tv/customers', match.cable_customer_id]).then(() => {
+          this.customerId = Number(match.cable_customer_id);
+          this.section = 'connections';
+          this.buildForm();
+          this.loadData();
+        });
+      },
+      error: (error: any) => this.handleError(error)
+    });
+  }
+
+  applyLoggedInEmployee() {
+    const username = String(this.permissions.username() || '').trim().toLowerCase();
+    const employee = (this.lookups.employees || []).find((item: any) =>
+      String(item.employee_code || '').trim().toLowerCase() === username
+      || String(item.employee_name || '').trim().toLowerCase() === username
+    );
+    if (employee) {
+      this.form?.patchValue({ collected_by_employee_id: employee.employee_id }, { emitEvent: false });
+    }
   }
 
   refreshRows() {
@@ -237,14 +340,29 @@ export class CableTvCustomerHistory {
     this.rows = map[this.section];
   }
 
+  asSection(value: any): Section {
+    return this.tabs.some((tab) => tab.key === value) ? value as Section : 'connections';
+  }
+
+  switchSection(section: Section) {
+    if (this.section === section) return;
+    this.section = section;
+    this.showModal = false;
+    this.editId = 0;
+    this.buildForm();
+    if (this.section === 'subscriptions' && !this.permissions.isAdmin()) this.applyLoggedInEmployee();
+    this.refreshRows();
+  }
+
   openAdd() {
     this.editId = 0;
     this.buildForm();
+    if (this.section === 'subscriptions' && !this.permissions.isAdmin()) this.applyLoggedInEmployee();
     this.showModal = true;
   }
 
   goBack() {
-    this.router.navigate(['/cable-tv/customers'], { queryParams: { customerId: this.customerId } });
+    this.router.navigateByUrl('/cable-tv/customers');
   }
 
   edit(row: any) {
@@ -264,6 +382,33 @@ export class CableTvCustomerHistory {
       return;
     }
     this.form.patchValue(row);
+    if (this.section === 'subscriptions') {
+      const billingBasis = String(row.billing_basis || 'MONTH').toUpperCase();
+      this.form.patchValue({
+        customer_package_id: Number(row.customer_package_id) || this.defaultCustomerPackageId(),
+        subscription_month: Number(row.subscription_month) || Number(new Date().toISOString().slice(5, 7)),
+        subscription_year: Number(row.subscription_year) || Number(new Date().toISOString().slice(0, 4)),
+        billing_basis: billingBasis,
+        number_of_days_or_months: billingBasis === 'DAY' ? Number(row.number_of_days_or_months) || 1 : 1,
+        days_in_month: Number(row.days_in_month) || this.daysInSelectedMonth(),
+        received_count: billingBasis === 'DAY' ? Number(row.received_count) || 1 : Number(row.received_count) || 1,
+        start_date: this.dateInputValue(row.start_date),
+        expiry_date: this.dateInputValue(row.expiry_date),
+        collect_date: this.permissions.isAdmin() ? this.dateInputValue(row.collect_date) : new Date().toISOString().slice(0, 10),
+        collected_by_employee_id: row.collected_by_employee_id || null,
+        package_amount: Number(row.package_price || row.amount) || 0,
+        amount: Number(row.amount) || 0,
+        paid_amount: Number(row.paid_amount) || 0,
+        balance_amount: Number(row.balance_amount) || 0,
+        payment_status: row.payment_status || 'PENDING',
+        payment_mode: this.permissions.isAdmin() ? (row.payment_mode || 'CASH') : 'CASH',
+        payment_reference: row.payment_reference || ''
+      }, { emitEvent: false });
+      if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
+      this.form.get('subscription_month')?.disable({ emitEvent: false });
+      this.form.get('subscription_year')?.disable({ emitEvent: false });
+      this.calculateSubscription();
+    }
     if (this.section === 'connections') {
       this.materials.clear();
       (this.details.materials || [])
@@ -289,7 +434,20 @@ export class CableTvCustomerHistory {
 
   save() {
     if (this.section === 'stbs') this.applyStbReasonState();
+    if (this.section === 'subscriptions') this.calculateSubscription();
     this.calculateBalance();
+    if (this.section === 'subscriptions' && this.hasDuplicateSubscriptionPeriod()) {
+      this.commonMethods.handleError({ error: { message: 'Subscription already exists for selected month and year' } });
+      return;
+    }
+    if (this.section === 'subscriptions' && !this.isSubscriptionStatusValid()) {
+      this.commonMethods.handleError({ error: { message: 'Status can be Paid only when balance is exactly 0. Keep status Unpaid when balance is not 0.' } });
+      return;
+    }
+    if (this.section === 'subscriptions' && !this.form.get('collected_by_employee_id')?.value) {
+      this.commonMethods.handleError({ error: { message: 'Collected By employee name is required' } });
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       this.commonMethods.handleError({ error: { message: 'Please fill the required fields before saving' } });
@@ -373,7 +531,10 @@ export class CableTvCustomerHistory {
   }
 
   idFor(row: any) {
-    return Number(row.connection_id || row.customer_stb_id || row.customer_package_id || row.subscription_id);
+    if (this.section === 'connections') return Number(row.connection_id);
+    if (this.section === 'stbs') return Number(row.customer_stb_id);
+    if (this.section === 'packages') return Number(row.customer_package_id);
+    return Number(row.subscription_id);
   }
 
   addMaterialRow() { this.materials.push(this.createMaterialRow()); }
@@ -421,6 +582,186 @@ export class CableTvCustomerHistory {
         - (Number(this.form.get('overall_discount')?.value) || 0);
       this.patchBalance(total);
     }
+  }
+
+  defaultCustomerPackageId() {
+    const activePackage = (this.details.customerPackages || []).find((item: any) => Number(item.is_active) === 1);
+    return activePackage?.customer_package_id || (this.details.customerPackages || [])[0]?.customer_package_id || null;
+  }
+
+  selectedCustomerPackage() {
+    return (this.details.customerPackages || []).find((item: any) => Number(item.customer_package_id) === Number(this.form?.get('customer_package_id')?.value));
+  }
+
+  applySubscriptionPackage() {
+    if (this.section !== 'subscriptions' || !this.form) return;
+    const selected = this.selectedCustomerPackage();
+    const packageAmount = Number(selected?.package_price || selected?.amount || selected?.price) || Number(this.form.get('package_amount')?.value) || 0;
+    this.form.patchValue({ package_amount: packageAmount }, { emitEvent: false });
+    this.calculateSubscription();
+  }
+
+  calculateSubscription() {
+    if (this.section !== 'subscriptions' || !this.form) return;
+    const basis = String(this.form.get('billing_basis')?.value || 'MONTH').toUpperCase();
+    const selectedMonth = Number(this.form.get('subscription_month')?.value) || Number(new Date().toISOString().slice(5, 7));
+    const selectedYear = Number(this.form.get('subscription_year')?.value) || Number(new Date().toISOString().slice(0, 4));
+    const monthFirstDate = this.selectedMonthFirstDate();
+    const monthLastDate = this.monthLastDate(selectedMonth, selectedYear);
+    const rawPeriodCount = basis === 'DAY'
+      ? Math.max(Number(this.form.get('number_of_days_or_months')?.value) || 1, 1)
+      : Math.min(Math.max(Number(this.form.get('number_of_days_or_months')?.value) || 1, 1), 12);
+    const startDate = basis === 'DAY'
+      ? this.form.get('start_date')?.value || monthFirstDate
+      : monthFirstDate;
+    const packageAmount = Number(this.form.get('package_amount')?.value) || 0;
+    const start = new Date(startDate);
+    const month = selectedMonth;
+    const year = selectedYear;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const dayEndDate = basis === 'DAY'
+      ? this.form.get('expiry_date')?.value || this.monthLastDate(month, year)
+      : this.monthLastDate(month, year);
+    const dayCount = basis === 'DAY' ? this.inclusiveDayCount(startDate, dayEndDate) : rawPeriodCount;
+    const periodCount = basis === 'DAY' ? dayCount : rawPeriodCount;
+    const receivedCount = basis === 'YEAR'
+      ? rawPeriodCount * 12
+      : basis === 'MONTH'
+        ? rawPeriodCount
+        : Number((dayCount / daysInMonth).toFixed(2));
+    const amount = basis === 'YEAR'
+      ? packageAmount * receivedCount
+      : basis === 'MONTH'
+        ? packageAmount * receivedCount
+        : (packageAmount / daysInMonth) * periodCount;
+    const roundedAmount = Math.round(amount);
+    const paid = Number(this.form.get('paid_amount')?.value) || 0;
+    const balance = Math.round(roundedAmount - paid);
+    this.form.patchValue({
+      subscription_month: month,
+      subscription_year: year,
+      start_date: startDate,
+      days_in_month: daysInMonth,
+      number_of_days_or_months: periodCount,
+      received_count: receivedCount,
+      amount: roundedAmount,
+      balance_amount: balance,
+      expiry_date: basis === 'DAY' ? dayEndDate : this.subscriptionEndDate(monthFirstDate, basis, periodCount)
+    }, { emitEvent: false });
+    this.applySubscriptionStatusState(balance);
+  }
+
+  selectedMonthFirstDate() {
+    const month = Number(this.form?.get('subscription_month')?.value) || Number(new Date().toISOString().slice(5, 7));
+    const year = Number(this.form?.get('subscription_year')?.value) || Number(new Date().toISOString().slice(0, 4));
+    return `${year}-${String(month).padStart(2, '0')}-01`;
+  }
+
+  today() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  hasDuplicateSubscriptionPeriod() {
+    const month = Number(this.form.get('subscription_month')?.value);
+    const year = Number(this.form.get('subscription_year')?.value);
+    return (this.details.subscriptions || []).some((item: any) =>
+      Number(item.subscription_month) === month
+      && Number(item.subscription_year) === year
+      && Number(item.subscription_id) !== Number(this.editId)
+    );
+  }
+
+  isSubscriptionStatusValid() {
+    const balance = Number(this.form.get('balance_amount')?.value) || 0;
+    const status = String(this.form.get('payment_status')?.value || 'PENDING').toUpperCase();
+    return balance === 0 ? status === 'PAID' : status === 'PENDING';
+  }
+
+  applySubscriptionStatusState(balance: number = Number(this.form?.get('balance_amount')?.value) || 0) {
+    const statusControl = this.form?.get('payment_status');
+    if (!statusControl) return;
+    if (balance !== 0) {
+      statusControl.setValue('PENDING', { emitEvent: false });
+      statusControl.disable({ emitEvent: false });
+      return;
+    }
+    statusControl.setValue('PAID', { emitEvent: false });
+    statusControl.enable({ emitEvent: false });
+  }
+
+  subscriptionEndDate(startDate: string, basis: string, periodCount: number) {
+    const start = new Date(startDate);
+    if (Number.isNaN(start.getTime())) return '';
+    if (basis === 'DAY') {
+      start.setDate(start.getDate() + periodCount - 1);
+      return start.toISOString().slice(0, 10);
+    }
+    const months = basis === 'YEAR' ? periodCount * 12 : periodCount;
+    start.setMonth(start.getMonth() + months);
+    start.setDate(start.getDate() - 1);
+    return start.toISOString().slice(0, 10);
+  }
+
+  subscriptionPeriodLabel(row: any) {
+    const month = this.months.find((item) => Number(item.value) === Number(row.subscription_month))?.label || row.subscription_month || '-';
+    return `${month} - ${row.subscription_year || '-'}`;
+  }
+
+  noOfPeriodLabel(value: any = this.form?.get('number_of_days_or_months')?.value, basis: any = this.form?.get('billing_basis')?.value) {
+    const count = Number(value) || 1;
+    const unit = String(basis || 'MONTH').toLowerCase();
+    const label = unit === 'day' ? 'Days' : unit === 'year' ? 'Year' : 'Month';
+    return `${count}${label}`;
+  }
+
+  daysInSelectedMonth() {
+    const month = Number(this.form?.get('subscription_month')?.value) || Number(new Date().toISOString().slice(5, 7));
+    const year = Number(this.form?.get('subscription_year')?.value) || Number(new Date().toISOString().slice(0, 4));
+    return new Date(year, month, 0).getDate();
+  }
+
+  monthLastDate(month: number, year: number) {
+    return `${year}-${String(month).padStart(2, '0')}-${String(new Date(year, month, 0).getDate()).padStart(2, '0')}`;
+  }
+
+  inclusiveDayCount(startDate: string, endDate: string) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 1;
+    return Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+  }
+
+  monthLabel(value: any) {
+    return this.months.find((item) => Number(item.value) === Number(value))?.label || value || '-';
+  }
+
+  paidAmountWarning() {
+    if (this.section !== 'subscriptions' || !this.form) return '';
+    const paid = Number(this.form.get('paid_amount')?.value) || 0;
+    const amount = Number(this.form.get('amount')?.value) || 0;
+    if (paid === amount) return '';
+    return `Paid amount is not equal to package amount. Balance: ${this.form.get('balance_amount')?.value || 0}`;
+  }
+
+  subscriptionStatusLabel(status: any) {
+    return String(status || '').toUpperCase() === 'PAID' ? 'Paid' : 'Unpaid';
+  }
+
+  subscriptionStatusClass(status: any) {
+    return String(status || '').toUpperCase() === 'PAID' ? 'status-badge paid' : 'status-badge unpaid';
+  }
+
+  subscriptionCollectedByLabel(row: any) {
+    const directName = row?.collected_by_display || row?.collected_by_name;
+    if (directName) return directName;
+    const employee = (this.lookups.employees || []).find((item: any) =>
+      Number(item.employee_id) === Number(row?.collected_by_employee_id)
+    );
+    return employee?.employee_name || employee?.employee_code || '-';
+  }
+
+  subscriptionOverallBalance() {
+    return (this.details.subscriptions || []).reduce((sum: number, item: any) => sum + (Number(item.balance_amount) || 0), 0);
   }
 
   patchBalance(total: number) {

@@ -102,6 +102,20 @@ const getWorkflowApprovals = async (req, res) => {
                 GROUP BY work_order_id
              ) mi ON mi.work_order_id = wo.work_order_id
              JOIN customers c ON c.customer_id = wo.customer_id
+             UNION ALL
+             SELECT CONCAT('CTV-', cag.approval_group_id) AS workflow_id, 'CABLE_TV_CUSTOMER' AS module_name,
+                    c.cable_customer_id AS reference_id, CAST(c.customer_code AS CHAR) AS reference_no,
+                    cag.approval_status AS workflow_status, cag.requested_at, cag.approved_at AS reviewed_at,
+                    cag.group_type AS remarks,
+                    NULL, NULL, c.created_at, NULL, ca.grand_total,
+                    NULL, c.full_name, NULL,
+                    NULL, ca.balance_amount, c.status, c.approval_status, NULL
+             FROM cable_approval_groups cag
+             JOIN cable_tv_customers c ON c.approval_group_id = cag.approval_group_id
+             LEFT JOIN cable_customer_accounts ca ON ca.account_id = (
+                SELECT MAX(account_id) FROM cable_customer_accounts WHERE cable_customer_id = c.cable_customer_id
+             )
+             WHERE cag.approval_status = 'PENDING'
              ORDER BY workflow_status = 'PENDING' DESC, requested_at DESC`
         );
         return res.json(rows);
@@ -116,6 +130,53 @@ const approveWorkflow = async (req, res) => {
     try {
         await ensureWorkflowTable();
         await conn.beginTransaction();
+        const workflowId = String(req.params.workflow_id || '');
+        if (workflowId.startsWith('CTV-')) {
+            const approvalGroupId = Number(workflowId.replace('CTV-', ''));
+            if (!approvalGroupId) throw new Error('Workflow request not found');
+            const [groups] = await conn.query('SELECT * FROM cable_approval_groups WHERE approval_group_id = ? FOR UPDATE', [approvalGroupId]);
+            if (!groups.length) throw new Error('Workflow request not found');
+            if (groups[0].approval_status === 'APPROVED') throw new Error('Workflow request is already approved');
+            const approvedBy = req.body.approved_by_employee_id || req.res?.locals?.userId || req.res?.locals?.user_id || null;
+            const approvalTables = [
+                'cable_tv_customers',
+                'cable_customer_stbs',
+                'cable_connections',
+                'cable_connection_materials',
+                'cable_customer_packages',
+                'cable_subscriptions',
+                'cable_customer_accounts',
+                'cable_customer_stb_accessories'
+            ];
+            for (const table of approvalTables) {
+                await conn.query(
+                    `UPDATE ${table}
+                     SET approval_status = 'APPROVED'
+                     WHERE approval_group_id = ? AND approval_status = 'PENDING'`,
+                    [approvalGroupId]
+                );
+            }
+            await conn.query(
+                `UPDATE cable_tv_customers
+                 SET approved_by_user_id = ?, approved_at = NOW()
+                 WHERE approval_group_id = ?`,
+                [approvedBy, approvalGroupId]
+            );
+            await conn.query(
+                `UPDATE cable_customer_accounts
+                 SET approved_by_user_id = ?, approved_at = NOW()
+                 WHERE approval_group_id = ?`,
+                [approvedBy, approvalGroupId]
+            );
+            await conn.query(
+                `UPDATE cable_approval_groups
+                 SET approval_status = 'APPROVED', approved_by_user_id = ?, approved_at = NOW()
+                 WHERE approval_group_id = ?`,
+                [approvedBy, approvalGroupId]
+            );
+            await conn.commit();
+            return res.json({ success: true, message: 'Cable TV customer approved successfully' });
+        }
         const [rows] = await conn.query('SELECT * FROM workflow_approvals WHERE workflow_id = ? FOR UPDATE', [req.params.workflow_id]);
         if (!rows.length) throw new Error('Workflow request not found');
         const workflow = rows[0];

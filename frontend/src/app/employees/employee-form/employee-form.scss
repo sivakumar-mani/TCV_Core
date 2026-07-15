@@ -3,6 +3,33 @@
   gap: 15px;
 }
 
+.section-title-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-title-row h2 {
+  margin: 0;
+}
+
+.same-address-check {
+  align-items: center;
+  color: #344054;
+  display: inline-flex;
+  font-size: .9rem;
+  font-weight: 600;
+  gap: 8px;
+}
+
+.same-address-check input {
+  height: 16px;
+  width: 16px;
+}
+
 .form-section {
   border: 1px solid #dee2e6;
   border-radius: 6px;

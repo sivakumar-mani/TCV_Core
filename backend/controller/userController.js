@@ -42,8 +42,72 @@ const normalizeStatus = (status) => {
   return String(status).toLowerCase() === 'false' ? 0 : 1;
 };
 
+const ensureUserEmployeeColumn = async (db) => {
+  const [[employeeIdColumn]] = await db.query(
+    `SELECT COUNT(*) AS count
+     FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'employee_id'`
+  );
+  if (!employeeIdColumn.count) {
+    await db.query('ALTER TABLE users ADD COLUMN employee_id INT NULL AFTER user_id');
+  }
+  const [[employeeCodeColumn]] = await db.query(
+    `SELECT COUNT(*) AS count
+     FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'employee_code'`
+  );
+  if (!employeeCodeColumn.count) {
+    await db.query('ALTER TABLE users ADD COLUMN employee_code VARCHAR(50) NULL AFTER employee_id');
+  }
+  try {
+    await db.query('CREATE UNIQUE INDEX idx_users_employee_id ON users (employee_id)');
+  } catch (_error) {
+    // Index may already exist.
+  }
+  const [[constraint]] = await db.query(
+    `SELECT COUNT(*) AS count
+     FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+     WHERE TABLE_SCHEMA = DATABASE()
+       AND TABLE_NAME = 'users'
+       AND COLUMN_NAME = 'employee_id'
+       AND REFERENCED_TABLE_NAME = 'employees'
+       AND REFERENCED_COLUMN_NAME = 'employee_id'`
+  );
+  if (!constraint.count) {
+    await db.query(
+      `ALTER TABLE users
+       ADD CONSTRAINT fk_users_employee
+       FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+       ON UPDATE CASCADE
+       ON DELETE RESTRICT`
+    );
+  }
+  await db.query(
+    `UPDATE users u
+     JOIN employees e ON e.employee_id = u.employee_id
+     SET u.employee_code = e.employee_code
+     WHERE u.employee_id IS NOT NULL
+       AND (u.employee_code IS NULL OR u.employee_code <> e.employee_code)`
+  );
+};
+
+const getEmployeeForUser = async (db, employeeId) => {
+  if (!employeeId) return null;
+  const [[employee]] = await db.query(
+    `SELECT employee_id, employee_code, first_name, last_name, phone, email, is_active
+     FROM employees
+     WHERE employee_id = ?
+     LIMIT 1`,
+    [employeeId]
+  );
+  return employee || null;
+};
+
 const toClientUser = (row) => ({
   userId: row.user_id,
+  employee_id: row.employee_id,
+  employee_code: row.employee_code,
+  employee_name: row.employee_name,
   userName: row.username,
   username: row.username,
   password: row.password,
@@ -63,66 +127,74 @@ const toClientUser = (row) => ({
 const getRequestUsername = (user) => user.username || user.userName;
 
 const signup = async (req, res) => {
-  const user = req.body;
-  const username = getRequestUsername(user);
-  const firstName = user.firstName || user.first_name;
+  const db = connection.promise();
+  try {
+    await ensureUserEmployeeColumn(db);
+    const user = req.body;
+    const username = getRequestUsername(user);
+    const employee = await getEmployeeForUser(db, user.employee_id);
 
-  if (!username || !user.password || !user.email || !firstName) {
-    return res.status(400).json({ message: 'User name, password, email, and first name are required' });
-  }
+    if (!employee) return res.status(400).json({ message: 'Employee must be enrolled before creating user' });
+    if (!username || !user.password) return res.status(400).json({ message: 'User name and password are required' });
+    if (!employee.email) return res.status(400).json({ message: 'Selected employee must have email before creating user' });
 
-  connection.query(
-    'SELECT * FROM users WHERE username = ? OR email = ?',
-    [username, user.email],
-    (error, results) => {
-      if (error) return res.status(500).json({ message: 'User lookup failed', error: error.message });
+    const [results] = await db.query(
+      'SELECT * FROM users WHERE username = ? OR email = ? OR employee_id = ?',
+      [username, employee.email, employee.employee_id]
+    );
 
-      if (results.length > 0) {
-        const existing = results[0];
-        if (existing.username === username && existing.email === user.email) {
-          return res.status(400).json({ message: 'User Name and Email is already exists' });
-        }
-        if (existing.username === username) {
-          return res.status(400).json({ message: 'User Name is already exists' });
-        }
-        if (existing.email === user.email) {
-          return res.status(400).json({ message: 'Email is already exists' });
-        }
+    if (results.length > 0) {
+      const existing = results[0];
+      if (Number(existing.employee_id) === Number(employee.employee_id)) {
+        return res.status(400).json({ message: 'User already exists for selected employee' });
       }
-
-      connection.query(
-        `INSERT INTO users
-         (username, password, email, contact_number, first_name, last_name, date_registered, last_login, role, is_active)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          username,
-          user.password,
-          user.email,
-          user.contactNumber || user.contact_number || null,
-          firstName,
-          user.lastName || user.last_name || null,
-          user.dateRegistered || user.date_registered || new Date(),
-          user.lastLogin || user.last_login || null,
-          normalizeRole(user.role),
-          normalizeStatus(user.Status ?? user.is_active),
-        ],
-        (insertError) => {
-          if (insertError) {
-            return res.status(500).json({ message: 'Insert failed', error: insertError.message });
-          }
-          return res.status(200).json({ message: 'Record updated Successfully' });
-        }
-      );
+      if (existing.username === username) return res.status(400).json({ message: 'User Name is already exists' });
+      if (existing.email === employee.email) return res.status(400).json({ message: 'Email is already exists' });
     }
-  );
+
+    await db.query(
+      `INSERT INTO users
+       (employee_id, employee_code, username, password, email, contact_number, first_name, last_name, date_registered, last_login, role, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        employee.employee_id,
+        employee.employee_code,
+        username,
+        user.password,
+        employee.email,
+        employee.phone || null,
+        employee.first_name,
+        employee.last_name || null,
+        user.dateRegistered || user.date_registered || new Date(),
+        user.lastLogin || user.last_login || null,
+        normalizeRole(user.role),
+        normalizeStatus(user.Status ?? user.is_active),
+      ]
+    );
+    return res.status(200).json({ message: 'Record updated Successfully' });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'User already exists for selected employee' });
+    }
+    return res.status(500).json({ message: 'Insert failed', error: error.message });
+  }
 };
 
 const getAllUser = async (req, res) => {
-  connection.query('SELECT * FROM users ORDER BY user_id DESC', (error, results) => {
-    if (error) return res.status(500).json({ message: 'User list failed', error: error.message });
+  const db = connection.promise();
+  try {
+    await ensureUserEmployeeColumn(db);
+    const [results] = await db.query(
+      `SELECT u.*, COALESCE(u.employee_code, e.employee_code) AS employee_code, CONCAT_WS(' ', e.first_name, e.last_name) AS employee_name
+       FROM users u
+       LEFT JOIN employees e ON e.employee_id = u.employee_id
+       ORDER BY u.user_id DESC`
+    );
     if (results.length <= 0) return res.status(400).json({ message: 'No records found' });
     return res.status(200).json(results.map(toClientUser));
-  });
+  } catch (error) {
+    return res.status(500).json({ message: 'User list failed', error: error.message });
+  }
 };
 
 const login = async (req, res) => {
@@ -150,6 +222,8 @@ const login = async (req, res) => {
 
     const response = {
       userId: existing.user_id,
+      employee_id: existing.employee_id,
+      employee_code: existing.employee_code,
       userName: existing.username,
       username: existing.username,
       role: existing.role,
@@ -248,47 +322,61 @@ const changePassword = async (req, res) => {
 };
 
 const editUser = async (req, res) => {
-  const user = req.body;
-  const userId = user.userId || user.user_id;
-  const username = getRequestUsername(user);
+  const db = connection.promise();
+  try {
+    await ensureUserEmployeeColumn(db);
+    const user = req.body;
+    const userId = user.userId || user.user_id;
+    const username = getRequestUsername(user);
+    const employee = await getEmployeeForUser(db, user.employee_id);
 
-  connection.query(
-    'SELECT * FROM users WHERE (username = ? OR email = ?) AND user_id != ?',
-    [username, user.email, userId],
-    (error, results) => {
-      if (error) return res.status(500).json({ message: 'User lookup failed', error: error.message });
+    if (!userId) return res.status(400).json({ message: 'userId is required' });
+    if (!employee) return res.status(400).json({ message: 'Employee must be enrolled before creating user' });
+    if (!username || !user.password) return res.status(400).json({ message: 'User name and password are required' });
+    if (!employee.email) return res.status(400).json({ message: 'Selected employee must have email before creating user' });
 
-      if (results.length > 0) {
-        const existing = results[0];
-        if (existing.username === username) return res.status(409).json({ message: 'User Name already exists, try another' });
-        if (existing.email === user.email) return res.status(409).json({ message: 'Email already exists, try another' });
+    const [results] = await db.query(
+      'SELECT * FROM users WHERE (username = ? OR email = ? OR employee_id = ?) AND user_id != ?',
+      [username, employee.email, employee.employee_id, userId]
+    );
+
+    if (results.length > 0) {
+      const existing = results[0];
+      if (Number(existing.employee_id) === Number(employee.employee_id)) {
+        return res.status(409).json({ message: 'User already exists for selected employee' });
       }
-
-      connection.query(
-        `UPDATE users SET
-           username = ?, password = ?, email = ?, contact_number = ?, first_name = ?, last_name = ?,
-           date_registered = COALESCE(?, date_registered), last_login = COALESCE(?, last_login), role = ?, is_active = ?
-         WHERE user_id = ?`,
-        [
-          username,
-          user.password,
-          user.email,
-          user.contactNumber || user.contact_number || null,
-          user.firstName || user.first_name,
-          user.lastName || user.last_name || null,
-          user.dateRegistered || user.date_registered || null,
-          user.lastLogin || user.last_login || null,
-          normalizeRole(user.role),
-          normalizeStatus(user.Status ?? user.is_active),
-          userId,
-        ],
-        (updateError) => {
-          if (updateError) return res.status(500).json({ message: 'User update failed', error: updateError.message });
-          return res.status(200).json({ message: 'User record updated successfully' });
-        }
-      );
+      if (existing.username === username) return res.status(409).json({ message: 'User Name already exists, try another' });
+      if (existing.email === employee.email) return res.status(409).json({ message: 'Email already exists, try another' });
     }
-  );
+
+    await db.query(
+      `UPDATE users SET
+         employee_id = ?, employee_code = ?, username = ?, password = ?, email = ?, contact_number = ?, first_name = ?, last_name = ?,
+         date_registered = COALESCE(?, date_registered), last_login = COALESCE(?, last_login), role = ?, is_active = ?
+       WHERE user_id = ?`,
+      [
+        employee.employee_id,
+        employee.employee_code,
+        username,
+        user.password,
+        employee.email,
+        employee.phone || null,
+        employee.first_name,
+        employee.last_name || null,
+        user.dateRegistered || user.date_registered || null,
+        user.lastLogin || user.last_login || null,
+        normalizeRole(user.role),
+        normalizeStatus(user.Status ?? user.is_active),
+        userId,
+      ]
+    );
+    return res.status(200).json({ message: 'User record updated successfully' });
+  } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ message: 'User already exists for selected employee' });
+    }
+    return res.status(500).json({ message: 'User update failed', error: error.message });
+  }
 };
 
 const deleteUser = async (req, res) => {

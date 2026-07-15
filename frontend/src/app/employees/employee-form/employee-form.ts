@@ -113,7 +113,7 @@ export class EmployeeForm {
       email: ['', Validators.email],
       designation: ['', Validators.required],
       department: ['SERVICE', Validators.required],
-      date_of_birth: ['', Validators.required],
+      date_of_birth: ['', [Validators.required, this.minimumAgeValidator(18)]],
       qualification: ['', Validators.required],
       photo: [''],
       spouse_or_parent_name: ['', Validators.required],
@@ -133,6 +133,7 @@ export class EmployeeForm {
       temporary_city_district: [''],
       temporary_state: [''],
       temporary_pincode: [''],
+      same_as_permanent: [false],
       is_active: [1, Validators.required]
     });
   }
@@ -165,6 +166,21 @@ export class EmployeeForm {
   }
 
   setupLocationDependencies() {
+    ['permanent_address', 'permanent_state', 'permanent_city_district', 'permanent_pincode'].forEach((field) => {
+      this.employeeForm.get(field)?.valueChanges.subscribe(() => {
+        if (this.employeeForm.get('same_as_permanent')?.value) this.copyPermanentAddress();
+      });
+    });
+
+    this.employeeForm.get('same_as_permanent')?.valueChanges.subscribe((same) => {
+      if (same) {
+        this.copyPermanentAddress();
+        this.setTemporaryAddressDisabled(true);
+      } else {
+        this.setTemporaryAddressDisabled(false);
+      }
+    });
+
     this.employeeForm.get('permanent_state')?.valueChanges.subscribe((stateName) => {
       this.loadDistrictOptions(stateName, 'permanent');
     });
@@ -172,6 +188,43 @@ export class EmployeeForm {
     this.employeeForm.get('temporary_state')?.valueChanges.subscribe((stateName) => {
       this.loadDistrictOptions(stateName, 'temporary');
     });
+  }
+
+  minimumAgeValidator(minAge: number) {
+    return (control: any) => {
+      if (!control.value) return null;
+      const dob = control.value instanceof Date ? control.value : new Date(control.value);
+      if (Number.isNaN(dob.getTime())) return { minimumAge: true };
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+      return age >= minAge ? null : { minimumAge: true };
+    };
+  }
+
+  copyPermanentAddress() {
+    this.employeeForm.patchValue({
+      temporary_address: this.employeeForm.get('permanent_address')?.value || '',
+      temporary_state: this.employeeForm.get('permanent_state')?.value || '',
+      temporary_city_district: this.employeeForm.get('permanent_city_district')?.value || '',
+      temporary_pincode: this.employeeForm.get('permanent_pincode')?.value || ''
+    }, { emitEvent: false });
+    this.loadDistrictOptions(this.employeeForm.get('permanent_state')?.value, 'temporary');
+  }
+
+  setTemporaryAddressDisabled(disabled: boolean) {
+    ['temporary_address', 'temporary_state', 'temporary_city_district', 'temporary_pincode'].forEach((field) => {
+      const control = this.employeeForm.get(field);
+      disabled ? control?.disable({ emitEvent: false }) : control?.enable({ emitEvent: false });
+    });
+  }
+
+  applySameAddressFromLoadedData(data: any) {
+    const same = ['address', 'state', 'city_district', 'pincode'].every((field) =>
+      String(data[`temporary_${field}`] || '') === String(data[`permanent_${field}`] || '')
+    );
+    this.employeeForm.patchValue({ same_as_permanent: same }, { emitEvent: true });
   }
 
   loadDistrictOptions(stateName: string, addressType: 'permanent' | 'temporary') {
@@ -214,6 +267,7 @@ export class EmployeeForm {
         data.date_of_birth = this.toDatePickerValue(data.date_of_birth);
         data.joining_date = this.toDatePickerValue(data.joining_date);
         this.employeeForm.patchValue(data);
+        this.applySameAddressFromLoadedData(data);
         this.selectedPhotoName = data.photo_file_name || '';
         this.photoPreview = this.getPhotoUrl(data.photo_path);
       },
@@ -286,6 +340,7 @@ export class EmployeeForm {
       return;
     }
 
+    if (this.employeeForm.get('same_as_permanent')?.value) this.copyPermanentAddress();
     this.ngxLoader.start();
     const formData = this.employeeForm.getRawValue();
     const payload = {

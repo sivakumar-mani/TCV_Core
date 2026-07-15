@@ -2,7 +2,7 @@
   <nav class="breadcrumb-line">
     <a routerLink="/dashboard">Home</a><span>/</span>
     <a routerLink="/cable-tv/customers">Cable TV Customers</a><span>/</span>
-    <strong>{{ title }}</strong>
+    <strong>Customer Details</strong>
   </nav>
 
   <section class="customer-summary-card">
@@ -18,8 +18,13 @@
         </div>
       </div>
       <div class="summary-actions">
+        <label class="customer-jump">Customer No
+          <span>
+            <input type="search" [(ngModel)]="customerSearchNo" (keyup.enter)="searchCustomerByNumber()" placeholder="Customer No">
+            <button type="button" class="secondary-btn search-btn" (click)="searchCustomerByNumber()"><mat-icon>search</mat-icon></button>
+          </span>
+        </label>
         <button type="button" class="secondary-btn back-btn" (click)="goBack()"><mat-icon>arrow_back</mat-icon>Back</button>
-        <button type="button" class="primary-btn add-btn" (click)="openAdd()"><mat-icon>note_add</mat-icon>{{ addButtonLabel }}</button>
       </div>
     </div>
     <div class="summary-grid">
@@ -46,9 +51,20 @@
     </div>
   </section>
 
+  <nav class="detail-tabs" aria-label="Cable TV customer detail sections">
+    <button
+      *ngFor="let tab of tabs"
+      type="button"
+      [class.active]="section === tab.key"
+      (click)="switchSection(tab.key)">
+      {{ tab.label }}
+    </button>
+  </nav>
+
   <section class="form-section">
     <div class="section-title-row">
       <h2>{{ title }}</h2>
+      <button type="button" class="primary-btn add-btn" (click)="openAdd()"><mat-icon>note_add</mat-icon>{{ addButtonLabel }}</button>
     </div>
     <div class="history-table">
       <table>
@@ -75,11 +91,15 @@
             <th *ngIf="section === 'packages'">End Date</th>
             <th *ngIf="section === 'packages'">Updated By</th>
             <th *ngIf="section === 'packages'">Status</th>
-            <th *ngIf="section === 'subscriptions'">Month</th>
-            <th *ngIf="section === 'subscriptions'">Year</th>
+            <th *ngIf="section === 'subscriptions'">Period</th>
+            <th *ngIf="section === 'subscriptions'">Collected Date</th>
+            <th *ngIf="section === 'subscriptions'">Collected By</th>
+            <th *ngIf="section === 'subscriptions'">No of Period</th>
+            <th *ngIf="section === 'subscriptions'">Start Date</th>
+            <th *ngIf="section === 'subscriptions'">End Date</th>
             <th *ngIf="section === 'subscriptions'">Amount</th>
             <th *ngIf="section === 'subscriptions'">Balance</th>
-            <th>Approval</th>
+            <th>Status</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -106,19 +126,34 @@
             <td *ngIf="section === 'packages'">{{ row.end_date | date:'yyyy-MM-dd' }}</td>
             <td *ngIf="section === 'packages'">{{ row.updated_by_name || '-' }}</td>
             <td *ngIf="section === 'packages'">{{ packageStatusLabel(row) }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ row.subscription_month }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ row.subscription_year }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ subscriptionPeriodLabel(row) }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ row.collect_date | date:'yyyy-MM-dd' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ subscriptionCollectedByLabel(row) }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ noOfPeriodLabel(row.number_of_days_or_months, row.billing_basis) }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ row.start_date | date:'yyyy-MM-dd' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ row.expiry_date | date:'yyyy-MM-dd' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.amount }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.balance_amount }}</td>
-            <td>{{ row.approval_status }}</td>
+            <td>
+              <span [ngClass]="section === 'subscriptions' ? subscriptionStatusClass(row.payment_status) : ''">
+                {{ section === 'subscriptions' ? subscriptionStatusLabel(row.payment_status) : row.approval_status }}
+              </span>
+            </td>
             <td class="actions">
               <button *ngIf="section === 'packages' && row.is_active == 1" type="button" class="table-icon-btn deactivate" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)"><mat-icon>block</mat-icon></button>
-              <button type="button" class="table-icon-btn edit" title="Edit" aria-label="Edit" (click)="edit(row)"><mat-icon>edit</mat-icon></button>
+              <button type="button" class="table-icon-btn edit" title="Edit" aria-label="Edit" (click)="edit(row)"><mat-icon>edit_square</mat-icon></button>
               <button type="button" class="table-icon-btn delete" title="Delete" aria-label="Delete" (click)="delete(row)"><mat-icon>delete</mat-icon></button>
             </td>
           </tr>
           <tr *ngIf="!rows.length"><td colspan="8" class="empty-row">No records added yet.</td></tr>
         </tbody>
+        <tfoot *ngIf="section === 'subscriptions' && rows.length">
+          <tr>
+            <td colspan="7" class="total-label">Overall Balance</td>
+            <td class="total-value">{{ subscriptionOverallBalance() | number:'1.2-2' }}</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </section>
@@ -211,7 +246,7 @@
           <label class="checkbox-card" *ngFor="let accessory of stbAccessories.controls; let i = index" [formGroupName]="i">
             <input type="checkbox" formControlName="selected">
             <span>
-              <strong>{{ accessory.get('product_name')?.value }}</strong>
+              <strong>{{ accessoryDisplayName(accessory.get('product_name')?.value) }}</strong>
               <small>Stock: {{ accessory.get('available_qty')?.value | number:'1.0-2' }} {{ accessory.get('unit')?.value }}</small>
             </span>
           </label>
@@ -250,16 +285,46 @@
       </div>
 
       <div class="form-grid" *ngIf="section === 'subscriptions'">
-        <label>Package<select formControlName="customer_package_id"><option [ngValue]="null">Select package</option><option *ngFor="let item of details.customerPackages || []" [ngValue]="item.customer_package_id">{{ item.package_id }} - {{ item.package_price }}</option></select></label>
-        <label>Month<select formControlName="subscription_month"><option *ngFor="let month of months" [ngValue]="month.value">{{ month.label }}</option></select></label>
-        <label>Year<input type="number" formControlName="subscription_year"></label>
-        <label>Start Date<input type="date" formControlName="start_date"></label>
-        <label>Expiry Date<input type="date" formControlName="expiry_date"></label>
-        <label>Amount<input type="number" formControlName="amount"></label>
-        <label>Paid<input type="number" formControlName="paid_amount"></label>
-        <label>Balance<input type="number" formControlName="balance_amount"></label>
-        <label>Due Date<input type="date" formControlName="due_date"></label>
-        <label>Payment Mode<select formControlName="payment_mode"><option>CASH</option><option>UPI</option><option>CARD</option><option>BANK</option><option>CHEQUE</option></select></label>
+        <label>Month / Year
+          <div class="month-year-control">
+            <select formControlName="subscription_month">
+              <option *ngFor="let month of months" [ngValue]="month.value">{{ month.label }}</option>
+            </select>
+            <select formControlName="subscription_year">
+              <option *ngFor="let year of yearOptions" [ngValue]="year">{{ year }}</option>
+            </select>
+          </div>
+        </label>
+        <label>No of Period / Count
+          <div class="period-control">
+            <select *ngIf="form.get('billing_basis')?.value !== 'DAY'" formControlName="number_of_days_or_months">
+              <option *ngFor="let count of periodCountOptions" [ngValue]="count">{{ count }}</option>
+            </select>
+            <input *ngIf="form.get('billing_basis')?.value === 'DAY'" type="number" formControlName="number_of_days_or_months" readonly>
+            <select formControlName="billing_basis">
+              <option *ngFor="let basis of billingBasisOptions" [ngValue]="basis">{{ basis }}</option>
+            </select>
+            <input type="number" formControlName="received_count" readonly title="Count">
+          </div>
+        </label>
+        <label>Start Date<input type="date" formControlName="start_date" [readonly]="form.get('billing_basis')?.value !== 'DAY'"></label>
+        <label>End Date<input type="date" formControlName="expiry_date" [readonly]="form.get('billing_basis')?.value !== 'DAY'"></label>
+        <label>Subscription Amount<input type="number" formControlName="amount" readonly></label>
+        <label>Paid Amount<input type="number" formControlName="paid_amount"></label>
+        <label>Balance<input type="number" formControlName="balance_amount" readonly></label>
+        <label>Status
+          <select formControlName="payment_status">
+            <option value="PENDING">Unpaid</option>
+            <option value="PAID">Paid</option>
+          </select>
+        </label>
+        <label *ngIf="permissions.isAdmin()">Collected Date<input type="date" formControlName="collect_date"></label>
+        <label *ngIf="!permissions.isAdmin()">Collected Date<input type="date" formControlName="collect_date" readonly></label>
+        <label *ngIf="permissions.isAdmin()">Collected By<select formControlName="collected_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
+        <label *ngIf="!permissions.isAdmin()">Collected By<input type="text" [value]="loggedInEmployeeName" disabled></label>
+        <label *ngIf="permissions.isAdmin()">Mode of Payment<select formControlName="payment_mode"><option *ngFor="let mode of paymentModes" [ngValue]="mode">{{ mode }}</option></select></label>
+        <label *ngIf="!permissions.isAdmin()">Mode of Payment<input type="text" formControlName="payment_mode"></label>
+        <label *ngIf="form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE'">Received ID / Name<input type="text" formControlName="payment_reference"></label>
       </div>
 
       <div class="form-actions">

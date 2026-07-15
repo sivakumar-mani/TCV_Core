@@ -20,10 +20,13 @@ const permissionCatalog = [
   ['HR Process', 'EMPLOYEE_ATTENDANCE', 'Employee Attendance', '/employee-attendance'],
   ['HR Process', 'EMPLOYEE_SALARY', 'Employee Salary', '/employee-salary'],
   ['Administration', 'WORKFLOW_APPROVAL', 'Workflow Approvals', '/workflow-approval'],
-  ['Administration', 'CABLE_TV_MASTERS', 'Cable TV Masters', '/cable-tv-masters'],
+  ['Administration', 'CABLE_TV_MASTERS', 'Location Info', '/cable-tv-masters'],
+  ['Administration', 'CABLE_TV_PACKAGES', 'Package List', '/cable-tv-packages'],
+  ['Administration', 'CABLE_TV_STBS', 'STB Master', '/cable-tv-stbs'],
   ['Administration', 'USERS', 'Users', '/users'],
   ['Administration', 'AUDIT_LOGS', 'Audit Logs', '/audit-logs'],
   ['Administration', 'ROLE_PERMISSIONS', 'Role Permissions', '/role-permissions'],
+  ['Accounts', 'CABLE_TV_ACCOUNTS', 'Pending Accounts', '/cable-tv-account-pending'],
 ].map(([group, key, label, route]) => ({ group, key, label, route }));
 
 const apiModules = {

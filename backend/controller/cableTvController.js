@@ -63,6 +63,21 @@ const safeLookup = async (db, sql, values = []) => {
   }
 };
 
+const existingColumns = async (db, tableName, columnNames) => {
+  if (!columnNames.length) return new Set();
+  try {
+    const [rows] = await db.query(
+      `SELECT COLUMN_NAME AS column_name
+       FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME IN (?)`,
+      [tableName, columnNames]
+    );
+    return new Set(rows.map((row) => row.column_name));
+  } catch (_error) {
+    return new Set();
+  }
+};
+
 const ensureCableTvExtendedTables = async (db) => {
   await db.query(`
     CREATE TABLE IF NOT EXISTS cable_stb_master (
@@ -192,6 +207,11 @@ const ensureCableTvExtendedTables = async (db) => {
   } catch (_error) {
     // Existing installations may already have the expanded enum.
   }
+  try {
+    await db.query("ALTER TABLE cable_subscriptions MODIFY payment_mode ENUM('CASH','ONLINE','OFFICE','UPI','CARD','BANK','CHEQUE') NULL");
+  } catch (_error) {
+    // Older installations may not need this alteration or may be mid-migration.
+  }
 
   const [[connectionDiscountColumn]] = await db.query(
     `SELECT COUNT(*) AS count
@@ -320,6 +340,24 @@ const ensureCableTvExtendedTables = async (db) => {
     );
     if (!column.count) await db.query(alterSql);
   }
+
+  const subscriptionColumns = [
+    ['payment_reference', 'ALTER TABLE cable_subscriptions ADD COLUMN payment_reference VARCHAR(150) NULL AFTER payment_mode'],
+    ['received_count', 'ALTER TABLE cable_subscriptions ADD COLUMN received_count DECIMAL(8,2) NOT NULL DEFAULT 1 AFTER number_of_days_or_months']
+  ];
+  for (const [columnName, alterSql] of subscriptionColumns) {
+    try {
+      const [[column]] = await db.query(
+        `SELECT COUNT(*) AS count
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_subscriptions' AND COLUMN_NAME = ?`,
+        [columnName]
+      );
+      if (!column.count) await db.query(alterSql);
+    } catch (_error) {
+      // Keep older installations usable even if optional subscription columns cannot be added immediately.
+    }
+  }
 };
 
 const resolveSourceId = async (db, value) => {
@@ -334,6 +372,8 @@ const resolveSourceId = async (db, value) => {
 
 const resolveEmployeeId = async (db, req, payloadEmployeeId) => {
   if (isAdmin(req)) return intOrNull(payloadEmployeeId);
+  const tokenEmployeeId = intOrNull(req.res?.locals?.employee_id);
+  if (tokenEmployeeId) return tokenEmployeeId;
   const username = req.res?.locals?.username || req.res?.locals?.userName;
   if (!username) return intOrNull(payloadEmployeeId);
   const [[employee]] = await db.query(
@@ -483,7 +523,7 @@ const addPendingAccount = async (db, req, data) => {
   const subscriptionAmount = money(data.subscription_amount);
   const discount = money(data.discount) + materialDiscount;
   const overallDiscount = money(data.overall_discount);
-  const subTotal = money(data.sub_total || (stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount));
+  const subTotal = money(data.sub_total || (stbAmount + connectionAmount + materialCost + subscriptionAmount));
   const grandTotal = Math.max(money(data.grand_total || (subTotal - discount - overallDiscount)), 0);
   const paidAmount = money(data.customer_paid_amount);
   const balanceAmount = Math.max(grandTotal - paidAmount, 0);
@@ -538,16 +578,18 @@ const getLookups = async (_req, res) => {
     );
     const employees = await safeLookup(db,
       `SELECT employee_id, employee_code,
-              CONCAT_WS(' ', first_name, last_name) AS employee_name
+              COALESCE(NULLIF(TRIM(CONCAT_WS(' ', first_name, last_name)), ''), employee_code) AS employee_name
        FROM employees
        WHERE is_active = 1
        ORDER BY first_name, last_name`
     );
     const products = await safeLookup(db,
-      `SELECT product_id, product_name, unit, selling_price
-       FROM products
-       WHERE status = 'ACTIVE'
-       ORDER BY product_name`
+      `SELECT p.product_id, p.product_name, p.unit, p.selling_price,
+              COALESCE(sm.available_qty, 0) AS available_qty
+       FROM products p
+       LEFT JOIN stock_master sm ON sm.product_id = p.product_id
+       WHERE p.status = 'ACTIVE'
+       ORDER BY p.product_name`
     );
     const stbAccessories = await safeLookup(db,
       `SELECT p.product_id, p.product_name, p.unit, p.selling_price,
@@ -1028,6 +1070,7 @@ const getPendingAccounts = async (_req, res) => {
 
 const receiveAccount = async (req, res) => {
   try {
+    if (!isAdmin(req)) return res.status(403).json({ message: 'Administrator permission is required' });
     const db = connection.promise();
     await ensureCableTvExtendedTables(db);
     const accountId = Number(req.params.accountId);
@@ -1056,7 +1099,7 @@ const getCableCustomers = async (req, res) => {
   try {
     const db = connection.promise();
     await ensureCableTvExtendedTables(db);
-    const status = req.query.approval_status || 'APPROVED';
+    const status = req.query.approval_status || 'ALL';
     const values = [];
     let where = 'WHERE 1 = 1';
 
@@ -1181,7 +1224,23 @@ const getCableCustomerById = async (req, res) => {
        ORDER BY cp.customer_package_id DESC`,
       [id]
     );
-    const [subscriptions] = await db.query('SELECT * FROM cable_subscriptions WHERE cable_customer_id = ? ORDER BY subscription_year DESC, subscription_month DESC', [id]);
+    const [subscriptions] = await db.query(
+      `SELECT sub.*, cp.package_price, pkg.package_name, pkg.package_type,
+              NULLIF(TRIM(CONCAT_WS(' ', collected.first_name, collected.last_name)), '') AS collected_by_name,
+              collected.employee_code AS collected_by_code,
+              COALESCE(
+                NULLIF(TRIM(CONCAT_WS(' ', collected.first_name, collected.last_name)), ''),
+                collected.employee_code,
+                CAST(sub.collected_by_employee_id AS CHAR)
+              ) AS collected_by_display
+       FROM cable_subscriptions sub
+       LEFT JOIN cable_customer_packages cp ON cp.customer_package_id = sub.customer_package_id
+       LEFT JOIN cable_package_master pkg ON pkg.package_id = cp.package_id
+       LEFT JOIN employees collected ON collected.employee_id = sub.collected_by_employee_id
+       WHERE sub.cable_customer_id = ?
+       ORDER BY sub.subscription_year DESC, sub.subscription_month DESC, sub.subscription_id DESC`,
+      [id]
+    );
     const [accounts] = await db.query('SELECT * FROM cable_customer_accounts WHERE cable_customer_id = ? ORDER BY account_id DESC', [id]);
 
     return res.json({ customer, stbs, stbAccessories, connections, materials, customerPackages, subscriptions, accounts });
@@ -1423,7 +1482,7 @@ const addCableCustomer = async (req, res) => {
     const materialDiscount = money(accountPayload.material_discount);
     const overallDiscount = money(accountPayload.overall_discount);
     const discount = money(payload.stb?.stb_discount) + money(payload.connection?.connection_discount) + materialDiscount + overallDiscount;
-    const subTotal = money(accountPayload.sub_total || (accountStbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount));
+    const subTotal = money(accountPayload.sub_total || (accountStbAmount + connectionAmount + materialCost + subscriptionAmount));
     const grandTotal = money(accountPayload.grand_total || (subTotal - discount));
     const normalizedGrandTotal = Math.max(grandTotal, 0);
     const customerPaidAmount = money(accountPayload.customer_paid_amount);
@@ -1913,6 +1972,7 @@ const deleteCustomerPackage = async (req, res) => {
 const addCustomerSubscription = async (req, res) => {
   const db = connection.promise();
   try {
+    await ensureCableTvExtendedTables(db);
     await db.beginTransaction();
     const cableCustomerId = Number(req.params.id);
     const payload = req.body || {};
@@ -1921,34 +1981,90 @@ const addCustomerSubscription = async (req, res) => {
     const start = new Date(startDate);
     const subscriptionMonth = Number(payload.subscription_month) || start.getMonth() + 1;
     const subscriptionYear = Number(payload.subscription_year) || start.getFullYear();
+    const [[duplicateSubscription]] = await db.query(
+      `SELECT subscription_id
+       FROM cable_subscriptions
+       WHERE cable_customer_id = ? AND subscription_month = ? AND subscription_year = ?
+       LIMIT 1`,
+      [cableCustomerId, subscriptionMonth, subscriptionYear]
+    );
+    if (duplicateSubscription) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Subscription already exists for selected month and year' });
+    }
     const monthDays = Number(payload.days_in_month) || daysInMonth(subscriptionMonth, subscriptionYear);
     const expiryDate = payload.expiry_date || `${subscriptionYear}-${String(subscriptionMonth).padStart(2, '0')}-${monthDays}`;
     const numberOfDays = money(payload.number_of_days_or_months || inclusiveDays(startDate, expiryDate));
-    const amount = money(payload.amount);
+    const receivedCount = money(payload.received_count || (String(payload.billing_basis || '').toUpperCase() === 'YEAR'
+      ? numberOfDays * 12
+      : String(payload.billing_basis || '').toUpperCase() === 'DAY'
+        ? numberOfDays / monthDays
+        : numberOfDays));
+    const [[customerPackage]] = await db.query(
+      `SELECT cp.package_price, pkg.price AS master_price
+       FROM cable_customer_packages cp
+       LEFT JOIN cable_package_master pkg ON pkg.package_id = cp.package_id
+       WHERE cp.customer_package_id = ? AND cp.cable_customer_id = ?
+       LIMIT 1`,
+      [payload.customer_package_id, cableCustomerId]
+    );
+    const packageAmount = money(payload.package_amount ?? customerPackage?.package_price ?? customerPackage?.master_price);
+    const amount = money(payload.amount || packageAmount);
     const paidAmount = money(payload.paid_amount);
     const balanceAmount = money(payload.balance_amount ?? amount - paidAmount);
+    const paymentStatus = String(payload.payment_status || 'PENDING').toUpperCase() === 'PAID' ? 'PAID' : 'PENDING';
+    if ((balanceAmount === 0 && paymentStatus !== 'PAID') || (balanceAmount !== 0 && paymentStatus !== 'PENDING')) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Status can be Paid only when balance is exactly 0. Keep status Unpaid when balance is not 0.' });
+    }
     const employeeId = await resolveEmployeeId(db, req, payload.collected_by_employee_id);
+    if (!employeeId) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Collected By employee name is required' });
+    }
+    const paymentMode = isAdmin(req) ? nullable(payload.payment_mode || 'CASH') : 'CASH';
+    const collectDate = isAdmin(req) ? nullable(payload.collect_date) : dateOnly(new Date());
+    const optionalColumns = await existingColumns(db, 'cable_subscriptions', ['payment_reference', 'received_count']);
+    const subscriptionColumns = [
+      'approval_group_id', 'cable_customer_id', 'customer_package_id', 'subscription_month', 'subscription_year',
+      'days_in_month', 'billing_basis', 'number_of_days_or_months'
+    ];
+    const subscriptionValues = [
+      approvalGroupId, cableCustomerId, Number(payload.customer_package_id), subscriptionMonth, subscriptionYear,
+      monthDays, payload.billing_basis || 'MONTH', numberOfDays
+    ];
+    if (optionalColumns.has('received_count')) {
+      subscriptionColumns.push('received_count');
+      subscriptionValues.push(receivedCount);
+    }
+    subscriptionColumns.push(
+      'amount', 'paid_amount', 'balance_amount', 'collect_date', 'start_date', 'expiry_date',
+      'collected_by_employee_id', 'payment_mode'
+    );
+    subscriptionValues.push(
+      amount, paidAmount, balanceAmount, collectDate, dateOnly(startDate), dateOnly(expiryDate),
+      employeeId, paymentMode
+    );
+    if (optionalColumns.has('payment_reference')) {
+      subscriptionColumns.push('payment_reference');
+      subscriptionValues.push(nullable(payload.payment_reference || payload.received_id || payload.received_name));
+    }
+    subscriptionColumns.push('payment_status', 'approval_status', 'remarks', 'created_by_user_id');
+    subscriptionValues.push(
+      paymentStatus,
+      approvalStatus, nullable(payload.remarks), createdBy
+    );
     await db.query(
-      `INSERT INTO cable_subscriptions (
-        approval_group_id, cable_customer_id, customer_package_id, subscription_month, subscription_year,
-        days_in_month, billing_basis, number_of_days_or_months, amount, paid_amount, balance_amount,
-        collect_date, start_date, expiry_date, collected_by_employee_id, payment_mode, payment_status,
-        approval_status, remarks, created_by_user_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        approvalGroupId, cableCustomerId, Number(payload.customer_package_id), subscriptionMonth, subscriptionYear,
-        monthDays, payload.billing_basis || 'DAY', numberOfDays, amount, paidAmount, balanceAmount,
-        nullable(payload.collect_date), dateOnly(startDate), dateOnly(expiryDate), employeeId,
-        nullable(payload.payment_mode), balanceAmount <= 0 ? 'PAID' : paidAmount > 0 ? 'PARTIAL' : 'PENDING',
-        approvalStatus, nullable(payload.remarks), createdBy
-      ]
+      `INSERT INTO cable_subscriptions (${subscriptionColumns.join(', ')})
+       VALUES (${subscriptionColumns.map(() => '?').join(', ')})`,
+      subscriptionValues
     );
     await addPendingAccount(db, req, {
       approval_group_id: approvalGroupId,
       cable_customer_id: cableCustomerId,
       subscription_amount: amount,
       customer_paid_amount: paidAmount,
-      due_date: payload.due_date,
+      due_date: null,
       approval_status: approvalStatus,
       created_by_user_id: createdBy
     });
@@ -1962,20 +2078,85 @@ const addCustomerSubscription = async (req, res) => {
 
 const updateCustomerSubscription = async (req, res) => {
   try {
-    await connection.promise().query(
-      `UPDATE cable_subscriptions
-       SET subscription_month = ?, subscription_year = ?, amount = ?, paid_amount = ?,
-           balance_amount = ?, collect_date = ?, start_date = ?, expiry_date = ?,
-           payment_mode = ?, payment_status = ?, remarks = ?, updated_at = NOW()
-       WHERE subscription_id = ? AND cable_customer_id = ?`,
-      [
-        Number(req.body.subscription_month), Number(req.body.subscription_year), money(req.body.amount),
-        money(req.body.paid_amount), money(req.body.balance_amount), nullable(req.body.collect_date),
-        nullable(req.body.start_date), nullable(req.body.expiry_date), nullable(req.body.payment_mode),
-        req.body.payment_status || 'PENDING', nullable(req.body.remarks),
-        Number(req.params.subscriptionId), Number(req.params.id)
-      ]
+    const db = connection.promise();
+    await ensureCableTvExtendedTables(db);
+    const subscriptionMonth = Number(req.body.subscription_month);
+    const subscriptionYear = Number(req.body.subscription_year);
+    const subscriptionId = Number(req.params.subscriptionId);
+    const cableCustomerId = Number(req.params.id);
+    const [[existingSubscription]] = await db.query(
+      `SELECT subscription_id
+       FROM cable_subscriptions
+       WHERE cable_customer_id = ? AND subscription_id = ?
+       LIMIT 1`,
+      [cableCustomerId, subscriptionId]
     );
+    if (!existingSubscription) {
+      return res.status(404).json({ message: 'Subscription record not found for update' });
+    }
+    const [[duplicateSubscription]] = await db.query(
+      `SELECT subscription_id
+       FROM cable_subscriptions
+       WHERE cable_customer_id = ? AND subscription_month = ? AND subscription_year = ? AND subscription_id <> ?
+       LIMIT 1`,
+      [cableCustomerId, subscriptionMonth, subscriptionYear, subscriptionId]
+    );
+    if (duplicateSubscription) {
+      return res.status(400).json({ message: 'Subscription already exists for selected month and year' });
+    }
+    const amount = money(req.body.amount);
+    const paidAmount = money(req.body.paid_amount);
+    const balanceAmount = money(req.body.balance_amount ?? amount - paidAmount);
+    const paymentStatus = String(req.body.payment_status || 'PENDING').toUpperCase() === 'PAID' ? 'PAID' : 'PENDING';
+    if ((balanceAmount === 0 && paymentStatus !== 'PAID') || (balanceAmount !== 0 && paymentStatus !== 'PENDING')) {
+      return res.status(400).json({ message: 'Status can be Paid only when balance is exactly 0. Keep status Unpaid when balance is not 0.' });
+    }
+    const receivedCount = money(req.body.received_count || 1);
+    const employeeId = await resolveEmployeeId(db, req, req.body.collected_by_employee_id);
+    if (!employeeId) {
+      return res.status(400).json({ message: 'Collected By employee name is required' });
+    }
+    const paymentMode = isAdmin(req) ? nullable(req.body.payment_mode || 'CASH') : 'CASH';
+    const collectDate = isAdmin(req) ? nullable(req.body.collect_date) : dateOnly(new Date());
+    const optionalColumns = await existingColumns(db, 'cable_subscriptions', ['payment_reference', 'received_count']);
+    const setClauses = [
+      'subscription_month = ?', 'subscription_year = ?', 'amount = ?', 'paid_amount = ?',
+      'balance_amount = ?', 'collect_date = ?', 'start_date = ?', 'expiry_date = ?',
+      'days_in_month = ?', 'billing_basis = ?', 'number_of_days_or_months = ?', 'collected_by_employee_id = ?'
+    ];
+    const values = [
+      subscriptionMonth, subscriptionYear, amount,
+      paidAmount, balanceAmount, collectDate,
+      nullable(req.body.start_date), nullable(req.body.expiry_date),
+      Number(req.body.days_in_month) || daysInMonth(subscriptionMonth, subscriptionYear),
+      req.body.billing_basis || 'MONTH', money(req.body.number_of_days_or_months || 1), employeeId
+    ];
+    if (optionalColumns.has('received_count')) {
+      setClauses.push('received_count = ?');
+      values.push(receivedCount);
+    }
+    setClauses.push('payment_mode = ?');
+    values.push(paymentMode);
+    if (optionalColumns.has('payment_reference')) {
+      setClauses.push('payment_reference = ?');
+      values.push(nullable(req.body.payment_reference || req.body.received_id || req.body.received_name));
+    }
+    setClauses.push('payment_status = ?', 'remarks = ?', 'updated_at = NOW()');
+    values.push(
+      paymentStatus,
+      nullable(req.body.remarks),
+      subscriptionId,
+      cableCustomerId
+    );
+    const [updateResult] = await db.query(
+      `UPDATE cable_subscriptions
+       SET ${setClauses.join(', ')}
+       WHERE subscription_id = ? AND cable_customer_id = ?`,
+      values
+    );
+    if (!updateResult.affectedRows) {
+      return res.status(404).json({ message: 'Subscription record not found for update' });
+    }
     return res.json({ message: 'Subscription details updated successfully' });
   } catch (error) {
     return res.status(500).json({ message: 'Subscription update failed', error: error.message });

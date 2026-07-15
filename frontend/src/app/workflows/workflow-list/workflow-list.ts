@@ -92,6 +92,8 @@ export class WorkflowList {
       this.router.navigate(['/suppliers/edit', supplierId], {
         queryParams: { review: true, workflowId: row.workflow_id }
       });
+    } else if (row.module_name === 'CABLE_TV_CUSTOMER') {
+      this.router.navigate(['/cable-tv/customers', row.reference_id]);
     }
   }
 
@@ -102,6 +104,21 @@ export class WorkflowList {
     }
     if (['WORK_ORDER', 'MATERIAL_ISSUE'].includes(row.module_name)) {
       alert('Preview this request to choose its approval action.');
+      return;
+    }
+    if (row.module_name === 'CABLE_TV_CUSTOMER') {
+      if (row.workflow_status !== 'PENDING') {
+        alert('This request has already been reviewed.');
+        return;
+      }
+      if (!confirm(`Approve Cable TV customer ${row.reference_no}?`)) return;
+      this.workflowService.approveWorkflow(row.workflow_id).subscribe({
+        next: (response: any) => {
+          this.commonMethods.handleTokenAndMessage(response);
+          this.loadWorkflows();
+        },
+        error: (error: any) => this.commonMethods.handleError(error)
+      });
       return;
     }
     if (row.module_name !== 'MATERIAL_ISSUE') {

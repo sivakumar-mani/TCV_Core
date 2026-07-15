@@ -74,6 +74,17 @@ const isBlank = (value) => value === undefined || value === null || String(value
 const phoneRegex = /^[0-9]{10}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const isAtLeastAge = (value, minAge) => {
+  if (isBlank(value)) return false;
+  const dob = new Date(value);
+  if (Number.isNaN(dob.getTime())) return false;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const monthDiff = today.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+  return age >= minAge;
+};
+
 const validateEmployee = (employee) => {
   const requiredFields = [
     ['first_name', 'First name'],
@@ -111,6 +122,10 @@ const validateEmployee = (employee) => {
 
   if (!isBlank(employee.email) && !emailRegex.test(String(employee.email))) {
     return 'Email is invalid';
+  }
+
+  if (!isAtLeastAge(employee.date_of_birth, 18)) {
+    return 'Employee must be above 18 years';
   }
 
   return null;

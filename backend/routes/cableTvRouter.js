@@ -33,23 +33,21 @@ const {
 } = require('../controller/cableTvController');
 
 router.use(auth.authendicateToken);
-router.use('/lookups', auth.requireAnyPermission(['CABLE_TV_CUSTOMERS', 'CABLE_TV_MASTERS']));
-router.use('/masters', auth.requirePermission('CABLE_TV_MASTERS'));
-router.use('/accounts', auth.requirePermission('CABLE_TV_MASTERS'));
+router.use('/lookups', auth.requireAnyPermission(['CABLE_TV_CUSTOMERS', 'CABLE_TV_MASTERS', 'CABLE_TV_PACKAGES', 'CABLE_TV_STBS', 'CABLE_TV_ACCOUNTS']));
 router.use('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'));
 
 router.get('/lookups', getLookups);
-router.get('/masters', getMasters);
-router.post('/masters/locations', addLocation);
-router.post('/masters/areas', addArea);
-router.post('/masters/streets', addStreet);
-router.post('/masters/location-info', addLocationInfo);
-router.patch('/masters/location-info/:streetId', updateLocationInfo);
-router.delete('/masters/location-info/:streetId', deleteLocationInfo);
-router.post('/masters/packages', addPackage);
-router.post('/masters/stbs', addStbMaster);
-router.get('/accounts/pending', getPendingAccounts);
-router.patch('/accounts/:accountId/receive', receiveAccount);
+router.get('/masters', auth.requireAnyPermission(['CABLE_TV_MASTERS', 'CABLE_TV_PACKAGES', 'CABLE_TV_STBS']), getMasters);
+router.post('/masters/locations', auth.requirePermission('CABLE_TV_MASTERS'), addLocation);
+router.post('/masters/areas', auth.requirePermission('CABLE_TV_MASTERS'), addArea);
+router.post('/masters/streets', auth.requirePermission('CABLE_TV_MASTERS'), addStreet);
+router.post('/masters/location-info', auth.requirePermission('CABLE_TV_MASTERS'), addLocationInfo);
+router.patch('/masters/location-info/:streetId', auth.requirePermission('CABLE_TV_MASTERS'), updateLocationInfo);
+router.delete('/masters/location-info/:streetId', auth.requirePermission('CABLE_TV_MASTERS'), deleteLocationInfo);
+router.post('/masters/packages', auth.requirePermission('CABLE_TV_PACKAGES'), addPackage);
+router.post('/masters/stbs', auth.requirePermission('CABLE_TV_STBS'), addStbMaster);
+router.get('/accounts/pending', auth.requirePermission('CABLE_TV_ACCOUNTS'), getPendingAccounts);
+router.patch('/accounts/:accountId/receive', auth.requirePermission('CABLE_TV_ACCOUNTS'), receiveAccount);
 router.get('/customers', getCableCustomers);
 router.get('/customers/:id', getCableCustomerById);
 router.post('/customers', addCableCustomer);

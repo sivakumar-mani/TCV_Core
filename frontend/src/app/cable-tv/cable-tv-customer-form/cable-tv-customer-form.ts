@@ -20,6 +20,7 @@ export class CableTvCustomerForm {
   lookups: any = {};
   filteredAreas: any[] = [];
   filteredStreets: any[] = [];
+  showStbSearchOptions = false;
 
   readonly statusTypes = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED', 'RETRIEVED', 'FAULT', 'UPGRADE'];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE'];
@@ -79,7 +80,7 @@ export class CableTvCustomerForm {
       location_id: [null, Validators.required],
       area_id: [null, Validators.required],
       street_id: [null, Validators.required],
-      city: ['', Validators.required],
+      city: ['Chennai', Validators.required],
       pincode: [''],
       mobile_no: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       aadhaar_no: ['', Validators.pattern(/^[0-9]{12}$/)],
@@ -90,6 +91,7 @@ export class CableTvCustomerForm {
       status: ['ACTIVE'],
       stb: this.fb.group({
         stb_master_id: [null],
+        stb_search: [''],
         stb_type: ['NEW'],
         installed_mso_id: [null],
         exchange_original_mso_id: [null],
@@ -145,7 +147,7 @@ export class CableTvCustomerForm {
         customer_paid_amount: [0],
         balance_amount: [0],
         due_date: [''],
-        account_status: ['PENDING']
+        account_status: [{ value: 'PENDING', disabled: !this.permissions.isAdmin() }]
       })
     });
   }
@@ -162,7 +164,7 @@ export class CableTvCustomerForm {
       this.filteredStreets = [];
       this.form.patchValue({ area_id: null, street_id: null }, { emitEvent: false });
       const location = (this.lookups.locations || []).find((item: any) => Number(item.location_id) === Number(locationId));
-      if (location) this.form.patchValue({ city: location.city, pincode: location.pincode || '' }, { emitEvent: false });
+      if (location) this.form.patchValue({ pincode: location.pincode || '' }, { emitEvent: false });
     });
 
     this.form.get('area_id')?.valueChanges.subscribe((areaId: number) => {
@@ -174,6 +176,7 @@ export class CableTvCustomerForm {
     this.form.get('stb.stb_type')?.valueChanges.subscribe(() => {
       this.form.get('stb')?.patchValue({
         stb_master_id: null,
+        stb_search: '',
         installed_mso_id: null,
         stb_no: '',
         stb_amount: 0
@@ -240,6 +243,34 @@ export class CableTvCustomerForm {
     );
   }
 
+  get filteredStbSearchOptions() {
+    const searchValue = String(this.form?.get('stb.stb_search')?.value || '').trim().toLowerCase();
+    if (!searchValue) return this.filteredStbMasters.slice(0, 20);
+    return this.filteredStbMasters.filter((stb: any) =>
+      [
+        stb.stb_number,
+        stb.box_type,
+        stb.stock_type,
+        stb.mso_name
+      ].some((value) => String(value || '').toLowerCase().includes(searchValue))
+    ).slice(0, 20);
+  }
+
+  get loggedInEmployee() {
+    const employeeId = this.permissions.employeeId();
+    const employeeCode = String(this.permissions.employeeCode() || this.permissions.username() || '').trim().toLowerCase();
+    return (this.lookups.employees || []).find((employee: any) =>
+      (employeeId && Number(employee.employee_id) === Number(employeeId))
+      || String(employee.employee_code || '').trim().toLowerCase() === employeeCode
+      || String(employee.employee_name || '').trim().toLowerCase() === employeeCode
+    );
+  }
+
+  get loggedInEmployeeName() {
+    const employee = this.loggedInEmployee;
+    return employee?.employee_name || employee?.employee_code || '';
+  }
+
   refreshAreaOptions(locationId = this.form.get('location_id')?.value) {
     const networkId = this.form.get('network_id')?.value;
     this.filteredAreas = (this.lookups.areas || []).filter((area: any) =>
@@ -262,6 +293,7 @@ export class CableTvCustomerForm {
         this.lookups.installedMsos = this.lookups.installedMsos?.length
           ? this.lookups.installedMsos
           : (this.lookups.msos || []).filter((mso: any) => ['VK', 'DM'].includes(String(mso.mso_name).toUpperCase()));
+        this.setLoggedInEmployee();
         this.buildStbAccessoryRows();
         if (this.isEditMode) this.loadCustomerDetails();
       },
@@ -288,6 +320,7 @@ export class CableTvCustomerForm {
         if (response.stbAccessories?.length) this.buildStbAccessoryRows(response.stbAccessories);
         if (response.connections?.[0]) this.form.get('connection')?.patchValue(response.connections[0]);
         if (response.accounts?.[0]) this.account.patchValue(response.accounts[0]);
+        if (!this.permissions.isAdmin()) this.account.get('account_status')?.setValue('PENDING', { emitEvent: false });
         if (response.customerPackages?.length) {
           this.packages.clear();
           response.customerPackages.forEach((item: any) => this.packages.push(this.createPackageRow(item)));
@@ -373,9 +406,17 @@ export class CableTvCustomerForm {
     this.calculatePackageRow(index);
   }
 
+  setLoggedInEmployee() {
+    if (this.permissions.isAdmin()) return;
+    const employee = this.loggedInEmployee;
+    if (employee?.employee_id) {
+      this.form.patchValue({ installed_by_employee_id: employee.employee_id }, { emitEvent: false });
+    }
+  }
+
   buildStbAccessoryRows(selectedAccessories: any[] = []) {
     this.stbAccessories.clear();
-    (this.lookups.stbAccessories || []).forEach((product: any) => {
+    this.stbAccessoryProducts().forEach((product: any) => {
       const selected = selectedAccessories.find((item: any) => Number(item.product_id) === Number(product.product_id));
       this.stbAccessories.push(this.fb.group({
         product_id: [product.product_id],
@@ -386,6 +427,20 @@ export class CableTvCustomerForm {
         selected: [!!selected]
       }));
     });
+  }
+
+  stbAccessoryProducts() {
+    const explicitAccessories = this.lookups.stbAccessories || [];
+    if (explicitAccessories.length) return explicitAccessories;
+    const accessoryPatterns = ['stb accessories', 'hdmi', 'remote', '3pin av card', 'single pin av card', 'adaptor 12v'];
+    return (this.lookups.products || []).filter((product: any) => {
+      const name = String(product.product_name || '').toLowerCase();
+      return accessoryPatterns.some((pattern) => name.includes(pattern));
+    });
+  }
+
+  accessoryDisplayName(name: string) {
+    return String(name || '').replace(/\s*STB\s+Accessories\s*/i, ' ').replace(/\s+/g, ' ').trim();
   }
 
   applySubscriptionPeriod() {
@@ -412,6 +467,7 @@ export class CableTvCustomerForm {
     const selectedStb = (this.lookups.stbMasters || []).find((item: any) => Number(item.stb_master_id) === Number(stbMasterId));
     if (!selectedStb) return;
     this.form.get('stb')?.patchValue({
+      stb_search: selectedStb.stb_number,
       stb_type: selectedStb.stock_type,
       installed_mso_id: selectedStb.mso_id,
       stb_no: selectedStb.stb_number,
@@ -419,6 +475,35 @@ export class CableTvCustomerForm {
     }, { emitEvent: false });
     this.account.patchValue({ stb_amount: Number(selectedStb.stb_amount) || 0 }, { emitEvent: false });
     this.calculateAccountTotals();
+  }
+
+  onStbSearchInput() {
+    this.showStbSearchOptions = true;
+    this.selectStbFromSearch(false);
+  }
+
+  selectStbFromSearch(hideOptions = true) {
+    const searchValue = String(this.form.get('stb.stb_search')?.value || '').trim().toLowerCase();
+    const selectedStb = this.filteredStbMasters.find((item: any) =>
+      String(item.stb_number || '').trim().toLowerCase() === searchValue
+    );
+    if (selectedStb) {
+      this.form.get('stb.stb_master_id')?.setValue(selectedStb.stb_master_id);
+      this.showStbSearchOptions = !hideOptions;
+      return;
+    }
+    this.form.get('stb')?.patchValue({
+      stb_master_id: null,
+      stb_no: '',
+      stb_amount: 0
+    }, { emitEvent: false });
+    this.account.patchValue({ stb_amount: 0 }, { emitEvent: false });
+    this.calculateAccountTotals();
+  }
+
+  selectStbOption(stb: any) {
+    this.form.get('stb.stb_master_id')?.setValue(stb.stb_master_id);
+    this.showStbSearchOptions = false;
   }
 
   selectMaterialProduct(index: number) {
@@ -513,7 +598,7 @@ export class CableTvCustomerForm {
     const materialDiscount = Number(this.account.get('material_discount')?.value) || 0;
     const overallDiscount = Number(this.account.get('overall_discount')?.value) || 0;
     const discount = stbDiscount + connectionDiscount + materialDiscount + overallDiscount;
-    const subTotal = Number((stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount).toFixed(2));
+    const subTotal = Number((stbAmount + connectionAmount + materialCost + subscriptionAmount).toFixed(2));
     const grandTotal = Number(Math.max(subTotal - discount, 0).toFixed(2));
     const paidAmount = Number(this.account.get('customer_paid_amount')?.value) || 0;
     const balanceAmount = Number(Math.max(grandTotal - paidAmount, 0).toFixed(2));
@@ -562,6 +647,7 @@ export class CableTvCustomerForm {
 
     this.ngxLoader.start();
     this.applySubscriptionPeriod();
+    if (!this.permissions.isAdmin()) this.account.get('account_status')?.setValue('PENDING', { emitEvent: false });
     const payload = this.form.getRawValue();
     const request = this.isEditMode
       ? this.cableTvService.updateCustomer(this.customerId, payload)

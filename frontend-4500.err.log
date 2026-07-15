@@ -1,0 +1,93 @@
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'today' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:198:31:
+[37m      198 │         const todayDate = this.[32mtoday[37m();
+          ╵                                [32m~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'today' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:198:31:
+[37m      198 │         const todayDate = this.[32mtoday[37m();
+          ╵                                [32m~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isSubscriptionStatusValid' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:361:50:
+[37m      361 │ ...ction === 'subscriptions' && !this.[32misSubscriptionStatusValid[37m()) {
+          ╵                                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'subscriptionStatusLabel' does not exist on type 'CableTvCustomerHistory'. Did you mean 'isSubscriptionStatusValid'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:123:49:
+[37m      123 │ ...= 'subscriptions' ? [32msubscriptionStatusLabel[37m(row.payment_status...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:16:15:
+[37m      16 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'subscriptionCollectedByLabel' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:116:55:
+[37m      116 │ ...=== 'subscriptions'">{{ [32msubscriptionCollectedByLabel[37m(row) }}</td>
+          ╵                            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:16:15:
+[37m      16 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'subscriptionStatusClass' does not exist on type 'CableTvCustomerHistory'. Did you mean 'subscriptionStatusLabel'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:122:61:
+[37m      122 │ ...= 'subscriptions' ? [32msubscriptionStatusClass[37m(row.payment_status...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:16:15:
+[37m      16 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'applySameAddressFromLoadedData' does not exist on type 'EmployeeForm'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/employees/employee-form/employee-form.ts:263:13:
+[37m      263 │         this.[32mapplySameAddressFromLoadedData[37m(data);
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'accessoryDisplayName' does not exist on type 'CableTvCustomerForm'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-form/cable-tv-customer-form.html:139:25:
+[37m      139 │ ...          <strong>{{ [32maccessoryDisplayName[37m(accessory.get('produ...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerForm.
+
+    src/app/cable-tv/cable-tv-customer-form/cable-tv-customer-form.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-customer-form.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'accessoryDisplayName' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:249:25:
+[37m      249 │ ...          <strong>{{ [32maccessoryDisplayName[37m(accessory.get('produ...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

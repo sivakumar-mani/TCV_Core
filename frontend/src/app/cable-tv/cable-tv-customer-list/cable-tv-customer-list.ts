@@ -76,11 +76,8 @@ export class CableTvCustomerList {
       cellRenderer: ActionMenu,
       cellRendererParams: {
         dropdownMenu: [
-          { label: 'View', action: (row: any) => this.editCustomer(row) },
-          { label: 'Connection', action: (row: any) => this.openSection(row, 'connections') },
-          { label: 'STB', action: (row: any) => this.openSection(row, 'stbs') },
-          { label: 'Package', action: (row: any) => this.openSection(row, 'packages') },
-          { label: 'Subscription', action: (row: any) => this.openSection(row, 'subscriptions') }
+          { label: 'View', action: (row: any) => this.viewCustomer(row) },
+          { label: 'Update', permission: 'update', action: (row: any) => this.editCustomer(row) }
         ]
       },
       filter: false,
@@ -147,15 +144,6 @@ export class CableTvCustomerList {
     this.customers = this.allCustomers.filter((customer: any) => {
       if (this.selectedCustomerId && Number(customer.cable_customer_id) !== this.selectedCustomerId) return false;
       if (this.filters.customerNo && !text(customer.customer_code).includes(text(this.filters.customerNo))) return false;
-      if (this.filters.networkId && Number(customer.network_id) !== Number(this.filters.networkId)) return false;
-      if (this.filters.name && !text(customer.full_name).includes(text(this.filters.name))) return false;
-      if (this.filters.mobile) {
-        const mobileText = `${customer.mobile_no || ''} ${customer.alternate_mobile_no || ''}`.toLowerCase();
-        if (!mobileText.includes(text(this.filters.mobile))) return false;
-      }
-      if (this.filters.areaId && Number(customer.area_id) !== Number(this.filters.areaId)) return false;
-      if (this.filters.streetId && Number(customer.street_id) !== Number(this.filters.streetId)) return false;
-      if (this.filters.status && String(customer.status || '').toUpperCase() !== this.filters.status) return false;
       return true;
     });
   }
@@ -184,8 +172,8 @@ export class CableTvCustomerList {
     this.router.navigate(['/cable-tv/customers/edit', row.cable_customer_id]);
   }
 
-  openSection(row: any, section: string) {
-    this.router.navigate(['/cable-tv/customers', row.cable_customer_id, section]);
+  viewCustomer(row: any) {
+    this.router.navigate(['/cable-tv/customers', row.cable_customer_id]);
   }
 
   decorateCustomer(customer: any) {

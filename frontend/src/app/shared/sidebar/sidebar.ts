@@ -15,12 +15,13 @@ export class Sidebar {
   @Input() collapsed = false;
   readonly panelOpenState = signal(false);
   readonly groups = [
-    { label: 'Business Partners', icon: 'groups', items: [['Customers', '/customers', 'CUSTOMERS'], ['Cable TV Customers', '/cable-tv/customers', 'CABLE_TV_CUSTOMERS'], ['Suppliers', '/suppliers', 'SUPPLIERS']] },
+    { label: 'Business Partners', icon: 'groups', items: [['CCTV Customer', '/customers', 'CUSTOMERS'], ['Cable TV Customers', '/cable-tv/customers', 'CABLE_TV_CUSTOMERS'], ['Suppliers', '/suppliers', 'SUPPLIERS']] },
     { label: 'Inventory', icon: 'inventory', items: [['Brands', '/brands', 'BRANDS'], ['Categories', '/categoriesLists', 'CATEGORIES'], ['Products', '/productList', 'PRODUCTS'], ['Stock', '/stock', 'STOCK'], ['Purchases', '/purchases', 'PURCHASES']] },
     { label: 'Sales', icon: 'request_quote', items: [['Quotations', '/quotations', 'QUOTATIONS'], ['Sales', '/sales', 'SALES'], ['Work Orders', '/work-orders', 'WORK_ORDERS'], ['Customer Payments', '/customer-payments', 'CUSTOMER_PAYMENTS'], ['Supplier Payments', '/supplier-payments', 'SUPPLIER_PAYMENTS']] },
     { label: 'Service', icon: 'support_agent', items: [['Service Tickets', '/service-tickets', 'SERVICE_TICKETS'], ['Warranty Master', '/warranty-master', 'WARRANTIES']] },
     { label: 'HR Process', icon: 'badge', items: [['Employees', '/employees', 'EMPLOYEES'], ['Employee Attendance', '/employee-attendance', 'EMPLOYEE_ATTENDANCE'], ['Employee Salary', '/employee-salary', 'EMPLOYEE_SALARY']] },
-    { label: 'Administration', icon: 'admin_panel_settings', items: [['Workflow Approvals', '/workflow-approval', 'WORKFLOW_APPROVAL'], ['Location Info', '/cable-tv-masters', 'CABLE_TV_MASTERS'], ['Package List', '/cable-tv-packages', 'CABLE_TV_MASTERS'], ['STB Master', '/cable-tv-stbs', 'CABLE_TV_MASTERS'], ['Pending Accounts', '/cable-tv-account-pending', 'CABLE_TV_MASTERS'], ['Users', '/users', 'USERS'], ['Role Permissions', '/role-permissions', 'ROLE_PERMISSIONS'], ['Audit Logs', '/audit-logs', 'AUDIT_LOGS']] }
+    { label: 'Accounts', icon: 'account_balance', items: [['Pending Accounts', '/cable-tv-account-pending', 'CABLE_TV_ACCOUNTS']] },
+    { label: 'Administration', icon: 'admin_panel_settings', items: [['Workflow Approvals', '/workflow-approval', 'WORKFLOW_APPROVAL'], ['Location Info', '/cable-tv-masters', 'CABLE_TV_MASTERS'], ['Package List', '/cable-tv-packages', 'CABLE_TV_PACKAGES'], ['STB Master', '/cable-tv-stbs', 'CABLE_TV_STBS'], ['Users', '/users', 'USERS'], ['Role Permissions', '/role-permissions', 'ROLE_PERMISSIONS'], ['Audit Logs', '/audit-logs', 'AUDIT_LOGS']] }
   ];
   constructor(public permissions: PermissionService) {}
   visible(group: any) { return group.items.some((item: string[]) => this.permissions.can(item[2])); }

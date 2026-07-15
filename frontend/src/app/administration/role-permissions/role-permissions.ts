@@ -16,6 +16,10 @@ interface CatalogItem { group: string; key: string; label: string; route: string
   styleUrl: './role-permissions.scss'
 })
 export class RolePermissions {
+  private readonly requiredCatalog: CatalogItem[] = [
+    { group: 'Accounts', key: 'CABLE_TV_ACCOUNTS', label: 'Pending Accounts', route: '/cable-tv-account-pending' }
+  ];
+
   roles: string[] = [];
   catalog: CatalogItem[] = [];
   selectedRole = '';
@@ -30,13 +34,21 @@ export class RolePermissions {
     this.permissionService.getRolePermissions().subscribe({
       next: response => {
         this.roles = response.roles;
-        this.catalog = response.catalog;
+        this.catalog = this.mergeRequiredCatalog(response.catalog || []);
         this.allPermissions = response.permissions;
         this.selectedRole ||= this.roles[0];
         this.buildMatrix();
       },
       error: error => this.snackbar.openSnackbar(error.error?.message || globalConstants.genericError, globalConstants.errorRegex)
     });
+  }
+
+  mergeRequiredCatalog(catalog: CatalogItem[]) {
+    const merged = [...catalog];
+    this.requiredCatalog.forEach(item => {
+      if (!merged.some(existing => existing.key === item.key)) merged.push(item);
+    });
+    return merged;
   }
 
   buildMatrix() {

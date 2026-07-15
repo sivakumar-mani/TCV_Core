@@ -19,6 +19,10 @@
 .summary-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
 .summary-actions button { align-items: center; display: inline-flex; gap: 8px; justify-content: center; min-height: 46px; }
 .summary-actions mat-icon { font-size: 18px; height: 18px; width: 18px; }
+.customer-jump { color: #344054; display: grid; font-size: 12px; font-weight: 750; gap: 5px; min-width: 230px; }
+.customer-jump span { display: grid; grid-template-columns: minmax(0, 1fr) 42px; gap: 6px; }
+.customer-jump input { min-height: 42px; }
+.customer-jump .search-btn { min-height: 42px; padding: 0; }
 .add-btn { background: #14223b; border-radius: 12px; font-size: 14px; padding: 10px 20px; }
 .back-btn { background: #eef3f9; border-radius: 12px; color: #243447; font-size: 14px; padding: 10px 16px; }
 .summary-grid { border-top: 1px solid #e5ebf2; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -35,17 +39,29 @@
 .form-section, .modal-panel { background: #fff; border: 1px solid #d7dee8; border-radius: 6px; padding: 16px; }
 .form-section { margin-bottom: 16px; }
 .form-section h2, .section-title-row h2 { color: #263238; font-size: 16px; font-weight: 650; margin: 0 0 14px; }
+.section-title-row h2 { margin: 0; }
+.detail-tabs { background: #fff; border: 1px solid #d7dee8; border-radius: 6px; display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding: 8px; }
+.detail-tabs button { background: transparent; border: 0; border-radius: 5px; color: #344054; cursor: pointer; font-weight: 750; min-height: 36px; padding: 8px 14px; }
+.detail-tabs button:hover { background: #eef3f9; }
+.detail-tabs button.active { background: #14223b; color: #fff; }
 .history-table { overflow-x: auto; }
 table { border-collapse: collapse; min-width: 860px; width: 100%; }
 th, td { border: 1px solid #d7dee8; padding: 8px 10px; text-align: left; }
 th { background: #f5f7fb; color: #344054; font-size: 13px; }
+tfoot td { background: #f8fafc; font-weight: 750; }
+.total-label { color: #344054; text-align: right; }
+.total-value { color: #071a36; }
+.status-badge { border-radius: 5px; display: inline-flex; font-size: 12px; font-weight: 750; line-height: 1; min-width: 62px; padding: 7px 9px; justify-content: center; }
+.status-badge.paid { background: #dcfce7; color: #166534; }
+.status-badge.unpaid { background: #fee2e2; color: #991b1b; }
 .actions { display: flex; gap: 6px; width: fit-content; }
 .actions button, .primary-btn, .secondary-btn, .icon-btn { border: 0; border-radius: 5px; cursor: pointer; font-weight: 650; min-height: 34px; padding: 7px 12px; }
-.table-icon-btn { align-items: center; border: 0; border-radius: 5px; cursor: pointer; display: inline-flex; height: 30px; justify-content: center; padding: 0; width: 30px; }
-.table-icon-btn mat-icon { font-size: 17px; height: 17px; line-height: 17px; width: 17px; }
-.table-icon-btn.edit { background: #eaf1ff; color: #175cd3; }
+.table-icon-btn { align-items: center; background: transparent; border: 0; border-radius: 5px; color: #113a64; cursor: pointer; display: inline-flex; height: 30px; justify-content: center; padding: 0; width: 30px; }
+.table-icon-btn mat-icon { font-size: 23px; height: 23px; line-height: 23px; width: 23px; }
+.table-icon-btn:hover { background: #eaf1ff; }
+.table-icon-btn.edit { color: #113a64; }
 .table-icon-btn.deactivate { background: #fff4e6; color: #b54708; }
-.table-icon-btn.delete { background: #fee4e2; color: #b42318; }
+.table-icon-btn.delete { color: #113a64; }
 .primary-btn { background: #1565c0; color: #fff; }
 .secondary-btn { background: #e9eef5; color: #243447; }
 .secondary-btn.small { min-height: 30px; padding: 5px 9px; }
@@ -57,6 +73,12 @@ label { color: #344054; display: grid; font-size: 13px; font-weight: 600; gap: 6
 input, select, textarea { border: 1px solid #c8d0dc; border-radius: 5px; color: #111827; font: inherit; min-height: 38px; padding: 7px 9px; width: 100%; }
 input[readonly] { background: #f5f7fb; }
 textarea { resize: vertical; }
+.inline-pair { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) 120px; }
+.month-year-control { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-width: 0; }
+.period-control { display: grid; gap: 6px; grid-template-columns: 46px minmax(0, 1fr) 56px; min-width: 0; }
+.period-control input, .period-control select, .month-year-control input { min-width: 0; padding-left: 6px; padding-right: 6px; }
+.period-control input:first-child, .period-control select:first-child { padding-left: 4px; padding-right: 4px; text-align: center; }
+.amount-pair { grid-template-columns: minmax(110px, .75fr) minmax(0, 1fr); }
 .wide-field { grid-column: 1 / -1; }
 .wide-field small { color: #667085; font-size: 12px; font-weight: 500; justify-self: end; }
 .accessory-box { border: 1px solid #d7dee8; border-radius: 6px; margin-top: 16px; padding: 12px; }

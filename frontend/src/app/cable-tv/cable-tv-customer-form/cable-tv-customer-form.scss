@@ -64,6 +64,10 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.stb-details-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 label {
   color: #344054;
   display: grid;
@@ -85,6 +89,69 @@ select {
 
 input[readonly] {
   background: #f5f7fb;
+}
+
+.stb-number-field {
+  position: relative;
+
+  input {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.stb-search-options {
+  background: #fff;
+  border: 1px solid #d7dee8;
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.18);
+  display: grid;
+  left: 0;
+  max-height: 240px;
+  min-width: min(620px, 100%);
+  overflow-y: auto;
+  position: absolute;
+  top: calc(100% + 4px);
+  width: min(620px, 100%);
+  z-index: 20;
+
+  button {
+    align-items: center;
+    background: #fff;
+    border: 0;
+    color: #111827;
+    cursor: pointer;
+    display: flex;
+    font: inherit;
+    gap: 12px;
+    min-height: 42px;
+    overflow: hidden;
+    padding: 8px 12px;
+    text-align: left;
+    white-space: nowrap;
+    width: 100%;
+
+    &:hover {
+      background: #f5f7fb;
+    }
+  }
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    flex: 0 0 auto;
+  }
+
+  span {
+    color: #344054;
+    font-weight: 500;
+  }
 }
 
 .accessory-box {
@@ -300,5 +367,9 @@ input[readonly] {
 
   .account-totals {
     justify-self: stretch;
+  }
+
+  .stb-details-grid {
+    grid-template-columns: 1fr;
   }
 }

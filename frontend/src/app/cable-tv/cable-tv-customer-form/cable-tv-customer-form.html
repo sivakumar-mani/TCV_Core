@@ -77,26 +77,31 @@
           </select>
         </label>
         <label *ngIf="!permissions.isAdmin()">Installed By
-          <input type="text" [value]="permissions.username()" readonly>
+          <input type="text" [value]="loggedInEmployeeName" readonly>
         </label>
       </div>
     </section>
 
     <section class="form-section" formGroupName="stb">
       <h2>STB Details</h2>
-      <div class="form-grid">
+      <div class="form-grid stb-details-grid">
         <label>STB Type
           <select formControlName="stb_type">
             <option *ngFor="let type of stbTypes" [ngValue]="type">{{ type }}</option>
           </select>
         </label>
-        <label>STB Number
-          <select formControlName="stb_master_id">
-            <option [ngValue]="null">Select STB</option>
-            <option *ngFor="let stb of filteredStbMasters" [ngValue]="stb.stb_master_id">
-              {{ stb.stb_number }} - {{ stb.box_type }} - {{ stb.stock_type }} - {{ stb.mso_name }}
-            </option>
-          </select>
+        <label class="stb-number-field">STB Number
+          <input type="text" formControlName="stb_search" placeholder="Search or select STB" (focus)="showStbSearchOptions = true" (input)="onStbSearchInput()" (change)="selectStbFromSearch()" (blur)="showStbSearchOptions = false">
+          <div class="stb-search-options" *ngIf="showStbSearchOptions && filteredStbSearchOptions.length">
+            <button type="button" *ngFor="let stb of filteredStbSearchOptions" (mousedown)="selectStbOption(stb)">
+              <strong>{{ stb.stb_number }}</strong>
+              <span>{{ stb.box_type }} - {{ stb.stock_type }} - {{ stb.mso_name }}</span>
+            </button>
+          </div>
+          <input type="hidden" formControlName="stb_master_id">
+        </label>
+        <label>Selected STB No
+          <input type="text" formControlName="stb_no" readonly>
         </label>
         <label>Installed MSO
           <select formControlName="installed_mso_id">
@@ -109,9 +114,6 @@
             <option [ngValue]="null">Fresh</option>
             <option *ngFor="let mso of lookups.msos || []" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
           </select>
-        </label>
-        <label>Selected STB No
-          <input type="text" formControlName="stb_no" readonly>
         </label>
         <label>STB Amount
           <input type="number" formControlName="stb_amount">
@@ -134,7 +136,7 @@
           <label class="checkbox-card" *ngFor="let accessory of stbAccessories.controls; let i = index" [formGroupName]="i">
             <input type="checkbox" formControlName="selected">
             <span>
-              <strong>{{ accessory.get('product_name')?.value }}</strong>
+              <strong>{{ accessoryDisplayName(accessory.get('product_name')?.value) }}</strong>
               <small>Stock: {{ accessory.get('available_qty')?.value | number:'1.0-2' }} {{ accessory.get('unit')?.value }}</small>
             </span>
           </label>
@@ -283,20 +285,20 @@
           <div class="account-row"><span>STB Discount</span><span>- {{ account.get('stb_discount')?.value | number:'1.2-2' }}</span></div>
           <div class="account-row"><span>Connection Charge</span><span>{{ account.get('connection_amount')?.value | number:'1.2-2' }}</span></div>
           <div class="account-row"><span>Connection Discount</span><span>- {{ account.get('connection_discount')?.value | number:'1.2-2' }}</span></div>
-          <div class="account-row"><span>Labour / Service Charge</span><span>{{ account.get('labor_amount')?.value | number:'1.2-2' }}</span></div>
+          <div class="account-row"><span>Labour / Service Charge</span><span>- {{ account.get('labor_amount')?.value | number:'1.2-2' }}</span></div>
           <div class="account-row"><span>Material Charge</span><span>{{ account.get('material_cost')?.value | number:'1.2-2' }}</span></div>
           <div class="account-row editable-row"><span>Material Discount</span><span><input type="number" formControlName="material_discount"></span></div>
           <div class="account-row"><span>Monthly Subscription Amount</span><span>{{ account.get('subscription_amount')?.value | number:'1.2-2' }}</span></div>
         </div>
 
         <div class="account-totals">
-          <div class="total-row strong"><span>Grand Total</span><input type="number" formControlName="grand_total" readonly></div>
-          <div class="total-row"><span>Customer Paid Amount</span><input type="number" formControlName="customer_paid_amount"></div>
+          <div class="total-row strong"><span>Office Amount</span><input type="number" formControlName="grand_total" readonly></div>
           <div class="total-row"><span>Over all discount</span><input type="number" formControlName="overall_discount"></div>
           <div class="total-row strong"><span>Balance</span><input type="number" formControlName="balance_amount" readonly></div>
+          <div class="total-row"><span>Customer Paid Amount</span><input type="number" formControlName="customer_paid_amount"></div>
           <div class="total-row" *ngIf="account.get('balance_amount')?.value > 0"><span>Due Date</span><input type="date" formControlName="due_date"></div>
           <div class="total-row"><span>Status</span>
-            <select formControlName="account_status" [disabled]="!permissions.isAdmin()">
+            <select formControlName="account_status">
               <option *ngFor="let status of accountStatuses" [ngValue]="status">{{ status }}</option>
             </select>
           </div>

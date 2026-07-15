@@ -14,7 +14,7 @@ export class WorkflowServices {
     return this.http.get(this.endpoint);
   }
 
-  approveWorkflow(workflowId: number, data: any = {}) {
+  approveWorkflow(workflowId: number | string, data: any = {}) {
     return this.http.post(`${this.endpoint}/${workflowId}/approve`, data);
   }
 }
