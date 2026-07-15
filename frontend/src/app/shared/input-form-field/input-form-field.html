@@ -2,14 +2,27 @@
    <mat-form-field appearance="outline" floatLabel="always" style="width: 100%;">
       <mat-label>{{ label | titlecase }}</mat-label>
       <input
+         #fieldInput
          matInput
          placeholder=""
-         type="{{type}}"
+         [type]="type"
          [formControl]="control"
          [readonly]="readonly"
+         [class.date-selectable]="type === 'date' && !readonly && control.enabled"
          [attr.maxlength]="maxLength"
          [attr.inputmode]="inputMode || null"
+         (click)="openDatePicker($event)"
+         (keydown.enter)="openDatePicker($event)"
          (input)="onInput($event)">
+      <button
+         *ngIf="type === 'date' && !readonly && control.enabled"
+         type="button"
+         matSuffix
+         class="date-picker-button"
+         aria-label="Open date picker"
+         (click)="openDatePicker($event)">
+         <mat-icon>calendar_month</mat-icon>
+      </button>
       <mat-error class="error-message" *ngIf="control.touched && control.invalid">
          <span *ngIf="control?.errors?.['required']">
             This {{ label }} is mandatory

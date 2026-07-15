@@ -114,6 +114,10 @@ export class CableTvServices {
     return this.http.post(`${this.endpoint}/masters/stbs`, data, { headers: this.jsonHeaders });
   }
 
+  assignStbMaster(stbMasterId: number, assignedEmployeeId: number) {
+    return this.http.patch(`${this.endpoint}/masters/stbs/${stbMasterId}/assign`, { assigned_employee_id: assignedEmployeeId }, { headers: this.jsonHeaders });
+  }
+
   getPendingAccounts() {
     return this.http.get(`${this.endpoint}/accounts/pending`);
   }

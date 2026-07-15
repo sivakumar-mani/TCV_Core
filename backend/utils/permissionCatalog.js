@@ -3,6 +3,10 @@ const permissionCatalog = [
   ['General', 'NOTIFICATIONS', 'Notifications', '/notifications'],
   ['Business Partners', 'CUSTOMERS', 'Customers', '/customers'],
   ['Business Partners', 'CABLE_TV_CUSTOMERS', 'Cable TV Customers', '/cable-tv/customers'],
+  ['Cable TV Customer Actions', 'CABLE_TV_CONNECTIONS', 'Connection Actions', '/cable-tv/customers/:id/connections'],
+  ['Cable TV Customer Actions', 'CABLE_TV_CUSTOMER_STBS', 'STB Actions', '/cable-tv/customers/:id/stbs'],
+  ['Cable TV Customer Actions', 'CABLE_TV_CUSTOMER_PACKAGES', 'Package Actions', '/cable-tv/customers/:id/packages'],
+  ['Cable TV Customer Actions', 'CABLE_TV_SUBSCRIPTIONS', 'Subscription Actions', '/cable-tv/customers/:id/subscriptions'],
   ['Business Partners', 'SUPPLIERS', 'Suppliers', '/suppliers'],
   ['Inventory', 'BRANDS', 'Brands', '/brands'],
   ['Inventory', 'CATEGORIES', 'Categories', '/categoriesLists'],
@@ -28,6 +32,16 @@ const permissionCatalog = [
   ['Administration', 'ROLE_PERMISSIONS', 'Role Permissions', '/role-permissions'],
   ['Accounts', 'CABLE_TV_ACCOUNTS', 'Pending Accounts', '/cable-tv-account-pending'],
 ].map(([group, key, label, route]) => ({ group, key, label, route }));
+
+const createOnlyPermissionKeys = new Set([
+  'CABLE_TV_CONNECTIONS',
+  'CABLE_TV_CUSTOMER_STBS',
+  'CABLE_TV_CUSTOMER_PACKAGES',
+  'CABLE_TV_SUBSCRIPTIONS'
+]);
+permissionCatalog.forEach((item) => {
+  if (createOnlyPermissionKeys.has(item.key)) item.createOnly = true;
+});
 
 const apiModules = {
   brand: 'BRANDS', category: 'CATEGORIES', product: 'PRODUCTS', supplier: 'SUPPLIERS',

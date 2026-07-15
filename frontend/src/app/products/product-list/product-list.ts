@@ -99,11 +99,11 @@ export class ProductList {
   addProduct() {
     const dialogRef = this.dialog.open(Product, {
       width: '70%',
-      height: '60%',
-      maxHeight: '100vh',
+      height: '86vh',
+      maxHeight: '94vh',
       maxWidth: '100vw',
       disableClose: true,
-      position: { top: 'calc(1vw + 20px)' }
+      position: { top: '3vh' }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -117,11 +117,11 @@ export class ProductList {
     const dialogRef = this.dialog.open(Product, {
       data: row,
       width: '70%',
-      height: '70%',
-      maxHeight: '100vh',
+      height: '86vh',
+      maxHeight: '94vh',
       maxWidth: '100vw',
       disableClose: true,
-      position: { top: 'calc(1vw + 20px)' }
+      position: { top: '3vh' }
     });
 
     dialogRef.afterClosed().subscribe(result => {

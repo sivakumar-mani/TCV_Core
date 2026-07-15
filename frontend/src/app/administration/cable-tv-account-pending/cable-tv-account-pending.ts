@@ -42,7 +42,7 @@ export class CableTvAccountPending {
     this.cableTvService.receiveAccount(accountId).subscribe({
       next: (response: any) => {
         this.ngxLoader.stop();
-        this.snackbar.openSnackbar(response?.message || 'Account amount marked as received', '');
+        this.snackbar.openSnackbar(response?.message || 'Cash handover marked as received', '');
         this.loadAccounts();
       },
       error: (error: any) => this.handleError(error)

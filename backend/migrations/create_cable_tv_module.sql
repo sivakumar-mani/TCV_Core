@@ -276,6 +276,8 @@ CREATE TABLE IF NOT EXISTS cable_stb_master (
     stock_type ENUM('NEW','SERVICED','RETURNED','FAULT') NOT NULL DEFAULT 'NEW',
     mso_id INT NULL,
     stb_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (stb_amount >= 0),
+    full_set_amount DECIMAL(12,2) NOT NULL DEFAULT 800 CHECK (full_set_amount >= 0),
+    assigned_employee_id INT NULL,
     status ENUM('AVAILABLE','NOT_AVAILABLE') NOT NULL DEFAULT 'AVAILABLE',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -283,6 +285,9 @@ CREATE TABLE IF NOT EXISTS cable_stb_master (
 
     CONSTRAINT fk_cable_stb_master_mso
         FOREIGN KEY (mso_id) REFERENCES cable_mso_master(mso_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_cable_stb_master_assigned_employee
+        FOREIGN KEY (assigned_employee_id) REFERENCES employees(employee_id)
         ON DELETE SET NULL ON UPDATE CASCADE,
 
     UNIQUE KEY uk_cable_stb_master_number (stb_number),
@@ -301,6 +306,7 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
     cable_customer_id BIGINT NOT NULL,
     stb_master_id BIGINT NULL,
     stb_type ENUM('NEW','SERVICED','RETURNED','FAULT','DAMAGED','UPGRADE','REPLACED','EXCHANGE','CUSTOMER_OWNED') NOT NULL DEFAULT 'NEW',
+    issue_mode ENUM('FULL_SET','BOX_ONLY') NOT NULL DEFAULT 'BOX_ONLY',
     installed_mso_id INT NULL,
     exchange_original_mso_id INT NULL,
     stb_no VARCHAR(100) NOT NULL,
@@ -734,16 +740,16 @@ VALUES
     ('TCCL');
 
 UPDATE cable_locations
-SET location_name = 'Chromepet', post_short_code = COALESCE(post_short_code, 'CMP'), city = 'Chromepet', pincode = '600044'
+SET location_name = 'Chromepet', post_short_code = COALESCE(post_short_code, 'CMP'), city = 'Chennai', pincode = '600044'
 WHERE location_name IN ('Chromept', 'Chroempet');
 
 UPDATE cable_locations
-SET post_short_code = COALESCE(post_short_code, 'PAM'), city = 'Pammal', pincode = '600075'
+SET post_short_code = COALESCE(post_short_code, 'PAM'), city = 'Chennai', pincode = '600075'
 WHERE location_name = 'Pammal';
 
 INSERT IGNORE INTO cable_locations (location_name, post_short_code, city, pincode)
 VALUES
-    ('Chromepet', 'CMP', 'Chromepet', '600044'),
-    ('Pammal', 'PAM', 'Pammal', '600075');
+    ('Chromepet', 'CMP', 'Chennai', '600044'),
+    ('Pammal', 'PAM', 'Chennai', '600075');
 
 SET FOREIGN_KEY_CHECKS = 1;

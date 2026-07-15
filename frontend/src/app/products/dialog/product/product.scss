@@ -1,0 +1,28 @@
+.product-fields {
+  display: grid;
+  gap: 6px 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-top: 4px;
+}
+
+.product-fields mat-form-field,
+.product-fields > div {
+  margin: 0;
+  width: 100%;
+}
+
+mat-dialog-content {
+  max-height: none;
+  padding-bottom: 4px;
+  padding-top: 4px;
+}
+
+mat-dialog-actions {
+  min-height: 48px;
+  padding-bottom: 8px;
+  padding-top: 6px;
+}
+
+@media (max-width: 720px) {
+  .product-fields { grid-template-columns: 1fr; }
+}

@@ -17,10 +17,13 @@
     <div class="permission-row header-row"><span>Screen Name</span><span>View</span><span>Create</span><span>Edit</span><span>Delete</span></div>
     <div class="permission-row" *ngFor="let item of screens(group)">
       <span class="screen"><strong>{{ item.label }}</strong><small>{{ item.route }}</small></span>
-      <label><input type="checkbox" [ngModel]="matrix[item.key].can_view" (ngModelChange)="setAction(item, 'can_view', $event)"><span>View</span></label>
+      <label *ngIf="!item.createOnly"><input type="checkbox" [ngModel]="matrix[item.key].can_view" (ngModelChange)="setAction(item, 'can_view', $event)"><span>View</span></label>
+      <label *ngIf="item.createOnly"><input type="checkbox" checked disabled><span>View included</span></label>
       <label><input type="checkbox" [ngModel]="matrix[item.key].can_create" (ngModelChange)="setAction(item, 'can_create', $event)"><span>Create</span></label>
-      <label><input type="checkbox" [ngModel]="matrix[item.key].can_update" (ngModelChange)="setAction(item, 'can_update', $event)"><span>Edit</span></label>
-      <label><input type="checkbox" [ngModel]="matrix[item.key].can_delete" (ngModelChange)="setAction(item, 'can_delete', $event)"><span>Delete</span></label>
+      <label *ngIf="!item.createOnly"><input type="checkbox" [ngModel]="matrix[item.key].can_update" (ngModelChange)="setAction(item, 'can_update', $event)"><span>Edit</span></label>
+      <label *ngIf="item.createOnly"><input type="checkbox" disabled><span>Admin only</span></label>
+      <label *ngIf="!item.createOnly"><input type="checkbox" [ngModel]="matrix[item.key].can_delete" (ngModelChange)="setAction(item, 'can_delete', $event)"><span>Delete</span></label>
+      <label *ngIf="item.createOnly"><input type="checkbox" disabled><span>Admin only</span></label>
     </div>
   </div>
 </section>

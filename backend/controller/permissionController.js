@@ -21,17 +21,21 @@ const updatePermissions = async (req, res) => {
   if (!Array.isArray(req.body.permissions)) return res.status(400).json({ message: 'Permissions are required' });
 
   const allowedKeys = new Set(permissionCatalog.map(item => item.key));
+  const catalogByKey = new Map(permissionCatalog.map(item => [item.key, item]));
   const values = req.body.permissions.filter(item => allowedKeys.has(item.permission_key));
   try {
     await query('START TRANSACTION');
     await query('DELETE FROM role_permissions WHERE role = ?', [role]);
     for (const item of values) {
+      const createOnly = catalogByKey.get(item.permission_key)?.createOnly;
+      const canCreate = !!item.can_create;
       await query(
         `INSERT INTO role_permissions
          (role, permission_key, can_view, can_create, can_update, can_delete, updated_by)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [role, item.permission_key, !!item.can_view, !!item.can_create, !!item.can_update,
-          !!item.can_delete, res.locals.userId]
+        [role, item.permission_key, createOnly ? canCreate : !!item.can_view, canCreate,
+          createOnly ? false : !!item.can_update, createOnly ? false : !!item.can_delete,
+          res.locals.userId]
       );
     }
     await query('COMMIT');

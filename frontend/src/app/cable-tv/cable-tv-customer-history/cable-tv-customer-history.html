@@ -64,7 +64,7 @@
   <section class="form-section">
     <div class="section-title-row">
       <h2>{{ title }}</h2>
-      <button type="button" class="primary-btn add-btn" (click)="openAdd()"><mat-icon>note_add</mat-icon>{{ addButtonLabel }}</button>
+      <button *ngIf="canSection(section, 'create')" type="button" class="primary-btn add-btn" (click)="openAdd()"><mat-icon>note_add</mat-icon>{{ addButtonLabel }}</button>
     </div>
     <div class="history-table">
       <table>
@@ -100,7 +100,7 @@
             <th *ngIf="section === 'subscriptions'">Amount</th>
             <th *ngIf="section === 'subscriptions'">Balance</th>
             <th>Status</th>
-            <th>Action</th>
+            <th *ngIf="canSection(section, 'update') || canSection(section, 'delete')">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -118,7 +118,7 @@
             <td *ngIf="section === 'stbs'">{{ row.stb_amount }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_discount }}</td>
             <td *ngIf="section === 'stbs'">{{ row.labour_service_charge }}</td>
-            <td *ngIf="section === 'stbs'">{{ row.status }}</td>
+            <td *ngIf="section === 'stbs'">{{ row.approval_status === 'PENDING' ? 'Pending' : row.status }}</td>
             <td *ngIf="section === 'packages'">{{ packageTypeLabel(row.package_type) }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_name || row.package_id }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_price }}</td>
@@ -135,14 +135,14 @@
             <td *ngIf="section === 'subscriptions'">{{ row.amount }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.balance_amount }}</td>
             <td>
-              <span [ngClass]="section === 'subscriptions' ? subscriptionStatusClass(row.payment_status) : ''">
-                {{ section === 'subscriptions' ? subscriptionStatusLabel(row.payment_status) : row.approval_status }}
+              <span [ngClass]="section === 'subscriptions' ? subscriptionStatusClass(row) : ''">
+                {{ section === 'subscriptions' ? subscriptionStatusLabel(row) : row.approval_status }}
               </span>
             </td>
-            <td class="actions">
-              <button *ngIf="section === 'packages' && row.is_active == 1" type="button" class="table-icon-btn deactivate" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)"><mat-icon>block</mat-icon></button>
-              <button type="button" class="table-icon-btn edit" title="Edit" aria-label="Edit" (click)="edit(row)"><mat-icon>edit_square</mat-icon></button>
-              <button type="button" class="table-icon-btn delete" title="Delete" aria-label="Delete" (click)="delete(row)"><mat-icon>delete</mat-icon></button>
+            <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete')">
+              <button *ngIf="section === 'packages' && row.is_active == 1 && canSection(section, 'update')" type="button" class="table-icon-btn deactivate" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)"><mat-icon>block</mat-icon></button>
+              <button *ngIf="canSection(section, 'update')" type="button" class="table-icon-btn edit" title="Edit" aria-label="Edit" (click)="edit(row)"><mat-icon>edit_square</mat-icon></button>
+              <button *ngIf="canSection(section, 'delete')" type="button" class="table-icon-btn delete" title="Delete" aria-label="Delete" (click)="delete(row)"><mat-icon>delete</mat-icon></button>
             </td>
           </tr>
           <tr *ngIf="!rows.length"><td colspan="8" class="empty-row">No records added yet.</td></tr>
@@ -231,7 +231,8 @@
           </select>
         </label>
         <label>Selected STB Number<input type="text" formControlName="stb_no" readonly></label>
-        <label>STB Amount<input type="number" formControlName="stb_amount"></label>
+        <label>Issue Type<select formControlName="issue_mode"><option value="BOX_ONLY">Box Only</option><option value="FULL_SET">Full Set</option></select></label>
+        <label>STB Amount<input type="number" formControlName="stb_amount" readonly></label>
         <label>STB Discount<input type="number" formControlName="stb_discount"></label>
         <label>Labor/Service Charge<input type="number" formControlName="labour_service_charge"></label>
         <label>New STB Status

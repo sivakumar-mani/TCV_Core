@@ -14,6 +14,10 @@ CREATE TABLE IF NOT EXISTS role_permissions (
 INSERT IGNORE INTO role_permissions (role, permission_key, can_view, can_create, can_update, can_delete) VALUES
 ('MANAGER', 'DASHBOARD', 1, 0, 0, 0),
 ('MANAGER', 'NOTIFICATIONS', 1, 0, 1, 0),
+('MANAGER', 'CABLE_TV_CONNECTIONS', 1, 1, 0, 0),
+('MANAGER', 'CABLE_TV_CUSTOMER_STBS', 1, 1, 0, 0),
+('MANAGER', 'CABLE_TV_CUSTOMER_PACKAGES', 1, 1, 0, 0),
+('MANAGER', 'CABLE_TV_SUBSCRIPTIONS', 1, 1, 0, 0),
 ('EMPLOYEE', 'DASHBOARD', 1, 0, 0, 0),
 ('EMPLOYEE', 'NOTIFICATIONS', 1, 0, 1, 0),
 ('SALES', 'DASHBOARD', 1, 0, 0, 0),

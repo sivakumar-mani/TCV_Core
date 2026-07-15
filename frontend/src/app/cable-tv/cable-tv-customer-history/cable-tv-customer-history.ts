@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CableTvServices } from '../../services/cable-tv-services';
 import { CommonMethods } from '../../shared/common-methods';
-import { PermissionService } from '../../services/permission.service';
+import { PermissionAction, PermissionService } from '../../services/permission.service';
 
 type Section = 'connections' | 'stbs' | 'packages' | 'subscriptions';
 
@@ -41,6 +41,12 @@ export class CableTvCustomerHistory {
     { key: 'packages', label: 'Package' },
     { key: 'subscriptions', label: 'Subscription' }
   ];
+  readonly sectionPermissionKeys: Record<Section, string> = {
+    connections: 'CABLE_TV_CONNECTIONS',
+    stbs: 'CABLE_TV_CUSTOMER_STBS',
+    packages: 'CABLE_TV_CUSTOMER_PACKAGES',
+    subscriptions: 'CABLE_TV_SUBSCRIPTIONS'
+  };
   readonly connectionTypes = ['RECONNECTION', 'SHIFTED', 'TRANSFERRED', 'NEW'];
   readonly packageTypes = ['ADDON', 'ALACARTE', 'BROADCASTER'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
@@ -126,6 +132,12 @@ export class CableTvCustomerHistory {
     return employee?.employee_name || '';
   }
 
+  canSection(section: Section, action: PermissionAction = 'view') {
+    if (action === 'view') return true;
+    if (action === 'update' || action === 'delete') return this.permissions.isAdmin();
+    return this.permissions.can(this.sectionPermissionKeys[section], action);
+  }
+
   buildForm() {
     const today = new Date().toISOString().slice(0, 10);
     if (this.section === 'connections') {
@@ -156,6 +168,7 @@ export class CableTvCustomerHistory {
         stb_master_id: [null],
         stb_no: [''],
         stb_type: ['NEW', Validators.required],
+        issue_mode: ['BOX_ONLY', Validators.required],
         stb_amount: [0],
         stb_discount: [0],
         labour_service_charge: [0],
@@ -170,6 +183,7 @@ export class CableTvCustomerHistory {
       this.buildStbAccessoryRows();
       this.form.get('reason')?.valueChanges.subscribe(() => this.applyStbReasonState());
       this.form.get('stb_type')?.valueChanges.subscribe(() => this.resetSelectedStbIfTypeMismatch());
+      this.form.get('issue_mode')?.valueChanges.subscribe(() => this.applyStbIssuePrice());
       this.watchBalance(['stb_amount', 'stb_discount', 'labour_service_charge', 'overall_discount', 'customer_paid_amount']);
       this.applyStbReasonState();
       return;
@@ -355,6 +369,7 @@ export class CableTvCustomerHistory {
   }
 
   openAdd() {
+    if (!this.canSection(this.section, 'create')) return;
     this.editId = 0;
     this.buildForm();
     if (this.section === 'subscriptions' && !this.permissions.isAdmin()) this.applyLoggedInEmployee();
@@ -366,6 +381,7 @@ export class CableTvCustomerHistory {
   }
 
   edit(row: any) {
+    if (!this.canSection(this.section, 'update')) return;
     this.editId = this.idFor(row);
     this.buildForm();
     if (this.section === 'packages') {
@@ -433,6 +449,7 @@ export class CableTvCustomerHistory {
   }
 
   save() {
+    if (!this.canSection(this.section, this.editId ? 'update' : 'create')) return;
     if (this.section === 'stbs') this.applyStbReasonState();
     if (this.section === 'subscriptions') this.calculateSubscription();
     this.calculateBalance();
@@ -489,6 +506,7 @@ export class CableTvCustomerHistory {
   }
 
   delete(row: any) {
+    if (!this.canSection(this.section, 'delete')) return;
     if (!confirm('Delete this record?')) return;
     this.ngxLoader.start();
     const id = this.idFor(row);
@@ -510,6 +528,7 @@ export class CableTvCustomerHistory {
   }
 
   deactivatePackage(row: any) {
+    if (!this.canSection('packages', 'update')) return;
     if (!confirm('Deactivate this package?')) return;
     this.ngxLoader.start();
     const today = new Date().toISOString().slice(0, 10);
@@ -743,12 +762,17 @@ export class CableTvCustomerHistory {
     return `Paid amount is not equal to package amount. Balance: ${this.form.get('balance_amount')?.value || 0}`;
   }
 
-  subscriptionStatusLabel(status: any) {
-    return String(status || '').toUpperCase() === 'PAID' ? 'Paid' : 'Unpaid';
+  subscriptionStatusLabel(row: any) {
+    if (String(row?.approval_status || '').toUpperCase() === 'PENDING') return 'Pending';
+    const status = String(row?.payment_status || '').toUpperCase();
+    if (status === 'PAID') return 'Paid';
+    if (status === 'PARTIAL') return 'Partially Paid';
+    return 'Unpaid';
   }
 
-  subscriptionStatusClass(status: any) {
-    return String(status || '').toUpperCase() === 'PAID' ? 'status-badge paid' : 'status-badge unpaid';
+  subscriptionStatusClass(row: any) {
+    if (String(row?.approval_status || '').toUpperCase() === 'PENDING') return 'status-badge pending';
+    return String(row?.payment_status || '').toUpperCase() === 'PAID' ? 'status-badge paid' : 'status-badge unpaid';
   }
 
   subscriptionCollectedByLabel(row: any) {
@@ -836,9 +860,18 @@ export class CableTvCustomerHistory {
     this.form.patchValue({
       stb_no: selected.stb_number,
       stb_type: selected.stock_type || 'NEW',
-      stb_amount: Number(selected.stb_amount) || 0,
       status: 'ACTIVE'
     });
+    this.applyStbIssuePrice();
+  }
+
+  applyStbIssuePrice() {
+    if (this.section !== 'stbs') return;
+    const selected = (this.lookups.stbMasters || []).find((item: any) => Number(item.stb_master_id) === Number(this.form.get('stb_master_id')?.value));
+    const fullSet = this.form.get('issue_mode')?.value === 'FULL_SET';
+    this.form.patchValue({ stb_amount: selected ? Number(fullSet ? selected.full_set_amount : selected.stb_amount) || (fullSet ? 800 : 500) : 0 }, { emitEvent: false });
+    if (!fullSet) this.stbAccessories.controls.forEach((row) => row.patchValue({ selected: false }, { emitEvent: false }));
+    this.calculateBalance();
   }
 
   resetSelectedStbIfTypeMismatch() {

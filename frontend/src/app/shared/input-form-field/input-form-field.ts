@@ -1,5 +1,5 @@
 import { NgIf, TitleCasePipe } from '@angular/common';
-import { Component, Input, Self } from '@angular/core';
+import { Component, ElementRef, Input, Self, ViewChild } from '@angular/core';
 import { ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule } from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
@@ -12,6 +12,8 @@ import {MatInputModule} from '@angular/material/input';
   styleUrl: './input-form-field.scss',
 })
 export class InputFormField implements ControlValueAccessor{
+
+  @ViewChild('fieldInput') fieldInput?: ElementRef<HTMLInputElement>;
 
   @Input() type : string='';
   @Input() label : string =''
@@ -39,6 +41,21 @@ export class InputFormField implements ControlValueAccessor{
     const nextValue = input.value.replace(/\D/g, '').slice(0, this.maxLength || undefined);
     input.value = nextValue;
     this.control.setValue(nextValue, { emitEvent: true });
+  }
+
+  openDatePicker(event: Event) {
+    if (this.type !== 'date' || this.readonly || this.control.disabled) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const input = this.fieldInput?.nativeElement as (HTMLInputElement & { showPicker?: () => void }) | undefined;
+    if (!input) return;
+    input.focus();
+    if (typeof input.showPicker !== 'function') return;
+    try {
+      input.showPicker();
+    } catch {
+      // The native date field remains editable in browsers without showPicker support.
+    }
   }
 
   writeValue(obj: any): void {}

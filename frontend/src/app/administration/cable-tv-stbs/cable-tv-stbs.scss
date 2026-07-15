@@ -29,6 +29,16 @@
   padding: 16px;
 }
 
+.filter-bar {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1fr) minmax(150px, .6fr) auto;
+  margin-bottom: 16px;
+
+  .reset-filter { min-height: 36px; }
+}
+
 button {
   background: #1565c0;
   border: 0;
@@ -73,6 +83,26 @@ th {
 .empty-row {
   color: #667085;
   text-align: center;
+}
+
+.assignment-cell {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  min-width: 340px;
+
+  strong {
+    color: #344054;
+    min-width: 110px;
+    white-space: nowrap;
+  }
+
+  select { flex: 1; min-width: 190px; }
+}
+
+@media (max-width: 760px) {
+  .filter-bar { grid-template-columns: 1fr; }
+  .assignment-cell { align-items: stretch; flex-direction: column; min-width: 220px; }
 }
 
 .status-pill {

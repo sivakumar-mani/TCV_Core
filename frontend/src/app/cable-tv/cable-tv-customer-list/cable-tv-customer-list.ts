@@ -77,7 +77,7 @@ export class CableTvCustomerList {
       cellRendererParams: {
         dropdownMenu: [
           { label: 'View', action: (row: any) => this.viewCustomer(row) },
-          { label: 'Update', permission: 'update', action: (row: any) => this.editCustomer(row) }
+          { label: 'Update', action: (row: any) => this.editCustomer(row) }
         ]
       },
       filter: false,
@@ -169,11 +169,11 @@ export class CableTvCustomerList {
   }
 
   editCustomer(row: any) {
-    this.router.navigate(['/cable-tv/customers/edit', row.cable_customer_id]);
+    this.router.navigate(['/cable-tv/customers', row.cable_customer_id]);
   }
 
   viewCustomer(row: any) {
-    this.router.navigate(['/cable-tv/customers', row.cable_customer_id]);
+    this.router.navigate(['/cable-tv/customers/view', row.cable_customer_id]);
   }
 
   decorateCustomer(customer: any) {

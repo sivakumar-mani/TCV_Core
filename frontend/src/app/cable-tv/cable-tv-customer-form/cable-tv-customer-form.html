@@ -34,7 +34,7 @@
         <label>Postal Area
           <select formControlName="location_id">
             <option [ngValue]="null">Select postal area</option>
-            <option *ngFor="let location of lookups.locations || []" [ngValue]="location.location_id">{{ location.location_name }}</option>
+            <option *ngFor="let location of filteredPostalAreas" [ngValue]="location.location_id">{{ location.location_name }}</option>
           </select>
         </label>
         <label>Location
@@ -50,10 +50,10 @@
           </select>
         </label>
         <label>City
-          <input type="text" formControlName="city">
+          <input type="text" formControlName="city" readonly>
         </label>
         <label>Pincode
-          <input type="text" formControlName="pincode">
+          <input type="text" formControlName="pincode" readonly>
         </label>
         <label>Mobile No
           <input type="tel" maxlength="10" formControlName="mobile_no">
@@ -103,6 +103,12 @@
         <label>Selected STB No
           <input type="text" formControlName="stb_no" readonly>
         </label>
+        <label>Issue Type
+          <select formControlName="issue_mode">
+            <option value="FULL_SET">Full Set (₹800)</option>
+            <option value="BOX_ONLY">Box Only (₹500)</option>
+          </select>
+        </label>
         <label>Installed MSO
           <select formControlName="installed_mso_id">
             <option [ngValue]="null">Select MSO</option>
@@ -116,7 +122,7 @@
           </select>
         </label>
         <label>STB Amount
-          <input type="number" formControlName="stb_amount">
+          <input type="number" formControlName="stb_amount" readonly>
         </label>
         <label>STB Discount
           <input type="number" formControlName="stb_discount">
@@ -130,13 +136,13 @@
           </select>
         </label>
       </div>
-      <div class="accessory-box" formArrayName="accessories">
+      <div class="accessory-box" formArrayName="accessories" *ngIf="form.get('stb.issue_mode')?.value === 'FULL_SET'">
         <h3>Accessories</h3>
         <div class="accessory-grid" *ngIf="stbAccessories.length; else noStbAccessories">
           <label class="checkbox-card" *ngFor="let accessory of stbAccessories.controls; let i = index" [formGroupName]="i">
-            <input type="checkbox" formControlName="selected">
+            <input type="checkbox" formControlName="selected" (change)="onStbAccessoryChange(i)">
             <span>
-              <strong>{{ accessoryDisplayName(accessory.get('product_name')?.value) }}</strong>
+              <strong>{{ accessoryDisplayName(accessory.get('product_name')?.value) }} <em *ngIf="accessoryChoiceLabel(accessory.get('product_name')?.value)">{{ accessoryChoiceLabel(accessory.get('product_name')?.value) }}</em></strong>
               <small>Stock: {{ accessory.get('available_qty')?.value | number:'1.0-2' }} {{ accessory.get('unit')?.value }}</small>
             </span>
           </label>
@@ -201,7 +207,7 @@
       </div>
       <div formArrayName="packages" class="package-table">
         <div class="package-header">
-          <span>Package</span><span>Price</span><span>Start</span><span>End</span><span>Period</span><span>Amount</span><span>Paid</span><span></span>
+          <span>Package</span><span>Price</span><span>Start</span><span>End</span><span>Period</span><span>Amount</span><span></span>
         </div>
         <div *ngFor="let row of packages.controls; let i = index" [formGroupName]="i" class="package-row">
           <select formControlName="package_id" (change)="selectPackage(i)">
@@ -213,7 +219,6 @@
           <input type="date" formControlName="end_date" (change)="calculatePackageRow(i)">
           <input type="number" formControlName="number_of_days_or_months" readonly>
           <input type="number" formControlName="amount" readonly>
-          <input type="number" formControlName="paid_amount" readonly>
           <button type="button" class="icon-btn" (click)="removePackageRow(i)">x</button>
         </div>
       </div>
@@ -264,15 +269,6 @@
         <label>Subscription Amount
           <input type="number" formControlName="amount" readonly>
         </label>
-        <label *ngIf="permissions.isAdmin()">Subscription Status
-          <select formControlName="payment_status">
-            <option value="PENDING">Unpaid</option>
-            <option value="PAID">Paid</option>
-          </select>
-        </label>
-        <label *ngIf="!permissions.isAdmin()">Subscription Status
-          <input type="text" value="Unpaid" readonly>
-        </label>
       </div>
     </section>
 
@@ -294,8 +290,8 @@
         <div class="account-totals">
           <div class="total-row strong"><span>Office Amount</span><input type="number" formControlName="grand_total" readonly></div>
           <div class="total-row"><span>Over all discount</span><input type="number" formControlName="overall_discount"></div>
-          <div class="total-row strong"><span>Balance</span><input type="number" formControlName="balance_amount" readonly></div>
           <div class="total-row"><span>Customer Paid Amount</span><input type="number" formControlName="customer_paid_amount"></div>
+          <div class="total-row strong"><span>Balance</span><input type="number" formControlName="balance_amount" readonly></div>
           <div class="total-row" *ngIf="account.get('balance_amount')?.value > 0"><span>Due Date</span><input type="date" formControlName="due_date"></div>
           <div class="total-row"><span>Status</span>
             <select formControlName="account_status">

@@ -5,25 +5,53 @@
   </div>
 
   <section class="stb-panel">
+    <div class="filter-bar">
+      <label>STB Number
+        <input type="search" [(ngModel)]="filters.stbNumber" placeholder="Search STB number">
+      </label>
+      <label>Assigned Employee
+        <select [(ngModel)]="filters.employeeId">
+          <option value="">All employees</option>
+          <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
+        </select>
+      </label>
+      <label>Status
+        <select [(ngModel)]="filters.status">
+          <option value="">All statuses</option>
+          <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+        </select>
+      </label>
+      <button type="button" class="secondary-btn reset-filter" (click)="resetFilters()">Reset</button>
+    </div>
     <table>
       <tr>
         <th>STB Number</th>
         <th>Signal</th>
         <th>Type</th>
         <th>MSO</th>
-        <th>Amount</th>
+        <th>Box Only</th>
+        <th>Full Set</th>
+        <th>Assigned Employee</th>
         <th>Status</th>
       </tr>
-      <tr *ngFor="let item of stbs">
+      <tr *ngFor="let item of filteredStbs">
         <td>{{ item.stb_number }}</td>
         <td>{{ item.box_type }}</td>
         <td>{{ item.stock_type }}</td>
         <td>{{ item.mso_name }}</td>
         <td>{{ item.stb_amount }}</td>
+        <td>{{ item.full_set_amount }}</td>
+        <td class="assignment-cell">
+          <strong>{{ item.assigned_employee_name || 'Unassigned' }}</strong>
+          <select [value]="item.assigned_employee_id || ''" (change)="assignStb(item, $any($event.target).value)" [disabled]="item.status !== 'AVAILABLE'">
+            <option value="">Select employee</option>
+            <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
+          </select>
+        </td>
         <td><span class="status-pill" [class.not-available]="item.status === 'NOT_AVAILABLE'">{{ item.status }}</span></td>
       </tr>
-      <tr *ngIf="!stbs.length">
-        <td colspan="6" class="empty-row">No STB stock added yet.</td>
+      <tr *ngIf="!filteredStbs.length">
+        <td colspan="8" class="empty-row">No STB records match the selected filters.</td>
       </tr>
     </table>
   </section>
@@ -54,8 +82,17 @@
             <option *ngFor="let mso of msos" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
           </select>
         </label>
-        <label>STB Amount
+        <label>Box Only Amount
           <input type="number" formControlName="stb_amount">
+        </label>
+        <label>Full Set Amount
+          <input type="number" formControlName="full_set_amount">
+        </label>
+        <label>Assigned Employee
+          <select formControlName="assigned_employee_id">
+            <option [ngValue]="null">Select employee</option>
+            <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
+          </select>
         </label>
         <label>Status
           <select formControlName="status">

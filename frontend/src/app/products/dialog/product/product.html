@@ -2,7 +2,7 @@
 <mat-dialog-content>
 
  <form [formGroup]="productForm">
-        <div class="grid-2-col mt-4">
+        <div class="grid-2-col product-fields">
          
 
   <!-- Product Name -->
@@ -122,4 +122,3 @@
     <button *ngIf="dialogData"   mat-raised-button (click)="editSubmit()"  [class]="productForm.valid? 'btn-yes' : 'btn-no btn-disabled'"
     [disabled]="!productForm.valid">Update</button>
 </mat-dialog-actions>
-

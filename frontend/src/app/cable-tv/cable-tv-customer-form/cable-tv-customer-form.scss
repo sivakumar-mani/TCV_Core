@@ -198,6 +198,14 @@ input[readonly] {
     color: #667085;
     font-weight: 500;
   }
+
+  em {
+    color: #175cd3;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 600;
+    margin-left: 4px;
+  }
 }
 
 .empty-note {
@@ -297,8 +305,8 @@ input[readonly] {
 
 .package-header,
 .package-row {
-  grid-template-columns: minmax(220px, 1.4fr) 110px 140px 140px 90px 120px 120px 42px;
-  min-width: 980px;
+  grid-template-columns: minmax(220px, 1.4fr) 110px 140px 140px 90px 120px 42px;
+  min-width: 850px;
 }
 
 .material-header,

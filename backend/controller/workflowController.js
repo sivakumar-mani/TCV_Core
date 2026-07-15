@@ -111,10 +111,25 @@ const getWorkflowApprovals = async (req, res) => {
                     NULL, c.full_name, NULL,
                     NULL, ca.balance_amount, c.status, c.approval_status, NULL
              FROM cable_approval_groups cag
-             JOIN cable_tv_customers c ON c.approval_group_id = cag.approval_group_id
-             LEFT JOIN cable_customer_accounts ca ON ca.account_id = (
-                SELECT MAX(account_id) FROM cable_customer_accounts WHERE cable_customer_id = c.cable_customer_id
-             )
+             JOIN (
+                SELECT approval_group_id, MAX(cable_customer_id) AS cable_customer_id
+                FROM (
+                   SELECT approval_group_id, cable_customer_id FROM cable_tv_customers WHERE approval_group_id IS NOT NULL
+                   UNION ALL
+                   SELECT approval_group_id, cable_customer_id FROM cable_connections WHERE approval_group_id IS NOT NULL
+                   UNION ALL
+                   SELECT approval_group_id, cable_customer_id FROM cable_customer_stbs WHERE approval_group_id IS NOT NULL
+                   UNION ALL
+                   SELECT approval_group_id, cable_customer_id FROM cable_customer_packages WHERE approval_group_id IS NOT NULL
+                   UNION ALL
+                   SELECT approval_group_id, cable_customer_id FROM cable_subscriptions WHERE approval_group_id IS NOT NULL
+                   UNION ALL
+                   SELECT approval_group_id, cable_customer_id FROM cable_customer_accounts WHERE approval_group_id IS NOT NULL
+                ) cable_group_references
+                GROUP BY approval_group_id
+             ) cgr ON cgr.approval_group_id = cag.approval_group_id
+             JOIN cable_tv_customers c ON c.cable_customer_id = cgr.cable_customer_id
+             LEFT JOIN cable_customer_accounts ca ON ca.approval_group_id = cag.approval_group_id
              WHERE cag.approval_status = 'PENDING'
              ORDER BY workflow_status = 'PENDING' DESC, requested_at DESC`
         );
@@ -132,21 +147,81 @@ const approveWorkflow = async (req, res) => {
         await conn.beginTransaction();
         const workflowId = String(req.params.workflow_id || '');
         if (workflowId.startsWith('CTV-')) {
+            if (String(req.res?.locals?.role || '').toUpperCase() !== 'ADMIN') {
+                await conn.rollback();
+                return res.status(403).json({ success: false, message: 'Administrator approval is required' });
+            }
             const approvalGroupId = Number(workflowId.replace('CTV-', ''));
             if (!approvalGroupId) throw new Error('Workflow request not found');
             const [groups] = await conn.query('SELECT * FROM cable_approval_groups WHERE approval_group_id = ? FOR UPDATE', [approvalGroupId]);
             if (!groups.length) throw new Error('Workflow request not found');
             if (groups[0].approval_status === 'APPROVED') throw new Error('Workflow request is already approved');
             const approvedBy = req.body.approved_by_employee_id || req.res?.locals?.userId || req.res?.locals?.user_id || null;
+            const [[pendingAccount]] = await conn.query(
+                `SELECT COUNT(*) AS count
+                 FROM cable_customer_accounts
+                 WHERE approval_group_id = ? AND account_status = 'PENDING'`,
+                [approvalGroupId]
+            );
+            const waitForAccountReceipt = Number(pendingAccount.count) > 0;
+
+            const [pendingAccessories] = waitForAccountReceipt ? [[]] : await conn.query(
+                `SELECT acc.stb_accessory_id, acc.customer_stb_id, acc.product_id, acc.accessory_name,
+                        acc.qty, acc.issued_by_employee_id, p.purchase_price
+                 FROM cable_customer_stb_accessories acc
+                 JOIN products p ON p.product_id = acc.product_id
+                 WHERE acc.approval_group_id = ? AND acc.approval_status = 'PENDING'
+                 FOR UPDATE`,
+                [approvalGroupId]
+            );
+            for (const accessory of pendingAccessories) {
+                await conn.query(
+                    `INSERT INTO stock_master (product_id, available_qty, last_stock_check_date)
+                     VALUES (?, 0, CURDATE())
+                     ON DUPLICATE KEY UPDATE last_stock_check_date = CURDATE()`,
+                    [accessory.product_id]
+                );
+                const [stockRows] = await conn.query(
+                    'SELECT available_qty FROM stock_master WHERE product_id = ? FOR UPDATE',
+                    [accessory.product_id]
+                );
+                const availableQty = Number(stockRows[0]?.available_qty || 0);
+                const issuedQty = Number(accessory.qty || 0);
+                if (availableQty < issuedQty) {
+                    throw new Error(`Insufficient stock for ${accessory.accessory_name}. Available: ${availableQty}, required: ${issuedQty}`);
+                }
+                const balanceQty = availableQty - issuedQty;
+                await conn.query(
+                    `UPDATE stock_master
+                     SET available_qty = ?, last_stock_check_date = CURDATE(), last_updated = NOW()
+                     WHERE product_id = ?`,
+                    [balanceQty, accessory.product_id]
+                );
+                await conn.query(
+                    `INSERT INTO stock_ledger (
+                        product_id, transaction_type, transaction_id, reference_no,
+                        qty_in, qty_out, balance_qty, unit_cost, remarks, recorded_by_employee_id
+                     ) VALUES (?, 'INSTALLATION', ?, ?, 0, ?, ?, ?, ?, ?)`,
+                    [
+                        accessory.product_id, accessory.stb_accessory_id,
+                        `CTV-STB-${accessory.customer_stb_id}`, issuedQty, balanceQty,
+                        Number(accessory.purchase_price || 0),
+                        `CATV STB accessory approved for issue`,
+                        accessory.issued_by_employee_id || approvedBy
+                    ]
+                );
+            }
             const approvalTables = [
                 'cable_tv_customers',
-                'cable_customer_stbs',
-                'cable_connections',
-                'cable_connection_materials',
-                'cable_customer_packages',
-                'cable_subscriptions',
                 'cable_customer_accounts',
-                'cable_customer_stb_accessories'
+                ...(!waitForAccountReceipt ? [
+                    'cable_connections',
+                    'cable_connection_materials',
+                    'cable_customer_stbs',
+                    'cable_customer_packages',
+                    'cable_subscriptions',
+                    'cable_customer_stb_accessories'
+                ] : [])
             ];
             for (const table of approvalTables) {
                 await conn.query(

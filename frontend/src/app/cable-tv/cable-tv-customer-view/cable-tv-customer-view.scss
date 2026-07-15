@@ -1,0 +1,168 @@
+:host { display: block; }
+
+.view-page {
+  background: #eef2f7;
+  min-height: 100%;
+  padding: 18px;
+}
+
+.breadcrumb {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.breadcrumb a { color: #1769aa; text-decoration: none; }
+
+.page-heading {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin: 0 auto 16px;
+  max-width: 1600px;
+}
+
+.page-heading h1 { color: #172033; font-size: 24px; margin: 0 0 4px; }
+.page-heading p { color: #667085; font-size: 13px; margin: 0; }
+.heading-actions { display: flex; gap: 8px; }
+
+.heading-actions button,
+.print-link {
+  align-items: center;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 650;
+  gap: 7px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 15px;
+}
+
+.heading-actions mat-icon,
+.print-link mat-icon { font-size: 18px; height: 18px; width: 18px; }
+.secondary-button { background: #e3e9f1; color: #243447; }
+.print-button { background: #17263d; color: #fff; }
+
+.print-sheet {
+  background: #fff;
+  border: 1px solid #dbe2ea;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, .06);
+  margin: 0 auto;
+  max-width: 1600px;
+  padding: 16px;
+}
+
+.print-title {
+  align-items: baseline;
+  border-bottom: 2px solid #415267;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 2px 9px;
+}
+
+.print-title h1 { color: #182230; font-size: 18px; margin: 0; }
+.print-title span { color: #475467; font-size: 13px; font-weight: 700; }
+
+.accordion {
+  border: 1px solid #cfd7df;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.accordion-heading {
+  align-items: center;
+  background: #65727e;
+  border: 0;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  font-size: 14px;
+  font-weight: 750;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 8px 12px;
+  text-align: left;
+  width: 100%;
+}
+
+.accordion-heading mat-icon { transition: transform .2s ease; }
+.accordion.collapsed .accordion-heading mat-icon { transform: rotate(-90deg); }
+.accordion-content { display: block; }
+.accordion.collapsed .accordion-content { display: none; }
+
+.customer-overview { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); }
+.customer-primary { border-right: 1px solid #d5dbe1; padding: 14px 16px; }
+.record-label { color: #667085; display: block; font-size: 11px; font-weight: 750; margin-bottom: 3px; text-transform: uppercase; }
+.customer-name { color: #1d2939; display: block; font-size: 15px; margin-bottom: 6px; }
+.customer-primary p { color: #344054; font-size: 13px; line-height: 1.45; margin: 3px 0; }
+.connection-summary { padding: 12px 16px; }
+.connection-summary p { display: flex; font-size: 12px; gap: 14px; justify-content: space-between; margin: 0; padding: 3px 0; text-align: right; }
+.connection-summary span { color: #667085; }
+.connection-summary strong { color: #1d2939; }
+
+.info-grid {
+  border-top: 1px solid #d5dbe1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.info-grid div { border-right: 1px solid #e1e6eb; border-top: 1px solid #e1e6eb; display: grid; gap: 3px; min-height: 55px; padding: 9px 12px; }
+.info-grid div:nth-child(-n + 4) { border-top: 0; }
+.info-grid div:nth-child(4n) { border-right: 0; }
+.info-grid span { color: #667085; font-size: 11px; font-weight: 650; }
+.info-grid strong { color: #1f2937; font-size: 12px; overflow-wrap: anywhere; }
+
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; min-width: 1000px; table-layout: auto; width: 100%; }
+th, td { border: 1px solid #d7dde3; font-size: 11px; line-height: 1.35; padding: 7px 8px; text-align: left; vertical-align: top; }
+th { background: #f0f3f5; color: #344054; font-weight: 750; white-space: nowrap; }
+td { color: #344054; }
+tbody tr:nth-child(even) { background: #f8fafb; }
+.empty-row { color: #667085; padding: 14px; text-align: center; }
+.status-cell { background: #fff1e7; border-radius: 3px; color: #9a3412; display: inline-block; font-weight: 700; padding: 3px 6px; }
+.status-cell.paid { background: #d8f3df; color: #166534; }
+.print-footer { display: flex; justify-content: center; padding: 6px 0 2px; }
+.print-link { background: transparent; color: #1f2937; text-decoration: underline; }
+
+@media (max-width: 800px) {
+  .view-page { padding: 12px; }
+  .page-heading { align-items: stretch; flex-direction: column; }
+  .heading-actions button { flex: 1; }
+  .customer-overview { grid-template-columns: 1fr; }
+  .customer-primary { border-bottom: 1px solid #d5dbe1; border-right: 0; }
+  .info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .info-grid div:nth-child(n) { border-right: 1px solid #e1e6eb; border-top: 1px solid #e1e6eb; }
+  .info-grid div:nth-child(-n + 2) { border-top: 0; }
+  .info-grid div:nth-child(2n) { border-right: 0; }
+  .print-title { align-items: flex-start; flex-direction: column; gap: 4px; }
+}
+
+@media print {
+  @page { margin: 8mm; size: A4 landscape; }
+  :host { background: #fff; }
+  .no-print { display: none !important; }
+  .view-page { background: #fff; min-height: 0; padding: 0; }
+  .print-sheet { border: 0; border-radius: 0; box-shadow: none; max-width: none; padding: 0; }
+  .accordion { break-inside: avoid; margin-bottom: 8px; }
+  .accordion.collapsed .accordion-content { display: block !important; }
+  .accordion-heading { background: #65727e !important; color: #fff !important; min-height: 28px; padding: 5px 8px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .accordion-heading mat-icon { display: none; }
+  .customer-primary { padding: 8px 10px; }
+  .connection-summary { padding: 7px 10px; }
+  .info-grid div { min-height: 42px; padding: 5px 7px; }
+  .table-wrap { overflow: visible; }
+  table { min-width: 0; }
+  th, td { font-size: 8px; padding: 4px; }
+  th { background: #e8ecef !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  tbody tr:nth-child(even) { background: #f6f7f8 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .status-cell, .status-cell.paid { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

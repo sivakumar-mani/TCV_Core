@@ -7,7 +7,7 @@ import { PermissionService, RolePermission } from '../../services/permission.ser
 import { Snackbar } from '../../services/snackbar';
 import { globalConstants } from '../../services/global-constants';
 
-interface CatalogItem { group: string; key: string; label: string; route: string; }
+interface CatalogItem { group: string; key: string; label: string; route: string; createOnly?: boolean; }
 
 @Component({
   selector: 'app-role-permissions',
