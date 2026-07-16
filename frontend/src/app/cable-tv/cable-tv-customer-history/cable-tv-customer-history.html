@@ -73,6 +73,8 @@
             <th *ngIf="section === 'connections'">Date</th>
             <th *ngIf="section === 'connections'">Type</th>
             <th *ngIf="section === 'connections'">Installed By</th>
+            <th *ngIf="section === 'connections'">Old Address</th>
+            <th *ngIf="section === 'connections'">New Address</th>
             <th *ngIf="section === 'connections'">Charge</th>
             <th *ngIf="section === 'connections'">Labor</th>
             <th *ngIf="section === 'stbs'">Updated Date</th>
@@ -106,8 +108,10 @@
         <tbody>
           <tr *ngFor="let row of rows">
             <td *ngIf="section === 'connections'">{{ row.connection_date | date:'yyyy-MM-dd' }}</td>
-            <td *ngIf="section === 'connections'">{{ row.connection_type }}</td>
+            <td *ngIf="section === 'connections'">{{ connectionTypeLabel(row.connection_type) }}</td>
             <td *ngIf="section === 'connections'">{{ row.installed_by_name || row.entered_by_name || '-' }}</td>
+            <td *ngIf="section === 'connections'">{{ row.old_address || '-' }}</td>
+            <td *ngIf="section === 'connections'">{{ row.new_address || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.connection_charge }}</td>
             <td *ngIf="section === 'connections'">{{ row.labour_service_charge }}</td>
             <td *ngIf="section === 'stbs'">{{ (row.updated_date || row.installed_date) | date:'yyyy-MM-dd' }}</td>
@@ -118,7 +122,11 @@
             <td *ngIf="section === 'stbs'">{{ row.stb_amount }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_discount }}</td>
             <td *ngIf="section === 'stbs'">{{ row.labour_service_charge }}</td>
-            <td *ngIf="section === 'stbs'">{{ row.approval_status === 'PENDING' ? 'Pending' : row.status }}</td>
+            <td *ngIf="section === 'stbs'">
+              <span class="table-status-pill" [class.pending]="row.approval_status === 'PENDING'">
+                {{ row.approval_status === 'PENDING' ? 'Pending' : row.status }}
+              </span>
+            </td>
             <td *ngIf="section === 'packages'">{{ packageTypeLabel(row.package_type) }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_name || row.package_id }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_price }}</td>
@@ -167,7 +175,17 @@
 
       <div class="form-grid" *ngIf="section === 'connections'">
         <label>Connection Date<input type="date" formControlName="connection_date"></label>
-        <label>Connection Type<select formControlName="connection_type"><option *ngFor="let type of connectionTypes" [ngValue]="type">{{ type }}</option></select></label>
+        <label>Connection Type<select formControlName="connection_type"><option *ngFor="let type of connectionTypes" [ngValue]="type">{{ connectionTypeLabel(type) }}</option></select></label>
+        <label *ngIf="isLocationChange">Door No<input type="text" formControlName="new_door_no" placeholder="Enter new door no"></label>
+        <label *ngIf="isLocationChange">Postal Area
+          <select formControlName="new_location_id"><option [ngValue]="null">Select postal area</option><option *ngFor="let location of locationChangePostalAreas" [ngValue]="location.location_id">{{ location.location_name }}</option></select>
+        </label>
+        <label *ngIf="isLocationChange">Location
+          <select formControlName="new_area_id"><option [ngValue]="null">Select location</option><option *ngFor="let area of locationChangeAreas" [ngValue]="area.area_id">{{ area.area_name }}</option></select>
+        </label>
+        <label *ngIf="isLocationChange">Street
+          <select formControlName="new_street_id"><option [ngValue]="null">Select street</option><option *ngFor="let street of locationChangeStreets" [ngValue]="street.street_id">{{ street.street_name }}</option></select>
+        </label>
         <label *ngIf="permissions.isAdmin()">Installed By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Installed By<input type="text" [value]="permissions.username()" readonly></label>
         <label>Connection Charge<input type="number" formControlName="connection_charge"></label>
@@ -194,7 +212,6 @@
         <div class="form-grid">
           <label>Customer Paid<input type="number" formControlName="customer_paid_amount"></label>
           <label>Balance<input type="number" formControlName="balance_amount" readonly></label>
-          <label *ngIf="form.get('balance_amount')?.value > 0">Due Date<input type="date" formControlName="due_date"></label>
           <label>Overall Discount<input type="number" formControlName="overall_discount"></label>
         </div>
       </div>
@@ -241,14 +258,15 @@
         </label>
       </div>
 
-      <div class="accessory-box" *ngIf="section === 'stbs' && isReplacementReason" formArrayName="accessories">
-        <h3>Accessories</h3>
+      <div class="accessory-box" *ngIf="section === 'stbs' && (isReplacementReason || isReturnReason)" formArrayName="accessories">
+        <h3>{{ isReturnReason ? 'Returned Accessories (Used Stock)' : 'Accessories' }}</h3>
         <div class="accessory-grid" *ngIf="stbAccessories.length; else noStbAccessories">
           <label class="checkbox-card" *ngFor="let accessory of stbAccessories.controls; let i = index" [formGroupName]="i">
             <input type="checkbox" formControlName="selected">
             <span>
               <strong>{{ accessoryDisplayName(accessory.get('product_name')?.value) }}</strong>
-              <small>Stock: {{ accessory.get('available_qty')?.value | number:'1.0-2' }} {{ accessory.get('unit')?.value }}</small>
+              <small *ngIf="!isReturnReason">Stock: {{ accessory.get('available_qty')?.value | number:'1.0-2' }} {{ accessory.get('unit')?.value }}</small>
+              <small *ngIf="isReturnReason">Return to used stock: 1 {{ accessory.get('unit')?.value }}</small>
             </span>
           </label>
         </div>
@@ -261,7 +279,6 @@
         <div class="form-grid">
           <label>Customer Paid<input type="number" formControlName="customer_paid_amount"></label>
           <label>Balance<input type="number" formControlName="balance_amount" readonly></label>
-          <label *ngIf="form.get('balance_amount')?.value > 0">Due Date<input type="date" formControlName="due_date"></label>
           <label>Overall Discount<input type="number" formControlName="overall_discount"></label>
         </div>
       </div>

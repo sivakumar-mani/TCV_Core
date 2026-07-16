@@ -24,7 +24,9 @@ const {
   getLookups,
   getMasters,
   getPendingAccounts,
+  getAccountPayments,
   receiveAccount,
+  revertAccountToPending,
   updateLocationInfo,
   updateCableCustomer,
   updateCustomerConnection,
@@ -52,7 +54,9 @@ router.post('/masters/packages', auth.requirePermission('CABLE_TV_PACKAGES'), ad
 router.post('/masters/stbs', auth.requirePermission('CABLE_TV_STBS'), addStbMaster);
 router.patch('/masters/stbs/:stbMasterId/assign', auth.requirePermission('CABLE_TV_STBS'), assignStbMaster);
 router.get('/accounts/pending', auth.requirePermission('CABLE_TV_ACCOUNTS'), getPendingAccounts);
+router.get('/accounts/:accountId/payments', auth.requirePermission('CABLE_TV_ACCOUNTS'), getAccountPayments);
 router.patch('/accounts/:accountId/receive', auth.requirePermission('CABLE_TV_ACCOUNTS'), receiveAccount);
+router.patch('/accounts/:accountId/revert-pending', auth.requireAdmin, revertAccountToPending);
 router.get('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomers);
 router.get('/customers/:id', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomerById);
 router.post('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), addCableCustomer);

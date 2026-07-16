@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CableTvServices } from '../../services/cable-tv-services';
 import { Snackbar } from '../../services/snackbar';
@@ -8,45 +10,302 @@ import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-account-pending',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './cable-tv-account-pending.html',
   styleUrl: './cable-tv-account-pending.scss'
 })
 export class CableTvAccountPending {
   accounts: any[] = [];
+  nameFilter = '';
+  statusFilter = 'PENDING';
+  installedByFilter = '';
+  startDate = '';
+  endDate = '';
+  employees: any[] = [];
+  showPaymentModal = false;
+  selectedAccount: any = null;
+  paymentHistory: any[] = [];
+  selectedReportAccounts: any[] = [];
+  paymentBaseBalance = 0;
+  receivedAmountValue = 0;
+  paymentBalanceValue = 0;
+  paymentStatusValue = 'PENDING';
+  paymentForm = {
+    paid_date: '',
+    cash_amount: 0,
+    online_amount: 0,
+    received_date: '',
+    due_date: '',
+    received_by_employee_id: null as number | null
+  };
 
   constructor(
     private cableTvService: CableTvServices,
     private ngxLoader: NgxUiLoaderService,
     private snackbar: Snackbar,
-    public permissions: PermissionService
+    public permissions: PermissionService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
+    this.nameFilter = this.route.snapshot.queryParamMap.get('name') || '';
+    this.statusFilter = String(this.route.snapshot.queryParamMap.get('status') || 'PENDING').toUpperCase();
+    this.loadEmployees();
     this.loadAccounts();
+  }
+
+  loadEmployees() {
+    this.cableTvService.getLookups().subscribe({
+      next: (response: any) => this.employees = response?.employees || [],
+      error: (error: any) => this.handleError(error)
+    });
   }
 
   loadAccounts() {
     this.ngxLoader.start();
-    this.cableTvService.getPendingAccounts().subscribe({
+    this.cableTvService.getPendingAccounts({
+      name: this.nameFilter.trim(),
+      status: this.statusFilter,
+      installed_by_employee_id: this.installedByFilter,
+      start_date: this.startDate,
+      end_date: this.endDate
+    }).subscribe({
       next: (rows: any) => {
         this.ngxLoader.stop();
         this.accounts = rows || [];
+        const visibleIds = new Set(this.accounts.map((item: any) => Number(item.account_id)));
+        this.selectedReportAccounts = this.selectedReportAccounts.filter((item: any) => visibleIds.has(Number(item.account_id)));
       },
       error: (error: any) => this.handleError(error)
     });
   }
 
-  markReceived(accountId: number) {
+  openPayment(item: any) {
+    const today = this.today();
+    this.selectedAccount = item;
+    this.paymentBaseBalance = this.accountReceiptBalance(item);
+    this.paymentHistory = [];
+    this.paymentForm = {
+      paid_date: today,
+      cash_amount: 0,
+      online_amount: 0,
+      received_date: today,
+      due_date: item.due_date ? String(item.due_date).slice(0, 10) : '',
+      received_by_employee_id: this.loggedInEmployeeId
+    };
+    this.recalculatePayment();
+    this.showPaymentModal = true;
+    this.cableTvService.getAccountPayments(item.account_id).subscribe({
+      next: (rows: any) => this.paymentHistory = rows || [],
+      error: (error: any) => this.handleError(error)
+    });
+  }
+
+  closePayment() {
+    this.showPaymentModal = false;
+    this.selectedAccount = null;
+    this.paymentHistory = [];
+    this.paymentBaseBalance = 0;
+  }
+
+  savePayment() {
+    if (!this.selectedAccount) return;
+    const validationMessage = this.paymentValidationMessage();
+    if (validationMessage) {
+      this.snackbar.openSnackbar(validationMessage, globalConstants.errorRegex);
+      return;
+    }
     this.ngxLoader.start();
-    this.cableTvService.receiveAccount(accountId).subscribe({
+    this.cableTvService.receiveAccount(this.selectedAccount.account_id, this.paymentForm).subscribe({
       next: (response: any) => {
         this.ngxLoader.stop();
-        this.snackbar.openSnackbar(response?.message || 'Cash handover marked as received', '');
+        this.snackbar.openSnackbar(response?.message || 'Payment recorded successfully', '');
+        this.closePayment();
         this.loadAccounts();
       },
       error: (error: any) => this.handleError(error)
     });
+  }
+
+  revertToPending(accountId: number) {
+    if (!confirm('Revert this received account and related service statuses to Pending?')) return;
+    this.ngxLoader.start();
+    this.cableTvService.revertAccountToPending(accountId).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.snackbar.openSnackbar(response?.message || 'Account reverted to pending', '');
+        this.loadAccounts();
+      },
+      error: (error: any) => this.handleError(error)
+    });
+  }
+
+  resetFilters() {
+    this.nameFilter = '';
+    this.statusFilter = 'PENDING';
+    this.installedByFilter = '';
+    this.startDate = '';
+    this.endDate = '';
+    this.loadAccounts();
+  }
+
+  get loggedInAdminName() {
+    const employee = this.loggedInEmployee;
+    return employee?.employee_name || employee?.employee_code || this.permissions.username();
+  }
+
+  get loggedInEmployee() {
+    const employeeId = this.permissions.employeeId();
+    const identity = String(this.permissions.employeeCode() || this.permissions.username() || '').trim().toLowerCase();
+    return this.employees.find((item: any) =>
+      (employeeId && Number(item.employee_id) === Number(employeeId))
+      || String(item.employee_code || '').trim().toLowerCase() === identity
+      || String(item.employee_name || '').trim().toLowerCase() === identity
+    );
+  }
+
+  get loggedInEmployeeId() {
+    return this.loggedInEmployee?.employee_id || this.permissions.employeeId();
+  }
+
+  updatePaymentAmount(field: 'cash_amount' | 'online_amount', value: any) {
+    this.paymentForm[field] = value === '' || value === null ? 0 : Math.max(Number(value) || 0, 0);
+    this.recalculatePayment();
+  }
+
+  get receivedAmount() {
+    return this.receivedAmountValue;
+  }
+
+  get paymentBalance() {
+    return this.paymentBalanceValue;
+  }
+
+  get officeCurrentBalance() {
+    return this.paymentBaseBalance;
+  }
+
+  get customerCurrentBalance() {
+    return Math.max(Number(this.selectedAccount?.balance_amount) || 0, 0);
+  }
+
+  get paymentTargetAmount() {
+    const customerBalance = Number(this.selectedAccount?.balance_amount) || 0;
+    return customerBalance <= 0
+      ? Math.max(Number(this.selectedAccount?.grand_total) || 0, 0)
+      : Math.max(Number(this.selectedAccount?.customer_paid_amount) || 0, 0);
+  }
+
+  accountReceiptBalance(item: any) {
+    const target = (Number(item?.balance_amount) || 0) <= 0
+      ? Number(item?.grand_total) || 0
+      : Number(item?.customer_paid_amount) || 0;
+    const explicit = Number(item?.office_balance_amount);
+    if (Number.isFinite(explicit) && (explicit > 0 || Number(item?.office_received_amount) > 0)) return Math.max(explicit, 0);
+    return Math.max(target - (Number(item?.office_received_amount) || 0), 0);
+  }
+
+  get calculatedPaymentStatus() {
+    return this.paymentStatusValue;
+  }
+
+  recalculatePayment() {
+    const cash = Math.max(Number(this.paymentForm.cash_amount) || 0, 0);
+    const online = Math.max(Number(this.paymentForm.online_amount) || 0, 0);
+    this.receivedAmountValue = Number((cash + online).toFixed(2));
+    this.paymentBalanceValue = Number(Math.max(this.paymentBaseBalance - this.receivedAmountValue, 0).toFixed(2));
+    this.paymentStatusValue = this.receivedAmountValue <= 0
+      ? 'PENDING'
+      : this.paymentBalanceValue > 0 ? 'PARTIAL' : 'PAID';
+    if (this.paymentBalanceValue <= 0) this.paymentForm.due_date = '';
+  }
+
+  get paymentValid() {
+    const currentBalance = this.officeCurrentBalance;
+    return Boolean(
+      this.paymentForm.paid_date
+      && this.paymentForm.received_date
+      && this.receivedAmount > 0
+      && this.receivedAmount <= currentBalance
+      && (this.paymentBalance <= 0 || this.paymentForm.due_date)
+    );
+  }
+
+  paymentValidationMessage() {
+    if (!this.paymentForm.paid_date) return 'Paid Date is required';
+    if (!this.paymentForm.received_date) return 'Received Date is required';
+    if (this.receivedAmount <= 0) return 'Enter a Cash or Online amount';
+    if (this.receivedAmount > this.officeCurrentBalance) return 'Cash + Online cannot exceed the amount collected from the customer';
+    if (this.paymentBalance > 0 && !this.paymentForm.due_date) return 'Due Date is required for a partial payment';
+    return '';
+  }
+
+  today() {
+    const date = new Date();
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 10);
+  }
+
+  isReportRowSelected(item: any) {
+    return this.selectedReportAccounts.some((selected: any) => Number(selected.account_id) === Number(item.account_id));
+  }
+
+  toggleReportRow(item: any, checked: boolean) {
+    if (checked && !this.isReportRowSelected(item)) this.selectedReportAccounts = [...this.selectedReportAccounts, item];
+    if (!checked) this.selectedReportAccounts = this.selectedReportAccounts.filter(
+      (selected: any) => Number(selected.account_id) !== Number(item.account_id)
+    );
+  }
+
+  toggleAllReportRows(checked: boolean) {
+    this.selectedReportAccounts = checked ? [...this.accounts] : [];
+  }
+
+  get allReportRowsSelected() {
+    return Boolean(this.accounts.length) && this.accounts.every((item: any) => this.isReportRowSelected(item));
+  }
+
+  exportSelectedPaymentInvoice() {
+    const items = this.selectedReportAccounts;
+    if (!items.length) return;
+    const popup = window.open('', '_blank', 'width=1100,height=760');
+    if (!popup) {
+      this.snackbar.openSnackbar('Allow pop-ups to generate the printable PDF', globalConstants.errorRegex);
+      return;
+    }
+    const amount = (value: any) => Number(value || 0).toFixed(2);
+    const installedNames = [...new Set(items.map((item: any) => item.installed_by_name || '-'))].join(', ');
+    const invoiceRows = items.map((item: any) => {
+      const date = item.account_date ? new Date(item.account_date).toLocaleDateString('en-GB') : '-';
+      const type = this.escapeHtml(item.connection_type || 'New');
+      const customerNo = this.escapeHtml(item.customer_code || '-');
+      const accessories = Number(item.material_cost || 0);
+      const locationChange = String(item.connection_type || '').toUpperCase() === 'SHIFTED' ? Number(item.connection_amount || 0) : 0;
+      return `<tr><td>${date}</td><td>${customerNo}</td><td>${type}</td><td>${amount(item.stb_amount)}</td><td>${amount(item.connection_amount)}</td><td>${amount(item.subscription_amount)}</td><td>${amount(item.customer_paid_amount)}</td><td>${amount(item.balance_amount)}</td><td>${amount(item.grand_total)}</td></tr>
+      <tr class="detail"><td colspan="3">Accessories - ${customerNo}</td><td>${amount(accessories)}</td><td colspan="5"></td></tr>
+      <tr class="detail"><td colspan="3">Location change - ${customerNo}</td><td></td><td>${amount(locationChange)}</td><td colspan="4"></td></tr>`;
+    }).join('');
+    const grandTotal = items.reduce((sum: number, item: any) => sum + Number(item.grand_total || 0), 0);
+    const customerNos = items.map((item: any) => item.customer_code).join(', ');
+    popup.document.write(`<!doctype html><html><head><title>Payment Invoice</title><style>
+      body{font-family:Arial,sans-serif;color:#111827;margin:32px}h1{text-align:center;font-size:22px;margin:0 0 24px}
+      .meta{display:flex;justify-content:space-between;margin-bottom:14px;font-size:14px}table{border-collapse:collapse;width:100%}
+      th,td{border:1px solid #6b7280;padding:8px;text-align:right;font-size:12px}th{background:#e5e7eb}
+      th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}.detail td:first-child{padding-left:30px;font-weight:600}
+      .grand td{font-weight:700;background:#f3f4f6}.note{font-size:11px;margin-top:18px;color:#4b5563}
+      @media print{body{margin:12mm}.no-print{display:none}}
+    </style></head><body><h1>Payment Invoice</h1><div class="meta"><strong>Installed by: ${this.escapeHtml(installedNames)}</strong><span>Printed: ${new Date().toLocaleDateString('en-GB')}</span></div>
+    <table><thead><tr><th>Date</th><th>Customer No</th><th>Type</th><th>STB</th><th>Connection</th><th>Subscription</th><th>Customer Paid</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
+    ${invoiceRows}<tr class="grand"><td colspan="8">Grand Total</td><td>${amount(grandTotal)}</td></tr>
+    </tbody></table><p class="note">Selected customers: ${this.escapeHtml(customerNos)}</p>
+    <script>window.onload=()=>{window.print();}</script></body></html>`);
+    popup.document.close();
+  }
+
+  private escapeHtml(value: any) {
+    return String(value ?? '').replace(/[&<>'"]/g, (character) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[character] || character));
   }
 
   private handleError(error: any) {

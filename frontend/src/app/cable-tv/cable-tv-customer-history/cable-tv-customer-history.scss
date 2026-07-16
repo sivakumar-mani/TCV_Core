@@ -12,6 +12,8 @@
 .name-line h1 { color: #071a36; font-size: 22px; font-weight: 800; letter-spacing: 0; line-height: 1.15; margin: 0; }
 .status-pill { align-items: center; background: #fff4e6; border: 1px solid #ffd7a8; border-radius: 999px; color: #b64c00; display: inline-flex; font-size: 14px; font-weight: 750; gap: 7px; min-height: 28px; padding: 4px 12px; }
 .status-pill span { background: #f4a62a; border-radius: 50%; height: 7px; width: 7px; }
+.table-status-pill { background: #e8f5e9; border: 1px solid #b9dfbd; border-radius: 999px; color: #237a35; display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 9px; text-transform: capitalize; }
+.table-status-pill.pending { background: #fff4e6; border-color: #ffd7a8; color: #b64c00; }
 .meta-line { align-items: center; color: #667796; display: flex; flex-wrap: wrap; font-size: 14px; gap: 10px; }
 .customer-no { background: #e7edf6; border-radius: 6px; color: #4e607b; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 800; letter-spacing: 0; padding: 6px 12px; }
 .address-line { align-items: center; display: inline-flex; gap: 6px; min-width: 0; }

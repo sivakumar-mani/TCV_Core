@@ -373,6 +373,7 @@ CREATE TABLE IF NOT EXISTS cable_customer_stb_accessories (
     cable_customer_id BIGINT NOT NULL,
     customer_stb_id BIGINT NOT NULL,
     product_id INT NOT NULL,
+    movement_type ENUM('ISSUE','RETURN') NOT NULL DEFAULT 'ISSUE',
     accessory_name VARCHAR(200) NOT NULL,
     qty DECIMAL(10,2) NOT NULL DEFAULT 1,
     unit VARCHAR(20) NOT NULL DEFAULT 'PCS',
@@ -403,7 +404,7 @@ CREATE TABLE IF NOT EXISTS cable_customer_stb_accessories (
     INDEX idx_cable_stb_accessories_stb (customer_stb_id),
     INDEX idx_cable_stb_accessories_product (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-COMMENT='Accessories issued with customer STB installation';
+COMMENT='Accessories issued with or returned from customer STB installation';
 
 -- =====================================================
 -- 13. CABLE CONNECTIONS
@@ -416,6 +417,16 @@ CREATE TABLE IF NOT EXISTS cable_connections (
     connection_date DATE NOT NULL DEFAULT (CURDATE()),
     disconnection_date DATE NULL,
     connection_type ENUM('NEW','RECONNECTION','SHIFTED','TRANSFERRED') NOT NULL DEFAULT 'NEW',
+    old_door_no VARCHAR(50) NULL,
+    new_door_no VARCHAR(50) NULL,
+    old_location_id INT NULL,
+    old_area_id INT NULL,
+    old_street_id INT NULL,
+    new_location_id INT NULL,
+    new_area_id INT NULL,
+    new_street_id INT NULL,
+    old_address VARCHAR(500) NULL,
+    new_address VARCHAR(500) NULL,
     connected_by_employee_id INT NULL,
     entered_by_employee_id INT NULL,
     connection_charge DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (connection_charge >= 0),
@@ -682,10 +693,13 @@ CREATE TABLE IF NOT EXISTS cable_customer_accounts (
     overall_discount DECIMAL(12,2) NOT NULL DEFAULT 0,
     grand_total DECIMAL(12,2) NOT NULL DEFAULT 0,
     customer_paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    office_received_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    office_balance_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
     balance_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
     due_date DATE NULL,
-    account_status ENUM('PENDING','RECEIVED') NOT NULL DEFAULT 'PENDING',
+    account_status ENUM('PENDING','PARTIAL','PAID','RECEIVED') NOT NULL DEFAULT 'PENDING',
     received_by_user_id INT NULL,
+    received_by_employee_id INT NULL,
     received_at TIMESTAMP NULL,
     approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
     created_by_user_id INT NULL,
@@ -705,6 +719,26 @@ CREATE TABLE IF NOT EXISTS cable_customer_accounts (
     INDEX idx_cable_customer_accounts_status (account_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 COMMENT='Account handover totals for cable customer installation';
+
+CREATE TABLE IF NOT EXISTS cable_customer_account_payments (
+    payment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    account_id BIGINT NOT NULL,
+    cash_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    online_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    received_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    paid_date DATE NOT NULL,
+    received_date DATE NOT NULL,
+    due_date DATE NULL,
+    balance_after_payment DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_status ENUM('PARTIAL','PAID') NOT NULL,
+    received_by_user_id INT NOT NULL,
+    received_by_employee_id INT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_cable_account_payments_account (account_id),
+    INDEX idx_cable_account_payments_paid_date (paid_date),
+    CONSTRAINT fk_cable_account_payments_account FOREIGN KEY (account_id)
+        REFERENCES cable_customer_accounts(account_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =====================================================
 -- INITIAL MASTER DATA

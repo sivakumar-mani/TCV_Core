@@ -27,7 +27,6 @@ export class CableTvCustomerForm {
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly connectionTypes = ['NEW', 'SHIFTED', 'TRANSFERRED'];
-  readonly accountStatuses = ['PENDING', 'RECEIVED'];
   readonly paymentTypes = ['DAY', 'MONTH', 'YEAR'];
   readonly periodCounts = Array.from({ length: 12 }, (_value, index) => index + 1);
   readonly yearOptions = Array.from({ length: 12 }, (_value, index) => new Date().getFullYear() + index);
@@ -148,8 +147,7 @@ export class CableTvCustomerForm {
         grand_total: [0],
         customer_paid_amount: [0],
         balance_amount: [0],
-        due_date: [''],
-        account_status: [{ value: 'PENDING', disabled: !this.permissions.isAdmin() }]
+        account_status: [{ value: 'PENDING', disabled: true }]
       })
     });
   }
@@ -686,14 +684,6 @@ export class CableTvCustomerForm {
     const grandTotal = Number(Math.max(subTotal - discount, 0).toFixed(2));
     const paidAmount = Number(this.account.get('customer_paid_amount')?.value) || 0;
     const balanceAmount = Number(Math.max(grandTotal - paidAmount, 0).toFixed(2));
-    const dueDate = this.account.get('due_date');
-    if (balanceAmount > 0) {
-      dueDate?.setValidators([Validators.required]);
-    } else {
-      dueDate?.clearValidators();
-      dueDate?.setValue('', { emitEvent: false });
-    }
-    dueDate?.updateValueAndValidity({ emitEvent: false });
     this.account.patchValue({
       stb_amount: Number(stbAmount.toFixed(2)),
       stb_discount: Number(stbDiscount.toFixed(2)),

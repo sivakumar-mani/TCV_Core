@@ -28,6 +28,7 @@ export class CableTvCustomerHistory {
   showModal = false;
   editId = 0;
   customerSearchNo = '';
+  private returnAccessoriesInitialized = false;
 
   readonly titles: Record<Section, string> = {
     connections: 'Connection Details',
@@ -47,7 +48,7 @@ export class CableTvCustomerHistory {
     packages: 'CABLE_TV_CUSTOMER_PACKAGES',
     subscriptions: 'CABLE_TV_SUBSCRIPTIONS'
   };
-  readonly connectionTypes = ['RECONNECTION', 'SHIFTED', 'TRANSFERRED', 'NEW'];
+  readonly connectionTypes = ['RECONNECTION', 'SHIFTED'];
   readonly packageTypes = ['ADDON', 'ALACARTE', 'BROADCASTER'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE', 'RETURNED', 'FAULTY', 'REPLACED'];
@@ -62,7 +63,8 @@ export class CableTvCustomerHistory {
     'DISCONNECT',
     'VACATED',
     'STB_LOST',
-    'OUTSTATION'
+    'OUTSTATION',
+    'RETURNED'
   ];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
@@ -104,10 +106,34 @@ export class CableTvCustomerHistory {
   get currentActiveStb() {
     return (this.details.stbs || []).find((item: any) => String(item.status || '').toUpperCase() === 'ACTIVE') || this.latestStb || {};
   }
-  get headerStatus() { return this.latestStb.status || this.customer.status || 'Pending'; }
+  get headerStatus() {
+    return String(this.latestStb.approval_status || '').toUpperCase() === 'PENDING'
+      ? 'Pending'
+      : (this.latestStb.status || this.customer.status || 'Pending');
+  }
   get headerStbNo() { return this.latestStb.stb_no || '-'; }
   get headerDate() { return this.latestStb.installed_date || this.latestConnection.connection_date || this.customer.installation_date || ''; }
   get isReplacementReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'REPLACED'; }
+  get isReturnReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'RETURNED'; }
+  get isLocationChange() { return this.section === 'connections' && String(this.form?.get('connection_type')?.value || '').toUpperCase() === 'SHIFTED'; }
+  get locationChangePostalAreas() {
+    const networkId = Number(this.customer?.network_id);
+    const locationIds = new Set((this.lookups.areas || [])
+      .filter((area: any) => Number(area.network_id) === networkId)
+      .map((area: any) => Number(area.location_id)));
+    return (this.lookups.locations || []).filter((location: any) => locationIds.has(Number(location.location_id)));
+  }
+  get locationChangeAreas() {
+    const networkId = Number(this.customer?.network_id);
+    const locationId = Number(this.form?.get('new_location_id')?.value);
+    return (this.lookups.areas || []).filter((area: any) =>
+      Number(area.network_id) === networkId && Number(area.location_id) === locationId
+    );
+  }
+  get locationChangeStreets() {
+    const areaId = Number(this.form?.get('new_area_id')?.value);
+    return (this.lookups.streets || []).filter((street: any) => Number(street.area_id) === areaId);
+  }
   get filteredStbMasters() {
     const selectedType = String(this.form?.get('stb_type')?.value || 'NEW').toUpperCase();
     return (this.lookups.stbMasters || []).filter((stb: any) => String(stb.stock_type || '').toUpperCase() === selectedType);
@@ -144,6 +170,10 @@ export class CableTvCustomerHistory {
       this.form = this.fb.group({
         connection_date: [today, Validators.required],
         connection_type: ['RECONNECTION', Validators.required],
+        new_door_no: [''],
+        new_location_id: [null],
+        new_area_id: [null],
+        new_street_id: [null],
         installed_by_employee_id: [null],
         connection_charge: [0],
         connection_discount: [0],
@@ -156,10 +186,19 @@ export class CableTvCustomerHistory {
         remarks: [''],
         materials: this.fb.array([this.createMaterialRow()])
       });
+      this.form.get('connection_type')?.valueChanges.subscribe(() => this.applyLocationChangeState());
+      this.form.get('new_location_id')?.valueChanges.subscribe(() => {
+        this.form.patchValue({ new_area_id: null, new_street_id: null }, { emitEvent: false });
+      });
+      this.form.get('new_area_id')?.valueChanges.subscribe(() => {
+        this.form.patchValue({ new_street_id: null }, { emitEvent: false });
+      });
+      this.applyLocationChangeState();
       this.watchBalance(['connection_charge', 'connection_discount', 'labour_service_charge', 'overall_discount', 'customer_paid_amount']);
       return;
     }
     if (this.section === 'stbs') {
+      this.returnAccessoriesInitialized = false;
       this.form = this.fb.group({
         current_stb_no: [this.currentActiveStb.stb_no || ''],
         updated_date: [today, Validators.required],
@@ -792,14 +831,7 @@ export class CableTvCustomerHistory {
     const paid = Number(this.form.get('customer_paid_amount')?.value) || 0;
     const balance = Math.max(Number(total.toFixed(2)) - paid, 0);
     this.form.patchValue({ balance_amount: Number(balance.toFixed(2)) }, { emitEvent: false });
-    const dueDate = this.form.get('due_date');
-    if (balance > 0) {
-      dueDate?.setValidators([Validators.required]);
-    } else {
-      dueDate?.clearValidators();
-      dueDate?.setValue('', { emitEvent: false });
-    }
-    dueDate?.updateValueAndValidity({ emitEvent: false });
+    this.form.get('due_date')?.setValue('', { emitEvent: false });
   }
 
   connectionMaterialCost() {
@@ -808,7 +840,6 @@ export class CableTvCustomerHistory {
 
   connectionTotal() {
     const total = (Number(this.form.get('connection_charge')?.value) || 0)
-      + (Number(this.form.get('labour_service_charge')?.value) || 0)
       + this.connectionMaterialCost()
       - (Number(this.form.get('connection_discount')?.value) || 0)
       - (Number(this.form.get('overall_discount')?.value) || 0);
@@ -890,6 +921,7 @@ export class CableTvCustomerHistory {
   applyStbReasonState() {
     if (this.section !== 'stbs' || !this.form) return;
     const replacement = this.isReplacementReason;
+    const returned = this.isReturnReason;
     const stbNo = this.form.get('stb_no');
     const stbMaster = this.form.get('stb_master_id');
     if (replacement) {
@@ -909,9 +941,27 @@ export class CableTvCustomerHistory {
         balance_amount: 0,
         due_date: '',
         overall_discount: 0,
-        status: this.form.get('reason')?.value === 'REACTIVATE' ? 'ACTIVE' : 'DISCONNECTED'
+        status: returned
+          ? 'RETRIEVED'
+          : (this.form.get('reason')?.value === 'REACTIVATE' ? 'ACTIVE' : 'DISCONNECTED')
       }, { emitEvent: false });
-      this.stbAccessories.controls.forEach((row) => row.patchValue({ selected: false }, { emitEvent: false }));
+      if (returned) {
+        if (!this.returnAccessoriesInitialized) {
+          const activeStbId = Number(this.currentActiveStb.customer_stb_id);
+          const returnedProductIds = new Set((this.details.stbAccessories || [])
+            .filter((item: any) => Number(item.customer_stb_id) === activeStbId
+              && String(item.movement_type || 'ISSUE').toUpperCase() === 'ISSUE')
+            .map((item: any) => Number(item.product_id)));
+          this.stbAccessories.controls.forEach((row) => row.patchValue({
+            selected: returnedProductIds.has(Number(row.get('product_id')?.value)),
+            qty: 1
+          }, { emitEvent: false }));
+          this.returnAccessoriesInitialized = true;
+        }
+      } else {
+        this.returnAccessoriesInitialized = false;
+        this.stbAccessories.controls.forEach((row) => row.patchValue({ selected: false }, { emitEvent: false }));
+      }
     }
     stbNo?.updateValueAndValidity({ emitEvent: false });
     stbMaster?.updateValueAndValidity({ emitEvent: false });
@@ -920,6 +970,23 @@ export class CableTvCustomerHistory {
 
   reasonLabel(reason: string) {
     return String(reason || '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  connectionTypeLabel(type: string) {
+    return String(type || '').toUpperCase() === 'SHIFTED' ? 'Location Change' : 'Reconnection';
+  }
+
+  applyLocationChangeState() {
+    if (this.section !== 'connections' || !this.form) return;
+    for (const name of ['new_door_no', 'new_location_id', 'new_area_id', 'new_street_id']) {
+      const control = this.form.get(name);
+      if (this.isLocationChange) control?.setValidators([Validators.required]);
+      else {
+        control?.clearValidators();
+        control?.setValue(name === 'new_door_no' ? '' : null, { emitEvent: false });
+      }
+      control?.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   stbTotal() {

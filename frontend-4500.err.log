@@ -91,3 +91,94 @@
          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
 [39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'receiptBlocked' does not exist on type 'CableTvAccountPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:69:24:
+[37m      69 │             [disabled]="[32mreceiptBlocked[37m(item)"
+         ╵                         [32m~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvAccountPending.
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
+[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'receiptBlocked' does not exist on type 'CableTvAccountPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:70:21:
+[37m      70 │             [title]="[32mreceiptBlocked[37m(item) ? 'Outstanding balance w...
+         ╵                      [32m~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvAccountPending.
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
+[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'markReceived' does not exist on type 'CableTvAccountPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:71:21:
+[37m      71 │             (click)="[32mmarkReceived[37m(item.account_id)">Received</button>
+         ╵                      [32m~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvAccountPending.
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
+[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'selectedReportAccount' does not exist on type 'CableTvAccountPending'. Did you mean 'selectedReportAccounts'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:4:19:
+[37m      4 │     <button *ngIf="[32mselectedReportAccount[37m" type="button" (click)="ex...
+        ╵                    [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvAccountPending.
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
+[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'selectedReportAccount' does not exist on type 'CableTvAccountPending'. Did you mean 'selectedReportAccounts'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:55:69:
+[37m      55 │ ...elected-report-row]="[32mselectedReportAccount[37m?.account_id === item...
+         ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvAccountPending.
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
+[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'selectedReportAccount' does not exist on type 'CableTvAccountPending'. Did you mean 'selectedReportAccounts'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:56:68:
+[37m      56 │ ...voiceRow" [checked]="[32mselectedReportAccount[37m?.account_id === item...
+         ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvAccountPending.
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
+[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'selectReportRow' does not exist on type 'CableTvAccountPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:56:133:
+[37m      56 │ ...m.account_id" (change)="[32mselectReportRow[37m(item)" aria-label="Sele...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvAccountPending.
+
+    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
+[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

@@ -2,8 +2,12 @@ const connection = require('../connection');
 
 const managedTypes = [
     'SUPPLIER_BALANCE', 'CUSTOMER_BALANCE', 'CUSTOMER_OVERDUE',
-    'OUT_OF_STOCK', 'LOW_STOCK', 'WORKFLOW_PENDING', 'QUOTATION_EXPIRED'
+    'OUT_OF_STOCK', 'LOW_STOCK', 'WORKFLOW_PENDING', 'QUOTATION_EXPIRED',
+    'CABLE_TV_ACCOUNT_DUE'
 ];
+
+const isAdmin = (req) => String(req.res?.locals?.role || '').toUpperCase() === 'ADMIN';
+const currentUserId = (req) => Number(req.res?.locals?.userId || req.res?.locals?.user_id || req.res?.locals?.id) || 0;
 
 const ensureNotificationTable = async (conn) => {
     await conn.query(`
@@ -18,6 +22,7 @@ const ensureNotificationTable = async (conn) => {
             reference_id INT,
             reference_no VARCHAR(100),
             navigation_url VARCHAR(500),
+            target_user_id INT NULL,
             is_read TINYINT(1) NOT NULL DEFAULT 0,
             is_active TINYINT(1) NOT NULL DEFAULT 1,
             resolved_at TIMESTAMP NULL,
@@ -28,23 +33,32 @@ const ensureNotificationTable = async (conn) => {
             INDEX idx_severity (severity)
         ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
+    const [[targetColumn]] = await conn.query(
+        `SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'notifications' AND COLUMN_NAME = 'target_user_id'`
+    );
+    if (!targetColumn.count) {
+        await conn.query('ALTER TABLE notifications ADD COLUMN target_user_id INT NULL AFTER navigation_url');
+        await conn.query('ALTER TABLE notifications ADD INDEX idx_notification_target (target_user_id, is_active)');
+    }
 };
 
 const upsertNotification = async (conn, item) => {
     await conn.query(
         `INSERT INTO notifications (
             source_key, notification_type, title, message, severity,
-            reference_type, reference_id, reference_no, navigation_url
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            reference_type, reference_id, reference_no, navigation_url, target_user_id
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON DUPLICATE KEY UPDATE
             is_read = IF(is_active = 0, 0, is_read), is_active = 1, resolved_at = NULL,
             title = VALUES(title), message = VALUES(message), severity = VALUES(severity),
             notification_type = VALUES(notification_type),
             reference_type = VALUES(reference_type), reference_id = VALUES(reference_id),
             reference_no = VALUES(reference_no), navigation_url = VALUES(navigation_url),
+            target_user_id = VALUES(target_user_id),
             updated_at = NOW()`,
         [item.key, item.type, item.title, item.message, item.severity,
-            item.referenceType, item.referenceId, item.referenceNo, item.url]
+            item.referenceType, item.referenceId, item.referenceNo, item.url, item.targetUserId || null]
     );
 };
 
@@ -90,6 +104,29 @@ const syncNotifications = async (conn) => {
                 message: `${row.customer_name} needs to pay ${money(row.balance_amount)} for ${row.invoice_no}${row.due_date ? ` (due ${String(row.due_date).slice(0, 10)})` : ''}.`,
                 referenceType: 'SALE', referenceId: row.sales_id, referenceNo: row.invoice_no,
                 url: `/customer-payments?customerId=${row.customer_id}&salesId=${row.sales_id}`
+            });
+        }
+
+        const [cableTvDueAccounts] = await conn.query(
+            `SELECT ca.account_id, ca.cable_customer_id, ca.office_balance_amount AS balance_amount, ca.account_status,
+                    DATE_FORMAT(ca.due_date, '%Y-%m-%d') AS due_date_text,
+                    ca.due_date < CURDATE() AS overdue,
+                    ca.created_by_user_id, c.customer_code, c.full_name
+             FROM cable_customer_accounts ca
+             JOIN cable_tv_customers c ON c.cable_customer_id = ca.cable_customer_id
+             WHERE ca.account_status IN ('PENDING', 'PARTIAL') AND ca.office_balance_amount > 0 AND ca.due_date IS NOT NULL`
+        );
+        for (const row of cableTvDueAccounts) {
+            const dueDate = row.due_date_text;
+            const overdue = Boolean(row.overdue);
+            await save({
+                key: `cable-tv-account-due:${row.account_id}`,
+                type: 'CABLE_TV_ACCOUNT_DUE', severity: overdue ? 'CRITICAL' : 'WARNING',
+                title: overdue ? 'Cable TV payment overdue' : 'Cable TV payment due',
+                message: `${row.full_name} (${row.customer_code}) has ${money(row.balance_amount)} balance due on ${dueDate}.`,
+                referenceType: 'CABLE_TV_ACCOUNT', referenceId: row.account_id, referenceNo: row.customer_code,
+                url: `/cable-tv-account-pending?status=${row.account_status}&name=${encodeURIComponent(row.customer_code)}`,
+                targetUserId: row.created_by_user_id
             });
         }
 
@@ -167,12 +204,21 @@ const getNotifications = async (req, res) => {
         await syncNotifications(conn);
         const limit = Math.min(Math.max(Number(req.query.limit) || 100, 1), 200);
         const unreadOnly = String(req.query.unread || '') === 'true';
+        const userId = currentUserId(req);
+        const visibility = isAdmin(req)
+            ? ''
+            : `AND (target_user_id = ? OR (target_user_id IS NULL AND notification_type <> 'CABLE_TV_ACCOUNT_DUE'))`;
+        const values = isAdmin(req) ? [] : [userId];
         const [rows] = await conn.query(
-            `SELECT * FROM notifications WHERE is_active = 1 ${unreadOnly ? 'AND is_read = 0' : ''}
+            `SELECT * FROM notifications WHERE is_active = 1 ${unreadOnly ? 'AND is_read = 0' : ''} ${visibility}
              ORDER BY FIELD(severity, 'CRITICAL','WARNING','INFO'), is_read, updated_at DESC LIMIT ?`,
-            [limit]
+            [...values, limit]
         );
-        const [count] = await conn.query('SELECT COUNT(*) AS unread_count FROM notifications WHERE is_active = 1 AND is_read = 0');
+        const [count] = await conn.query(
+            `SELECT COUNT(*) AS unread_count FROM notifications
+             WHERE is_active = 1 AND is_read = 0 ${visibility}`,
+            values
+        );
         return res.json({ success: true, data: rows, unread_count: Number(count[0].unread_count) });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Unable to load notifications', error: error.message });
@@ -183,18 +229,31 @@ const markNotificationRead = async (req, res) => {
     try {
         const conn = connection.promise();
         await ensureNotificationTable(conn);
-        await conn.query('UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE notification_id = ?', [req.params.notification_id]);
+        const visibility = isAdmin(req)
+            ? ''
+            : `AND (target_user_id = ? OR (target_user_id IS NULL AND notification_type <> 'CABLE_TV_ACCOUNT_DUE'))`;
+        await conn.query(
+            `UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE notification_id = ? ${visibility}`,
+            isAdmin(req) ? [req.params.notification_id] : [req.params.notification_id, currentUserId(req)]
+        );
         return res.json({ success: true, message: 'Notification marked as read' });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Unable to update notification', error: error.message });
     }
 };
 
-const markAllNotificationsRead = async (_req, res) => {
+const markAllNotificationsRead = async (req, res) => {
     try {
         const conn = connection.promise();
         await ensureNotificationTable(conn);
-        await conn.query('UPDATE notifications SET is_read = 1, updated_at = NOW() WHERE is_active = 1 AND is_read = 0');
+        const visibility = isAdmin(req)
+            ? ''
+            : `AND (target_user_id = ? OR (target_user_id IS NULL AND notification_type <> 'CABLE_TV_ACCOUNT_DUE'))`;
+        await conn.query(
+            `UPDATE notifications SET is_read = 1, updated_at = NOW()
+             WHERE is_active = 1 AND is_read = 0 ${visibility}`,
+            isAdmin(req) ? [] : [currentUserId(req)]
+        );
         return res.json({ success: true, message: 'All notifications marked as read' });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Unable to update notifications', error: error.message });

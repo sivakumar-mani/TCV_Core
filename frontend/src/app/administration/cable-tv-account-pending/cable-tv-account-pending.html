@@ -1,27 +1,64 @@
 <div class="page-shell">
   <div class="page-header">
-    <h1>Pending Account Handover</h1>
+    <h1>Pending Account Report</h1>
+    <button *ngIf="selectedReportAccounts.length" type="button" (click)="exportSelectedPaymentInvoice()">
+      Export Payment Invoice PDF ({{ selectedReportAccounts.length }})
+    </button>
   </div>
+
+  <section class="report-filters">
+    <label>Customer Name / No
+      <input type="search" [(ngModel)]="nameFilter" (keyup.enter)="loadAccounts()" placeholder="Name, customer no or mobile">
+    </label>
+    <label>Status
+      <select [(ngModel)]="statusFilter">
+        <option value="ALL">All</option>
+        <option value="PENDING">Pending</option>
+        <option value="PARTIAL">Partial</option>
+        <option value="PAID">Paid</option>
+      </select>
+    </label>
+    <label>Installed By
+      <select [(ngModel)]="installedByFilter">
+        <option value="">All employees</option>
+        <option *ngFor="let employee of employees" [value]="employee.employee_id">
+          {{ employee.employee_code }} - {{ employee.employee_name }}
+        </option>
+      </select>
+    </label>
+    <label>Start Date<input type="date" [(ngModel)]="startDate"></label>
+    <label>End Date<input type="date" [(ngModel)]="endDate"></label>
+    <div class="filter-actions">
+      <button type="button" (click)="loadAccounts()">Search</button>
+      <button type="button" class="secondary" (click)="resetFilters()">Reset</button>
+    </div>
+  </section>
 
   <section class="account-panel">
     <table>
       <tr>
+        <th><input type="checkbox" [checked]="allReportRowsSelected" (change)="toggleAllReportRows($any($event.target).checked)" aria-label="Select all rows"></th>
         <th>Customer</th>
         <th>Mobile</th>
+        <th>Installed By</th>
         <th>Location</th>
         <th>STB</th>
         <th>Connection</th>
         <th>Material</th>
         <th>Subscription</th>
         <th>Total</th>
-        <th>Paid</th>
+        <th>Customer Paid</th>
         <th>Balance</th>
         <th>Due Date</th>
+        <th>Account Date</th>
+        <th>Status</th>
         <th *ngIf="permissions.isAdmin()">Action</th>
       </tr>
-      <tr *ngFor="let item of accounts">
+      <tr *ngFor="let item of accounts" [class.selected-report-row]="isReportRowSelected(item)">
+        <td><input type="checkbox" [checked]="isReportRowSelected(item)" (change)="toggleReportRow(item, $any($event.target).checked)" aria-label="Select row for payment invoice"></td>
         <td>{{ item.customer_code }} - {{ item.full_name }}</td>
         <td>{{ item.mobile_no }}</td>
+        <td>{{ item.installed_by_name || '-' }}</td>
         <td>{{ item.location_name }} / {{ item.area_name }} / {{ item.street_name }}</td>
         <td>{{ item.stb_amount }}</td>
         <td>{{ item.connection_amount }}</td>
@@ -30,12 +67,83 @@
         <td>{{ item.grand_total }}</td>
         <td>{{ item.customer_paid_amount }}</td>
         <td>{{ item.balance_amount }}</td>
-        <td>{{ item.due_date }}</td>
-        <td *ngIf="permissions.isAdmin()"><button type="button" (click)="markReceived(item.account_id)">Received</button></td>
+        <td>{{ item.due_date ? (item.due_date | date:'dd-MM-yyyy') : '-' }}</td>
+        <td>{{ item.account_date | date:'dd-MM-yyyy' }}</td>
+        <td><span class="status-badge" [class.partial]="item.account_status === 'PARTIAL'" [class.paid]="item.account_status === 'PAID'">{{ item.account_status }}</span></td>
+        <td *ngIf="permissions.isAdmin()" class="action-cell">
+          <button *ngIf="item.account_status === 'PENDING' || item.account_status === 'PARTIAL'" type="button"
+            (click)="openPayment(item)">Payment</button>
+          <button *ngIf="item.account_status === 'PAID'" type="button" class="revert"
+            (click)="revertToPending(item.account_id)">Revert to Pending</button>
+        </td>
       </tr>
       <tr *ngIf="!accounts.length">
-        <td [attr.colspan]="permissions.isAdmin() ? 12 : 11" class="empty-row">No pending account handovers.</td>
+        <td [attr.colspan]="permissions.isAdmin() ? 16 : 15" class="empty-row">No account records match the selected filters.</td>
       </tr>
     </table>
   </section>
+
+  <div class="modal-backdrop" *ngIf="showPaymentModal">
+    <section class="payment-modal" role="dialog" aria-modal="true" aria-labelledby="payment-title">
+      <div class="modal-header">
+        <h2 id="payment-title">Receive Payment</h2>
+        <button type="button" class="close-button" (click)="closePayment()">Close</button>
+      </div>
+
+      <div class="payment-grid">
+        <div class="display-field"><span>Customer No</span><strong>{{ selectedAccount?.customer_code || '-' }}</strong></div>
+        <div class="display-field"><span>Customer Name</span><strong>{{ selectedAccount?.full_name || '-' }}</strong></div>
+        <div class="display-field"><span>Installed By</span><strong>{{ selectedAccount?.installed_by_name || '-' }}</strong></div>
+        <div class="display-field"><span>Total Payment</span><strong>{{ selectedAccount?.grand_total || 0 | number:'1.2-2' }}</strong></div>
+        <div class="display-field"><span>Customer Paid</span><strong>{{ selectedAccount?.customer_paid_amount || 0 | number:'1.2-2' }}</strong></div>
+        <div class="display-field"><span>Current Balance</span><strong>{{ customerCurrentBalance | number:'1.2-2' }}</strong></div>
+        <div class="display-field"><span>Amount to Receive</span><strong>{{ paymentTargetAmount | number:'1.2-2' }}</strong></div>
+        <label>Paid Date<input type="date" [(ngModel)]="paymentForm.paid_date"></label>
+        <label>Cash Amount<input type="number" min="0" [max]="officeCurrentBalance" [ngModel]="paymentForm.cash_amount" (ngModelChange)="updatePaymentAmount('cash_amount', $event)"></label>
+        <label>Online Amount<input type="number" min="0" [max]="officeCurrentBalance" [ngModel]="paymentForm.online_amount" (ngModelChange)="updatePaymentAmount('online_amount', $event)"></label>
+        <div class="display-field calculation"><span>Received Amount</span><strong>{{ receivedAmount | number:'1.2-2' }}</strong></div>
+        <div class="display-field calculation"><span>Balance</span><strong>{{ paymentBalance | number:'1.2-2' }}</strong></div>
+        <label *ngIf="paymentBalance > 0">Due Date<input type="date" [(ngModel)]="paymentForm.due_date"></label>
+        <label>Received By
+          <select [(ngModel)]="paymentForm.received_by_employee_id">
+            <option [ngValue]="null">{{ loggedInAdminName }} (Logged-in user)</option>
+            <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">
+              {{ employee.employee_code }} - {{ employee.employee_name }}
+            </option>
+          </select>
+        </label>
+        <label>Received Date<input type="date" [(ngModel)]="paymentForm.received_date"></label>
+        <div class="display-field status-display"><span>Status</span><strong>{{ calculatedPaymentStatus }}</strong></div>
+      </div>
+
+      <p class="validation-note" *ngIf="receivedAmount > officeCurrentBalance">
+        Cash + Online cannot exceed the amount collected from the customer.
+      </p>
+      <p class="validation-note" *ngIf="receivedAmount > 0 && paymentBalance > 0 && !paymentForm.due_date">
+        Due date is required for a partial payment.
+      </p>
+
+      <div class="payment-history" *ngIf="paymentHistory.length">
+        <h3>Payment History</h3>
+        <table>
+          <tr><th>Paid Date</th><th>Cash</th><th>Online</th><th>Received</th><th>Balance</th><th>Due Date</th><th>Received By</th><th>Status</th></tr>
+          <tr *ngFor="let payment of paymentHistory">
+            <td>{{ payment.paid_date | date:'dd-MM-yyyy' }}</td>
+            <td>{{ payment.cash_amount | number:'1.2-2' }}</td>
+            <td>{{ payment.online_amount | number:'1.2-2' }}</td>
+            <td>{{ payment.received_amount | number:'1.2-2' }}</td>
+            <td>{{ payment.balance_after_payment | number:'1.2-2' }}</td>
+            <td>{{ payment.due_date ? (payment.due_date | date:'dd-MM-yyyy') : '-' }}</td>
+            <td>{{ payment.received_by_name || '-' }}</td>
+            <td>{{ payment.payment_status }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="secondary" (click)="closePayment()">Cancel</button>
+        <button type="button" (click)="savePayment()">Save Payment</button>
+      </div>
+    </section>
+  </div>
 </div>

@@ -292,12 +292,7 @@
           <div class="total-row"><span>Over all discount</span><input type="number" formControlName="overall_discount"></div>
           <div class="total-row"><span>Customer Paid Amount</span><input type="number" formControlName="customer_paid_amount"></div>
           <div class="total-row strong"><span>Balance</span><input type="number" formControlName="balance_amount" readonly></div>
-          <div class="total-row" *ngIf="account.get('balance_amount')?.value > 0"><span>Due Date</span><input type="date" formControlName="due_date"></div>
-          <div class="total-row"><span>Status</span>
-            <select formControlName="account_status">
-              <option *ngFor="let status of accountStatuses" [ngValue]="status">{{ status }}</option>
-            </select>
-          </div>
+          <div class="total-row"><span>Status</span><input type="text" formControlName="account_status" readonly></div>
         </div>
       </div>
     </section>

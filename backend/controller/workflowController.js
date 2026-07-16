@@ -1,6 +1,60 @@
 const connection = require('../connection');
 const { ensureCustomerSchema } = require('../utils/customerSchema');
 
+const customerStatusForStbStatus = (status) => ({
+    ACTIVE: 'ACTIVE', RETRIEVED: 'RETRIEVED', FAULT: 'FAULT', DISCONNECTED: 'DISCONNECTED',
+    UPGRADE: 'UPGRADE', RETURNED: 'RETRIEVED', FAULTY: 'FAULT', REPLACED: 'ACTIVE'
+}[String(status || '').toUpperCase()] || 'DISCONNECTED');
+
+const ensureUsedAccessoryProduct = async (conn, sourceProductId) => {
+    const [[source]] = await conn.query(
+        `SELECT product_id, product_name, product_code, brand_id, description, product_type,
+                purchase_price, selling_price, gst_percent, hsn_code, unit, reorder_level
+         FROM products WHERE product_id = ? LIMIT 1`,
+        [sourceProductId]
+    );
+    if (!source) throw new Error(`Returned accessory product ${sourceProductId} was not found`);
+    const [[catv]] = await conn.query(
+        "SELECT category_id, level FROM categories WHERE LOWER(category_name) = 'catv' AND is_active = 1 LIMIT 1"
+    );
+    if (!catv) throw new Error('CATV category was not found for returned accessory stock');
+    let [[usedCategory]] = await conn.query(
+        "SELECT category_id FROM categories WHERE parent_id = ? AND LOWER(category_name) = 'used accessories' LIMIT 1",
+        [catv.category_id]
+    );
+    if (!usedCategory) {
+        const [categoryResult] = await conn.query(
+            `INSERT INTO categories (category_name, parent_id, level, slug, description, is_active)
+             VALUES ('Used Accessories', ?, ?, 'catv-used-accessories', 'Returned CATV accessories available as used stock', 1)`,
+            [catv.category_id, Number(catv.level || 1) + 1]
+        );
+        usedCategory = { category_id: categoryResult.insertId };
+    }
+    const usedName = `Used ${String(source.product_name || '').replace(/\s*STB\s+Accessories\s*/i, ' ').replace(/\s+/g, ' ').trim()}`;
+    const usedCode = `USED-${source.product_code || source.product_id}`.slice(0, 100);
+    let [[usedProduct]] = await conn.query(
+        `SELECT product_id FROM products
+         WHERE category_id = ? AND (product_code = ? OR LOWER(product_name) = LOWER(?)) LIMIT 1`,
+        [usedCategory.category_id, usedCode, usedName]
+    );
+    if (!usedProduct) {
+        const [productResult] = await conn.query(
+            `INSERT INTO products (
+                product_name, product_code, brand_id, category_id, description, product_type,
+                purchase_price, selling_price, gst_percent, hsn_code, unit, reorder_level, status
+             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE')`,
+            [
+                usedName, usedCode, source.brand_id, usedCategory.category_id,
+                `Returned used stock for ${source.product_name}`, source.product_type || 'MATERIAL',
+                Number(source.purchase_price || 0), Number(source.selling_price || 0), Number(source.gst_percent || 0),
+                source.hsn_code, source.unit || 'PCS', Number(source.reorder_level || 0)
+            ]
+        );
+        usedProduct = { product_id: productResult.insertId };
+    }
+    return { ...source, used_product_id: usedProduct.product_id, used_product_name: usedName };
+};
+
 const ensureWorkflowTable = async () => {
     await connection.promise().query(`
         CREATE TABLE IF NOT EXISTS workflow_approvals (
@@ -44,6 +98,7 @@ const ensureWorkflowTable = async () => {
     await ensureColumn('purchase_master', 'approval_status', "approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING' AFTER payment_status");
     await ensureColumn('purchase_master', 'approved_by_employee_id', 'approved_by_employee_id INT NULL AFTER approval_status');
     await ensureColumn('purchase_master', 'approved_at', 'approved_at TIMESTAMP NULL AFTER approved_by_employee_id');
+    await ensureColumn('cable_customer_stb_accessories', 'movement_type', "movement_type ENUM('ISSUE','RETURN') NOT NULL DEFAULT 'ISSUE' AFTER product_id");
 };
 
 const getWorkflowApprovals = async (req, res) => {
@@ -167,7 +222,7 @@ const approveWorkflow = async (req, res) => {
 
             const [pendingAccessories] = waitForAccountReceipt ? [[]] : await conn.query(
                 `SELECT acc.stb_accessory_id, acc.customer_stb_id, acc.product_id, acc.accessory_name,
-                        acc.qty, acc.issued_by_employee_id, p.purchase_price
+                        acc.qty, acc.issued_by_employee_id, acc.movement_type, p.purchase_price
                  FROM cable_customer_stb_accessories acc
                  JOIN products p ON p.product_id = acc.product_id
                  WHERE acc.approval_group_id = ? AND acc.approval_status = 'PENDING'
@@ -175,40 +230,97 @@ const approveWorkflow = async (req, res) => {
                 [approvalGroupId]
             );
             for (const accessory of pendingAccessories) {
+                const isReturn = String(accessory.movement_type || 'ISSUE').toUpperCase() === 'RETURN';
+                const returnedProduct = isReturn
+                    ? await ensureUsedAccessoryProduct(conn, accessory.product_id)
+                    : null;
+                const stockProductId = returnedProduct?.used_product_id || accessory.product_id;
                 await conn.query(
                     `INSERT INTO stock_master (product_id, available_qty, last_stock_check_date)
                      VALUES (?, 0, CURDATE())
                      ON DUPLICATE KEY UPDATE last_stock_check_date = CURDATE()`,
-                    [accessory.product_id]
+                    [stockProductId]
                 );
                 const [stockRows] = await conn.query(
                     'SELECT available_qty FROM stock_master WHERE product_id = ? FOR UPDATE',
-                    [accessory.product_id]
+                    [stockProductId]
                 );
                 const availableQty = Number(stockRows[0]?.available_qty || 0);
                 const issuedQty = Number(accessory.qty || 0);
-                if (availableQty < issuedQty) {
+                if (!isReturn && availableQty < issuedQty) {
                     throw new Error(`Insufficient stock for ${accessory.accessory_name}. Available: ${availableQty}, required: ${issuedQty}`);
                 }
-                const balanceQty = availableQty - issuedQty;
+                const balanceQty = isReturn ? availableQty + issuedQty : availableQty - issuedQty;
                 await conn.query(
                     `UPDATE stock_master
                      SET available_qty = ?, last_stock_check_date = CURDATE(), last_updated = NOW()
                      WHERE product_id = ?`,
-                    [balanceQty, accessory.product_id]
+                    [balanceQty, stockProductId]
                 );
                 await conn.query(
                     `INSERT INTO stock_ledger (
                         product_id, transaction_type, transaction_id, reference_no,
                         qty_in, qty_out, balance_qty, unit_cost, remarks, recorded_by_employee_id
-                     ) VALUES (?, 'INSTALLATION', ?, ?, 0, ?, ?, ?, ?, ?)`,
+                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
-                        accessory.product_id, accessory.stb_accessory_id,
-                        `CTV-STB-${accessory.customer_stb_id}`, issuedQty, balanceQty,
+                        stockProductId, isReturn ? 'RETURN' : 'INSTALLATION', accessory.stb_accessory_id,
+                        `CTV-STB-${accessory.customer_stb_id}`, isReturn ? issuedQty : 0,
+                        isReturn ? 0 : issuedQty, balanceQty,
                         Number(accessory.purchase_price || 0),
-                        `CATV STB accessory approved for issue`,
+                        isReturn
+                            ? `CATV returned accessory approved into used stock`
+                            : `CATV STB accessory approved for issue`,
                         accessory.issued_by_employee_id || approvedBy
                     ]
+                );
+            }
+
+            const [pendingStbs] = await conn.query(
+                `SELECT customer_stb_id, cable_customer_id, stb_master_id, status, update_reason
+                 FROM cable_customer_stbs
+                 WHERE approval_group_id = ? AND approval_status = 'PENDING'
+                 FOR UPDATE`,
+                [approvalGroupId]
+            );
+            for (const stb of pendingStbs) {
+                const desiredStatus = String(stb.status || 'DISCONNECTED').toUpperCase();
+                const reason = String(stb.update_reason || '').toUpperCase();
+                const [previousActive] = await conn.query(
+                    `SELECT customer_stb_id, stb_master_id
+                     FROM cable_customer_stbs
+                     WHERE cable_customer_id = ? AND customer_stb_id <> ? AND status = 'ACTIVE'
+                     FOR UPDATE`,
+                    [stb.cable_customer_id, stb.customer_stb_id]
+                );
+                if (previousActive.length) {
+                    await conn.query(
+                        `UPDATE cable_customer_stbs SET status = ?, updated_at = NOW()
+                         WHERE customer_stb_id IN (?)`,
+                        [reason === 'REPLACED' ? 'REPLACED' : desiredStatus, previousActive.map((item) => item.customer_stb_id)]
+                    );
+                }
+                if (reason === 'RETURNED' || reason === 'REPLACED') {
+                    const returnedMasterIds = (reason === 'RETURNED'
+                        ? [stb.stb_master_id, ...previousActive.map((item) => item.stb_master_id)]
+                        : previousActive.map((item) => item.stb_master_id)
+                    ).filter(Boolean);
+                    if (returnedMasterIds.length) {
+                        await conn.query(
+                            `UPDATE cable_stb_master
+                             SET status = 'AVAILABLE', assigned_employee_id = NULL, updated_at = NOW()
+                             WHERE stb_master_id IN (?)`,
+                            [returnedMasterIds]
+                        );
+                        await conn.query(
+                            `UPDATE cable_stb_issue_master SET issue_status = 'RETURNED'
+                             WHERE stb_master_id IN (?) AND cable_customer_id = ? AND issue_status = 'ISSUED'`,
+                            [returnedMasterIds, stb.cable_customer_id]
+                        );
+                    }
+                }
+                await conn.query(
+                    'UPDATE cable_tv_customers SET status = ?, updated_at = NOW() WHERE cable_customer_id = ?',
+                    [customerStatusForStbStatus(desiredStatus), stb.cable_customer_id]
                 );
             }
             const approvalTables = [

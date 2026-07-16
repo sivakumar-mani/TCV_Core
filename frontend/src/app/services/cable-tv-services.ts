@@ -118,11 +118,23 @@ export class CableTvServices {
     return this.http.patch(`${this.endpoint}/masters/stbs/${stbMasterId}/assign`, { assigned_employee_id: assignedEmployeeId }, { headers: this.jsonHeaders });
   }
 
-  getPendingAccounts() {
-    return this.http.get(`${this.endpoint}/accounts/pending`);
+  getPendingAccounts(filters: { name?: string; status?: string; installed_by_employee_id?: string; start_date?: string; end_date?: string } = {}) {
+    const params: Record<string, string> = {};
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    return this.http.get(`${this.endpoint}/accounts/pending`, { params });
   }
 
-  receiveAccount(accountId: number) {
-    return this.http.patch(`${this.endpoint}/accounts/${accountId}/receive`, {}, { headers: this.jsonHeaders });
+  getAccountPayments(accountId: number) {
+    return this.http.get(`${this.endpoint}/accounts/${accountId}/payments`);
+  }
+
+  receiveAccount(accountId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/accounts/${accountId}/receive`, data, { headers: this.jsonHeaders });
+  }
+
+  revertAccountToPending(accountId: number) {
+    return this.http.patch(`${this.endpoint}/accounts/${accountId}/revert-pending`, {}, { headers: this.jsonHeaders });
   }
 }
