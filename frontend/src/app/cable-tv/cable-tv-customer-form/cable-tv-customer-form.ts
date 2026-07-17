@@ -24,6 +24,10 @@ export class CableTvCustomerForm {
   showStbSearchOptions = false;
 
   readonly statusTypes = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED', 'RETRIEVED', 'FAULT', 'UPGRADE'];
+  readonly customerTypes = [
+    { value: 'REGULAR', label: 'Regular Customer' },
+    { value: 'BUSINESS', label: 'Business Customer' }
+  ];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly connectionTypes = ['NEW', 'SHIFTED', 'TRANSFERRED'];
@@ -73,6 +77,7 @@ export class CableTvCustomerForm {
     const today = this.today();
     this.form = this.fb.group({
       network_id: [null, Validators.required],
+      customer_type: ['REGULAR', Validators.required],
       legacy_customer_no: [''],
       customer_code: [''],
       full_name: ['', Validators.required],

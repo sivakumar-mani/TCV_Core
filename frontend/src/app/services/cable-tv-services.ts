@@ -137,4 +137,34 @@ export class CableTvServices {
   revertAccountToPending(accountId: number) {
     return this.http.patch(`${this.endpoint}/accounts/${accountId}/revert-pending`, {}, { headers: this.jsonHeaders });
   }
+
+  getPendingSubscriptions(filters: { customer_no?: string; customer_name?: string; area_id?: string; street_id?: string } = {}) {
+    const params: Record<string, string> = {};
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    return this.http.get(`${this.endpoint}/subscriptions/pending`, { params });
+  }
+
+  receiveSubscriptionPayment(subscriptionId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/subscriptions/${subscriptionId}/receive`, data, { headers: this.jsonHeaders });
+  }
+
+  getCableSubscriptionReport(filters: { network_id?: string; collected_by_employee_id?: string; customer_type?: string; start_date?: string; end_date?: string }) {
+    const params: Record<string, string> = {};
+    Object.entries(filters || {}).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    return this.http.get(`${this.endpoint}/reports/subscriptions`, { params });
+  }
+
+  previewMonthlySubscriptions(subscriptionMonth: number, subscriptionYear: number) {
+    return this.http.get(`${this.endpoint}/subscriptions/generation-preview`, {
+      params: { subscription_month: subscriptionMonth, subscription_year: subscriptionYear }
+    });
+  }
+
+  generateMonthlySubscriptions(data: { subscription_month: number; subscription_year: number; customer_ids: number[] }) {
+    return this.http.post(`${this.endpoint}/subscriptions/generate`, data, { headers: this.jsonHeaders });
+  }
 }

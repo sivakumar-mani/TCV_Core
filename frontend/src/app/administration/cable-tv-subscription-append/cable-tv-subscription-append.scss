@@ -1,0 +1,30 @@
+:host { display: block; }
+.append-page { background: #f4f7fb; min-height: 100%; padding: 18px; }
+header h1 { color: #0b3974; font-size: 27px; margin: 0 0 5px; }
+header p { color: #667085; margin: 0 0 18px; }
+.period-card, .summary-card, .table-card { background: #fff; border: 1px solid #dde5ef; border-radius: 10px; }
+.period-card { align-items: end; display: grid; gap: 16px; grid-template-columns: 1fr 1fr 1fr 1fr auto; padding: 18px 20px; }
+label { color: #344054; display: flex; flex-direction: column; font-size: 13px; font-weight: 700; gap: 7px; }
+select, .display-value { border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; min-height: 44px; padding: 11px; }
+.display-value { background: #f2f4f7; color: #475467; }
+button { border: 0; border-radius: 6px; cursor: pointer; font-weight: 750; min-height: 44px; padding: 10px 16px; }
+.preview { background: #1769c2; color: #fff; }
+.summary-card { align-items: center; display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr) auto; margin: 18px 0; padding: 16px 20px; }
+.summary-card div { display: flex; flex-direction: column; gap: 4px; }
+.summary-card span { color: #667085; font-size: 13px; }
+.summary-card strong { color: #172b4d; font-size: 21px; }
+.generate { background: #08783e; color: #fff; }
+.generate:disabled { cursor: not-allowed; opacity: .45; }
+.table-card { overflow: hidden; }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; min-width: 1200px; width: 100%; }
+th { background: #0d67b5; color: #fff; font-size: 13px; padding: 11px 9px; text-align: left; }
+td { border: 1px solid #d9e0e8; color: #344054; padding: 10px 9px; }
+tbody tr:nth-child(odd) { background: #f8fafc; }
+.check { text-align: center; width: 42px; }
+.check input { height: 17px; width: 17px; }
+.number { text-align: right; }
+.empty { padding: 28px; text-align: center; }
+tfoot td { background: #eef5fc; font-weight: 750; }
+@media (max-width: 950px) { .period-card { grid-template-columns: repeat(2, 1fr); } .summary-card { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .period-card, .summary-card { grid-template-columns: 1fr; } }

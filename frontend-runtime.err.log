@@ -1,0 +1,228 @@
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'calculatedEndDate' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:89:67:
+[37m      89 │ ... Date</span><strong>{{ [32mcalculatedEndDate[37m | date:'dd-MM-yyyy' }}...
+         ╵                           [32m~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'calculatedDays' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:91:70:
+[37m      91 │ ...span>No. of Days</span><strong>{{ [32mcalculatedDays[37m }}</strong></div>
+         ╵                                      [32m~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'received_amount' does not exist on type '{ subscription_month: number; subscription_year: number; number_of_days_or_months: number; billing_basis: string; received_count: number; start_date: string; expiry_date: string; amount: number; ... 7 more ...; comments: string; }'. Did you mean 'received_count'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:97:116:
+[37m      97 │ ...(ngModel)]="paymentForm.[32mreceived_amount[37m" (ngModelChange)="round...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'received_amount' does not exist on type '{ subscription_month: number; subscription_year: number; number_of_days_or_months: number; billing_basis: string; received_count: number; start_date: string; expiry_date: string; amount: number; ... 7 more ...; comments: string; }'. Did you mean 'received_count'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:97:116:
+[37m      97 │ ...(ngModel)]="paymentForm.[32mreceived_amount[37m" (ngModelChange)="round...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'calculateSubscription' does not exist on type 'CableTvSubscriptionPending'. Did you mean 'calculatedSubscriptionAmount'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:149:9:
+[37m      149 │     this.[32mcalculateSubscription[37m();
+          ╵          [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'calculatedSubscriptionAmount' is declared here.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:70:6:
+[37m      70 │   get [32mcalculatedSubscriptionAmount[37m() { return Math.round(Number(th...
+         ╵       [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'calculateSubscription' does not exist on type 'CableTvSubscriptionPending'. Did you mean 'calculatedSubscriptionAmount'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:166:9:
+[37m      166 │     this.[32mcalculateSubscription[37m();
+          ╵          [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+  'calculatedSubscriptionAmount' is declared here.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:70:6:
+[37m      70 │   get [32mcalculatedSubscriptionAmount[37m() { return Math.round(Number(th...
+         ╵       [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'received_amount' does not exist on type '{ subscription_month: number; subscription_year: number; number_of_days_or_months: number; billing_basis: string; received_count: number; start_date: string; expiry_date: string; amount: number; ... 7 more ...; comments: string; }'. Did you mean 'received_count'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:209:21:
+[37m      209 │     this.paymentForm.[32mreceived_amount[37m = this.currentBalance;
+          ╵                      [32m~~~~~~~~~~~~~~~[0m
+
+  'received_count' is declared here.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:38:4:
+[37m      38 │     [32mreceived_count: 1[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'received_amount' does not exist on type '{ subscription_month: number; subscription_year: number; number_of_days_or_months: number; billing_basis: string; received_count: number; start_date: string; expiry_date: string; amount: number; ... 7 more ...; comments: string; }'. Did you mean 'received_count'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:213:21:
+[37m      213 │     this.paymentForm.[32mreceived_amount[37m = Math.max(Math.round(Number...
+          ╵                      [32m~~~~~~~~~~~~~~~[0m
+
+  'received_count' is declared here.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:38:4:
+[37m      38 │     [32mreceived_count: 1[37m,
+         ╵     [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'periodChanged' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:77:91:
+[37m      77 │ ...del)]="paymentForm.start_date" (change)="[32mperiodChanged[37m()"></label>
+         ╵                                             [32m~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'periodChanged' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:80:125:
+[37m      80 │ ..."paymentForm.number_of_days_or_months" (change)="[32mperiodChanged[37m()">
+         ╵                                                     [32m~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'periodChanged' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:83:154:
+[37m      83 │ ...="paymentForm.number_of_days_or_months" (input)="[32mperiodChanged[37m()">
+         ╵                                                     [32m~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'periodChanged' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:84:70:
+[37m      84 │ ...(ngModel)]="paymentForm.billing_basis" (change)="[32mperiodChanged[37m()">
+         ╵                                                     [32m~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'calculatedEndDate' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:89:67:
+[37m      89 │ ... Date</span><strong>{{ [32mcalculatedEndDate[37m | date:'dd-MM-yyyy' }}...
+         ╵                           [32m~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'calculatedDays' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:91:70:
+[37m      91 │ ...span>No. of Days</span><strong>{{ [32mcalculatedDays[37m }}</strong></div>
+         ╵                                      [32m~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'received_amount' does not exist on type '{ subscription_month: number; subscription_year: number; number_of_days_or_months: number; billing_basis: string; received_count: number; start_date: string; expiry_date: string; amount: number; ... 7 more ...; comments: string; }'. Did you mean 'received_count'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:97:116:
+[37m      97 │ ...(ngModel)]="paymentForm.[32mreceived_amount[37m" (ngModelChange)="round...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'received_amount' does not exist on type '{ subscription_month: number; subscription_year: number; number_of_days_or_months: number; billing_basis: string; received_count: number; start_date: string; expiry_date: string; amount: number; ... 7 more ...; comments: string; }'. Did you mean 'received_count'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:97:116:
+[37m      97 │ ...(ngModel)]="paymentForm.[32mreceived_amount[37m" (ngModelChange)="round...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'roundReceivedAmount' does not exist on type 'CableTvSubscriptionPending'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.html:97:150:
+[37m      97 │ ...ved_amount" (ngModelChange)="[32mroundReceivedAmount[37m($event)"></label>
+         ╵                                 [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvSubscriptionPending.
+
+    src/app/administration/cable-tv-subscription-pending/cable-tv-subscription-pending.ts:13:15:
+[37m      13 │   templateUrl: [32m'./cable-tv-subscription-pending.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'successRegex' does not exist on type 'typeof globalConstants'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/administration/cable-tv-subscription-append/cable-tv-subscription-append.ts:78:112:
+[37m      78 │ ...scriptions generated successfully', globalConstants.[32msuccessRegex[37m);
+         ╵                                                        [32m~~~~~~~~~~~~[0m
+
+[39m[22m

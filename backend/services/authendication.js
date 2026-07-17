@@ -41,6 +41,23 @@ function requirePermission(permissionKey) {
   };
 }
 
+function requirePermissionAction(permissionKey, action) {
+  const allowedActions = new Set(['can_view', 'can_create', 'can_update', 'can_delete']);
+  if (!allowedActions.has(action)) throw new Error(`Invalid permission action: ${action}`);
+  return (req, res, next) => {
+    if (String(res.locals.role).toUpperCase() === 'ADMIN') return next();
+    connection.query(
+      `SELECT 1 FROM role_permissions WHERE role = ? AND permission_key = ? AND ${action} = 1 LIMIT 1`,
+      [String(res.locals.role).toUpperCase(), permissionKey],
+      (error, rows) => {
+        if (error) return res.status(500).json({ message: 'Permission check failed' });
+        if (!rows.length) return res.status(403).json({ message: 'You do not have permission for this action' });
+        next();
+      }
+    );
+  };
+}
+
 function requireAnyPermission(permissionKeys) {
   return (req, res, next) => {
     if (String(res.locals.role).toUpperCase() === 'ADMIN') return next();
@@ -58,4 +75,4 @@ function requireAnyPermission(permissionKeys) {
   };
 }
 
-module.exports = { authendicateToken, requireAdmin, requirePermission, requireAnyPermission };
+module.exports = { authendicateToken, requireAdmin, requirePermission, requirePermissionAction, requireAnyPermission };

@@ -19,7 +19,7 @@ type Section = 'connections' | 'stbs' | 'packages' | 'subscriptions';
 })
 export class CableTvCustomerHistory {
   customerId = 0;
-  section: Section = 'connections';
+  section: Section = 'subscriptions';
   customer: any = {};
   details: any = {};
   lookups: any = {};
@@ -37,10 +37,10 @@ export class CableTvCustomerHistory {
     subscriptions: 'Subscription Details'
   };
   readonly tabs: { key: Section; label: string }[] = [
-    { key: 'connections', label: 'Connection' },
+    { key: 'subscriptions', label: 'Subscription' },
     { key: 'stbs', label: 'STB' },
-    { key: 'packages', label: 'Package' },
-    { key: 'subscriptions', label: 'Subscription' }
+    { key: 'connections', label: 'Connection' },
+    { key: 'packages', label: 'Package' }
   ];
   readonly sectionPermissionKeys: Record<Section, string> = {
     connections: 'CABLE_TV_CONNECTIONS',
@@ -261,6 +261,7 @@ export class CableTvCustomerHistory {
       balance_amount: [0],
       payment_status: ['PENDING'],
       payment_mode: ['CASH'],
+      payment_mapped_employee_id: [null],
       payment_reference: [''],
       remarks: ['']
     });
@@ -363,7 +364,7 @@ export class CableTvCustomerHistory {
         }
         this.router.navigate(['/cable-tv/customers', match.cable_customer_id]).then(() => {
           this.customerId = Number(match.cable_customer_id);
-          this.section = 'connections';
+          this.section = 'subscriptions';
           this.buildForm();
           this.loadData();
         });
@@ -394,7 +395,7 @@ export class CableTvCustomerHistory {
   }
 
   asSection(value: any): Section {
-    return this.tabs.some((tab) => tab.key === value) ? value as Section : 'connections';
+    return this.tabs.some((tab) => tab.key === value) ? value as Section : 'subscriptions';
   }
 
   switchSection(section: Section) {
@@ -457,6 +458,7 @@ export class CableTvCustomerHistory {
         balance_amount: Number(row.balance_amount) || 0,
         payment_status: row.payment_status || 'PENDING',
         payment_mode: this.permissions.isAdmin() ? (row.payment_mode || 'CASH') : 'CASH',
+        payment_mapped_employee_id: this.permissions.isAdmin() ? (row.payment_mapped_employee_id || null) : null,
         payment_reference: row.payment_reference || ''
       }, { emitEvent: false });
       if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
@@ -502,6 +504,16 @@ export class CableTvCustomerHistory {
     }
     if (this.section === 'subscriptions' && !this.form.get('collected_by_employee_id')?.value) {
       this.commonMethods.handleError({ error: { message: 'Collected By employee name is required' } });
+      return;
+    }
+    const paymentMode = String(this.form.get('payment_mode')?.value || '').toUpperCase();
+    if (
+      this.section === 'subscriptions'
+      && this.permissions.isAdmin()
+      && ['ONLINE', 'OFFICE'].includes(paymentMode)
+      && !this.form.get('payment_mapped_employee_id')?.value
+    ) {
+      this.commonMethods.handleError({ error: { message: 'Payment Mapped Employee is required for Online or Office payment' } });
       return;
     }
     if (this.form.invalid) {
@@ -730,6 +742,7 @@ export class CableTvCustomerHistory {
   }
 
   isSubscriptionStatusValid() {
+    if (this.permissions.isAdmin()) return true;
     const balance = Number(this.form.get('balance_amount')?.value) || 0;
     const status = String(this.form.get('payment_status')?.value || 'PENDING').toUpperCase();
     return balance === 0 ? status === 'PAID' : status === 'PENDING';
@@ -738,6 +751,10 @@ export class CableTvCustomerHistory {
   applySubscriptionStatusState(balance: number = Number(this.form?.get('balance_amount')?.value) || 0) {
     const statusControl = this.form?.get('payment_status');
     if (!statusControl) return;
+    if (this.permissions.isAdmin()) {
+      statusControl.enable({ emitEvent: false });
+      return;
+    }
     if (balance !== 0) {
       statusControl.setValue('PENDING', { emitEvent: false });
       statusControl.disable({ emitEvent: false });

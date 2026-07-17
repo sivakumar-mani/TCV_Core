@@ -30,6 +30,7 @@ export class WorkflowList {
     { field: 'module_name', headerName: 'Module', maxWidth: 140 },
     { field: 'reference_no', headerName: 'Reference No', maxWidth: 170 },
     { headerName: 'Party', valueGetter: (params: any) => params.data?.customer_name || params.data?.supplier_name || '' },
+    { field: 'subject', headerName: 'Subject', minWidth: 240, cellRenderer: (params: any) => this.subjectBadges(params.value) },
     { headerName: 'Date', maxWidth: 150, valueGetter: (params: any) => params.data?.quotation_date || params.data?.purchase_date, valueFormatter: (params) => this.displayDate(params.value) },
     { field: 'net_amount', headerName: 'Amount', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
     { field: 'balance_amount', headerName: 'Balance', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
@@ -150,6 +151,27 @@ export class WorkflowList {
     const day = `${date.getDate()}`.padStart(2, '0');
     const month = `${date.getMonth() + 1}`.padStart(2, '0');
     return `${day}/${month}/${date.getFullYear()}`;
+  }
+
+  subjectBadges(value: any) {
+    const container = document.createElement('span');
+    container.style.cssText = 'display:flex;align-items:center;gap:5px;flex-wrap:wrap;height:100%;';
+    const subjects = String(value || 'General').split('•').map(item => item.trim()).filter(Boolean);
+    subjects.forEach(subject => {
+      const badge = document.createElement('span');
+      const key = subject.toUpperCase();
+      const colors = key.includes('LOCATION') ? ['#e0f2fe', '#075985']
+        : key.includes('DISCOUNT') ? ['#fef3c7', '#92400e']
+        : key.includes('REACTIV') || key.includes('RECONNECT') ? ['#dcfce7', '#166534']
+        : key.includes('RETURN') || key.includes('DISCONNECT') ? ['#fee2e2', '#991b1b']
+        : key.includes('STB') ? ['#ede9fe', '#5b21b6']
+        : key.includes('NEW') ? ['#dbeafe', '#1d4ed8']
+        : ['#eef2f6', '#344054'];
+      badge.textContent = subject;
+      badge.style.cssText = `background:${colors[0]};color:${colors[1]};border-radius:999px;font-size:12px;font-weight:750;line-height:1.2;padding:5px 9px;white-space:nowrap;`;
+      container.appendChild(badge);
+    });
+    return container;
   }
 
   displayDateTime(value: string | Date) {

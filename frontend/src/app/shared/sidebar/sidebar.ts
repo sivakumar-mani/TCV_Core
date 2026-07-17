@@ -20,7 +20,8 @@ export class Sidebar {
     { label: 'Sales', icon: 'request_quote', items: [['Quotations', '/quotations', 'QUOTATIONS'], ['Sales', '/sales', 'SALES'], ['Work Orders', '/work-orders', 'WORK_ORDERS'], ['Customer Payments', '/customer-payments', 'CUSTOMER_PAYMENTS'], ['Supplier Payments', '/supplier-payments', 'SUPPLIER_PAYMENTS']] },
     { label: 'Service', icon: 'support_agent', items: [['Service Tickets', '/service-tickets', 'SERVICE_TICKETS'], ['Warranty Master', '/warranty-master', 'WARRANTIES']] },
     { label: 'HR Process', icon: 'badge', items: [['Employees', '/employees', 'EMPLOYEES'], ['Employee Attendance', '/employee-attendance', 'EMPLOYEE_ATTENDANCE'], ['Employee Salary', '/employee-salary', 'EMPLOYEE_SALARY']] },
-    { label: 'Accounts', icon: 'account_balance', items: [['Pending Accounts', '/cable-tv-account-pending', 'CABLE_TV_ACCOUNTS']] },
+    { label: 'Accounts', icon: 'account_balance', items: [['Pending Accounts', '/cable-tv-account-pending', 'CABLE_TV_ACCOUNTS'], ['CATV Subscription', '/cable-tv-subscription-pending', 'CABLE_TV_SUBSCRIPTION_DUES'], ['Append Subscriptions', '/cable-tv-subscription-append', 'CABLE_TV_SUBSCRIPTION_GENERATE']] },
+    { label: 'Reports', icon: 'assessment', items: [['CATV Subscription Report', '/cable-tv-subscription-report', 'CABLE_TV_SUBSCRIPTION_REPORT']] },
     { label: 'Administration', icon: 'admin_panel_settings', items: [['Workflow Approvals', '/workflow-approval', 'WORKFLOW_APPROVAL'], ['Location Info', '/cable-tv-masters', 'CABLE_TV_MASTERS'], ['Package List', '/cable-tv-packages', 'CABLE_TV_PACKAGES'], ['STB Master', '/cable-tv-stbs', 'CABLE_TV_STBS'], ['Users', '/users', 'USERS'], ['Role Permissions', '/role-permissions', 'ROLE_PERMISSIONS'], ['Audit Logs', '/audit-logs', 'AUDIT_LOGS']] }
   ];
   constructor(public permissions: PermissionService) {}

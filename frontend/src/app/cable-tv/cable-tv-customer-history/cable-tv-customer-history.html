@@ -333,6 +333,7 @@
         <label>Status
           <select formControlName="payment_status">
             <option value="PENDING">Unpaid</option>
+            <option *ngIf="permissions.isAdmin()" value="PARTIAL">Partial</option>
             <option value="PAID">Paid</option>
           </select>
         </label>
@@ -342,7 +343,8 @@
         <label *ngIf="!permissions.isAdmin()">Collected By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label *ngIf="permissions.isAdmin()">Mode of Payment<select formControlName="payment_mode"><option *ngFor="let mode of paymentModes" [ngValue]="mode">{{ mode }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Mode of Payment<input type="text" formControlName="payment_mode"></label>
-        <label *ngIf="form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE'">Received ID / Name<input type="text" formControlName="payment_reference"></label>
+        <label *ngIf="permissions.isAdmin() && (form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE')">Payment Mapped Employee<select formControlName="payment_mapped_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
+        <label *ngIf="form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE'">Payment Reference<input type="text" formControlName="payment_reference"></label>
       </div>
 
       <div class="form-actions">

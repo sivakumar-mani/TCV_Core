@@ -1,10 +1,6 @@
 const connection = require('../connection');
 const { ensureCustomerSchema } = require('../utils/customerSchema');
-
-const customerStatusForStbStatus = (status) => ({
-    ACTIVE: 'ACTIVE', RETRIEVED: 'RETRIEVED', FAULT: 'FAULT', DISCONNECTED: 'DISCONNECTED',
-    UPGRADE: 'UPGRADE', RETURNED: 'RETRIEVED', FAULTY: 'FAULT', REPLACED: 'ACTIVE'
-}[String(status || '').toUpperCase()] || 'DISCONNECTED');
+const { customerStatusForStbStatus, synchronizeLatestCustomerStbStatus, applyApprovedLocationChange } = require('../utils/cableTvStatus');
 
 const ensureUsedAccessoryProduct = async (conn, sourceProductId) => {
     const [[source]] = await conn.query(
@@ -108,6 +104,7 @@ const getWorkflowApprovals = async (req, res) => {
         const [rows] = await connection.promise().query(
             `SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
                     wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
+                    'Quotation' AS subject,
                     qm.quotation_status, qm.quotation_version, qm.quotation_date, qm.valid_until, qm.net_amount,
                     NULL AS supplier_id,
                     TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)) AS customer_name,
@@ -125,6 +122,7 @@ const getWorkflowApprovals = async (req, res) => {
                     pm.purchase_no AS reference_no, pm.payment_status AS workflow_status,
                     pm.created_at AS requested_at, NULL AS reviewed_at,
                     'Supplier payment balance pending' AS remarks,
+                    'Supplier Payment' AS subject,
                     NULL AS quotation_status, NULL AS quotation_version, NULL AS quotation_date,
                     NULL AS valid_until, pm.net_amount, pm.supplier_id,
                     NULL AS customer_name, s.supplier_name, pm.purchase_date, pm.balance_amount,
@@ -136,6 +134,7 @@ const getWorkflowApprovals = async (req, res) => {
              UNION ALL
              SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
                     wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
+                    'Work Order' AS subject,
                     NULL, NULL, wo.start_date, wo.completion_date, NULL,
                     NULL, TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)), NULL,
                     NULL, NULL, wo.work_status, wo.approval_status, wo.work_order_id
@@ -145,6 +144,7 @@ const getWorkflowApprovals = async (req, res) => {
              UNION ALL
              SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
                     wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
+                    'Material Issue' AS subject,
                     NULL, NULL, mi.issued_date, NULL, NULL,
                     NULL, TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)), NULL,
                     NULL, NULL, wo.work_status, 'PENDING', wo.work_order_id
@@ -162,6 +162,39 @@ const getWorkflowApprovals = async (req, res) => {
                     c.cable_customer_id AS reference_id, CAST(c.customer_code AS CHAR) AS reference_no,
                     cag.approval_status AS workflow_status, cag.requested_at, cag.approved_at AS reviewed_at,
                     cag.group_type AS remarks,
+                    CONCAT_WS(' • ',
+                      CASE cag.group_type
+                        WHEN 'NEW_CUSTOMER_ONBOARDING' THEN 'New Connection'
+                        WHEN 'CONNECTION_UPDATE' THEN COALESCE((
+                          SELECT CASE UPPER(conn.connection_type)
+                            WHEN 'SHIFTED' THEN 'Location Change'
+                            WHEN 'RECONNECTION' THEN 'Reconnection'
+                            WHEN 'NEW' THEN 'New Connection'
+                            ELSE 'Connection Update' END
+                          FROM cable_connections conn
+                          WHERE conn.approval_group_id = cag.approval_group_id
+                          ORDER BY conn.connection_id DESC LIMIT 1
+                        ), 'Connection Update')
+                        WHEN 'STB_UPDATE' THEN COALESCE((
+                          SELECT CASE UPPER(stb.update_reason)
+                            WHEN 'REACTIVATE' THEN 'Reactivation'
+                            WHEN 'RETURNED' THEN 'STB Returned'
+                            WHEN 'REPLACED' THEN 'STB Replacement'
+                            WHEN 'DISCONNECT' THEN 'Disconnection'
+                            WHEN 'FAULT' THEN 'STB Fault'
+                            WHEN 'UPGRADE' THEN 'STB Upgrade'
+                            ELSE 'STB Update' END
+                          FROM cable_customer_stbs stb
+                          WHERE stb.approval_group_id = cag.approval_group_id
+                          ORDER BY stb.customer_stb_id DESC LIMIT 1
+                        ), 'STB Update')
+                        WHEN 'PACKAGE_UPDATE' THEN 'Package Update'
+                        WHEN 'SUBSCRIPTION_UPDATE' THEN 'Subscription Update'
+                        ELSE 'Customer Update'
+                      END,
+                      CASE WHEN COALESCE(ca.discount, 0) + COALESCE(ca.overall_discount, 0) + COALESCE(ca.material_discount, 0) > 0
+                        THEN 'Discount' END
+                    ) AS subject,
                     NULL, NULL, c.created_at, NULL, ca.grand_total,
                     NULL, c.full_name, NULL,
                     NULL, ca.balance_amount, c.status, c.approval_status, NULL
@@ -288,8 +321,9 @@ const approveWorkflow = async (req, res) => {
                 const [previousActive] = await conn.query(
                     `SELECT customer_stb_id, stb_master_id
                      FROM cable_customer_stbs
-                     WHERE cable_customer_id = ? AND customer_stb_id <> ? AND status = 'ACTIVE'
-                     FOR UPDATE`,
+                     WHERE cable_customer_id = ? AND customer_stb_id <> ? AND approval_status = 'APPROVED'
+                     ORDER BY customer_stb_id DESC, COALESCE(updated_date, installed_date) DESC, updated_at DESC
+                     LIMIT 1 FOR UPDATE`,
                     [stb.cable_customer_id, stb.customer_stb_id]
                 );
                 if (previousActive.length) {
@@ -342,6 +376,11 @@ const approveWorkflow = async (req, res) => {
                      WHERE approval_group_id = ? AND approval_status = 'PENDING'`,
                     [approvalGroupId]
                 );
+            }
+            if (!waitForAccountReceipt) await applyApprovedLocationChange(conn, approvalGroupId);
+            const affectedCustomerIds = [...new Set(pendingStbs.map((item) => Number(item.cable_customer_id)).filter(Boolean))];
+            if (affectedCustomerIds.length) {
+                await synchronizeLatestCustomerStbStatus(conn, affectedCustomerIds);
             }
             await conn.query(
                 `UPDATE cable_tv_customers

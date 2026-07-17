@@ -24,7 +24,12 @@ const {
   getLookups,
   getMasters,
   getPendingAccounts,
+  getPendingSubscriptions,
+  previewSubscriptionGeneration,
+  generateMonthlySubscriptions,
+  getCableSubscriptionReport,
   getAccountPayments,
+  receiveSubscriptionPayment,
   receiveAccount,
   revertAccountToPending,
   updateLocationInfo,
@@ -39,7 +44,8 @@ router.use(auth.authendicateToken);
 router.use('/lookups', auth.requireAnyPermission([
   'CABLE_TV_CUSTOMERS', 'CABLE_TV_CONNECTIONS', 'CABLE_TV_CUSTOMER_STBS',
   'CABLE_TV_CUSTOMER_PACKAGES', 'CABLE_TV_SUBSCRIPTIONS', 'CABLE_TV_MASTERS',
-  'CABLE_TV_PACKAGES', 'CABLE_TV_STBS', 'CABLE_TV_ACCOUNTS'
+  'CABLE_TV_PACKAGES', 'CABLE_TV_STBS', 'CABLE_TV_ACCOUNTS',
+  'CABLE_TV_SUBSCRIPTION_DUES', 'CABLE_TV_SUBSCRIPTION_REPORT'
 ]));
 
 router.get('/lookups', getLookups);
@@ -57,6 +63,11 @@ router.get('/accounts/pending', auth.requirePermission('CABLE_TV_ACCOUNTS'), get
 router.get('/accounts/:accountId/payments', auth.requirePermission('CABLE_TV_ACCOUNTS'), getAccountPayments);
 router.patch('/accounts/:accountId/receive', auth.requirePermission('CABLE_TV_ACCOUNTS'), receiveAccount);
 router.patch('/accounts/:accountId/revert-pending', auth.requireAdmin, revertAccountToPending);
+router.get('/subscriptions/pending', auth.requirePermission('CABLE_TV_SUBSCRIPTION_DUES'), getPendingSubscriptions);
+router.get('/subscriptions/generation-preview', auth.requireAdmin, previewSubscriptionGeneration);
+router.post('/subscriptions/generate', auth.requireAdmin, generateMonthlySubscriptions);
+router.patch('/subscriptions/:subscriptionId/receive', auth.requirePermissionAction('CABLE_TV_SUBSCRIPTION_DUES', 'can_view'), receiveSubscriptionPayment);
+router.get('/reports/subscriptions', auth.requirePermission('CABLE_TV_SUBSCRIPTION_REPORT'), getCableSubscriptionReport);
 router.get('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomers);
 router.get('/customers/:id', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomerById);
 router.post('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), addCableCustomer);

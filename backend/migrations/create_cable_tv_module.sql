@@ -198,6 +198,7 @@ CREATE TABLE IF NOT EXISTS cable_tv_customers (
     erp_customer_id INT NULL,
     network_id INT NOT NULL,
     network_type VARCHAR(20) NULL,
+    customer_type ENUM('REGULAR','BUSINESS') NOT NULL DEFAULT 'REGULAR',
     legacy_customer_no VARCHAR(50) NULL,
     customer_code INT NOT NULL,
     full_name VARCHAR(150) NOT NULL,
@@ -259,6 +260,7 @@ CREATE TABLE IF NOT EXISTS cable_tv_customers (
     INDEX idx_cable_customer_name (full_name),
     INDEX idx_cable_customer_mobile (mobile_no),
     INDEX idx_cable_customer_network (network_id),
+    INDEX idx_cable_customer_type (customer_type),
     INDEX idx_cable_customer_location_area_street (location_id, area_id, street_id),
     INDEX idx_cable_customer_status (status),
     INDEX idx_cable_customer_approval_status (approval_status)
@@ -596,7 +598,8 @@ CREATE TABLE IF NOT EXISTS cable_subscriptions (
     start_date DATE NULL,
     expiry_date DATE NULL,
     collected_by_employee_id INT NULL,
-    payment_mode ENUM('CASH','UPI','CARD','BANK','CHEQUE') NULL,
+    payment_mapped_employee_id INT NULL,
+    payment_mode ENUM('CASH','ONLINE','OFFICE','UPI','CARD','BANK','CHEQUE') NULL,
     payment_status ENUM('PENDING','PARTIAL','PAID','CANCELLED') NOT NULL DEFAULT 'PENDING',
     approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
     remarks TEXT NULL,
@@ -618,6 +621,9 @@ CREATE TABLE IF NOT EXISTS cable_subscriptions (
         ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_cable_subscriptions_collected_by
         FOREIGN KEY (collected_by_employee_id) REFERENCES employees(employee_id)
+        ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT fk_cable_subscriptions_payment_mapped_employee
+        FOREIGN KEY (payment_mapped_employee_id) REFERENCES employees(employee_id)
         ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT fk_cable_subscriptions_created_by_user
         FOREIGN KEY (created_by_user_id) REFERENCES users(user_id)
@@ -739,6 +745,30 @@ CREATE TABLE IF NOT EXISTS cable_customer_account_payments (
     CONSTRAINT fk_cable_account_payments_account FOREIGN KEY (account_id)
         REFERENCES cable_customer_accounts(account_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS cable_subscription_payments (
+    subscription_payment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    subscription_id BIGINT NOT NULL,
+    cable_customer_id BIGINT NOT NULL,
+    received_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    collected_date DATE NOT NULL,
+    payment_mode VARCHAR(30) NULL,
+    payment_reference VARCHAR(150) NULL,
+    received_by_employee_id INT NULL,
+    comments VARCHAR(500) NULL,
+    balance_after_payment DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_status ENUM('PARTIAL','PAID') NOT NULL,
+    created_by_user_id INT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_cable_subscription_payment_subscription (subscription_id),
+    INDEX idx_cable_subscription_payment_customer (cable_customer_id),
+    INDEX idx_cable_subscription_payment_date (collected_date),
+    CONSTRAINT fk_cable_subscription_payment_subscription FOREIGN KEY (subscription_id)
+        REFERENCES cable_subscriptions(subscription_id) ON DELETE CASCADE,
+    CONSTRAINT fk_cable_subscription_payment_customer FOREIGN KEY (cable_customer_id)
+        REFERENCES cable_tv_customers(cable_customer_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+COMMENT='Individual payments received against unpaid CATV subscription months';
 
 -- =====================================================
 -- INITIAL MASTER DATA

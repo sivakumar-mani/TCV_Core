@@ -89,6 +89,24 @@ export const routes: Routes = [
             data:{ expectedRole:['admin'] }
         },
          {
+            path:'cable-tv-subscription-pending',
+            loadComponent: ()=> import('./administration/cable-tv-subscription-pending/cable-tv-subscription-pending').then(n => n.CableTvSubscriptionPending),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
+        },
+         {
+            path:'cable-tv-subscription-append',
+            loadComponent: ()=> import('./administration/cable-tv-subscription-append/cable-tv-subscription-append').then(n => n.CableTvSubscriptionAppend),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin'] }
+        },
+         {
+            path:'cable-tv-subscription-report',
+            loadComponent: ()=> import('./administration/cable-tv-subscription-report/cable-tv-subscription-report').then(n => n.CableTvSubscriptionReport),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
+        },
+         {
             path:'purchases',
             loadComponent: ()=> import('./purchases/purchase-list/purchase-list').then(n => n.PurchaseList),
             canActivate:[RouteGuard],

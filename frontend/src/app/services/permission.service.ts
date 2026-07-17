@@ -26,7 +26,10 @@ export class PermissionService {
     'workflow-approval': 'WORKFLOW_APPROVAL', workflow: 'WORKFLOW_APPROVAL', users: 'USERS',
     'audit-logs': 'AUDIT_LOGS', 'role-permissions': 'ROLE_PERMISSIONS', 'cable-tv-masters': 'CABLE_TV_MASTERS',
     'cable-tv-packages': 'CABLE_TV_PACKAGES', 'cable-tv-stbs': 'CABLE_TV_STBS',
-    'cable-tv-account-pending': 'CABLE_TV_ACCOUNTS'
+    'cable-tv-account-pending': 'CABLE_TV_ACCOUNTS',
+    'cable-tv-subscription-pending': 'CABLE_TV_SUBSCRIPTION_DUES',
+    'cable-tv-subscription-append': 'CABLE_TV_SUBSCRIPTION_GENERATE',
+    'cable-tv-subscription-report': 'CABLE_TV_SUBSCRIPTION_REPORT'
   };
 
   constructor(private http: HttpClient) {}

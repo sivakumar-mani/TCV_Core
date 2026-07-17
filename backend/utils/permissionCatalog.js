@@ -31,6 +31,9 @@ const permissionCatalog = [
   ['Administration', 'AUDIT_LOGS', 'Audit Logs', '/audit-logs'],
   ['Administration', 'ROLE_PERMISSIONS', 'Role Permissions', '/role-permissions'],
   ['Accounts', 'CABLE_TV_ACCOUNTS', 'Pending Accounts', '/cable-tv-account-pending'],
+  ['Accounts', 'CABLE_TV_SUBSCRIPTION_DUES', 'CATV Subscription', '/cable-tv-subscription-pending'],
+  ['Accounts', 'CABLE_TV_SUBSCRIPTION_GENERATE', 'Append CATV Subscriptions', '/cable-tv-subscription-append'],
+  ['Reports', 'CABLE_TV_SUBSCRIPTION_REPORT', 'CATV Subscription Report', '/cable-tv-subscription-report'],
 ].map(([group, key, label, route]) => ({ group, key, label, route }));
 
 const createOnlyPermissionKeys = new Set([

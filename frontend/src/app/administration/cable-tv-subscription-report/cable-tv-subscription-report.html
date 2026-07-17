@@ -1,0 +1,70 @@
+<div class="report-page">
+  <header><h1>CATV Subscription Report</h1></header>
+
+  <section class="filter-card">
+    <label>Collected By
+      <select *ngIf="permissions.isAdmin()" [(ngModel)]="filters.collected_by_employee_id">
+        <option value="">All Employees</option>
+        <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option>
+      </select>
+      <input *ngIf="!permissions.isAdmin()" type="text" [value]="loggedInEmployeeName" disabled>
+    </label>
+    <label>Network Type
+      <select [(ngModel)]="filters.network_id">
+        <option value="">All Networks</option>
+        <option *ngFor="let network of networks" [value]="network.network_id">{{ network.network_code || network.network_name }}</option>
+      </select>
+    </label>
+    <label>Customer Type
+      <select [(ngModel)]="filters.customer_type">
+        <option value="">All Customers</option>
+        <option *ngFor="let type of customerTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+    </label>
+    <label>From Date<input type="date" [(ngModel)]="filters.start_date"></label>
+    <label>To Date<input type="date" [(ngModel)]="filters.end_date" [min]="filters.start_date"></label>
+    <div class="filter-actions">
+      <button type="button" class="primary" (click)="loadReport()">Search</button>
+      <button type="button" class="secondary" (click)="clearFilters()">Clear</button>
+    </div>
+  </section>
+
+  <section class="report-card">
+    <div class="report-toolbar">
+      <div><strong>Collected By: {{ collectorLabel }}</strong><span>Network: {{ networkLabel }}</span><span>Customer Type: {{ customerTypeLabel }}</span><span>Period: {{ displayDate(filters.start_date) }} to {{ displayDate(filters.end_date) }}</span></div>
+      <div class="export-actions">
+        <button type="button" class="icon-action" title="Print report" (click)="printReport()">Print</button>
+        <button type="button" class="icon-action excel" title="Export to Excel" (click)="exportExcel()">Excel</button>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th class="serial">S.No</th><th>Collected Date</th><th>C No</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let row of pageRows; let i = index">
+            <td>{{ (page - 1) * pageSize + i + 1 }}</td>
+            <td>{{ displayDate(row.collect_date) }}</td>
+            <td>{{ row.customer_code }}</td>
+            <td>{{ row.full_name }}</td>
+            <td>{{ row.network_code || row.network_name || '-' }}</td>
+            <td>{{ monthLabel(row) }}</td>
+            <td>{{ row.number_of_days | number:'1.0-0' }}</td>
+            <td>{{ paymentType(row) }}</td>
+            <td class="number">{{ row.received_count | number:'1.0-2' }}</td>
+            <td class="number">{{ row.balance_amount | number:'1.0-0' }}</td>
+            <td class="number"><strong>{{ row.paid_amount | number:'1.0-0' }}</strong></td>
+          </tr>
+          <tr *ngIf="!pageRows.length"><td colspan="11" class="empty">No subscription collection records found.</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="7">Total Records: <strong>{{ summary.total_records }}</strong></td><td class="grand-total">Grand Total</td><td class="number"><strong>{{ summary.total_count | number:'1.0-2' }}</strong></td><td class="number">{{ summary.total_balance | number:'1.0-0' }}</td><td class="number"><strong>{{ summary.total_amount | number:'1.0-0' }}</strong></td></tr></tfoot>
+      </table>
+    </div>
+
+    <footer class="pagination">
+      <div>Page Total: <strong>{{ pageTotal | number:'1.0-0' }}</strong></div>
+      <label>Rows <select [(ngModel)]="pageSize" (change)="changePage(1)"><option *ngFor="let size of pageSizes" [ngValue]="size">{{ size }}</option></select></label>
+      <div class="page-buttons"><button type="button" [disabled]="page === 1" (click)="changePage(page - 1)">Previous</button><span>Page {{ page }} of {{ pageCount }}</span><button type="button" [disabled]="page === pageCount" (click)="changePage(page + 1)">Next</button></div>
+    </footer>
+  </section>
+</div>
