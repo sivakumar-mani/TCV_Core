@@ -14,37 +14,37 @@
         </div>
         <div class="meta-line">
           <span class="customer-no">Customer No. {{ customer.customer_code || '-' }}</span>
-          <span class="address-line"><mat-icon>place</mat-icon>{{ headerAddress }}</span>
+          <span class="address-line"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ headerAddress }}</span>
         </div>
       </div>
       <div class="summary-actions">
         <label class="customer-jump">Customer No
           <span>
             <input type="search" [(ngModel)]="customerSearchNo" (keyup.enter)="searchCustomerByNumber()" placeholder="Customer No">
-            <button type="button" class="secondary-btn search-btn" (click)="searchCustomerByNumber()"><mat-icon>search</mat-icon></button>
+            <button type="button" class="secondary-btn search-btn" (click)="searchCustomerByNumber()"><i class="bi bi-search" aria-hidden="true"></i></button>
           </span>
         </label>
-        <button type="button" class="secondary-btn back-btn" (click)="goBack()"><mat-icon>arrow_back</mat-icon>Back</button>
+        <button type="button" class="secondary-btn back-btn" (click)="goBack()"><i class="bi bi-arrow-left" aria-hidden="true"></i>Back</button>
       </div>
     </div>
     <div class="summary-grid">
       <div class="summary-tile tile-blue">
-        <span class="tile-icon"><mat-icon>person</mat-icon></span>
+        <span class="tile-icon"><i class="bi bi-person" aria-hidden="true"></i></span>
         <span class="tile-label">Customer Number</span>
         <strong>{{ customer.customer_code || '-' }}</strong>
       </div>
       <div class="summary-tile tile-purple">
-        <span class="tile-icon"><mat-icon>settings_input_hdmi</mat-icon></span>
+        <span class="tile-icon"><i class="bi bi-router" aria-hidden="true"></i></span>
         <span class="tile-label">STB Number</span>
         <strong>{{ headerStbNo }}</strong>
       </div>
       <div class="summary-tile tile-green">
-        <span class="tile-icon"><mat-icon>event</mat-icon></span>
+        <span class="tile-icon"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
         <span class="tile-label">Install Date</span>
         <strong>{{ headerDate ? (headerDate | date:'dd MMM yyyy') : '-' }}</strong>
       </div>
       <div class="summary-tile tile-orange">
-        <span class="tile-icon"><mat-icon>shield</mat-icon></span>
+        <span class="tile-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
         <span class="tile-label">Customer Status</span>
         <strong>{{ headerStatus }}</strong>
       </div>
@@ -64,7 +64,7 @@
   <section class="form-section">
     <div class="section-title-row">
       <h2>{{ title }}</h2>
-      <button *ngIf="canSection(section, 'create')" type="button" class="primary-btn add-btn" (click)="openAdd()"><mat-icon>note_add</mat-icon>{{ addButtonLabel }}</button>
+      <button *ngIf="canSection(section, 'create')" type="button" class="primary-btn add-btn" (click)="openAdd()"><i class="bi bi-file-earmark-plus" aria-hidden="true"></i>{{ addButtonLabel }}</button>
     </div>
     <div class="history-table">
       <table>
@@ -148,9 +148,9 @@
               </span>
             </td>
             <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete')">
-              <button *ngIf="section === 'packages' && row.is_active == 1 && canSection(section, 'update')" type="button" class="table-icon-btn deactivate" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)"><mat-icon>block</mat-icon></button>
-              <button *ngIf="canSection(section, 'update')" type="button" class="table-icon-btn edit" title="Edit" aria-label="Edit" (click)="edit(row)"><mat-icon>edit_square</mat-icon></button>
-              <button *ngIf="canSection(section, 'delete')" type="button" class="table-icon-btn delete" title="Delete" aria-label="Delete" (click)="delete(row)"><mat-icon>delete</mat-icon></button>
+              <button *ngIf="section === 'packages' && row.is_active == 1 && canSection(section, 'update')" type="button" class="table-icon-btn deactivate" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)"><i class="bi bi-slash-circle" aria-hidden="true"></i></button>
+              <button *ngIf="canEditRow(row)" type="button" class="table-icon-btn edit" [title]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" [attr.aria-label]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" (click)="edit(row)"><i class="bi bi-pencil-square" aria-hidden="true"></i></button>
+              <button *ngIf="canSection(section, 'delete')" type="button" class="table-icon-btn delete" title="Delete" aria-label="Delete" (click)="delete(row)"><i class="bi bi-trash" aria-hidden="true"></i></button>
             </td>
           </tr>
           <tr *ngIf="!rows.length"><td colspan="8" class="empty-row">No records added yet.</td></tr>
@@ -187,7 +187,7 @@
           <select formControlName="new_street_id"><option [ngValue]="null">Select street</option><option *ngFor="let street of locationChangeStreets" [ngValue]="street.street_id">{{ street.street_name }}</option></select>
         </label>
         <label *ngIf="permissions.isAdmin()">Installed By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
-        <label *ngIf="!permissions.isAdmin()">Installed By<input type="text" [value]="permissions.username()" readonly></label>
+        <label *ngIf="!permissions.isAdmin()">Installed By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label>Connection Charge<input type="number" formControlName="connection_charge"></label>
         <label>Labor Charge<input type="number" formControlName="labour_service_charge"></label>
         <label>Remarks<input type="text" formControlName="remarks"></label>
@@ -233,7 +233,7 @@
           </select>
         </label>
         <label *ngIf="permissions.isAdmin()">Installed/Attended By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
-        <label *ngIf="!permissions.isAdmin()">Installed/Attended By<input type="text" [value]="permissions.username()" readonly></label>
+        <label *ngIf="!permissions.isAdmin()">Installed/Attended By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label class="wide-field">Remarks<textarea formControlName="remarks" maxlength="500" rows="1"></textarea><small>{{ form.get('remarks')?.value?.length || 0 }}/500</small></label>
       </div>
 
@@ -333,7 +333,7 @@
         <label>Status
           <select formControlName="payment_status">
             <option value="PENDING">Unpaid</option>
-            <option *ngIf="permissions.isAdmin()" value="PARTIAL">Partial</option>
+            <option value="PARTIAL">Partial</option>
             <option value="PAID">Paid</option>
           </select>
         </label>

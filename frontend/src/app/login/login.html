@@ -23,7 +23,7 @@
       [formControl]="$any(loginForm.controls['password'])"
       >
         <a type="button" class="showHideIcon" (click)="clickEvent($event)">
-               <mat-icon>{{ hide() ? 'visibility_off' : 'visibility' }}</mat-icon>
+               <i class="bi" [ngClass]="hide() ? 'bi-eye-slash' : 'bi-eye'" aria-hidden="true"></i>
             </a>
     </app-input-form-field>
       <div class="captcha-field">
@@ -31,7 +31,7 @@
         <div class="captcha-challenge">
           <span aria-live="polite">{{ captchaQuestion }}</span>
           <button type="button" mat-icon-button aria-label="Refresh CAPTCHA" (click)="refreshCaptcha()" [disabled]="captchaLoading">
-            <mat-icon>refresh</mat-icon>
+            <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
           </button>
         </div>
         <input id="captchaAnswer" class="form-control" type="text" inputmode="numeric" maxlength="6" autocomplete="off" formControlName="captchaAnswer" placeholder="Enter the 6-digit code">

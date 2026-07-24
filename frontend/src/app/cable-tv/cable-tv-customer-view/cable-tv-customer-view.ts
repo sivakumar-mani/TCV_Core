@@ -2,17 +2,17 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { ActivatedRoute } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
 import { forkJoin } from 'rxjs';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CableTvServices } from '../../services/cable-tv-services';
 import { CommonMethods } from '../../shared/common-methods';
+import { WorkflowServices } from '../../services/workflow-services';
 
 type ViewSection = 'customer' | 'connections' | 'stbs' | 'packages' | 'subscriptions' | 'accounts';
 
 @Component({
   selector: 'app-cable-tv-customer-view',
-  imports: [CommonModule, RouterLink, MatIconModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './cable-tv-customer-view.html',
   styleUrl: './cable-tv-customer-view.scss'
 })
@@ -21,18 +21,23 @@ export class CableTvCustomerView {
   customer: any = {};
   details: any = {};
   lookups: any = {};
+  isReviewMode = false;
+  workflowId = '';
   openSections = new Set<ViewSection>(['customer', 'connections', 'stbs', 'packages', 'subscriptions', 'accounts']);
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private cableTvService: CableTvServices,
+    private workflowService: WorkflowServices,
     private ngxLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods
   ) {}
 
   ngOnInit() {
     this.customerId = Number(this.route.snapshot.paramMap.get('id'));
+    this.isReviewMode = this.route.snapshot.queryParamMap.get('review') === 'true';
+    this.workflowId = this.route.snapshot.queryParamMap.get('workflowId') || '';
     this.loadData();
   }
 
@@ -42,6 +47,11 @@ export class CableTvCustomerView {
   get subscriptions() { return this.details.subscriptions || []; }
   get accounts() { return this.details.accounts || []; }
   get latestStb() { return this.stbs[0] || {}; }
+  get canApprove() {
+    return this.isReviewMode
+      && Boolean(this.workflowId)
+      && String(this.customer.approval_status || '').toUpperCase() === 'PENDING';
+  }
 
   get customerAddress() {
     return [
@@ -93,6 +103,7 @@ export class CableTvCustomerView {
   }
 
   toggle(section: ViewSection) {
+    if (this.isReviewMode) return;
     if (this.openSections.has(section)) this.openSections.delete(section);
     else this.openSections.add(section);
   }
@@ -144,8 +155,25 @@ export class CableTvCustomerView {
     window.print();
   }
 
+  approveCustomer() {
+    if (!this.canApprove) return;
+    if (!confirm(`Approve CATV customer ${this.customer.customer_code || this.customerId}?`)) return;
+    this.ngxLoader.start();
+    this.workflowService.approveWorkflow(this.workflowId, { remarks: 'CATV new customer approved from review' }).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleTokenAndMessage(response);
+        this.router.navigateByUrl('/workflow-approval');
+      },
+      error: (error: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleError(error);
+      }
+    });
+  }
+
   goBack() {
-    this.router.navigateByUrl('/cable-tv/customers');
+    this.router.navigateByUrl(this.isReviewMode ? '/workflow-approval' : '/cable-tv/customers');
   }
 
   private lookupLabel(listName: string, idKey: string, id: any, labelKey: string) {

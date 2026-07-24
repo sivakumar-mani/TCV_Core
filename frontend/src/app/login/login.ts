@@ -3,7 +3,6 @@ import { Component, inject, signal } from '@angular/core';
 import { MatCard, MatCardModule } from '@angular/material/card';
 import { InputFormField } from '../shared/input-form-field/input-form-field';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatButtonModule } from '@angular/material/button';
 import { HttpClient } from '@angular/common/http';
@@ -16,7 +15,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { ForgotPassword } from '../user/dialog/forgot-password/forgot-password';
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, MatCardModule, InputFormField, ReactiveFormsModule, MatButtonModule, MatDividerModule, MatIconModule],
+  imports: [CommonModule, MatCardModule, InputFormField, ReactiveFormsModule, MatButtonModule, MatDividerModule],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

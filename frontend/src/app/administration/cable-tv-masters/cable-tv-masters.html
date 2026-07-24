@@ -47,13 +47,13 @@
           <td class="actions-cell">
             <ng-container *ngIf="rowData.level === 'street'">
               <button type="button" class="icon-action secondary-btn" title="View" aria-label="View" (click)="viewRow(rowData)">
-                <mat-icon>visibility</mat-icon>
+                <i class="bi bi-eye" aria-hidden="true"></i>
               </button>
               <button type="button" class="icon-action edit-action" title="Edit" aria-label="Edit" (click)="editRow(rowData)">
-                <mat-icon>edit_square</mat-icon>
+                <i class="bi bi-pencil-square" aria-hidden="true"></i>
               </button>
               <button type="button" class="icon-action delete-action" title="Delete" aria-label="Delete" (click)="deleteRow(rowData)">
-                <mat-icon>delete</mat-icon>
+                <i class="bi bi-trash" aria-hidden="true"></i>
               </button>
             </ng-container>
           </td>

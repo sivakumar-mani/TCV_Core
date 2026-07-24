@@ -1,8 +1,7 @@
 import { Component, inject } from '@angular/core';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatButtonModule} from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { NgFor } from '@angular/common';
+import { NgClass, NgFor } from '@angular/common';
 import { PermissionService } from '../services/permission.service';
 import { Router } from '@angular/router';
 export interface ActionItem {
@@ -12,9 +11,9 @@ export interface ActionItem {
 }
 @Component({
   selector: 'app-action-menu',
-   imports: [MatMenuModule, MatButtonModule, MatIcon, NgFor ],
+   imports: [MatMenuModule, MatButtonModule, NgFor, NgClass],
   template: `<button mat-icon-button [matMenuTriggerFor]="menu">
-  <mat-icon>more_vert</mat-icon>
+  <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
 </button>
 
 <mat-menu #menu="matMenu">
@@ -23,9 +22,18 @@ export interface ActionItem {
     *ngFor="let actionMenu of visibleActions"
     (click)="execute(actionMenu.action)"
   >
-    {{ actionMenu.label }}
+    <i class="bi action-menu-icon" [ngClass]="iconClass(actionMenu.label)" aria-hidden="true"></i>
+    <span>{{ actionMenu.label }}</span>
   </button>
 </mat-menu>`,
+  styles: [`
+    .action-menu-icon {
+      display: inline-block;
+      font-size: 1rem;
+      margin-right: .65rem;
+      width: 1.1rem;
+    }
+  `]
  
 })
 export class ActionMenu {
@@ -45,6 +53,18 @@ export class ActionMenu {
 
   refresh(): boolean {
     return false;
+  }
+
+  iconClass(label: string): string {
+    const action = String(label || '').trim().toLowerCase();
+    if (action.includes('delete')) return 'bi-trash';
+    if (action.includes('edit') || action.includes('update')) return 'bi-pencil-square';
+    if (action.includes('view') || action.includes('preview')) return 'bi-eye';
+    if (action.includes('review') || action.includes('approve')) return 'bi-clipboard-check';
+    if (action.includes('print') || action.includes('pdf')) return 'bi-printer';
+    if (action.includes('payment')) return 'bi-cash-coin';
+    if (action.includes('material')) return 'bi-box-seam';
+    return 'bi-three-dots';
   }
 
   execute(action: any) {

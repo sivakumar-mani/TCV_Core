@@ -1,30 +1,32 @@
-<div class="view-page">
+<div class="view-page" [class.review-mode]="isReviewMode">
   <nav class="breadcrumb no-print">
     <a routerLink="/dashboard">Home</a><span>/</span>
-    <a routerLink="/cable-tv/customers">Cable TV Customers</a><span>/</span>
-    <strong>View Customer</strong>
+    <a [routerLink]="isReviewMode ? '/workflow-approval' : '/cable-tv/customers'">{{ isReviewMode ? 'Workflow Approvals' : 'Cable TV Customers' }}</a><span>/</span>
+    <strong>{{ isReviewMode ? 'Review' : 'View Customer' }}</strong>
   </nav>
 
   <header class="page-heading no-print">
     <div>
-      <h1>CATV Customer Information</h1>
-      <p>Complete read-only customer details</p>
+      <h1>{{ isReviewMode ? 'CATV New Customer Review' : 'CATV Customer Information' }}</h1>
+      <p *ngIf="isReviewMode">Status: <strong>{{ customer.status || '-' }}</strong> | Approval: <strong>{{ customer.approval_status || 'PENDING' }}</strong></p>
+      <p *ngIf="!isReviewMode">Complete read-only customer details</p>
     </div>
     <div class="heading-actions">
-      <button type="button" class="secondary-button" (click)="goBack()"><mat-icon>arrow_back</mat-icon>Back</button>
-      <button type="button" class="print-button" (click)="printPage()"><mat-icon>print</mat-icon>Print</button>
+      <button *ngIf="canApprove" type="button" class="approve-button" (click)="approveCustomer()">Approve</button>
+      <button type="button" class="secondary-button" (click)="goBack()"><i class="bi bi-arrow-left" aria-hidden="true"></i>{{ isReviewMode ? 'Cancel' : 'Back' }}</button>
+      <button *ngIf="!isReviewMode" type="button" class="print-button" (click)="printPage()"><i class="bi bi-printer" aria-hidden="true"></i>Print</button>
     </div>
   </header>
 
   <main class="print-sheet">
     <div class="print-title">
-      <h1>CATV Customer Information</h1>
+      <h1>{{ isReviewMode ? 'CATV New Customer Review' : 'CATV Customer Information' }}</h1>
       <span>Customer No: {{ customer.customer_code || '-' }}</span>
     </div>
 
     <section class="accordion" [class.collapsed]="!isOpen('customer')">
       <button type="button" class="accordion-heading" (click)="toggle('customer')" [attr.aria-expanded]="isOpen('customer')">
-        <span>Customer Information</span><mat-icon>expand_more</mat-icon>
+        <span>Customer Information</span><i class="bi bi-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="accordion-content">
         <div class="customer-overview">
@@ -58,7 +60,7 @@
 
     <section class="accordion" [class.collapsed]="!isOpen('connections')">
       <button type="button" class="accordion-heading" (click)="toggle('connections')" [attr.aria-expanded]="isOpen('connections')">
-        <span>Installation / Connection Details</span><mat-icon>expand_more</mat-icon>
+        <span>Installation / Connection Details</span><i class="bi bi-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="accordion-content table-wrap">
         <table>
@@ -78,7 +80,7 @@
 
     <section class="accordion" [class.collapsed]="!isOpen('stbs')">
       <button type="button" class="accordion-heading" (click)="toggle('stbs')" [attr.aria-expanded]="isOpen('stbs')">
-        <span>STB Updated Details</span><mat-icon>expand_more</mat-icon>
+        <span>STB Updated Details</span><i class="bi bi-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="accordion-content table-wrap">
         <table>
@@ -98,7 +100,7 @@
 
     <section class="accordion" [class.collapsed]="!isOpen('packages')">
       <button type="button" class="accordion-heading" (click)="toggle('packages')" [attr.aria-expanded]="isOpen('packages')">
-        <span>Package Updated Details</span><mat-icon>expand_more</mat-icon>
+        <span>Package Updated Details</span><i class="bi bi-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="accordion-content table-wrap">
         <table>
@@ -117,7 +119,7 @@
 
     <section class="accordion" [class.collapsed]="!isOpen('subscriptions')">
       <button type="button" class="accordion-heading" (click)="toggle('subscriptions')" [attr.aria-expanded]="isOpen('subscriptions')">
-        <span>Monthly Subscription Details</span><mat-icon>expand_more</mat-icon>
+        <span>Monthly Subscription Details</span><i class="bi bi-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="accordion-content table-wrap">
         <table>
@@ -138,7 +140,7 @@
 
     <section class="accordion" [class.collapsed]="!isOpen('accounts')">
       <button type="button" class="accordion-heading" (click)="toggle('accounts')" [attr.aria-expanded]="isOpen('accounts')">
-        <span>Account Details</span><mat-icon>expand_more</mat-icon>
+        <span>Account Details</span><i class="bi bi-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="accordion-content table-wrap">
         <table>
@@ -157,7 +159,13 @@
     </section>
 
     <div class="print-footer no-print">
-      <button type="button" class="print-link" (click)="printPage()"><mat-icon>print</mat-icon>Print the Page</button>
+      <ng-container *ngIf="isReviewMode; else printAction">
+        <button type="button" class="secondary-button" (click)="goBack()">Cancel</button>
+        <button *ngIf="canApprove" type="button" class="approve-button" (click)="approveCustomer()">Approve</button>
+      </ng-container>
+      <ng-template #printAction>
+        <button type="button" class="print-link" (click)="printPage()"><i class="bi bi-printer" aria-hidden="true"></i>Print the Page</button>
+      </ng-template>
     </div>
   </main>
 </div>

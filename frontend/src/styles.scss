@@ -1,6 +1,10 @@
 @use '@angular/material' as mat;
-// @use './responsive.scss' as *;
 
+// =====================================================================
+// Design tokens
+// Primary scale mirrors the PrimeNG Aura preset in app-theme.ts so the
+// Material shell and PrimeNG components read as one system.
+// =====================================================================
 :root {
   --bs-transparent: none;
   --bs-blue: #007bff;
@@ -26,65 +30,69 @@
   --bs-gray-700: #5a5a5a;
   --bs-gray-800: #343a40;
   --bs-gray-900: #212529;
-  --bs-primary: #69aa8a;
+  --bs-primary: #4154f1;
   --bs-secondary: #6c757d;
-  --bs-success: #69aa8a;
+  --bs-success: #22a06b;
   --bs-info: #17a2b8;
-  --bs-warning: #ffc107;
-  --bs-danger: #ff7851;
+  --bs-warning: #f5a524;
+  --bs-danger: #e5484d;
   --bs-light: #f8f9fa;
   --bs-dark: #343a40;
-  --bs-primary-rgb: to-rgb(#69aa8a);
-  --bs-secondary-rgb: to-rgb(#6c757d);
-  --bs-success-rgb: to-rgb(#69aa8a);
-  --bs-info-rgb: to-rgb(#17a2b8);
-  --bs-warning-rgb: to-rgb(#ffc107);
-  --bs-danger-rgb: to-rgb(#ff7851);
-  --bs-light-rgb: to-rgb(#f8f9fa);
-  --bs-dark-rgb: to-rgb(#343a40);
-  --bs-brand-rgb: to-rgb(#69aa8a);
-  --bs-blue-rgb: to-rgb(#007bff);
-  --bs-indigo-rgb: to-rgb(#6610f2);
-  --bs-purple-rgb: to-rgb(#6f42c1);
-  --bs-pink-rgb: to-rgb(#e83e8c);
-  --bs-red-rgb: to-rgb(#ff7851);
-  --bs-orange-rgb: to-rgb(#fd7e14);
-  --bs-yellow-rgb: to-rgb(#ffc107);
-  --bs-green-rgb: to-rgb(#69aa8a);
-  --bs-teal-rgb: to-rgb(#20c997);
-  --bs-cyan-rgb: to-rgb(#17a2b8);
 
-  --btn-primary-blue: #1689fe;
-  --ag-grid-header: #c5ebfe;
+  --btn-primary-blue: #4154f1;
+
+  // TCV brand scale (kept in sync with src/app/app-theme.ts primary.*)
+  --tcv-primary-50: #eef1ff;
+  --tcv-primary-100: #e0e4fe;
+  --tcv-primary-200: #c7ccfd;
+  --tcv-primary-300: #a5abfa;
+  --tcv-primary-400: #7c7ff5;
+  --tcv-primary-500: #4154f1;
+  --tcv-primary-600: #3141d6;
+  --tcv-primary-700: #2732ab;
+  --tcv-primary-800: #212986;
+  --tcv-primary-900: #1c2569;
+
+  --tcv-primary: var(--tcv-primary-500);
+  --tcv-primary-hover: var(--tcv-primary-600);
+  --tcv-primary-text: #1c2569;
+  --tcv-muted: #6b7690;
+  --tcv-text: #1e2438;
+
+  --tcv-shell-bg: #f5f6fb;
+  --tcv-surface: #ffffff;
+  --tcv-border: #e7e9f3;
+  --tcv-border-strong: #d7dbec;
+
+  --tcv-radius-sm: 6px;
+  --tcv-radius-md: 10px;
+  --tcv-radius-lg: 14px;
+
+  --tcv-shadow-sm: 0 1px 2px rgba(30, 36, 56, 0.06);
+  --tcv-shadow-md: 0 4px 16px rgba(30, 36, 56, 0.08);
+  --tcv-shadow-lg: 0 12px 32px rgba(30, 36, 56, 0.12);
+
+  --ag-grid-header: var(--tcv-primary-50);
 }
 
+// =====================================================================
+// Angular Material base theme, aligned to the same primary scale used by
+// the PrimeNG preset (see src/app/app-theme.ts).
+// =====================================================================
 html {
-  @include mat.theme((color: (primary: mat.$azure-palette,
+  @include mat.theme((color: (primary: mat.$violet-palette,
         tertiary: mat.$blue-palette,
       ),
       typography: Roboto,
       density: 0,
     ));
+
+  // Pin the exact brand hex on top of the generated M3 palette so
+  // PrimeNG and Material controls match precisely.
+  --mat-sys-primary: var(--tcv-primary);
+  --mat-sys-on-primary: #ffffff;
+  --mdc-protected-button-container-color: var(--tcv-primary);
 }
-
-body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
-  margin: 0;
-}
-
-/* You can add global styles to this file, and also import other style files */
 
 html,
 body {
@@ -92,17 +100,21 @@ body {
 }
 
 body {
+  color-scheme: light;
+  background: var(--tcv-shell-bg);
+  color: var(--tcv-text);
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
   font-size: 14px;
 }
 
-html,
-body {
-  height: 100%;
+* {
+  box-sizing: border-box;
 }
 
-//  ----------------- common styles ------------------------
+// =====================================================================
+// Common / layout
+// =====================================================================
 .mid-spacer {
   flex-grow: 1;
 }
@@ -112,65 +124,98 @@ body {
   z-index: 100;
 }
 
-//  ----------------- Layout ------------------------
 .mat-drawer-container {
-  height: calc(100% - 90px);
+  background: var(--tcv-shell-bg) !important;
+  height: auto !important;
+  min-height: calc(100vh - 56px) !important;
 }
 
 .mat-drawer-content {
-  padding: 15px;
+  background: var(--tcv-shell-bg) !important;
+  height: auto !important;
+  min-height: calc(100vh - 56px) !important;
+  overflow: visible !important;
+  padding: 1.25rem 1.5rem !important;
 }
-
-// --------------- Header -------------
-.header {
-  .mat-toolbar{
-    background-color: var(--bs-red-rgb) !important;
-    box-shadow: 0 5px 5px -5px #000000 !important;
-  }    
-}
-
-// --------------- Sidebar and  menu -------------
 
 .mat-drawer-side {
-  background: var(--bs-primary);
-  width: 230px;
+  background: var(--tcv-surface) !important;
+  border-right: 1px solid var(--tcv-border) !important;
   border-radius: 0 !important;
-  // padding: 5px 0px 10px;
+  box-shadow: var(--tcv-shadow-md);
+  width: 230px;
 }
+
+.app-shell .mat-drawer-side {
+  z-index: 1200 !important;
+}
+
+.app-shell .mat-drawer-content {
+  position: relative;
+  z-index: 1300 !important;
+}
+
+.main-content {
+  background: var(--tcv-shell-bg) !important;
+  min-height: calc(100vh - 56px) !important;
+}
+
+.example-sidenav-content {
+  display: block !important;
+  height: auto !important;
+  min-height: calc(100vh - 56px) !important;
+  overflow: visible !important;
+}
+
+// mat-toolbar used purely as a breadcrumb bar inside pages
+.main-content .mat-toolbar {
+  background: transparent;
+  box-shadow: none !important;
+  font-size: 1rem;
+  font-weight: 500;
+  height: 40px !important;
+  letter-spacing: 0;
+  padding: 0 !important;
+
+  .breadcrumb {
+    margin-bottom: 0 !important;
+  }
+}
+
+// --------------- Sidebar and menu (generic Material list/expansion) -------------
 .mdc-list {
   padding: 0 !important;
 
   .mdc-list-item {
-    padding: 0 10px !important;
     height: 40px !important;
+    padding: 0 10px !important;
 
     &__primary-text {
-      display: flex !important;
       align-items: center !important;
-      font-size: .9rem !important;
+      display: flex !important;
+      font-size: 0.9rem !important;
 
-      .mat-icon {
+      .bi {
         padding-right: 6px;
       }
-
     }
 
     &:hover {
-      border-radius: 0 !important;
+      border-radius: var(--tcv-radius-sm) !important;
     }
   }
 }
 
 .mat-expansion-panel {
-  background-color: var(--bs-transparent) !important;
-  box-shadow: var(--bs-transparent) !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 
   &-header {
-    padding: 0 10px !important;
     height: 2.5rem !important;
+    padding: 0 10px !important;
 
     &-title {
-      font-size: .8rem;
+      font-size: 0.8rem;
 
       span {
         padding-left: 5px;
@@ -187,27 +232,28 @@ body {
   }
 }
 
-
-
-// --------------- login -------------
+// =====================================================================
+// Login
+// =====================================================================
 .login-page {
-  height: 100vh;
-  width: 100%;
-  background: var(--bs-cyan);
-  display: flex;
   align-items: center;
+  background: radial-gradient(circle at top left, var(--tcv-primary-100), var(--tcv-shell-bg) 55%);
+  display: flex;
+  height: 100vh;
   justify-content: center;
   overflow: hidden;
+  width: 100%;
 
   h2 {
     font-size: 24px;
   }
 
-  .mat-mdc-raised-button {
-    background: var(--bs-blue) !important;
-    width: 100%;
-    border-radius: 5px;
+  .mat-mdc-raised-button,
+  button[matButton] {
+    background: var(--tcv-primary) !important;
+    border-radius: var(--tcv-radius-sm);
     color: var(--bs-white) !important;
+    width: 100%;
   }
 
   a {
@@ -219,42 +265,47 @@ body {
   }
 
   mat-card {
-    min-width: 400px;
-    max-width: 400px;
+    background-color: var(--tcv-surface);
+    border: 1px solid var(--tcv-border);
+    border-radius: var(--tcv-radius-lg) !important;
+    box-shadow: var(--tcv-shadow-lg);
     margin: 2em auto;
+    max-width: 400px;
+    min-width: 400px;
     text-align: center;
-    border-radius: 5px !important;
-    background-color: var(--bs-white);
-    box-shadow: 0px 8px 8px var(--bs-dark);
   }
 
   .mat-mdc-card-header {
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
     flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
 
     h2 {
-      color: var(--bs-blue);
-      font-weight: 500;
+      color: var(--tcv-primary-text);
       display: block;
+      font-weight: 600;
       padding-bottom: 10px;
       padding-top: 10px;
     }
 
     p {
+      color: var(--tcv-muted);
       margin-bottom: 20px;
     }
   }
 }
 
-// --------------- form fields -------------
+// =====================================================================
+// Form fields (Angular Material)
+// =====================================================================
 .mat-mdc-form-field {
   --mat-form-field-container-height: 40px;
   --mat-form-field-container-vertical-padding: 9px;
   font-size: 0.82rem !important;
 
   .mdc-text-field--outlined {
+    border-radius: var(--tcv-radius-sm) !important;
     height: 40px !important;
     padding: 0 12px !important;
 
@@ -282,7 +333,7 @@ body {
   }
 
   .mat-mdc-form-field-required-marker {
-    color: red !important;
+    color: var(--bs-danger) !important;
   }
 }
 
@@ -294,37 +345,36 @@ body {
   font-size: 0.65rem !important;
 }
 
-
-
-// --------------- Grid value -------------
-
+// =====================================================================
+// Grid layout helpers
+// =====================================================================
 .grid-1-col {
   display: grid;
-  grid-template-columns: minmax(300px, 1fr);
   gap: 15px;
+  grid-template-columns: minmax(300px, 1fr);
 }
 
 .grid-2-col {
   display: grid;
-  grid-template-columns: repeat(2, minmax(300px, 1fr));
   gap: 15px;
+  grid-template-columns: repeat(2, minmax(300px, 1fr));
 }
 
-/* Tablet */
 @media (max-width: 992px) {
   .grid-2-col {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .grid-2-col {
     grid-template-columns: 1fr !important;
   }
 }
 
-// ---------snack bar ----
+// =====================================================================
+// Snackbars
+// =====================================================================
 .black-snackbar {
   background: #000000;
   color: white;
@@ -332,26 +382,25 @@ body {
 }
 
 .green-snackbar {
-  background: green;
+  background: var(--bs-success);
   color: white;
   font-size: 12px;
 }
 
-
-// --------------- dialog value -------------
-
+// =====================================================================
+// Dialogs
+// =====================================================================
 .mat-mdc-dialog-container {
-  border-radius: 10px;
+  border-radius: var(--tcv-radius-lg);
 
   .mat-mdc-dialog-title {
-    display: flex;
     align-items: center;
-    background: var(--bs-white);
+    background: var(--tcv-surface);
+    display: flex;
+    font-size: 18px !important;
     height: 40px;
     line-height: 30px;
     padding: 20px;
-    font-size: 18px !important;
-    text-shadow: 1px 1px 15px #ffffff;
 
     &::before {
       display: none;
@@ -359,7 +408,8 @@ body {
   }
 
   .mat-mdc-dialog-surface {
-    border-radius: 10px !important;
+    border-radius: var(--tcv-radius-lg) !important;
+    box-shadow: var(--tcv-shadow-lg) !important;
   }
 
   .mat-mdc-dialog-actions {
@@ -374,16 +424,16 @@ body {
       display: none !important;
     }
   }
-
 }
 
 .user-signup-dialog {
+
   .mat-mdc-dialog-title,
   .mdc-dialog__title,
   .mat-mdc-dialog-actions,
   .mdc-dialog__actions {
-    background: #f8f9fb !important;
-    color: #000 !important;
+    background: var(--tcv-shell-bg) !important;
+    color: var(--tcv-text) !important;
   }
 
   .mat-mdc-dialog-title,
@@ -393,8 +443,8 @@ body {
 
   .mat-mdc-dialog-content,
   .mdc-dialog__content {
-    background: #fff !important;
-    color: #111827;
+    background: var(--tcv-surface) !important;
+    color: var(--tcv-text);
     padding: 10px 20px 4px !important;
   }
 
@@ -404,41 +454,48 @@ body {
   }
 }
 
-// --------------- Action area -------------
-
-.action-btn {
+// =====================================================================
+// Action areas
+// =====================================================================
+.action-btn,
+.action-footer {
+  align-items: center;
   display: flex;
-  flex-wrap: wrap;
   flex-direction: column;
   flex-grow: 1;
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
   padding: 20px;
 }
 
-// ---------------button generic style -------------
-
+// =====================================================================
+// Buttons
+// =====================================================================
 button {
-  font-size: 1rem;
-  // min-width: 150px !important;
-  padding: 8px 16px;
-  border-radius: 5px !important;
   border: 0;
+  border-radius: var(--tcv-radius-sm) !important;
   box-shadow: none;
-  outline: 0;
   color: var(--bs-white);
+  font-size: 1rem;
+  outline: 0;
+  padding: 8px 16px;
+  transition: background-color 120ms ease, box-shadow 120ms ease, transform 80ms ease;
 }
 
 .btn-no {
-  background-color: var(--bs-gray);
+  background-color: var(--tcv-muted);
 }
 
 .btn-yes {
-  background-color: var(--btn-primary-blue);
+  background-color: var(--tcv-primary);
+}
+
+.btn-yes:hover {
+  background-color: var(--tcv-primary-hover);
 }
 
 .btn-disabled {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .mat-mdc-raised-button.btn-yes,
@@ -446,351 +503,54 @@ button {
 .mat-mdc-raised-button.btn-disabled {
   --mdc-protected-button-label-text-color: var(--bs-white);
   --mat-protected-button-state-layer-color: var(--bs-white);
+  border-radius: var(--tcv-radius-sm) !important;
+  box-shadow: var(--tcv-shadow-sm) !important;
   color: var(--bs-white) !important;
 }
 
 .mat-mdc-raised-button.btn-yes {
-  background-color: var(--btn-primary-blue) !important;
+  background-color: var(--tcv-primary) !important;
+}
+
+.mat-mdc-raised-button.btn-yes:hover {
+  background-color: var(--tcv-primary-hover) !important;
 }
 
 .mat-mdc-raised-button.btn-no {
-  background-color: var(--bs-gray) !important;
+  background-color: var(--tcv-muted) !important;
 }
 
 .mat-mdc-raised-button.btn-disabled,
 .mat-mdc-raised-button:disabled {
-  background-color: var(--bs-gray-500) !important;
+  background-color: var(--bs-gray-400) !important;
   color: var(--bs-white) !important;
 }
 
-// password show and hide style for eye icon
+// password show/hide eye icon
 .showHideIcon {
+  background: transparent;
+  border: 0;
+  color: var(--tcv-muted);
   position: absolute;
   right: 0px;
   top: 10px;
-  color: var(--bs-gray);
-  background: transparent;
-  border: 0;
 }
 
-html,
-body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  font-size: 14px;
-}
-
-html,
-body {
-  height: 100%;
-}
-
-//  ----------------- common styles ------------------------
-.mid-spacer {
-  flex-grow: 1;
-}
-
-.footer,
-.mat-toolbar-single-row {
-  z-index: 100;
-}
-
-//  ----------------- Layout ------------------------
-.mat-drawer-container {
-  height: calc(100% - 90px);
-}
-
-.mat-drawer-content {
-  padding: 15px;
-}
-
-// --------------- Sidebar and  menu -------------
-
-.mat-drawer-side {
-  background: var(--bs-primary);
-  width: 230px;
-  border-radius: 0 !important;
-  // padding: 5px 0px 10px;
-}
-
-.mdc-list {
-  padding: 0 !important;
-
-  .mdc-list-item {
-    padding: 0 10px !important;
-    height: 40px !important;
-
-    &__primary-text {
-      display: flex !important;
-      align-items: center !important;
-      font-size: .9rem !important;
-
-      .mat-icon {
-        padding-right: 6px;
-      }
-
-    }
-
-    &:hover {
-      border-radius: 0 !important;
-    }
-  }
-}
-
-.mat-expansion-panel {
-  background-color: var(--bs-transparent) !important;
-  box-shadow: var(--bs-transparent) !important;
-
-  &-header {
-    padding: 0 10px !important;
-    height: 2.5rem !important;
-
-    &-title {
-      font-size: .8rem;
-
-      span {
-        padding-left: 5px;
-      }
-    }
-  }
-
-  &-body {
-    padding: 0 10px !important;
-  }
-
-  &-spacing {
-    margin: 0 !important;
-  }
-}
-
-
-
-// --------------- login -------------
-.login-page {
-  height: 100vh;
-  width: 100%;
-  background: var(--bs-cyan);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-
-  h2 {
-    font-size: 24px;
-  }
-
-  .mat-mdc-raised-button {
-    background: var(--bs-blue) !important;
-    width: 100%;
-    border-radius: 5px;
-    color: var(--bs-white) !important;
-  }
-
-  a {
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  mat-card {
-    min-width: 400px;
-    max-width: 400px;
-    margin: 2em auto;
-    text-align: center;
-    border-radius: 5px !important;
-    background-color: var(--bs-white);
-    box-shadow: 0px 8px 8px var(--bs-dark);
-  }
-
-  .mat-mdc-card-header {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    flex-direction: column;
-
-    h2 {
-      color: var(--bs-blue);
-      font-weight: 500;
-      display: block;
-      padding-bottom: 10px;
-      padding-top: 10px;
-    }
-
-    p {
-      margin-bottom: 20px;
-    }
-  }
-}
-
-// --------------- form fields -------------
-.mat-mdc-form-field {
-  --mat-form-field-container-height: 40px;
-  --mat-form-field-container-vertical-padding: 9px;
-  font-size: 0.82rem !important;
-
-  .mdc-text-field--outlined {
-    height: 40px !important;
-    padding: 0 12px !important;
-
-    .mat-mdc-form-field-infix {
-      min-height: 40px !important;
-      padding: 9px 0 !important;
-    }
-  }
-
-  .mat-mdc-select-trigger {
-    height: 30px;
-  }
-
-  .mat-mdc-form-field-error-wrapper {
-    padding: 0 4px !important;
-  }
-}
-
-.mdc-floating-label {
-  font-size: 0.95rem !important;
-}
-
-.error-message {
-  font-size: 0.65rem !important;
-}
-
-
-
-// --------------- Grid value -------------
-
-.grid-1-col {
-  display: grid;
-  grid-template-columns: minmax(300px, 1fr);
-  gap: 15px;
-}
-
-.grid-2-col {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(300px, 1fr));
-  gap: 15px;
-}
-
-
-// --------- snackbar ----
-.black-snackbar {
-  background: #000000;
-  color: white;
-  font-size: 12px;
-}
-
-.green-snackbar {
-  background: green;
-  color: white;
-  font-size: 12px;
-}
-
-
-// --------------- dialog value -------------
-
-.mat-mdc-dialog-container {
-  border-radius: 10px;
-
-  .mat-mdc-dialog-title {
-    display: flex;
-    align-items: center;
-    background: var(--bs-white);
-    height: 40px;
-    line-height: 30px;
-    padding: 20px;
-    font-size: 18px !important;
-    text-shadow: 1px 1px 15px #ffffff;
-
-    &::before {
-      display: none;
-    }
-  }
-
-  .mat-mdc-dialog-surface {
-    border-radius: 10px !important;
-  }
-
-  .mat-mdc-dialog-actions {
-    color: var(--bs-white);
-    flex-wrap: nowrap !important;
-    justify-content: space-between;
-    min-height: 20px !important;
-    padding: 20px !important;
-
-    &::after,
-    &::before {
-      display: none !important;
-    }
-  }
-
-}
-
-// --------------- Action area -------------
-
-.action-footer {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
-  flex-grow: 1;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-}
-
-
-// password show and hide style for eye icon
-.showHideIcon {
-  position: absolute;
-  right: 0px;
-  top: 10px;
-  color: var(--bs-gray);
-  background: transparent;
-  border: 0;
-}
-
-// mat tool bar of breadcrums
-.main-content {
-  .mat-toolbar {
-    height: 40px !important;
-    background: var(--bs-light);
-    font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: 0;
-    
-    .breadcrumb {
-      margin-bottom: 0 !important;
-    }
-    .mat-toolbar-single-row {
-    box-shadow: none !important;
-    }
-  }
-
-}
-
-
-// For AG Grie table Field name
-
+// =====================================================================
+// AG Grid
+// =====================================================================
 .ag-floating-filter-button {
   display: none !important;
 }
 
 .ag-header-cell {
-  padding: 0 5px !important;
-}
-
-.ag-header-cell {
-  padding: 0 5px !important;
   background: var(--ag-grid-header) !important;
+  color: var(--tcv-primary-text);
+  padding: 0 5px !important;
 }
 
 .ag-row:nth-child(even) {
-  background-color: var(--bs-gray-200) !important;
+  background-color: #fbfcff !important;
 }
 
 .ag-action-dropdown {
@@ -804,152 +564,62 @@ body {
   }
 }
 
-// content area styles
+// =====================================================================
+// Page chrome
+// =====================================================================
 .page-header {
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  margin-bottom: 1rem;
   width: 100%;
 
-  .page-title {
-    font-size: 1.5rem;
-    line-height: 60px;
+  .page-title,
+  h1 {
+    color: var(--tcv-primary-text);
+    font-size: 1.35rem !important;
+    letter-spacing: 0;
+    line-height: 1.4;
     margin-bottom: 0;
   }
-}
-
-
-// -------------- prime ng tabl -----------
-
-.prime-table {
-  width: 100% ;
-   .p-datatable {
-.p-inputtext, .p-select-label { 
-    font-size: 13px !important;
-     padding: 4px 8px;
-  }
-.p-tag-label{
-  font-size: 12px;
-  font-weight: 400;
-}
-   }
-  .p-datatable-thead > tr > th { 
-    background: var(--ag-grid-header) !important;
-   padding: 8px;
-    font-size: 14px;
-    font-weight: 500;
-  }
-  .p-datatable-tbody > tr > td {
-     padding: 8px 4px;
-  }
-  .mat-mdc-button {
-    height: 20px !important;
-    }
-}
-
-// --------------- NiceAdmin-inspired shell theme -------------
-:root {
-  --tcv-primary: #012970;
-  --tcv-accent: #4154f1;
-  --tcv-muted: #899bbd;
-  --tcv-shell-bg: #f6f9ff;
-  --tcv-border: #edf1f7;
-  --tcv-card-shadow: 0 0 24px rgba(1, 41, 112, 0.08);
-  --bs-primary: #4154f1;
-  --btn-primary-blue: #4154f1;
-  --ag-grid-header: #f2f6ff;
-}
-
-body {
-  background: var(--tcv-shell-bg) !important;
-  color: #012970;
-  font-size: 13px;
-}
-
-.header .mat-toolbar {
-  background: #ffffff !important;
-  border-bottom: 1px solid var(--tcv-border);
-  box-shadow: 0 1px 8px rgba(16, 24, 40, 0.06) !important;
-  color: var(--tcv-primary) !important;
-}
-
-.mat-drawer-container {
-  background: var(--tcv-shell-bg) !important;
-  height: auto !important;
-  min-height: calc(100vh - 56px) !important;
-}
-
-.mat-drawer-content {
-  background: var(--tcv-shell-bg) !important;
-  height: auto !important;
-  min-height: calc(100vh - 56px) !important;
-  overflow: visible !important;
-  padding: 1.25rem 1.4rem !important;
-}
-
-.mat-drawer-side {
-  background: #ffffff !important;
-  border-right: 1px solid var(--tcv-border) !important;
-  box-shadow: 0 0 20px rgba(1, 41, 112, 0.08);
-}
-
-.app-shell .mat-drawer-side {
-  z-index: 1200 !important;
-}
-
-.app-shell .mat-drawer-content {
-  position: relative;
-  z-index: 1300 !important;
-}
-
-.main-content {
-  background: var(--tcv-shell-bg) !important;
-  min-height: calc(100vh - 56px) !important;
-}
-
-.example-sidenav-content {
-  display: block !important;
-  height: auto !important;
-  min-height: calc(100vh - 56px) !important;
-  overflow: visible !important;
-}
-
-.form-section,
-.summary-grid,
-.mat-mdc-card,
-app-ag-grid-list {
-  color: #012970;
-}
-
-.form-section,
-.summary-grid {
-  border-color: var(--tcv-border) !important;
-  box-shadow: var(--tcv-card-shadow);
 }
 
 .form-section,
 .card,
 .widget-card {
-  background: #ffffff !important;
-  border: 1px solid #d9dee8 !important;
-  border-radius: 5px !important;
-  box-shadow: 0 1px 4px rgba(1, 41, 112, 0.14) !important;
+  background: var(--tcv-surface) !important;
+  border: 1px solid var(--tcv-border) !important;
+  border-radius: var(--tcv-radius-md) !important;
+  box-shadow: var(--tcv-shadow-sm) !important;
+  color: var(--tcv-text);
   overflow: hidden;
 }
 
+.summary-grid,
+app-ag-grid-list {
+  color: var(--tcv-text);
+}
+
+.summary-grid {
+  border-color: var(--tcv-border) !important;
+  box-shadow: var(--tcv-shadow-sm);
+}
+
 .form-section {
+  margin-bottom: 1.1rem;
   padding: 1.15rem 1.25rem !important;
 }
 
 .form-section > h2:first-child,
 .card > .card-header,
-.widget-card > .widget-header {
-  background: #ffffff;
-  border-bottom: 1px solid #d9dee8;
-  color: #012970;
+.widget-card > .widget-header,
+.section-title-row {
+  background: var(--tcv-surface);
+  border-bottom: 1px solid var(--tcv-border);
+  color: var(--tcv-primary-text);
   display: block;
-  font-size: 1rem !important;
-  font-weight: 500;
+  font-size: 0.95rem !important;
+  font-weight: 600;
   margin: -1.15rem -1.25rem 1.15rem !important;
   padding: 0.95rem 1.25rem;
 }
@@ -959,26 +629,9 @@ app-ag-grid-list {
   padding: 1.15rem 1.25rem;
 }
 
-.section-title-row {
-  border-bottom: 1px solid #d9dee8;
-  margin: -1.15rem -1.25rem 1.15rem !important;
-  padding: 0.85rem 1.25rem;
-}
-
 .section-title-row h2 {
+  font-size: 0.95rem !important;
   margin: 0 !important;
-}
-
-.page-header .page-title,
-.page-header h1,
-.form-section h2 {
-  color: var(--tcv-primary);
-  letter-spacing: 0;
-}
-
-.page-header .page-title,
-.page-header h1 {
-  font-size: 1.35rem !important;
 }
 
 .form-section h2 {
@@ -1007,64 +660,65 @@ nav[aria-label='breadcrumb'] {
 .mat-mdc-menu-item,
 .table,
 .ag-theme-quartz,
-.ag-theme-alpine {
+.ag-theme-alpine,
+.ag-theme-balham {
   font-size: 0.84rem !important;
 }
 
 button,
 .btn {
   font-size: 0.82rem !important;
-  padding: 0.35rem 0.7rem;
+  padding: 0.45rem 0.9rem;
 }
 
 .btn-primary,
 .btn-yes {
-  background-color: var(--tcv-accent) !important;
-  border-color: var(--tcv-accent) !important;
+  background-color: var(--tcv-primary) !important;
+  border-color: var(--tcv-primary) !important;
 }
 
-.ag-header-cell {
-  background: var(--ag-grid-header) !important;
-  color: var(--tcv-primary);
+.btn-primary:hover,
+.btn-yes:hover {
+  background-color: var(--tcv-primary-hover) !important;
+  border-color: var(--tcv-primary-hover) !important;
 }
 
-.ag-row:nth-child(even) {
-  background-color: #fbfcff !important;
-}
-
+// =====================================================================
+// Bootstrap-style table (used directly by some list/detail pages)
+// =====================================================================
 .table {
-  background: #ffffff;
-  border: 1px solid #d9dee8;
+  background: var(--tcv-surface);
+  border: 1px solid var(--tcv-border);
   border-collapse: separate;
-  border-radius: 5px;
+  border-radius: var(--tcv-radius-md);
   border-spacing: 0;
-  box-shadow: 0 1px 4px rgba(1, 41, 112, 0.14);
-  color: #012970;
+  box-shadow: var(--tcv-shadow-sm);
+  color: var(--tcv-text);
   margin-bottom: 1rem;
   overflow: hidden;
   width: 100%;
 }
 
 .table > :not(caption) > * > * {
-  border-bottom: 1px solid #d9dee8;
+  border-bottom: 1px solid var(--tcv-border);
   padding: 0.7rem 0.85rem;
   vertical-align: middle;
 }
 
 .table > thead > tr > th {
-  background: #ffffff;
-  border-bottom: 2px solid #d9dee8;
-  color: #012970;
+  background: var(--tcv-primary-50);
+  border-bottom: 1px solid var(--tcv-border-strong);
+  color: var(--tcv-primary-text);
   font-size: 0.86rem;
   font-weight: 600;
 }
 
 .table > tbody > tr:nth-child(odd) > * {
-  background-color: #f7f7f9;
+  background-color: var(--tcv-surface);
 }
 
 .table > tbody > tr:nth-child(even) > * {
-  background-color: #ffffff;
+  background-color: #fafbff;
 }
 
 .table > tbody > tr:last-child > * {
@@ -1075,6 +729,45 @@ button,
   padding: 0.55rem 0.7rem;
 }
 
-.final-qc-advSearch + .srchPad {
+// =====================================================================
+// PrimeNG table wrapper (p-table / p-datatable based screens)
+// =====================================================================
+.prime-table {
+  width: 100%;
+
+  .p-datatable {
+    border-radius: var(--tcv-radius-md);
+    overflow: hidden;
+
+    .p-inputtext,
+    .p-select-label {
+      font-size: 13px !important;
+      padding: 4px 8px;
+    }
+
+    .p-tag-label {
+      font-size: 12px;
+      font-weight: 400;
+    }
+  }
+
+  .p-datatable-thead>tr>th {
+    background: var(--tcv-primary-50) !important;
+    color: var(--tcv-primary-text);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px;
+  }
+
+  .p-datatable-tbody>tr>td {
+    padding: 8px 4px;
+  }
+
+  .mat-mdc-button {
+    height: 20px !important;
+  }
+}
+
+.final-qc-advSearch+.srchPad {
   padding-top: 0px !important;
 }

@@ -48,4 +48,8 @@ toggleSidebar(sidenav: any) {
 
   sidenav.toggle();
 }
+
+expandSidebar() {
+  if (this.isDesktop) this.collapsed = false;
+}
 }

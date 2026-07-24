@@ -33,6 +33,7 @@
         <th>Full Set</th>
         <th>Assigned Employee</th>
         <th>Status</th>
+        <th>Actions</th>
       </tr>
       <tr *ngFor="let item of filteredStbs">
         <td>{{ item.stb_number }}</td>
@@ -49,9 +50,17 @@
           </select>
         </td>
         <td><span class="status-pill" [class.not-available]="item.status === 'NOT_AVAILABLE'">{{ item.status }}</span></td>
+        <td class="action-cell">
+          <button type="button" class="table-icon-btn" title="Edit" aria-label="Edit STB" (click)="editStb(item)">
+            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="table-icon-btn" title="Delete" aria-label="Delete STB" (click)="deleteStb(item)">
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </button>
+        </td>
       </tr>
       <tr *ngIf="!filteredStbs.length">
-        <td colspan="8" class="empty-row">No STB records match the selected filters.</td>
+        <td colspan="9" class="empty-row">No STB records match the selected filters.</td>
       </tr>
     </table>
   </section>
@@ -59,7 +68,7 @@
   <div class="modal-backdrop" *ngIf="showStbModal">
     <section class="modal-panel">
       <div class="modal-header">
-        <h2>Add STB</h2>
+        <h2>{{ editingStbId ? 'Edit STB' : 'Add STB' }}</h2>
         <button type="button" class="icon-btn" (click)="closeStbModal()">x</button>
       </div>
       <form [formGroup]="stbForm" class="entry-form">
@@ -78,7 +87,7 @@
         </label>
         <label>MSO
           <select formControlName="mso_id">
-            <option [ngValue]="null">Select MSO</option>
+            <option [ngValue]="null">Select MSO (optional)</option>
             <option *ngFor="let mso of msos" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
           </select>
         </label>
@@ -102,7 +111,7 @@
       </form>
       <div class="modal-actions">
         <button type="button" class="secondary-btn" (click)="closeStbModal()">Cancel</button>
-        <button type="button" (click)="saveStb()">Save</button>
+        <button type="button" (click)="saveStb()">{{ editingStbId ? 'Update' : 'Save' }}</button>
       </div>
     </section>
   </div>

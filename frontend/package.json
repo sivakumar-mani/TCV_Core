@@ -37,6 +37,7 @@
     "ag-grid-angular": "^35.1.0",
     "ag-grid-community": "^35.1.0",
     "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
     "jwt-decode": "^4.0.0",
     "ngx-ui-loader": "^19.0.0",
     "primeng": "^20.4.0",

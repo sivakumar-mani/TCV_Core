@@ -1,184 +1,172 @@
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'today' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of CableTvMasters[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:198:31:
-[37m      198 │         const todayDate = this.[32mtoday[37m();
-          ╵                                [32m~~~~~[0m
+    src/app/administration/cable-tv-masters/cable-tv-masters.ts:15:47:
+[37m      15 │ ...ts: [CommonModule, ReactiveFormsModule, [32mMatIcon[37m, TreeTableModule],
+         ╵                                            [32m~~~~~~~[0m
 
-[39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'today' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:198:31:
-[37m      198 │         const todayDate = this.[32mtoday[37m();
-          ╵                                [32m~~~~~[0m
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of CableTvStbs[0m [1m[35m[plugin angular-compiler][0m
 
-[39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isSubscriptionStatusValid' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+    src/app/administration/cable-tv-stbs/cable-tv-stbs.ts:14:60:
+[37m      14 │   imports: [CommonModule, FormsModule, ReactiveFormsModule, [32mMatIcon[37m],
+         ╵                                                             [32m~~~~~~~[0m
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:361:50:
-[37m      361 │ ...ction === 'subscriptions' && !this.[32misSubscriptionStatusValid[37m()) {
-          ╵                                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
-[39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'subscriptionStatusLabel' does not exist on type 'CableTvCustomerHistory'. Did you mean 'isSubscriptionStatusValid'?[0m [1m[35m[plugin angular-compiler][0m
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of CategoriesList[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:123:49:
-[37m      123 │ ...= 'subscriptions' ? [32msubscriptionStatusLabel[37m(row.payment_status...
-          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/products/categories-list/categories-list.ts:19:24:
+[37m      19 │   imports: [MatToolbar, [32mMatIcon[37m, TagModule, MatButtonModule, MatMe...
+         ╵                         [32m~~~~~~~[0m
 
-  Error occurs in the template of component CableTvCustomerHistory.
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:16:15:
-[37m      16 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of QuotationForm[0m [1m[35m[plugin angular-compiler][0m
 
-[39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'subscriptionCollectedByLabel' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+    src/app/quotations/quotation-form/quotation-form.ts:18:59:
+[37m      18 │ ...iveFormsModule, RouterLink, [32mMatIcon[37m, InputFormField, SelectForm...
+         ╵                                [32m~~~~~~~[0m
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:116:55:
-[37m      116 │ ...=== 'subscriptions'">{{ [32msubscriptionCollectedByLabel[37m(row) }}</td>
-          ╵                            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
-  Error occurs in the template of component CableTvCustomerHistory.
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of ChangePassword[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:16:15:
-[37m      16 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/user/dialog/change-password/change-password.ts:15:63:
+[37m      15 │ ...s, MatDialogModule,InputFormField, [32mMatIcon[37m,  ReactiveFormsModule],
+         ╵                                       [32m~~~~~~~[0m
 
 [39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'subscriptionStatusClass' does not exist on type 'CableTvCustomerHistory'. Did you mean 'subscriptionStatusLabel'?[0m [1m[35m[plugin angular-compiler][0m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngClass' since it isn't a known property of 'i'.[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:122:61:
-[37m      122 │ ...= 'subscriptions' ? [32msubscriptionStatusClass[37m(row.payment_status...
-          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/user/dialog/change-password/change-password.html:12:29:
+[37m      12 │ ...lass="bi" [32m[ngClass]="hide() ? 'bi-eye-slash' : 'bi-eye'"[37m aria-h...
+         ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
-  Error occurs in the template of component CableTvCustomerHistory.
+  Error occurs in the template of component ChangePassword.
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:16:15:
-[37m      16 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/user/dialog/change-password/change-password.ts:16:15:
+[37m      16 │   templateUrl: [32m'./change-password.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
-[39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'applySameAddressFromLoadedData' does not exist on type 'EmployeeForm'.[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/employees/employee-form/employee-form.ts:263:13:
-[37m      263 │         this.[32mapplySameAddressFromLoadedData[37m(data);
-          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngClass' since it isn't a known property of 'i'.[0m [1m[35m[plugin angular-compiler][0m
 
-[39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'accessoryDisplayName' does not exist on type 'CableTvCustomerForm'.[0m [1m[35m[plugin angular-compiler][0m
+    src/app/user/dialog/change-password/change-password.html:20:29:
+[37m      20 │ ...lass="bi" [32m[ngClass]="hide() ? 'bi-eye-slash' : 'bi-eye'"[37m aria-h...
+         ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
-    src/app/cable-tv/cable-tv-customer-form/cable-tv-customer-form.html:139:25:
-[37m      139 │ ...          <strong>{{ [32maccessoryDisplayName[37m(accessory.get('produ...
-          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+  Error occurs in the template of component ChangePassword.
 
-  Error occurs in the template of component CableTvCustomerForm.
+    src/app/user/dialog/change-password/change-password.ts:16:15:
+[37m      16 │   templateUrl: [32m'./change-password.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
-    src/app/cable-tv/cable-tv-customer-form/cable-tv-customer-form.ts:13:15:
-[37m      13 │   templateUrl: [32m'./cable-tv-customer-form.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
-[39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'accessoryDisplayName' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngClass' since it isn't a known property of 'i'.[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:249:25:
-[37m      249 │ ...          <strong>{{ [32maccessoryDisplayName[37m(accessory.get('produ...
-          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/user/dialog/change-password/change-password.html:26:29:
+[37m      26 │ ...lass="bi" [32m[ngClass]="hide() ? 'bi-eye-slash' : 'bi-eye'"[37m aria-h...
+         ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
-  Error occurs in the template of component CableTvCustomerHistory.
+  Error occurs in the template of component ChangePassword.
 
-    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
-[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/user/dialog/change-password/change-password.ts:16:15:
+[37m      16 │   templateUrl: [32m'./change-password.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
 [39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'receiptBlocked' does not exist on type 'CableTvAccountPending'.[0m [1m[35m[plugin angular-compiler][0m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of CableTvMasters[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:69:24:
-[37m      69 │             [disabled]="[32mreceiptBlocked[37m(item)"
-         ╵                         [32m~~~~~~~~~~~~~~[0m
-
-  Error occurs in the template of component CableTvAccountPending.
-
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
-[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/administration/cable-tv-masters/cable-tv-masters.ts:15:47:
+[37m      15 │ ...ts: [CommonModule, ReactiveFormsModule, [32mMatIcon[37m, TreeTableModule],
+         ╵                                            [32m~~~~~~~[0m
 
 
-[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'receiptBlocked' does not exist on type 'CableTvAccountPending'.[0m [1m[35m[plugin angular-compiler][0m
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of CableTvStbs[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:70:21:
-[37m      70 │             [title]="[32mreceiptBlocked[37m(item) ? 'Outstanding balance w...
-         ╵                      [32m~~~~~~~~~~~~~~[0m
-
-  Error occurs in the template of component CableTvAccountPending.
-
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
-[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/administration/cable-tv-stbs/cable-tv-stbs.ts:14:60:
+[37m      14 │   imports: [CommonModule, FormsModule, ReactiveFormsModule, [32mMatIcon[37m],
+         ╵                                                             [32m~~~~~~~[0m
 
 
-[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'markReceived' does not exist on type 'CableTvAccountPending'.[0m [1m[35m[plugin angular-compiler][0m
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of CategoriesList[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:71:21:
-[37m      71 │             (click)="[32mmarkReceived[37m(item.account_id)">Received</button>
-         ╵                      [32m~~~~~~~~~~~~[0m
+    src/app/products/categories-list/categories-list.ts:19:24:
+[37m      19 │   imports: [MatToolbar, [32mMatIcon[37m, TagModule, MatButtonModule, MatMe...
+         ╵                         [32m~~~~~~~[0m
 
-  Error occurs in the template of component CableTvAccountPending.
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
-[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: MatIcon is not used within the template of QuotationForm[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/quotations/quotation-form/quotation-form.ts:18:59:
+[37m      18 │ ...iveFormsModule, RouterLink, [32mMatIcon[37m, InputFormField, SelectForm...
+         ╵                                [32m~~~~~~~[0m
 
 [39m[22m
-[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'selectedReportAccount' does not exist on type 'CableTvAccountPending'. Did you mean 'selectedReportAccounts'?[0m [1m[35m[plugin angular-compiler][0m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value could not be determined statically.[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:4:19:
-[37m      4 │     <button *ngIf="[32mselectedReportAccount[37m" type="button" (click)="ex...
-        ╵                    [32m~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/customers/customer-form/customer-form.ts:22:4:
+[37m      22 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
 
-  Error occurs in the template of component CableTvAccountPending.
+  Unknown reference.
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
-[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
-
-
-[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'selectedReportAccount' does not exist on type 'CableTvAccountPending'. Did you mean 'selectedReportAccounts'?[0m [1m[35m[plugin angular-compiler][0m
-
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:55:69:
-[37m      55 │ ...elected-report-row]="[32mselectedReportAccount[37m?.account_id === item...
-         ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
-
-  Error occurs in the template of component CableTvAccountPending.
-
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
-[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/customers/customer-form/customer-form.ts:22:4:
+[37m      22 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
 
 
-[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'selectedReportAccount' does not exist on type 'CableTvAccountPending'. Did you mean 'selectedReportAccounts'?[0m [1m[35m[plugin angular-compiler][0m
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MatIconModule'.[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:56:68:
-[37m      56 │ ...voiceRow" [checked]="[32mselectedReportAccount[37m?.account_id === item...
-         ╵                         [32m~~~~~~~~~~~~~~~~~~~~~[0m
-
-  Error occurs in the template of component CableTvAccountPending.
-
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
-[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/customers/customer-form/customer-form.ts:22:4:
+[37m      22 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
 
 
-[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'selectReportRow' does not exist on type 'CableTvAccountPending'.[0m [1m[35m[plugin angular-compiler][0m
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value could not be determined statically.[0m [1m[35m[plugin angular-compiler][0m
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.html:56:133:
-[37m      56 │ ...m.account_id" (change)="[32mselectReportRow[37m(item)" aria-label="Sele...
-         ╵                            [32m~~~~~~~~~~~~~~~[0m
+    src/app/shared/header/header.ts:18:4:
+[37m      18 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
 
-  Error occurs in the template of component CableTvAccountPending.
+  Unknown reference.
 
-    src/app/administration/cable-tv-account-pending/cable-tv-account-pending.ts:14:15:
-[37m      14 │   templateUrl: [32m'./cable-tv-account-pending.html'[37m,
-         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    src/app/shared/header/header.ts:18:4:
+[37m      18 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MatIconModule'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/shared/header/header.ts:18:4:
+[37m      18 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG1010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value could not be determined statically.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/suppliers/add-supplier/add-supplier.ts:22:4:
+[37m      22 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
+
+  Unknown reference.
+
+    src/app/suppliers/add-supplier/add-supplier.ts:22:4:
+[37m      22 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2304: Cannot find name 'MatIconModule'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/suppliers/add-supplier/add-supplier.ts:22:4:
+[37m      22 │     [32mMatIconModule[37m,
+         ╵     [32m~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG8002: Can't bind to 'ngClass' since it isn't a known property of 'i'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/shared/list-action-menu.ts:25:35:
+[37m      25 │ ...-menu-icon" [32m[ngClass]="iconClass(actionMenu.label)"[37m aria-hidden...
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
 [39m[22m

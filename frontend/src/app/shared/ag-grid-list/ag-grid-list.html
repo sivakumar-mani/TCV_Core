@@ -2,16 +2,19 @@
   <div class="page-header">
     <h1 class="page-title">{{ title }}</h1>
     <div class="ag-grid-actions">
-      <input
-        class="form-control ag-grid-search"
-        type="search"
-        placeholder="Search..."
-        [(ngModel)]="quickFilterText">
+      <span class="ag-grid-search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input
+          type="search"
+          placeholder="Search..."
+          [(ngModel)]="quickFilterText">
+      </span>
       <button
         *ngIf="canAdd()"
         type="button"
-        class="btn-yes"
+        class="btn-yes ag-grid-add"
         (click)="add.emit()">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i>
         {{ addButtonLabel }}
       </button>
     </div>

@@ -77,7 +77,7 @@ export class CableTvCustomerForm {
     const today = this.today();
     this.form = this.fb.group({
       network_id: [null, Validators.required],
-      customer_type: ['REGULAR', Validators.required],
+      customer_type: ['REGULAR'],
       legacy_customer_no: [''],
       customer_code: [''],
       full_name: ['', Validators.required],
@@ -179,6 +179,18 @@ export class CableTvCustomerForm {
     });
 
     this.form.get('stb.stb_master_id')?.valueChanges.subscribe((stbMasterId: number) => this.selectStbMaster(stbMasterId));
+    this.form.get('installed_by_employee_id')?.valueChanges.subscribe(() => {
+      this.form.get('stb')?.patchValue({
+        stb_master_id: null,
+        stb_search: '',
+        installed_mso_id: null,
+        stb_no: '',
+        stb_amount: 0
+      }, { emitEvent: false });
+      this.account.patchValue({ stb_amount: 0 }, { emitEvent: false });
+      this.calculateAccountTotals();
+      this.syncStbTypeToAssignedInventory();
+    });
     this.form.get('stb.issue_mode')?.valueChanges.subscribe(() => this.applyStbIssuePrice());
     this.form.get('stb.stb_type')?.valueChanges.subscribe(() => {
       this.form.get('stb')?.patchValue({
@@ -245,8 +257,12 @@ export class CableTvCustomerForm {
 
   get filteredStbMasters() {
     const selectedType = String(this.form?.get('stb.stb_type')?.value || '').toUpperCase();
+    const assignedEmployeeId = Number(
+      this.form?.get('installed_by_employee_id')?.value || this.loggedInEmployee?.employee_id
+    );
     return (this.lookups.stbMasters || []).filter((stb: any) =>
-      !selectedType || String(stb.stock_type || '').toUpperCase() === selectedType
+      (!assignedEmployeeId || Number(stb.assigned_employee_id) === assignedEmployeeId)
+      && (!selectedType || String(stb.stock_type || '').toUpperCase() === selectedType)
     );
   }
 
@@ -278,14 +294,9 @@ export class CableTvCustomerForm {
     return employee?.employee_name || employee?.employee_code || '';
   }
 
-  refreshPostalAreaOptions(networkId = this.form.get('network_id')?.value) {
-    const mappedLocationIds = new Set(
-      (this.lookups.areas || [])
-        .filter((area: any) => Number(area.network_id) === Number(networkId))
-        .map((area: any) => Number(area.location_id))
-    );
+  refreshPostalAreaOptions(_networkId = this.form.get('network_id')?.value) {
     this.filteredPostalAreas = (this.lookups.locations || []).filter((location: any) =>
-      mappedLocationIds.has(Number(location.location_id))
+      ['Chromepet', 'Pammal'].includes(String(location.location_name))
     );
   }
 
@@ -312,6 +323,7 @@ export class CableTvCustomerForm {
           ? this.lookups.installedMsos
           : (this.lookups.msos || []).filter((mso: any) => ['VK', 'DM'].includes(String(mso.mso_name).toUpperCase()));
         this.setLoggedInEmployee();
+        this.syncStbTypeToAssignedInventory();
         this.refreshPostalAreaOptions();
         this.buildStbAccessoryRows();
         if (this.isEditMode) this.loadCustomerDetails();
@@ -431,6 +443,26 @@ export class CableTvCustomerForm {
     const employee = this.loggedInEmployee;
     if (employee?.employee_id) {
       this.form.patchValue({ installed_by_employee_id: employee.employee_id }, { emitEvent: false });
+    }
+  }
+
+  syncStbTypeToAssignedInventory() {
+    const employeeId = Number(
+      this.form.get('installed_by_employee_id')?.value || this.loggedInEmployee?.employee_id
+    );
+    if (!employeeId) return;
+    const assignedStbs = (this.lookups.stbMasters || []).filter(
+      (stb: any) => Number(stb.assigned_employee_id) === employeeId
+    );
+    if (!assignedStbs.length) return;
+    const selectedType = String(this.form.get('stb.stb_type')?.value || '').toUpperCase();
+    const selectedTypeAvailable = assignedStbs.some(
+      (stb: any) => String(stb.stock_type || '').toUpperCase() === selectedType
+    );
+    if (!selectedTypeAvailable) {
+      this.form.get('stb.stb_type')?.setValue(
+        String(assignedStbs[0].stock_type || 'NEW').toUpperCase()
+      );
     }
   }
 

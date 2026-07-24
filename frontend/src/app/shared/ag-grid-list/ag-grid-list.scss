@@ -3,6 +3,12 @@
 }
 
 .ag-grid-wrapper {
+  background: var(--tcv-surface);
+  border: 1px solid var(--tcv-border);
+  border-radius: var(--tcv-radius-md);
+  box-shadow: var(--tcv-shadow-sm);
+  overflow: hidden;
+  padding: 0.5rem;
   width: 100%;
 }
 
@@ -13,7 +19,48 @@
 }
 
 .ag-grid-search {
+  align-items: center;
+  background: var(--tcv-surface);
+  border: 1px solid var(--tcv-border);
+  border-radius: 8px;
+  display: flex;
+  gap: 0.5rem;
+  height: 38px;
+  padding: 0 0.75rem;
+  transition: border-color 120ms ease;
   width: min(280px, 45vw);
+}
+
+.ag-grid-search:focus-within {
+  border-color: var(--tcv-primary-300);
+}
+
+.ag-grid-search .bi {
+  color: var(--tcv-muted);
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+.ag-grid-search input {
+  background: transparent;
+  border: 0;
+  color: var(--tcv-text);
+  flex: 1;
+  font-size: 0.84rem;
+  outline: 0;
+}
+
+.ag-grid-add {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.ag-grid-add .bi {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
 }
 
 @media (max-width: 576px) {

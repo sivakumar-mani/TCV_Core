@@ -23,6 +23,7 @@ export class CableTvAccountPending {
   endDate = '';
   employees: any[] = [];
   showPaymentModal = false;
+  showReportPreview = false;
   selectedAccount: any = null;
   paymentHistory: any[] = [];
   selectedReportAccounts: any[] = [];
@@ -149,6 +150,26 @@ export class CableTvAccountPending {
     this.loadAccounts();
   }
 
+  get reportTotals() {
+    return this.accounts.reduce((totals, item: any) => ({
+      stb: totals.stb + (Number(item.stb_amount) || 0),
+      connection: totals.connection + (Number(item.connection_amount) || 0),
+      material: totals.material + (Number(item.material_cost) || 0),
+      subscription: totals.subscription + (Number(item.subscription_amount) || 0),
+      total: totals.total + (Number(item.grand_total) || 0),
+      customerPaid: totals.customerPaid + (Number(item.customer_paid_amount) || 0),
+      balance: totals.balance + (Number(item.balance_amount) || 0)
+    }), {
+      stb: 0,
+      connection: 0,
+      material: 0,
+      subscription: 0,
+      total: 0,
+      customerPaid: 0,
+      balance: 0
+    });
+  }
+
   get loggedInAdminName() {
     const employee = this.loggedInEmployee;
     return employee?.employee_name || employee?.employee_code || this.permissions.username();
@@ -166,6 +187,24 @@ export class CableTvAccountPending {
 
   get loggedInEmployeeId() {
     return this.loggedInEmployee?.employee_id || this.permissions.employeeId();
+  }
+
+  get reportInstalledByLabel() {
+    if (!this.installedByFilter) return 'All employees';
+    const employee = this.employees.find(
+      (item: any) => Number(item.employee_id) === Number(this.installedByFilter)
+    );
+    return employee
+      ? `${employee.employee_code || ''} - ${employee.employee_name || ''}`.replace(/^\s*-\s*|\s*-\s*$/g, '')
+      : 'All employees';
+  }
+
+  get reportStartDateLabel() {
+    return this.startDate ? this.displayDate(this.startDate) : 'All dates';
+  }
+
+  get reportEndDateLabel() {
+    return this.endDate ? this.displayDate(this.endDate) : 'All dates';
   }
 
   updatePaymentAmount(field: 'cash_amount' | 'online_amount', value: any) {
@@ -190,19 +229,13 @@ export class CableTvAccountPending {
   }
 
   get paymentTargetAmount() {
-    const customerBalance = Number(this.selectedAccount?.balance_amount) || 0;
-    return customerBalance <= 0
-      ? Math.max(Number(this.selectedAccount?.grand_total) || 0, 0)
-      : Math.max(Number(this.selectedAccount?.customer_paid_amount) || 0, 0);
+    return this.accountReceiptBalance(this.selectedAccount);
   }
 
   accountReceiptBalance(item: any) {
-    const target = (Number(item?.balance_amount) || 0) <= 0
-      ? Number(item?.grand_total) || 0
-      : Number(item?.customer_paid_amount) || 0;
-    const explicit = Number(item?.office_balance_amount);
-    if (Number.isFinite(explicit) && (explicit > 0 || Number(item?.office_received_amount) > 0)) return Math.max(explicit, 0);
-    return Math.max(target - (Number(item?.office_received_amount) || 0), 0);
+    const totalPayment = Math.max(Number(item?.grand_total) || 0, 0);
+    const previouslyReceived = Math.max(Number(item?.office_received_amount) || 0, 0);
+    return Number(Math.max(totalPayment - previouslyReceived, 0).toFixed(2));
   }
 
   get calculatedPaymentStatus() {
@@ -235,7 +268,7 @@ export class CableTvAccountPending {
     if (!this.paymentForm.paid_date) return 'Paid Date is required';
     if (!this.paymentForm.received_date) return 'Received Date is required';
     if (this.receivedAmount <= 0) return 'Enter a Cash or Online amount';
-    if (this.receivedAmount > this.officeCurrentBalance) return 'Cash + Online cannot exceed the amount collected from the customer';
+    if (this.receivedAmount > this.officeCurrentBalance) return 'Cash + Online cannot exceed Total Payment';
     if (this.paymentBalance > 0 && !this.paymentForm.due_date) return 'Due Date is required for a partial payment';
     return '';
   }
@@ -265,6 +298,115 @@ export class CableTvAccountPending {
     return Boolean(this.accounts.length) && this.accounts.every((item: any) => this.isReportRowSelected(item));
   }
 
+  openReportPreview() {
+    if (!this.accounts.length) return;
+    this.showReportPreview = true;
+  }
+
+  closeReportPreview() {
+    this.showReportPreview = false;
+  }
+
+  exportExcel() {
+    if (!this.accounts.length) return;
+    const headers = [
+      'S.No', 'Customer No', 'Customer Name', 'Mobile', 'Installed By', 'Connection Type',
+      'STB', 'Connection', 'Subscription', 'Customer Paid', 'Materials', 'Balance',
+      'Total', 'Due Date', 'Account Date', 'Status'
+    ];
+    const rows = this.accounts.map((item: any, index: number) => [
+      index + 1,
+      item.customer_code || '',
+      item.full_name || '',
+      item.mobile_no || '',
+      item.installed_by_name || '',
+      this.connectionTypeLabel(item.connection_type),
+      this.amountValue(item.stb_amount),
+      this.amountValue(item.connection_amount),
+      this.amountValue(item.subscription_amount),
+      this.amountValue(item.customer_paid_amount),
+      this.amountValue(item.material_cost),
+      this.amountValue(item.balance_amount),
+      this.amountValue(item.grand_total),
+      this.displayDate(item.due_date),
+      this.displayDate(item.account_date),
+      item.account_status || ''
+    ]);
+    const totals = this.reportTotals;
+    rows.push([
+      '', '', '', '', '', 'Grand Total',
+      this.amountValue(totals.stb),
+      this.amountValue(totals.connection),
+      this.amountValue(totals.subscription),
+      this.amountValue(totals.customerPaid),
+      this.amountValue(totals.material),
+      this.amountValue(totals.balance),
+      this.amountValue(totals.total),
+      '', '', ''
+    ]);
+    const csv = [headers, ...rows]
+      .map(columns => columns.map(value => this.csvValue(value)).join(','))
+      .join('\r\n');
+    const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `Pending_Account_Report_${this.today()}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
+  printReport() {
+    if (!this.accounts.length) return;
+    const popup = window.open('', '_blank', 'width=1300,height=800');
+    if (!popup) {
+      this.snackbar.openSnackbar('Allow pop-ups to print the Pending Account Report', globalConstants.errorRegex);
+      return;
+    }
+    const rows = this.accounts.map((item: any, index: number) => `<tr>
+      <td>${index + 1}</td>
+      <td>${this.escapeHtml(this.displayDate(item.account_date))}</td>
+      <td>${this.escapeHtml(item.customer_code || '-')}</td>
+      <td>${this.escapeHtml(item.full_name || '-')}</td>
+      <td>${this.escapeHtml(item.installed_by_name || '-')}</td>
+      <td>${this.escapeHtml(this.connectionTypeLabel(item.connection_type))}</td>
+      <td class="number">${this.amountValue(item.stb_amount)}</td>
+      <td class="number">${this.amountValue(item.connection_amount)}</td>
+      <td class="number">${this.amountValue(item.subscription_amount)}</td>
+      <td class="number">${this.amountValue(item.customer_paid_amount)}</td>
+      <td class="number">${this.amountValue(item.material_cost)}</td>
+      <td class="number">${this.amountValue(item.balance_amount)}</td>
+      <td class="number">${this.amountValue(item.grand_total)}</td>
+      <td>${this.escapeHtml(item.account_status || '-')}</td>
+    </tr>`).join('');
+    const totals = this.reportTotals;
+    const totalRow = `<tr class="grand"><td colspan="6">Grand Total (${this.accounts.length} records)</td>
+      <td class="number">${this.amountValue(totals.stb)}</td>
+      <td class="number">${this.amountValue(totals.connection)}</td>
+      <td class="number">${this.amountValue(totals.subscription)}</td>
+      <td class="number">${this.amountValue(totals.customerPaid)}</td>
+      <td class="number">${this.amountValue(totals.material)}</td>
+      <td class="number">${this.amountValue(totals.balance)}</td>
+      <td class="number">${this.amountValue(totals.total)}</td><td></td></tr>`;
+    popup.document.write(`<!doctype html><html><head><title>Pending Account Report</title><style>
+      body{font-family:Arial,sans-serif;color:#111827;margin:24px}h1{text-align:center;font-size:24px}
+      .meta{display:flex;flex-wrap:wrap;gap:10px 28px;margin:14px 0;font-weight:700}
+      table{border-collapse:collapse;width:100%}th,td{border:1px solid #9ca3af;padding:7px;font-size:11px;text-align:left}
+      th{background:#e5e7eb}.number{text-align:right}.grand td{background:#f3f4f6;font-weight:700}@media print{body{margin:10mm}}
+    </style></head><body><h1>Pending Account Report</h1>
+      <div class="meta">
+        <span>Installed By: ${this.escapeHtml(this.reportInstalledByLabel)}</span>
+        <span>Start Date: ${this.escapeHtml(this.reportStartDateLabel)}</span>
+        <span>End Date: ${this.escapeHtml(this.reportEndDateLabel)}</span>
+        <span>Status: ${this.escapeHtml(this.statusFilter || 'ALL')}</span>
+        <span>Printed: ${this.displayDate(new Date())}</span>
+      </div>
+      <table><thead><tr><th>S.No</th><th>Account Date</th><th>Customer No</th><th>Name</th><th>Installed By</th><th>Type</th>
+      <th>STB</th><th>Connection</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th>
+      <th>Balance</th><th>Total</th><th>Status</th></tr></thead><tbody>${rows}${totalRow}</tbody></table>
+      <script>window.onload=()=>window.print();<\/script></body></html>`);
+    popup.document.close();
+  }
+
   exportSelectedPaymentInvoice() {
     const items = this.selectedReportAccounts;
     if (!items.length) return;
@@ -277,13 +419,9 @@ export class CableTvAccountPending {
     const installedNames = [...new Set(items.map((item: any) => item.installed_by_name || '-'))].join(', ');
     const invoiceRows = items.map((item: any) => {
       const date = item.account_date ? new Date(item.account_date).toLocaleDateString('en-GB') : '-';
-      const type = this.escapeHtml(item.connection_type || 'New');
+      const type = this.escapeHtml(this.connectionTypeLabel(item.connection_type));
       const customerNo = this.escapeHtml(item.customer_code || '-');
-      const accessories = Number(item.material_cost || 0);
-      const locationChange = String(item.connection_type || '').toUpperCase() === 'SHIFTED' ? Number(item.connection_amount || 0) : 0;
-      return `<tr><td>${date}</td><td>${customerNo}</td><td>${type}</td><td>${amount(item.stb_amount)}</td><td>${amount(item.connection_amount)}</td><td>${amount(item.subscription_amount)}</td><td>${amount(item.customer_paid_amount)}</td><td>${amount(item.balance_amount)}</td><td>${amount(item.grand_total)}</td></tr>
-      <tr class="detail"><td colspan="3">Accessories - ${customerNo}</td><td>${amount(accessories)}</td><td colspan="5"></td></tr>
-      <tr class="detail"><td colspan="3">Location change - ${customerNo}</td><td></td><td>${amount(locationChange)}</td><td colspan="4"></td></tr>`;
+      return `<tr><td>${date}</td><td>${customerNo}</td><td>${type}</td><td>${amount(item.stb_amount)}</td><td>${amount(item.connection_amount)}</td><td>${amount(item.subscription_amount)}</td><td>${amount(item.customer_paid_amount)}</td><td>${amount(item.material_cost)}</td><td>${amount(item.balance_amount)}</td><td>${amount(item.grand_total)}</td></tr>`;
     }).join('');
     const grandTotal = items.reduce((sum: number, item: any) => sum + Number(item.grand_total || 0), 0);
     const customerNos = items.map((item: any) => item.customer_code).join(', ');
@@ -291,15 +429,46 @@ export class CableTvAccountPending {
       body{font-family:Arial,sans-serif;color:#111827;margin:32px}h1{text-align:center;font-size:22px;margin:0 0 24px}
       .meta{display:flex;justify-content:space-between;margin-bottom:14px;font-size:14px}table{border-collapse:collapse;width:100%}
       th,td{border:1px solid #6b7280;padding:8px;text-align:right;font-size:12px}th{background:#e5e7eb}
-      th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}.detail td:first-child{padding-left:30px;font-weight:600}
+      th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}
       .grand td{font-weight:700;background:#f3f4f6}.note{font-size:11px;margin-top:18px;color:#4b5563}
       @media print{body{margin:12mm}.no-print{display:none}}
     </style></head><body><h1>Payment Invoice</h1><div class="meta"><strong>Installed by: ${this.escapeHtml(installedNames)}</strong><span>Printed: ${new Date().toLocaleDateString('en-GB')}</span></div>
-    <table><thead><tr><th>Date</th><th>Customer No</th><th>Type</th><th>STB</th><th>Connection</th><th>Subscription</th><th>Customer Paid</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
-    ${invoiceRows}<tr class="grand"><td colspan="8">Grand Total</td><td>${amount(grandTotal)}</td></tr>
+    <table><thead><tr><th>Date</th><th>Customer No</th><th>Type</th><th>STB</th><th>Connection</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
+    ${invoiceRows}<tr class="grand"><td colspan="9">Grand Total</td><td>${amount(grandTotal)}</td></tr>
     </tbody></table><p class="note">Selected customers: ${this.escapeHtml(customerNos)}</p>
     <script>window.onload=()=>{window.print();}</script></body></html>`);
     popup.document.close();
+  }
+
+  private amountValue(value: any) {
+    return Number(value || 0).toFixed(2);
+  }
+
+  connectionTypeLabel(value: any) {
+    const type = String(value || '').trim().toUpperCase();
+    const labels: Record<string, string> = {
+      NEW: 'New',
+      NEW_CUSTOMER_ONBOARDING: 'New',
+      STB_UPDATE: 'STB Update',
+      RECONNECTION: 'Reconnection',
+      SHIFTED: 'Location Change',
+      LOCATION_CHANGE: 'Location Change',
+      TRANSFERRED: 'Transferred',
+      CONNECTION_UPDATE: 'Connection Update'
+    };
+    return labels[type] || (type
+      ? type.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, character => character.toUpperCase())
+      : '-');
+  }
+
+  private displayDate(value: any) {
+    if (!value) return '-';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-GB');
+  }
+
+  private csvValue(value: any) {
+    return `"${String(value ?? '').replace(/"/g, '""')}"`;
   }
 
   private escapeHtml(value: any) {

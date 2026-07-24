@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatIcon } from '@angular/material/icon';
 import { TreeNode } from 'primeng/api';
 import { TreeTableModule } from 'primeng/treetable';
 import { forkJoin } from 'rxjs';
@@ -12,7 +11,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-cable-tv-masters',
-  imports: [CommonModule, ReactiveFormsModule, MatIcon, TreeTableModule],
+  imports: [CommonModule, ReactiveFormsModule, TreeTableModule],
   templateUrl: './cable-tv-masters.html',
   styleUrl: './cable-tv-masters.scss'
 })

@@ -6,15 +6,15 @@
     </div>
     <button mat-icon-button (click)="toggleSidebar.emit()" class="sidebar-toggle"
       aria-label="Toggle sidebar">
-      <mat-icon>menu</mat-icon>
+      <i class="bi bi-list" aria-hidden="true"></i>
     </button>
     <div class="header-search">
       <input type="text" placeholder="Search">
-      <mat-icon>search</mat-icon>
+      <i class="bi bi-search" aria-hidden="true"></i>
     </div>
     <span class="mid-spacer"></span>
     <button *ngIf="permissions.can('NOTIFICATIONS')" mat-icon-button class="header-icon" aria-label="Notifications" [matMenuTriggerFor]="notificationMenu" (menuOpened)="loadNotifications()">
-      <mat-icon>notifications_none</mat-icon>
+      <i class="bi bi-bell" aria-hidden="true"></i>
       <span class="badge-dot" *ngIf="unreadCount">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
     </button>
     <mat-menu #notificationMenu="matMenu" class="notification-menu-panel" xPosition="before">
@@ -34,13 +34,13 @@
       </div>
     </mat-menu>
     <button mat-icon-button class="header-icon" aria-label="Messages">
-      <mat-icon>chat_bubble_outline</mat-icon>
+      <i class="bi bi-chat" aria-hidden="true"></i>
       <span class="badge-dot success">3</span>
     </button>
     <button mat-button [matMenuTriggerFor]="menu" class="profile-trigger">
       <span class="avatar">{{ permissions.username().charAt(0).toUpperCase() }}</span>
       <span class="profile-name">{{ permissions.username() }}</span>
-      <mat-icon>expand_more</mat-icon>
+      <i class="bi bi-chevron-down" aria-hidden="true"></i>
     </button>
     <mat-menu #menu="matMenu">
       <!-- <button mat-menu-item (click)="signup()">Signup</button> -->

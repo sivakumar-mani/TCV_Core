@@ -12,6 +12,8 @@ const {
   addLocationInfo,
   addPackage,
   addStbMaster,
+  updateStbMaster,
+  deleteStbMaster,
   assignStbMaster,
   addStreet,
   deleteLocationInfo,
@@ -58,6 +60,8 @@ router.patch('/masters/location-info/:streetId', auth.requirePermission('CABLE_T
 router.delete('/masters/location-info/:streetId', auth.requirePermission('CABLE_TV_MASTERS'), deleteLocationInfo);
 router.post('/masters/packages', auth.requirePermission('CABLE_TV_PACKAGES'), addPackage);
 router.post('/masters/stbs', auth.requirePermission('CABLE_TV_STBS'), addStbMaster);
+router.patch('/masters/stbs/:stbMasterId', auth.requirePermission('CABLE_TV_STBS'), updateStbMaster);
+router.delete('/masters/stbs/:stbMasterId', auth.requirePermission('CABLE_TV_STBS'), deleteStbMaster);
 router.patch('/masters/stbs/:stbMasterId/assign', auth.requirePermission('CABLE_TV_STBS'), assignStbMaster);
 router.get('/accounts/pending', auth.requirePermission('CABLE_TV_ACCOUNTS'), getPendingAccounts);
 router.get('/accounts/:accountId/payments', auth.requirePermission('CABLE_TV_ACCOUNTS'), getAccountPayments);
@@ -82,7 +86,7 @@ router.post('/customers/:id/packages', auth.requirePermission('CABLE_TV_CUSTOMER
 router.patch('/customers/:id/packages/:packageId', auth.requireAdmin, updateCustomerPackage);
 router.delete('/customers/:id/packages/:packageId', auth.requireAdmin, deleteCustomerPackage);
 router.post('/customers/:id/subscriptions', auth.requirePermission('CABLE_TV_SUBSCRIPTIONS'), addCustomerSubscription);
-router.patch('/customers/:id/subscriptions/:subscriptionId', auth.requireAdmin, updateCustomerSubscription);
+router.patch('/customers/:id/subscriptions/:subscriptionId', auth.requirePermissionAction('CABLE_TV_SUBSCRIPTIONS', 'can_view'), updateCustomerSubscription);
 router.delete('/customers/:id/subscriptions/:subscriptionId', auth.requireAdmin, deleteCustomerSubscription);
 
 module.exports = router;

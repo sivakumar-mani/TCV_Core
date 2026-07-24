@@ -2,12 +2,11 @@ import { NgIf, TitleCasePipe } from '@angular/common';
 import { Component, ElementRef, Input, Self, ViewChild } from '@angular/core';
 import { ControlValueAccessor, FormControl, NgControl, ReactiveFormsModule } from '@angular/forms';
 import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 
 @Component({
   selector: 'app-input-form-field',
-  imports: [ TitleCasePipe, NgIf, MatIconModule,MatInputModule, ReactiveFormsModule, MatFormFieldModule],
+  imports: [ TitleCasePipe, NgIf,MatInputModule, ReactiveFormsModule, MatFormFieldModule],
   templateUrl: './input-form-field.html',
   styleUrl: './input-form-field.scss',
 })

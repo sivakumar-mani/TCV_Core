@@ -2,11 +2,25 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgGridModule } from 'ag-grid-angular';
-import { AllCommunityModule, ColDef, ModuleRegistry, themeBalham } from 'ag-grid-community';
+import { AllCommunityModule, ColDef, ModuleRegistry, themeQuartz } from 'ag-grid-community';
 import { PermissionService } from '../../services/permission.service';
 import { Router } from '@angular/router';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
+
+const tcvGridTheme = themeQuartz.withParams({
+  accentColor: '#4154f1',
+  borderColor: '#e7e9f3',
+  borderRadius: 8,
+  wrapperBorderRadius: 10,
+  headerBackgroundColor: '#eef1ff',
+  headerTextColor: '#1c2569',
+  headerFontWeight: 600,
+  oddRowBackgroundColor: '#fafbff',
+  rowHoverColor: '#f5f6fb',
+  fontSize: 13,
+  spacing: 6,
+});
 
 @Component({
   selector: 'app-ag-grid-list',
@@ -35,7 +49,7 @@ export class AgGridList {
   @Input() paginationPageSizeSelector: number[] = [10, 25, 50, 100];
   @Output() add = new EventEmitter<void>();
 
-  public theme = themeBalham;
+  public theme = tcvGridTheme;
   quickFilterText = '';
   canAdd() {
     const key = this.permissions.keyForRoute(this.router.url);

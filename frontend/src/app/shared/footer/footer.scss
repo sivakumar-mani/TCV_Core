@@ -2,10 +2,10 @@
     align-items: center;
     display: flex;
     width: 100%;
-    border-top: 1px solid #edf1f7;
-    height: 28px;
-    background: #ffffff;
-    color: #6b7a99;
+    border-top: 1px solid var(--tcv-border);
+    height: 32px;
+    background: var(--tcv-surface);
+    color: var(--tcv-muted);
     font-size: 0.78rem;
     p {
         margin: 5px 15px !important;

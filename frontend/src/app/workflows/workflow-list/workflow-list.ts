@@ -94,7 +94,9 @@ export class WorkflowList {
         queryParams: { review: true, workflowId: row.workflow_id }
       });
     } else if (row.module_name === 'CABLE_TV_CUSTOMER') {
-      this.router.navigate(['/cable-tv/customers', row.reference_id]);
+      this.router.navigate(['/cable-tv/customers', row.reference_id], {
+        queryParams: { review: true, workflowId: row.workflow_id }
+      });
     }
   }
 

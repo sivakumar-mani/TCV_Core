@@ -3,7 +3,6 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CableTvServices } from '../../services/cable-tv-services';
 import { CommonMethods } from '../../shared/common-methods';
@@ -13,7 +12,7 @@ type Section = 'connections' | 'stbs' | 'packages' | 'subscriptions';
 
 @Component({
   selector: 'app-cable-tv-customer-history',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink, MatIconModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './cable-tv-customer-history.html',
   styleUrl: './cable-tv-customer-history.scss'
 })
@@ -148,20 +147,38 @@ export class CableTvCustomerHistory {
       .filter(Boolean)
       .join(', ') || '-';
   }
-  get loggedInEmployeeName() {
-    const username = String(this.permissions.username() || '').trim().toLowerCase();
-    if (!username) return '';
-    const employee = (this.lookups.employees || []).find((item: any) =>
-      String(item.employee_code || '').trim().toLowerCase() === username
-      || String(item.employee_name || '').trim().toLowerCase() === username
+  get loggedInEmployee() {
+    const employeeId = this.permissions.employeeId();
+    const identity = String(
+      this.permissions.employeeCode() || this.permissions.username() || ''
+    ).trim().toLowerCase();
+    return (this.lookups.employees || []).find((item: any) =>
+      (employeeId && Number(item.employee_id) === Number(employeeId))
+      || String(item.employee_code || '').trim().toLowerCase() === identity
+      || String(item.employee_name || '').trim().toLowerCase() === identity
     );
-    return employee?.employee_name || '';
+  }
+
+  get loggedInEmployeeName() {
+    return this.loggedInEmployee?.employee_name
+      || this.loggedInEmployee?.employee_code
+      || this.permissions.username();
   }
 
   canSection(section: Section, action: PermissionAction = 'view') {
     if (action === 'view') return true;
+    if (section === 'subscriptions' && action === 'update') {
+      return this.permissions.isAdmin() || this.permissions.can(this.sectionPermissionKeys[section], 'view');
+    }
     if (action === 'update' || action === 'delete') return this.permissions.isAdmin();
     return this.permissions.can(this.sectionPermissionKeys[section], action);
+  }
+
+  canEditRow(row: any) {
+    if (!this.canSection(this.section, 'update')) return false;
+    return this.section !== 'subscriptions'
+      || this.permissions.isAdmin()
+      || String(row?.payment_status || '').toUpperCase() !== 'PAID';
   }
 
   buildForm() {
@@ -336,7 +353,7 @@ export class CableTvCustomerHistory {
             this.details = response || {};
             this.customer = response.customer || {};
             this.customerSearchNo = this.customer.customer_code || this.customerSearchNo;
-            if (this.section === 'subscriptions' && !this.permissions.isAdmin()) this.applyLoggedInEmployee();
+            if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
             this.refreshRows();
           },
           error: (error: any) => this.handleError(error)
@@ -374,14 +391,18 @@ export class CableTvCustomerHistory {
   }
 
   applyLoggedInEmployee() {
-    const username = String(this.permissions.username() || '').trim().toLowerCase();
-    const employee = (this.lookups.employees || []).find((item: any) =>
-      String(item.employee_code || '').trim().toLowerCase() === username
-      || String(item.employee_name || '').trim().toLowerCase() === username
-    );
-    if (employee) {
-      this.form?.patchValue({ collected_by_employee_id: employee.employee_id }, { emitEvent: false });
-    }
+    if (this.permissions.isAdmin()) return;
+    const employeeId = this.loggedInEmployee?.employee_id || this.permissions.employeeId();
+    if (!employeeId) return;
+    const field = this.section === 'subscriptions'
+      ? 'collected_by_employee_id'
+      : (this.section === 'stbs' || this.section === 'connections')
+        ? 'installed_by_employee_id'
+        : '';
+    if (!field) return;
+    const control = this.form?.get(field);
+    control?.setValue(Number(employeeId), { emitEvent: false });
+    control?.disable({ emitEvent: false });
   }
 
   refreshRows() {
@@ -404,7 +425,7 @@ export class CableTvCustomerHistory {
     this.showModal = false;
     this.editId = 0;
     this.buildForm();
-    if (this.section === 'subscriptions' && !this.permissions.isAdmin()) this.applyLoggedInEmployee();
+    if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
     this.refreshRows();
   }
 
@@ -412,7 +433,7 @@ export class CableTvCustomerHistory {
     if (!this.canSection(this.section, 'create')) return;
     this.editId = 0;
     this.buildForm();
-    if (this.section === 'subscriptions' && !this.permissions.isAdmin()) this.applyLoggedInEmployee();
+    if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
     this.showModal = true;
   }
 
@@ -421,7 +442,7 @@ export class CableTvCustomerHistory {
   }
 
   edit(row: any) {
-    if (!this.canSection(this.section, 'update')) return;
+    if (!this.canEditRow(row)) return;
     this.editId = this.idFor(row);
     this.buildForm();
     if (this.section === 'packages') {
@@ -462,6 +483,13 @@ export class CableTvCustomerHistory {
         payment_reference: row.payment_reference || ''
       }, { emitEvent: false });
       if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
+      if (!this.permissions.isAdmin()) {
+        [
+          'customer_package_id', 'subscription_month', 'subscription_year', 'billing_basis',
+          'number_of_days_or_months', 'days_in_month', 'received_count', 'start_date',
+          'expiry_date', 'package_amount', 'amount'
+        ].forEach(control => this.form.get(control)?.disable({ emitEvent: false }));
+      }
       this.form.get('subscription_month')?.disable({ emitEvent: false });
       this.form.get('subscription_year')?.disable({ emitEvent: false });
       this.calculateSubscription();
@@ -744,8 +772,9 @@ export class CableTvCustomerHistory {
   isSubscriptionStatusValid() {
     if (this.permissions.isAdmin()) return true;
     const balance = Number(this.form.get('balance_amount')?.value) || 0;
+    const paid = Number(this.form.get('paid_amount')?.value) || 0;
     const status = String(this.form.get('payment_status')?.value || 'PENDING').toUpperCase();
-    return balance === 0 ? status === 'PAID' : status === 'PENDING';
+    return balance <= 0 ? status === 'PAID' : paid > 0 ? status === 'PARTIAL' : status === 'PENDING';
   }
 
   applySubscriptionStatusState(balance: number = Number(this.form?.get('balance_amount')?.value) || 0) {
@@ -755,13 +784,9 @@ export class CableTvCustomerHistory {
       statusControl.enable({ emitEvent: false });
       return;
     }
-    if (balance !== 0) {
-      statusControl.setValue('PENDING', { emitEvent: false });
-      statusControl.disable({ emitEvent: false });
-      return;
-    }
-    statusControl.setValue('PAID', { emitEvent: false });
-    statusControl.enable({ emitEvent: false });
+    const paid = Number(this.form.get('paid_amount')?.value) || 0;
+    statusControl.setValue(balance <= 0 ? 'PAID' : paid > 0 ? 'PARTIAL' : 'PENDING', { emitEvent: false });
+    statusControl.disable({ emitEvent: false });
   }
 
   subscriptionEndDate(startDate: string, basis: string, periodCount: number) {

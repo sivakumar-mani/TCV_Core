@@ -3,7 +3,6 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
@@ -20,7 +19,6 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
     NgIf,
     RouterLink,
     MatButtonModule,
-    MatIconModule,
     MatToolbarModule,
     MatFormFieldModule,
     ReactiveFormsModule,

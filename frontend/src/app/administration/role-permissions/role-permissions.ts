@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { PermissionService, RolePermission } from '../../services/permission.service';
 import { Snackbar } from '../../services/snackbar';
@@ -11,7 +10,7 @@ interface CatalogItem { group: string; key: string; label: string; route: string
 
 @Component({
   selector: 'app-role-permissions',
-  imports: [CommonModule, FormsModule, MatIconModule, MatToolbarModule],
+  imports: [CommonModule, FormsModule, MatToolbarModule],
   templateUrl: './role-permissions.html',
   styleUrl: './role-permissions.scss'
 })

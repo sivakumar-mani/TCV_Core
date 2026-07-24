@@ -21,7 +21,7 @@
          class="date-picker-button"
          aria-label="Open date picker"
          (click)="openDatePicker($event)">
-         <mat-icon>calendar_month</mat-icon>
+         <i class="bi bi-calendar3" aria-hidden="true"></i>
       </button>
       <mat-error class="error-message" *ngIf="control.touched && control.invalid">
          <span *ngIf="control?.errors?.['required']">

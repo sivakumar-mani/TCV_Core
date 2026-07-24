@@ -20,6 +20,7 @@ export class CableTvStbs {
   employees: any[] = [];
   stbForm!: FormGroup;
   showStbModal = false;
+  editingStbId: number | null = null;
   boxTypes = ['HD', 'SD'];
   stockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT'];
   statuses = ['AVAILABLE', 'NOT_AVAILABLE'];
@@ -46,7 +47,7 @@ export class CableTvStbs {
       stb_number: ['', Validators.required],
       box_type: ['HD', Validators.required],
       stock_type: ['NEW', Validators.required],
-      mso_id: [null, Validators.required],
+      mso_id: [null],
       stb_amount: [500, [Validators.required, Validators.min(0)]],
       full_set_amount: [800, [Validators.required, Validators.min(0)]],
       assigned_employee_id: [null, Validators.required],
@@ -72,12 +73,29 @@ export class CableTvStbs {
   }
 
   openStbModal() {
+    this.editingStbId = null;
     this.stbForm.reset({ box_type: 'HD', stock_type: 'NEW', stb_amount: 500, full_set_amount: 800, assigned_employee_id: null, status: 'AVAILABLE' });
+    this.showStbModal = true;
+  }
+
+  editStb(item: any) {
+    this.editingStbId = Number(item.stb_master_id);
+    this.stbForm.reset({
+      stb_number: item.stb_number,
+      box_type: item.box_type,
+      stock_type: item.stock_type,
+      mso_id: item.mso_id ? Number(item.mso_id) : null,
+      stb_amount: Number(item.stb_amount),
+      full_set_amount: Number(item.full_set_amount),
+      assigned_employee_id: item.assigned_employee_id ? Number(item.assigned_employee_id) : null,
+      status: item.status
+    });
     this.showStbModal = true;
   }
 
   closeStbModal() {
     this.showStbModal = false;
+    this.editingStbId = null;
   }
 
   resetFilters() {
@@ -87,15 +105,32 @@ export class CableTvStbs {
   saveStb() {
     if (this.stbForm.invalid) {
       this.stbForm.markAllAsTouched();
+      this.snackbar.openSnackbar('Please complete all required STB fields', globalConstants.errorRegex);
       return;
     }
 
     this.ngxLoader.start();
-    this.cableTvService.addStbMaster(this.stbForm.value).subscribe({
+    const request = this.editingStbId
+      ? this.cableTvService.updateStbMaster(this.editingStbId, this.stbForm.value)
+      : this.cableTvService.addStbMaster(this.stbForm.value);
+    request.subscribe({
       next: (response: any) => {
         this.ngxLoader.stop();
         this.snackbar.openSnackbar(response?.message || 'STB saved successfully', '');
         this.closeStbModal();
+        this.loadStbs();
+      },
+      error: (error: any) => this.handleError(error)
+    });
+  }
+
+  deleteStb(item: any) {
+    if (!confirm(`Delete STB ${item.stb_number}?`)) return;
+    this.ngxLoader.start();
+    this.cableTvService.deleteStbMaster(Number(item.stb_master_id)).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.snackbar.openSnackbar(response?.message || 'STB deleted successfully', '');
         this.loadStbs();
       },
       error: (error: any) => this.handleError(error)

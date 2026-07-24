@@ -1,16 +1,22 @@
 <mat-nav-list aria-label="Main navigation" [class.is-collapsed]="collapsed">
-  <a *ngIf="permissions.can('DASHBOARD')" mat-list-item routerLink="/dashboard" routerLinkActive="active-link">
-    <mat-icon matListIcon>dashboard</mat-icon><span matLine class="nav-label">Dashboard</span>
+  <a *ngIf="permissions.can('DASHBOARD')" mat-list-item routerLink="/dashboard" routerLinkActive="active-link"
+    [title]="collapsed ? 'Dashboard' : ''" (click)="collapsed && expandRequested.emit()">
+    <i class="bi bi-speedometer2" aria-hidden="true"></i><span matLine class="nav-label">Dashboard</span>
   </a>
   <mat-accordion class="app-nav-accordion" [multi]="false" *ngIf="!collapsed">
-    <mat-expansion-panel *ngFor="let group of groups" [style.display]="visible(group) ? '' : 'none'">
-      <mat-expansion-panel-header><mat-panel-title><mat-icon matListIcon>{{ group.icon }}</mat-icon><span matLine>{{ group.label }}</span></mat-panel-title></mat-expansion-panel-header>
+    <mat-expansion-panel *ngFor="let group of groups" [style.display]="visible(group) ? '' : 'none'"
+      [expanded]="expandedGroup === group.label">
+      <mat-expansion-panel-header><mat-panel-title><i class="bi" [ngClass]="group.icon" aria-hidden="true"></i><span matLine>{{ group.label }}</span></mat-panel-title></mat-expansion-panel-header>
       <mat-nav-list>
         <a *ngFor="let item of group.items" [style.display]="permissions.can(item[2]) ? '' : 'none'" mat-list-item [routerLink]="item[1]" routerLinkActive="active-link">{{ item[0] }}</a>
       </mat-nav-list>
     </mat-expansion-panel>
   </mat-accordion>
   <div class="collapsed-links" *ngIf="collapsed">
-    <a *ngFor="let group of groups" [style.display]="visible(group) ? '' : 'none'" mat-list-item [routerLink]="group.items[0][1]" routerLinkActive="active-link" [title]="group.label"><mat-icon matListIcon>{{ group.icon }}</mat-icon></a>
+    <button *ngFor="let group of groups" [style.display]="visible(group) ? '' : 'none'" type="button"
+      mat-list-item class="collapsed-menu-button" [title]="group.label" [attr.aria-label]="group.label"
+      (click)="expandGroup(group.label)">
+      <i class="bi" [ngClass]="group.icon" aria-hidden="true"></i>
+    </button>
   </div>
 </mat-nav-list>

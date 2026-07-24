@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ColDef } from 'ag-grid-community';
 import { UserServices } from '../../services/user-services';
@@ -16,7 +15,7 @@ import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 import { PermissionService } from '../../services/permission.service';
 @Component({
   selector: 'app-user-list',
-  imports: [MatIconModule, MatToolbarModule, AgGridList],
+  imports: [MatToolbarModule, AgGridList],
   templateUrl: './user-list.html',
   styleUrl: './user-list.scss',
 })

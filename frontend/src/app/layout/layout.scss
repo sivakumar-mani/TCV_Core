@@ -11,7 +11,7 @@
 }
 
 .app-shell {
-  background: #f6f9ff;
+  background: var(--tcv-shell-bg);
   flex: 1 1 auto;
   height: auto !important;
   min-height: calc(100vh - 90px);
@@ -19,14 +19,15 @@
 }
 
 .mat-drawer-side {
-  background: #fff;
-  border-right: 1px solid #edf1f7;
+  background: var(--tcv-surface);
+  border-right: 1px solid var(--tcv-border);
   border-radius: 0 !important;
-  box-shadow: 0 0 20px rgba(1, 41, 112, 0.08);
+  box-shadow: var(--tcv-shadow-md);
   overflow-x: hidden;
   padding: 0;
   transition: width 160ms ease;
-  width: 260px;
+  max-width: 200px;
+  width: 200px;
   z-index: 1200;
 }
 
@@ -41,7 +42,7 @@
 
 .desktop-shell .mat-drawer-content,
 .desktop-shell .main-content {
-  margin-left: 260px !important;
+  margin-left: 200px !important;
 }
 
 .desktop-shell.sidebar-collapsed .mat-drawer-content,
@@ -50,7 +51,7 @@
 }
 
 .main-content {
-  background: #f6f9ff;
+  background: var(--tcv-shell-bg);
   display: block;
   height: auto !important;
   min-height: calc(100vh - 90px);

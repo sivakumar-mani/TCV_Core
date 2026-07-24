@@ -55,6 +55,35 @@ button {
   color: #243447;
 }
 
+.action-cell {
+  display: flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.table-icon-btn {
+  align-items: center;
+  background: transparent;
+  color: #113a64;
+  display: inline-flex;
+  height: 30px;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0;
+  width: 30px;
+
+  .bi {
+    font-size: 23px;
+    height: 23px;
+    line-height: 23px;
+    width: 23px;
+  }
+
+  &:hover {
+    background: #eaf1ff;
+  }
+}
+
 .icon-btn {
   background: #f3d7d7;
   color: #8a1f1f;

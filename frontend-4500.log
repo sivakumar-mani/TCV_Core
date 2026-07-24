@@ -1,2127 +1,366 @@
-
-> tcv-erp@0.0.0 start
-> ng serve --port 4500
-
 [33m>[39m Building...
 [32m√[39m Building...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.31 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-[32mchunk-H5EMXSL6.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.80 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                       [2m | [22m[36m299.73 kB[39m[2m | [22m
+[32mscripts.js[39m         [2m | [22m[2mscripts[22m                      [2m | [22m[36m107.73 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                         [2m | [22m [36m20.90 kB[39m[2m | [22m
+[32mchunk-2X53Q62K.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m4.18 kB[39m[2m | [22m
+[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m2.62 kB[39m[2m | [22m
+[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.10 kB[39m[2m | [22m
+[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.08 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                    [2m | [22m [36m95 bytes[39m[2m | [22m
 
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m438.00 kB[22m
+[1m [22m                  [2m | [22m[1mInitial total[22m                [2m | [22m[1m437.42 kB[22m
 
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-5E7FCEOR.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m165.32 kB[39m[2m | [22m
-[32mchunk-ILKB3267.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-I6BRTPKZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m105.15 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-75A4IJV2.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-MASDPFKH.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-HWYQCMA4.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m46.63 kB[39m[2m | [22m
-[32mchunk-UPXZ7UJM.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-JRFSJQFB.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m39.00 kB[39m[2m | [22m
-[32mchunk-AEGTWJFS.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.28 kB[39m[2m | [22m
-[32mchunk-6BF7AZ6O.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-WPZIDCR2.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-OY3DRA3U.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m32.80 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mchunk-6K37C3NJ.js[39m  [2m | [22m[2mcable-tv-customer-history[22m    [2m | [22m[36m203.47 kB[39m[2m | [22m
+[32mchunk-HTRD4AJG.js[39m  [2m | [22m[2mcable-tv-customer-form[22m       [2m | [22m[36m117.35 kB[39m[2m | [22m
+[32mchunk-Z4VASQNW.js[39m  [2m | [22m[2mquotation-form[22m               [2m | [22m[36m107.05 kB[39m[2m | [22m
+[32mchunk-K6XTZ7M3.js[39m  [2m | [22m[2mcable-tv-account-pending[22m     [2m | [22m [36m79.40 kB[39m[2m | [22m
+[32mchunk-EHV54WCX.js[39m  [2m | [22m[2mcable-tv-customer-view[22m       [2m | [22m [36m74.93 kB[39m[2m | [22m
+[32mchunk-COEXFTUO.js[39m  [2m | [22m[2mlayout[22m                       [2m | [22m [36m71.21 kB[39m[2m | [22m
+[32mchunk-EJ7JNVGY.js[39m  [2m | [22m[2mwork-order-material[22m          [2m | [22m [36m71.08 kB[39m[2m | [22m
+[32mchunk-2DXKAYXC.js[39m  [2m | [22m[2mcable-tv-subscription-pending[22m[2m | [22m [36m67.39 kB[39m[2m | [22m
+[32mchunk-K4WBLJ57.js[39m  [2m | [22m[2mwork-order-form[22m              [2m | [22m [36m55.53 kB[39m[2m | [22m
+[32mchunk-JTB3DNL7.js[39m  [2m | [22m[2memployee-form[22m                [2m | [22m [36m51.36 kB[39m[2m | [22m
+[32mchunk-PVNL4OQ4.js[39m  [2m | [22m[2mcable-tv-subscription-report[22m [2m | [22m [36m44.47 kB[39m[2m | [22m
+[32mchunk-JQ2TZ4TZ.js[39m  [2m | [22m[2memployee-salary[22m              [2m | [22m [36m43.98 kB[39m[2m | [22m
+[32mchunk-RHBIE5FP.js[39m  [2m | [22m[2muser-list[22m                    [2m | [22m [36m43.03 kB[39m[2m | [22m
+[32mchunk-I6BMYD7P.js[39m  [2m | [22m[2mpurchase-form[22m                [2m | [22m [36m40.83 kB[39m[2m | [22m
+[32mchunk-4XVHXLQ6.js[39m  [2m | [22m[2mcategories-list[22m              [2m | [22m [36m38.69 kB[39m[2m | [22m
+[2m...and 51 more lazy chunks files. Use "--verbose" to show all the files.[22m
 
-Application bundle generation complete. [12.656 seconds] - 2026-07-13T07:26:30.962Z
+Application bundle generation complete. [13.617 seconds] - 2026-07-24T05:18:42.108Z
 
 Watch mode enabled. Watching for file changes...
 NOTE: Raw file sizes do not reflect development server per-request transformations.
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m4500[22m/[39m
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
 
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-3HCA6S6H.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.13 kB[39m[2m | [22m
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mchunk-GR3AIMAN.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m78.77 kB[39m[2m | [22m
 
-Application bundle generation complete. [3.933 seconds] - 2026-07-13T08:22:16.045Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-XFPYCQTX.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.18 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.810 seconds] - 2026-07-13T08:22:20.252Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-ZJ4ZRRCM.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.20 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.761 seconds] - 2026-07-13T08:38:08.708Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-QJAHQ553.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.90 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.744 seconds] - 2026-07-13T08:38:17.221Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-GFVNYQ5Q.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m165.49 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.459 seconds] - 2026-07-13T08:38:28.283Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-QDO5WHUC.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m165.34 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.540 seconds] - 2026-07-13T08:45:26.529Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-NXJGBR7D.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m163.12 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.432 seconds] - 2026-07-13T08:45:45.052Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-D4NVB77T.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m163.38 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.505 seconds] - 2026-07-13T08:45:55.258Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-MVXDZSQN.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m163.83 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.422 seconds] - 2026-07-13T08:48:20.131Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-6LJJIUK6.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m166.27 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.323 seconds] - 2026-07-13T08:48:30.033Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-FRQPOPJ6.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m166.40 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.616 seconds] - 2026-07-13T08:51:58.370Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-KNDDGTLA.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m166.41 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.945 seconds] - 2026-07-13T08:57:00.990Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-SEYRZ3NZ.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.41 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.429 seconds] - 2026-07-13T08:57:08.505Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-OKM6FXBK.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.50 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.561 seconds] - 2026-07-13T09:03:22.079Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-PAGQCQH2.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.62 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.378 seconds] - 2026-07-13T09:08:37.873Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-YUKV4SST.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.64 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.272 seconds] - 2026-07-13T09:08:44.531Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-NNR64KZX.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m164.88 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.347 seconds] - 2026-07-13T09:09:00.357Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-KLXBZF5W.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m165.00 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.509 seconds] - 2026-07-13T09:19:08.186Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [1.262 seconds] - 2026-07-13T09:19:19.385Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [1.287 seconds] - 2026-07-13T09:19:26.590Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.31 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-[32mchunk-H5EMXSL6.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.80 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m438.00 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-J7ZK2KRL.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m165.80 kB[39m[2m | [22m
-[32mchunk-ILKB3267.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-I6BRTPKZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m105.15 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-75A4IJV2.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-MASDPFKH.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-HWYQCMA4.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m46.63 kB[39m[2m | [22m
-[32mchunk-UPXZ7UJM.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-JRFSJQFB.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m39.00 kB[39m[2m | [22m
-[32mchunk-AEGTWJFS.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.28 kB[39m[2m | [22m
-[32mchunk-6BF7AZ6O.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-WPZIDCR2.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-OY3DRA3U.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m32.80 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [1.296 seconds] - 2026-07-13T09:19:42.394Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-TH6Q7SIF.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m169.29 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.492 seconds] - 2026-07-13T09:19:53.803Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-KTM3FCVG.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m169.20 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.628 seconds] - 2026-07-13T09:28:07.708Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-BBNPQ7LV.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m169.00 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.553 seconds] - 2026-07-13T09:28:14.797Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-3KHPRH2H.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m169.35 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.658 seconds] - 2026-07-13T09:41:03.682Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-NPM44MGN.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m169.12 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.558 seconds] - 2026-07-13T09:41:13.129Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [2.397 seconds] - 2026-07-13T09:50:52.665Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.31 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-[32mchunk-H5EMXSL6.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.80 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m438.00 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-4T2LOTLL.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m169.69 kB[39m[2m | [22m
-[32mchunk-ILKB3267.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-I6BRTPKZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m105.15 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-75A4IJV2.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-MASDPFKH.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-HWYQCMA4.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m46.63 kB[39m[2m | [22m
-[32mchunk-UPXZ7UJM.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-JRFSJQFB.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m39.00 kB[39m[2m | [22m
-[32mchunk-AEGTWJFS.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.28 kB[39m[2m | [22m
-[32mchunk-6BF7AZ6O.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-WPZIDCR2.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-OY3DRA3U.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m32.80 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [2.158 seconds] - 2026-07-13T09:51:03.359Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-K2QXOLV6.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m170.11 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.262 seconds] - 2026-07-13T09:51:18.237Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-2ULV4MIV.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m170.54 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.609 seconds] - 2026-07-13T09:58:31.084Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-GI3ZSF4J.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m170.54 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.352 seconds] - 2026-07-13T09:58:37.623Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-K26MECOG.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m171.61 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.471 seconds] - 2026-07-13T10:01:30.788Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-CQTZB6SD.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m171.60 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.485 seconds] - 2026-07-13T10:01:36.999Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-EI4NR7RX.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m171.79 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.658 seconds] - 2026-07-13T10:01:48.435Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-PGAR6VB6.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m171.85 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.557 seconds] - 2026-07-13T10:14:26.348Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-GNSR4PHO.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m172.01 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.514 seconds] - 2026-07-13T10:25:46.184Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [2.504 seconds] - 2026-07-13T10:27:03.506Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.31 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-[32mchunk-H5EMXSL6.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.80 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m438.00 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-AYOJ6HMC.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m172.19 kB[39m[2m | [22m
-[32mchunk-ILKB3267.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-I6BRTPKZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m105.15 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-75A4IJV2.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-MASDPFKH.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-HWYQCMA4.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m46.63 kB[39m[2m | [22m
-[32mchunk-UPXZ7UJM.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-JRFSJQFB.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m39.00 kB[39m[2m | [22m
-[32mchunk-AEGTWJFS.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.28 kB[39m[2m | [22m
-[32mchunk-6BF7AZ6O.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-WPZIDCR2.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-OY3DRA3U.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m32.80 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [2.581 seconds] - 2026-07-13T10:27:10.677Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-6TSP6ATL.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m172.43 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.734 seconds] - 2026-07-13T10:28:41.138Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-FSPN3HZO.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m172.35 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.497 seconds] - 2026-07-13T10:28:46.678Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-T2IPFGTB.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m172.41 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.624 seconds] - 2026-07-13T10:34:49.970Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [3.004 seconds] - 2026-07-13T10:36:36.519Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.31 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-[32mchunk-H5EMXSL6.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.80 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m438.00 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-3OF7JDRI.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m172.78 kB[39m[2m | [22m
-[32mchunk-ILKB3267.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-I6BRTPKZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m105.15 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-75A4IJV2.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-MASDPFKH.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-HWYQCMA4.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m46.63 kB[39m[2m | [22m
-[32mchunk-UPXZ7UJM.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-JRFSJQFB.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m39.00 kB[39m[2m | [22m
-[32mchunk-AEGTWJFS.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.28 kB[39m[2m | [22m
-[32mchunk-6BF7AZ6O.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-WPZIDCR2.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-OY3DRA3U.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m32.80 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [2.865 seconds] - 2026-07-13T10:36:43.059Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [4.145 seconds] - 2026-07-13T10:54:23.492Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.31 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-[32mchunk-H5EMXSL6.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.80 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m438.00 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-DBGPMELE.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m173.45 kB[39m[2m | [22m
-[32mchunk-ILKB3267.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-I6BRTPKZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m105.15 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-75A4IJV2.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-MASDPFKH.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-HWYQCMA4.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m46.63 kB[39m[2m | [22m
-[32mchunk-UPXZ7UJM.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-JRFSJQFB.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m39.00 kB[39m[2m | [22m
-[32mchunk-AEGTWJFS.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.28 kB[39m[2m | [22m
-[32mchunk-6BF7AZ6O.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-WPZIDCR2.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-OY3DRA3U.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m32.80 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [3.033 seconds] - 2026-07-13T10:54:27.803Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-BMZ3TPNG.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m174.57 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.061 seconds] - 2026-07-13T10:54:34.487Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-4BOBNACU.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m174.59 kB[39m[2m | [22m
-
-Application bundle generation complete. [3.259 seconds] - 2026-07-13T12:07:21.038Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m           [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m            [2m | [22m[36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m           [2m | [22m[1mRaw size[22m
-[32mchunk-XIWNMB2I.js[39m  [2m | [22m[2mcable-tv-masters[22m[2m | [22m[36m38.29 kB[39m[2m | [22m
-
-Application bundle generation complete. [4.150 seconds] - 2026-07-13T12:07:29.197Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-QVYUNBKU.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m174.71 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.853 seconds] - 2026-07-13T12:07:35.909Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m           [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m            [2m | [22m[36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m           [2m | [22m[1mRaw size[22m
-[32mchunk-N6G6S3SB.js[39m  [2m | [22m[2mcable-tv-masters[22m[2m | [22m[36m38.65 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.464 seconds] - 2026-07-13T12:07:41.298Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m[36m18.27 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mchunk-I5EKQ2QR.js[39m  [2m | [22m[2mcable-tv-customer-list[22m[2m | [22m[36m32.53 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.897 seconds] - 2026-07-13T12:16:08.666Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m[2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.694 seconds] - 2026-07-13T12:16:16.924Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-E5JFTA7H.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m175.35 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.634 seconds] - 2026-07-13T12:16:31.079Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-UFBVMAOJ.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m176.83 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.561 seconds] - 2026-07-13T12:16:40.353Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-CLF2CCKL.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m176.94 kB[39m[2m | [22m
-
-Application bundle generation complete. [3.045 seconds] - 2026-07-13T12:16:49.468Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-OUNKGA7N.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m178.22 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.864 seconds] - 2026-07-13T12:16:57.270Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mchunk-5HBTK56Z.js[39m  [2m | [22m[2mcable-tv-customer-list[22m[2m | [22m[36m23.60 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.771 seconds] - 2026-07-13T12:33:07.101Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mchunk-M522HMQL.js[39m  [2m | [22m[2mcable-tv-customer-list[22m[2m | [22m[36m22.78 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.374 seconds] - 2026-07-13T12:33:27.563Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-P5P2ZHBI.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m179.38 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.131 seconds] - 2026-07-13T12:33:43.187Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-DPE2VRZN.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m179.47 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.443 seconds] - 2026-07-13T12:33:51.620Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-HO4ZT4KW.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m181.15 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.788 seconds] - 2026-07-13T12:33:57.654Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-EH23C2CJ.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.00 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.939 seconds] - 2026-07-13T12:34:07.811Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-G7ERVAIS.js[39m  [2m | [22m[2memployee-form[22m[2m | [22m[36m48.77 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.972 seconds] - 2026-07-14T06:54:43.285Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [0.385 seconds] - 2026-07-14T06:55:22.167Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.31 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-[32mchunk-H5EMXSL6.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.80 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m438.26 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-EH23C2CJ.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.00 kB[39m[2m | [22m
-[32mchunk-ILKB3267.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-I6BRTPKZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m105.15 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-75A4IJV2.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-MASDPFKH.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-7J4UELM3.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m49.13 kB[39m[2m | [22m
-[32mchunk-UPXZ7UJM.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-JRFSJQFB.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m39.00 kB[39m[2m | [22m
-[32mchunk-N6G6S3SB.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.65 kB[39m[2m | [22m
-[32mchunk-6BF7AZ6O.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-WPZIDCR2.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-UFAOFO63.js[39m  [2m | [22m[2mcustomer-form[22m            [2m | [22m [36m30.27 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [0.487 seconds] - 2026-07-14T06:55:29.484Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-Y5A3OSVS.js[39m  [2m | [22m[2memployee-form[22m[2m | [22m[36m49.15 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.397 seconds] - 2026-07-14T06:55:35.757Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-5RZUWU7W.js[39m  [2m | [22m[2memployee-form[22m[2m | [22m[36m50.41 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.784 seconds] - 2026-07-14T06:55:44.975Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-DODHXBGJ.js[39m  [2m | [22m[2memployee-form[22m[2m | [22m[36m51.36 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.928 seconds] - 2026-07-14T06:55:59.925Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m          [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m           [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m          [2m | [22m [1mRaw size[22m
-[32mchunk-HBS767MN.js[39m  [2m | [22m[2mquotation-form[22m [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-QZJQQQNL.js[39m  [2m | [22m[2mwork-order-form[22m[2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-RVN2KEZQ.js[39m  [2m | [22m[2muser-list[22m      [2m | [22m [36m40.70 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.779 seconds] - 2026-07-14T06:57:31.620Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-OKNMP4QB.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m41.82 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.373 seconds] - 2026-07-14T06:57:43.808Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-LWKQWLKS.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m41.94 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.372 seconds] - 2026-07-14T06:57:49.954Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-IO5CFRYD.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m41.54 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.297 seconds] - 2026-07-14T06:58:06.725Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-JDEWOCGX.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m41.61 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.394 seconds] - 2026-07-14T06:58:21.568Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-BG7X73GK.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m41.69 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.599 seconds] - 2026-07-14T07:04:57.415Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-ZVTBZUWV.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m41.80 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.689 seconds] - 2026-07-14T07:05:04.552Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-FY7ZGOFB.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m43.03 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.840 seconds] - 2026-07-14T07:05:14.392Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m[2m | [22m[36m303.94 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.858 seconds] - 2026-07-14T07:05:23.648Z
-
-Stylesheet update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m[2m | [22m[36m303.94 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.757 seconds] - 2026-07-14T07:12:46.702Z
-
-Stylesheet update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-ISCTI5L2.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m43.03 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.658 seconds] - 2026-07-14T08:32:23.277Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-Z6C7MS2I.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m43.03 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.338 seconds] - 2026-07-14T08:34:56.158Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m     [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m    [2m | [22m[1mRaw size[22m
-[32mchunk-ISCTI5L2.js[39m  [2m | [22m[2muser-list[22m[2m | [22m[36m43.03 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.406 seconds] - 2026-07-14T08:38:16.357Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m  [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m [2m | [22m[1mRaw size[22m
-[32mchunk-JGOCIYMQ.js[39m  [2m | [22m[2mlayout[22m[2m | [22m[36m67.91 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.539 seconds] - 2026-07-14T09:16:24.967Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-UJFIB53M.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m105.65 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.732 seconds] - 2026-07-14T09:26:53.785Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-RODCDPEG.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m105.66 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.216 seconds] - 2026-07-14T10:16:04.295Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-ORCJDHDL.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m105.63 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.491 seconds] - 2026-07-14T10:18:15.349Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-[32mchunk-AD7E3CDX.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.98 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-3JLXUGON.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.00 kB[39m[2m | [22m
-[32mchunk-LBRH6BSN.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m105.63 kB[39m[2m | [22m
-[32mchunk-ADXHPD5S.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-Y7MDAXLB.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-B5H65F5T.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m43.03 kB[39m[2m | [22m
-[32mchunk-Y2WVLFFO.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-7U756DLS.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-BAUNR7QQ.js[39m  [2m | [22m[2msupplier-payments[22m        [2m | [22m [36m26.61 kB[39m[2m | [22m
-[32mchunk-F6SSQTVF.js[39m  [2m | [22m[2mbrands-list[22m              [2m | [22m [36m25.87 kB[39m[2m | [22m
-[32mchunk-ZPUE7GCT.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m22.78 kB[39m[2m | [22m
-[32mchunk-VHJCRVUL.js[39m  [2m | [22m[2mrole-permissions[22m         [2m | [22m [36m21.09 kB[39m[2m | [22m
-[32mchunk-HBRLXDGR.js[39m  [2m | [22m[2mservice-tickets[22m          [2m | [22m [36m19.74 kB[39m[2m | [22m
-[32mchunk-Y2NPQ4SU.js[39m  [2m | [22m[2mwarranty-master[22m          [2m | [22m [36m19.48 kB[39m[2m | [22m
-[32mchunk-P4UVQATX.js[39m  [2m | [22m[2mcustomer-payments[22m        [2m | [22m [36m17.53 kB[39m[2m | [22m
-[32mchunk-TJWBB5BW.js[39m  [2m | [22m[2maudit-log-list[22m           [2m | [22m [36m17.51 kB[39m[2m | [22m
-[2m...and 12 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [0.598 seconds] - 2026-07-14T10:24:52.830Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-GRZTOOPY.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m106.58 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.155 seconds] - 2026-07-14T10:25:06.240Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-BJPACIJM.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m106.57 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.621 seconds] - 2026-07-14T10:25:12.939Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-NGSBW4DX.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m107.28 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.286 seconds] - 2026-07-14T10:29:25.663Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-IDHIZBNI.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m108.04 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.934 seconds] - 2026-07-14T10:29:39.923Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-VYCVUUK2.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m108.10 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.669 seconds] - 2026-07-14T10:31:26.053Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-6IDHJDSB.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m108.45 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.671 seconds] - 2026-07-14T10:31:35.490Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-NFI5XDI6.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m109.23 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.162 seconds] - 2026-07-14T10:34:45.265Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-IUZGOEFZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m110.83 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.026 seconds] - 2026-07-14T10:34:58.513Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-RE37ROVX.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.08 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.905 seconds] - 2026-07-14T10:35:10.564Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-3R6YMPTF.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.14 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.645 seconds] - 2026-07-14T10:46:05.173Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-3PX5PSTB.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.14 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.269 seconds] - 2026-07-14T10:46:18.953Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-CCNLDZGI.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.45 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.300 seconds] - 2026-07-14T10:46:26.186Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-4NM52DBB.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.41 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.044 seconds] - 2026-07-14T10:46:34.981Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [0.987 seconds] - 2026-07-14T10:50:55.239Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.94 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-[32mchunk-AD7E3CDX.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.98 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m439.07 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-3JLXUGON.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.00 kB[39m[2m | [22m
-[32mchunk-AEUBSXC2.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m113.64 kB[39m[2m | [22m
-[32mchunk-HBS767MN.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-ADXHPD5S.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-QZJQQQNL.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-DODHXBGJ.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m51.36 kB[39m[2m | [22m
-[32mchunk-Y7MDAXLB.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-B5H65F5T.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m43.03 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-N6G6S3SB.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.65 kB[39m[2m | [22m
-[32mchunk-Y2WVLFFO.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-7U756DLS.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-UFAOFO63.js[39m  [2m | [22m[2mcustomer-form[22m            [2m | [22m [36m30.27 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [1.014 seconds] - 2026-07-14T10:51:02.780Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [2.352 seconds] - 2026-07-14T10:51:11.542Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.94 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-[32mchunk-AD7E3CDX.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.98 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m439.07 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-5B2TBEAX.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.24 kB[39m[2m | [22m
-[32mchunk-AEUBSXC2.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m113.64 kB[39m[2m | [22m
-[32mchunk-HBS767MN.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-T7CYVEHT.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-ADXHPD5S.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-QZJQQQNL.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-DODHXBGJ.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m51.36 kB[39m[2m | [22m
-[32mchunk-Y7MDAXLB.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-B5H65F5T.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m43.03 kB[39m[2m | [22m
-[32mchunk-V53QRBAB.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-N6G6S3SB.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.65 kB[39m[2m | [22m
-[32mchunk-Y2WVLFFO.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-CEBBYPL5.js[39m  [2m | [22m[2mcategories-list[22m          [2m | [22m [36m37.41 kB[39m[2m | [22m
-[32mchunk-7U756DLS.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-UFAOFO63.js[39m  [2m | [22m[2mcustomer-form[22m            [2m | [22m [36m30.27 kB[39m[2m | [22m
-[2m...and 47 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [2.450 seconds] - 2026-07-14T10:51:25.181Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-KSSBMOFY.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.48 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.641 seconds] - 2026-07-14T11:44:32.205Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-Y5RR2HJ5.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.51 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.204 seconds] - 2026-07-14T11:44:43.664Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-DES7KEPH.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.76 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.082 seconds] - 2026-07-14T11:44:54.721Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-[32mchunk-DC6TAH7J.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.98 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-B6ZF3Y7J.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.24 kB[39m[2m | [22m
-[32mchunk-OYPQURQE.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m113.76 kB[39m[2m | [22m
-[32mchunk-7UDSRR5R.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.91 kB[39m[2m | [22m
-[32mchunk-NDDXG7FL.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-XIATTP4K.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m43.03 kB[39m[2m | [22m
-[32mchunk-BRL22U2M.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-6CLHXRW7.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m36.34 kB[39m[2m | [22m
-[32mchunk-NGSI7U63.js[39m  [2m | [22m[2msupplier-payments[22m        [2m | [22m [36m26.61 kB[39m[2m | [22m
-[32mchunk-33SC2L4P.js[39m  [2m | [22m[2mbrands-list[22m              [2m | [22m [36m25.87 kB[39m[2m | [22m
-[32mchunk-B5X7E2AR.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m22.78 kB[39m[2m | [22m
-[32mchunk-C3WGF3CP.js[39m  [2m | [22m[2mrole-permissions[22m         [2m | [22m [36m21.09 kB[39m[2m | [22m
-[32mchunk-W6BZNIFY.js[39m  [2m | [22m[2mservice-tickets[22m          [2m | [22m [36m19.74 kB[39m[2m | [22m
-[32mchunk-FBJK7W7L.js[39m  [2m | [22m[2mwarranty-master[22m          [2m | [22m [36m19.48 kB[39m[2m | [22m
-[32mchunk-WQLYE7ZX.js[39m  [2m | [22m[2mcustomer-payments[22m        [2m | [22m [36m17.53 kB[39m[2m | [22m
-[32mchunk-Z2ZK263S.js[39m  [2m | [22m[2maudit-log-list[22m           [2m | [22m [36m17.51 kB[39m[2m | [22m
-[2m...and 12 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [0.527 seconds] - 2026-07-14T11:45:32.911Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m  [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m [2m | [22m[1mRaw size[22m
-[32mchunk-DNNHNE4G.js[39m  [2m | [22m[2mlayout[22m[2m | [22m[36m67.97 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.619 seconds] - 2026-07-14T11:45:47.164Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m           [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m            [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m           [2m | [22m[1mRaw size[22m
-[32mchunk-5CQ7FZEB.js[39m  [2m | [22m[2mrole-permissions[22m[2m | [22m[36m21.50 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.489 seconds] - 2026-07-14T11:52:01.865Z
+Application bundle generation complete. [8.105 seconds] - 2026-07-24T05:22:54.963Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
 [1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.53 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
 
 [1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-WYJP4RMO.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m13.05 kB[39m[2m | [22m
+[32mchunk-3HC7B7ZA.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m93.58 kB[39m[2m | [22m
 
-Application bundle generation complete. [0.436 seconds] - 2026-07-14T11:57:39.325Z
+Application bundle generation complete. [1.322 seconds] - 2026-07-24T05:26:01.761Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
 [1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.53 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
 
 [1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-XVS37MAY.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m13.98 kB[39m[2m | [22m
+[32mchunk-KRX36DXC.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m95.33 kB[39m[2m | [22m
 
-Application bundle generation complete. [0.394 seconds] - 2026-07-14T11:57:48.995Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-MJRSYMXG.js[39m  [2m | [22m[2mworkflow-list[22m[2m | [22m[36m10.02 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.665 seconds] - 2026-07-14T12:06:00.159Z
+Application bundle generation complete. [5.139 seconds] - 2026-07-24T05:37:39.932Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.53 kB[39m[2m | [22m
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
 
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-MN4NHQRY.js[39m  [2m | [22m[2mworkflow-list[22m[2m | [22m[36m10.02 kB[39m[2m | [22m
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mchunk-K2PNP5UV.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m96.21 kB[39m[2m | [22m
 
-Application bundle generation complete. [0.607 seconds] - 2026-07-14T12:06:13.632Z
+Application bundle generation complete. [1.291 seconds] - 2026-07-24T05:39:32.168Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mchunk-BI2SJWWZ.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m95.77 kB[39m[2m | [22m
+
+Application bundle generation complete. [1.173 seconds] - 2026-07-24T05:39:43.893Z
+
+Component update sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mchunk-CTLWEAR6.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m95.94 kB[39m[2m | [22m
+
+Application bundle generation complete. [4.276 seconds] - 2026-07-24T05:40:17.171Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mchunk-ZPBJKAEW.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m95.94 kB[39m[2m | [22m
+
+Application bundle generation complete. [4.751 seconds] - 2026-07-24T05:40:25.857Z
+
+Component update sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
+[32mchunk-BNEH7YXM.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m117.57 kB[39m[2m | [22m
+
+Application bundle generation complete. [1.404 seconds] - 2026-07-24T05:52:03.876Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
 [1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.53 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m20.90 kB[39m[2m | [22m
 
 [1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-S26KRJP5.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.76 kB[39m[2m | [22m
+[32mchunk-GKWNGYLV.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m117.96 kB[39m[2m | [22m
 
-Application bundle generation complete. [2.891 seconds] - 2026-07-15T04:54:01.545Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-GUITY3RY.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.96 kB[39m[2m | [22m
-
-Application bundle generation complete. [6.024 seconds] - 2026-07-15T05:04:56.233Z
+Application bundle generation complete. [1.642 seconds] - 2026-07-24T05:52:11.595Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.53 kB[39m[2m | [22m
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m20.90 kB[39m[2m | [22m
 
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-B6ZF3Y7J.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.24 kB[39m[2m | [22m
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
+[32mchunk-CIAEQU3J.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m117.79 kB[39m[2m | [22m
 
-Application bundle generation complete. [3.326 seconds] - 2026-07-15T05:06:55.127Z
+Application bundle generation complete. [1.309 seconds] - 2026-07-24T06:46:04.759Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
+[32mchunk-5Z6CR3RH.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m117.96 kB[39m[2m | [22m
+
+Application bundle generation complete. [0.652 seconds] - 2026-07-24T06:57:28.073Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
+[32mchunk-ULJN72DD.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m118.78 kB[39m[2m | [22m
+
+Application bundle generation complete. [1.217 seconds] - 2026-07-24T06:57:57.054Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
 [1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m[36m18.79 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m[36m20.90 kB[39m[2m | [22m
 
 [1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mchunk-F37PDBIW.js[39m  [2m | [22m[2mcable-tv-customer-view[22m[2m | [22m[36m74.19 kB[39m[2m | [22m
-[32mchunk-Z5TGNL4G.js[39m  [2m | [22m[2mcable-tv-customer-list[22m[2m | [22m[36m22.78 kB[39m[2m | [22m
+[32mchunk-AM7VKUTP.js[39m  [2m | [22m[2mcable-tv-customer-view[22m[2m | [22m[36m85.23 kB[39m[2m | [22m
+[32mchunk-VDLAC7Y5.js[39m  [2m | [22m[2mworkflow-list[22m         [2m | [22m[36m10.16 kB[39m[2m | [22m
+[32mchunk-RGJBPC5L.js[39m  [2m | [22m[2m-[22m                     [2m | [22m [36m1.35 kB[39m[2m | [22m
 
-Application bundle generation complete. [3.780 seconds] - 2026-07-15T05:09:33.645Z
+Application bundle generation complete. [1.184 seconds] - 2026-07-24T07:20:44.165Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mchunk-6YIOAX62.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m96.99 kB[39m[2m | [22m
+
+Application bundle generation complete. [0.734 seconds] - 2026-07-24T07:25:29.323Z
+
+Component update sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
+[32mchunk-Y6Q746XO.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m97.58 kB[39m[2m | [22m
+
+Application bundle generation complete. [0.621 seconds] - 2026-07-24T08:43:21.499Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m20.90 kB[39m[2m | [22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
+[32mchunk-PZWGPFKW.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m204.43 kB[39m[2m | [22m
+
+Application bundle generation complete. [3.371 seconds] - 2026-07-24T09:03:20.390Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
 [1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m[36m18.79 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m[36m20.90 kB[39m[2m | [22m
 
 [1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mchunk-YV2LTTGM.js[39m  [2m | [22m[2mcable-tv-customer-list[22m[2m | [22m[36m22.78 kB[39m[2m | [22m
+[32mchunk-CSZ3VUFG.js[39m  [2m | [22m[2mlayout[22m                [2m | [22m[36m71.18 kB[39m[2m | [22m
+[32mchunk-JEGAP6SA.js[39m  [2m | [22m[2memployee-salary[22m       [2m | [22m[36m43.98 kB[39m[2m | [22m
+[32mchunk-AN6QUA4S.js[39m  [2m | [22m[2muser-list[22m             [2m | [22m[36m43.03 kB[39m[2m | [22m
+[32mchunk-WKLR4LHT.js[39m  [2m | [22m[2msales[22m                 [2m | [22m[36m37.75 kB[39m[2m | [22m
+[32mchunk-OUK6P6I7.js[39m  [2m | [22m[2mproduct-list[22m          [2m | [22m[36m37.63 kB[39m[2m | [22m
+[32mchunk-ZJSG4D6O.js[39m  [2m | [22m[2msupplier-payments[22m     [2m | [22m[36m26.61 kB[39m[2m | [22m
+[32mchunk-UF3UBU3E.js[39m  [2m | [22m[2mbrands-list[22m           [2m | [22m[36m25.87 kB[39m[2m | [22m
+[32mchunk-SDDMPXRX.js[39m  [2m | [22m[2mcable-tv-customer-list[22m[2m | [22m[36m22.75 kB[39m[2m | [22m
+[32mchunk-EYPWA6K7.js[39m  [2m | [22m[2mservice-tickets[22m       [2m | [22m[36m19.74 kB[39m[2m | [22m
+[32mchunk-PGW27YIR.js[39m  [2m | [22m[2mwarranty-master[22m       [2m | [22m[36m19.48 kB[39m[2m | [22m
+[32mchunk-WCLJ65Y6.js[39m  [2m | [22m[2mcustomer-payments[22m     [2m | [22m[36m17.53 kB[39m[2m | [22m
+[32mchunk-CCJOUY2J.js[39m  [2m | [22m[2memployee-attendance[22m   [2m | [22m[36m16.41 kB[39m[2m | [22m
+[32mchunk-RMXBX7TM.js[39m  [2m | [22m[2memployee-list[22m         [2m | [22m[36m14.36 kB[39m[2m | [22m
+[32mchunk-YKWHGDKV.js[39m  [2m | [22m[2mworkflow-list[22m         [2m | [22m[36m10.16 kB[39m[2m | [22m
+[32mchunk-2GXKZDEV.js[39m  [2m | [22m[2mwork-order-list[22m       [2m | [22m [36m8.47 kB[39m[2m | [22m
+[2m...and 6 more lazy chunks files. Use "--verbose" to show all the files.[22m
 
-Application bundle generation complete. [1.378 seconds] - 2026-07-15T05:12:12.054Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m[1mRaw size[22m
-[32mchunk-NFS5HYN4.js[39m  [2m | [22m[2mcable-tv-customer-list[22m[2m | [22m[36m22.75 kB[39m[2m | [22m
-
-Application bundle generation complete. [0.869 seconds] - 2026-07-15T05:13:49.896Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-Y3SNIEJQ.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m182.99 kB[39m[2m | [22m
-
-Application bundle generation complete. [4.632 seconds] - 2026-07-15T05:18:56.123Z
+Application bundle generation complete. [2.211 seconds] - 2026-07-24T09:25:06.383Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
+Application bundle generation failed. [3.204 seconds] - 2026-07-24T09:25:28.072Z
 
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-UMHRAYST.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m183.14 kB[39m[2m | [22m
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                       [2m | [22m[36m299.73 kB[39m[2m | [22m
+[32mscripts.js[39m         [2m | [22m[2mscripts[22m                      [2m | [22m[36m107.73 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                         [2m | [22m [36m20.90 kB[39m[2m | [22m
+[32mchunk-2X53Q62K.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m4.18 kB[39m[2m | [22m
+[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m2.62 kB[39m[2m | [22m
+[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.10 kB[39m[2m | [22m
+[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.08 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                    [2m | [22m [36m95 bytes[39m[2m | [22m
 
-Application bundle generation complete. [4.157 seconds] - 2026-07-15T05:19:11.958Z
+[1m [22m                  [2m | [22m[1mInitial total[22m                [2m | [22m[1m437.42 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mchunk-JGMBKAWN.js[39m  [2m | [22m[2mcable-tv-customer-history[22m    [2m | [22m[36m204.74 kB[39m[2m | [22m
+[32mchunk-ULJN72DD.js[39m  [2m | [22m[2mcable-tv-customer-form[22m       [2m | [22m[36m118.78 kB[39m[2m | [22m
+[32mchunk-OWU4R4LH.js[39m  [2m | [22m[2mquotation-form[22m               [2m | [22m[36m107.07 kB[39m[2m | [22m
+[32mchunk-Y6Q746XO.js[39m  [2m | [22m[2mcable-tv-account-pending[22m     [2m | [22m [36m97.58 kB[39m[2m | [22m
+[32mchunk-KEYFSKH5.js[39m  [2m | [22m[2mcable-tv-customer-view[22m       [2m | [22m [36m84.99 kB[39m[2m | [22m
+[32mchunk-JJXO3X6G.js[39m  [2m | [22m[2mlayout[22m                       [2m | [22m [36m71.10 kB[39m[2m | [22m
+[32mchunk-QVYNDWJD.js[39m  [2m | [22m[2mwork-order-material[22m          [2m | [22m [36m71.08 kB[39m[2m | [22m
+[32mchunk-2DXKAYXC.js[39m  [2m | [22m[2mcable-tv-subscription-pending[22m[2m | [22m [36m67.39 kB[39m[2m | [22m
+[32mchunk-76FD4NWV.js[39m  [2m | [22m[2mwork-order-form[22m              [2m | [22m [36m55.53 kB[39m[2m | [22m
+[32mchunk-NFJERJPO.js[39m  [2m | [22m[2memployee-form[22m                [2m | [22m [36m51.36 kB[39m[2m | [22m
+[32mchunk-PVNL4OQ4.js[39m  [2m | [22m[2mcable-tv-subscription-report[22m [2m | [22m [36m44.47 kB[39m[2m | [22m
+[32mchunk-3ITKZZGB.js[39m  [2m | [22m[2memployee-salary[22m              [2m | [22m [36m43.98 kB[39m[2m | [22m
+[32mchunk-C3V54WGB.js[39m  [2m | [22m[2muser-list[22m                    [2m | [22m [36m43.08 kB[39m[2m | [22m
+[32mchunk-QPHKTVWJ.js[39m  [2m | [22m[2mpurchase-form[22m                [2m | [22m [36m40.83 kB[39m[2m | [22m
+[32mchunk-TSZS6L5R.js[39m  [2m | [22m[2mcategories-list[22m              [2m | [22m [36m38.77 kB[39m[2m | [22m
+[2m...and 52 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [2.899 seconds] - 2026-07-24T09:25:52.809Z
 
 Page reload sent to client(s).
 [33m>[39m Changes detected. Rebuilding...
 [32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
+Application bundle generation failed. [4.394 seconds] - 2026-07-24T09:26:07.481Z
 
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-UBXW3HEH.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m189.34 kB[39m[2m | [22m
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                       [2m | [22m[36m299.72 kB[39m[2m | [22m
+[32mscripts.js[39m         [2m | [22m[2mscripts[22m                      [2m | [22m[36m107.73 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                         [2m | [22m [36m20.90 kB[39m[2m | [22m
+[32mchunk-2X53Q62K.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m4.18 kB[39m[2m | [22m
+[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m2.62 kB[39m[2m | [22m
+[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.10 kB[39m[2m | [22m
+[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.08 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                    [2m | [22m [36m95 bytes[39m[2m | [22m
 
-Application bundle generation complete. [4.426 seconds] - 2026-07-15T05:19:31.321Z
+[1m [22m                  [2m | [22m[1mInitial total[22m                [2m | [22m[1m437.42 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mchunk-BKARU2RW.js[39m  [2m | [22m[2mcable-tv-customer-history[22m    [2m | [22m[36m204.48 kB[39m[2m | [22m
+[32mchunk-ULJN72DD.js[39m  [2m | [22m[2mcable-tv-customer-form[22m       [2m | [22m[36m118.78 kB[39m[2m | [22m
+[32mchunk-VNYSSTNC.js[39m  [2m | [22m[2mquotation-form[22m               [2m | [22m[36m106.98 kB[39m[2m | [22m
+[32mchunk-Y6Q746XO.js[39m  [2m | [22m[2mcable-tv-account-pending[22m     [2m | [22m [36m97.58 kB[39m[2m | [22m
+[32mchunk-AVRUCK6D.js[39m  [2m | [22m[2mcable-tv-customer-view[22m       [2m | [22m [36m84.71 kB[39m[2m | [22m
+[32mchunk-DVIBMO4D.js[39m  [2m | [22m[2mwork-order-material[22m          [2m | [22m [36m71.08 kB[39m[2m | [22m
+[32mchunk-IB3G4XSP.js[39m  [2m | [22m[2mlayout[22m                       [2m | [22m [36m70.86 kB[39m[2m | [22m
+[32mchunk-2DXKAYXC.js[39m  [2m | [22m[2mcable-tv-subscription-pending[22m[2m | [22m [36m67.39 kB[39m[2m | [22m
+[32mchunk-FRTIIWIN.js[39m  [2m | [22m[2mwork-order-form[22m              [2m | [22m [36m55.53 kB[39m[2m | [22m
+[32mchunk-ETPEY7HI.js[39m  [2m | [22m[2memployee-form[22m                [2m | [22m [36m51.36 kB[39m[2m | [22m
+[32mchunk-PVNL4OQ4.js[39m  [2m | [22m[2mcable-tv-subscription-report[22m [2m | [22m [36m44.47 kB[39m[2m | [22m
+[32mchunk-GN2JGZPR.js[39m  [2m | [22m[2memployee-salary[22m              [2m | [22m [36m43.98 kB[39m[2m | [22m
+[32mchunk-O63NRCG5.js[39m  [2m | [22m[2muser-list[22m                    [2m | [22m [36m42.92 kB[39m[2m | [22m
+[32mchunk-WUWJHVTF.js[39m  [2m | [22m[2mpurchase-form[22m                [2m | [22m [36m40.83 kB[39m[2m | [22m
+[32mchunk-3VP4VBQG.js[39m  [2m | [22m[2mcategories-list[22m              [2m | [22m [36m38.69 kB[39m[2m | [22m
+[2m...and 52 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [0.678 seconds] - 2026-07-24T09:26:11.666Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+Application bundle generation failed. [0.777 seconds] - 2026-07-24T09:27:22.184Z
+
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mstyles.css[39m         [2m | [22m[2mstyles[22m                       [2m | [22m[36m299.72 kB[39m[2m | [22m
+[32mscripts.js[39m         [2m | [22m[2mscripts[22m                      [2m | [22m[36m107.73 kB[39m[2m | [22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m                         [2m | [22m [36m20.90 kB[39m[2m | [22m
+[32mchunk-2X53Q62K.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m4.18 kB[39m[2m | [22m
+[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m2.62 kB[39m[2m | [22m
+[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.10 kB[39m[2m | [22m
+[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                            [2m | [22m  [36m1.08 kB[39m[2m | [22m
+[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                    [2m | [22m [36m95 bytes[39m[2m | [22m
+
+[1m [22m                  [2m | [22m[1mInitial total[22m                [2m | [22m[1m437.42 kB[22m
+
+[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                        [2m | [22m [1mRaw size[22m
+[32mchunk-BKARU2RW.js[39m  [2m | [22m[2mcable-tv-customer-history[22m    [2m | [22m[36m204.48 kB[39m[2m | [22m
+[32mchunk-ULJN72DD.js[39m  [2m | [22m[2mcable-tv-customer-form[22m       [2m | [22m[36m118.78 kB[39m[2m | [22m
+[32mchunk-VNYSSTNC.js[39m  [2m | [22m[2mquotation-form[22m               [2m | [22m[36m106.98 kB[39m[2m | [22m
+[32mchunk-Y6Q746XO.js[39m  [2m | [22m[2mcable-tv-account-pending[22m     [2m | [22m [36m97.58 kB[39m[2m | [22m
+[32mchunk-AVRUCK6D.js[39m  [2m | [22m[2mcable-tv-customer-view[22m       [2m | [22m [36m84.71 kB[39m[2m | [22m
+[32mchunk-DVIBMO4D.js[39m  [2m | [22m[2mwork-order-material[22m          [2m | [22m [36m71.08 kB[39m[2m | [22m
+[32mchunk-IB3G4XSP.js[39m  [2m | [22m[2mlayout[22m                       [2m | [22m [36m70.86 kB[39m[2m | [22m
+[32mchunk-2DXKAYXC.js[39m  [2m | [22m[2mcable-tv-subscription-pending[22m[2m | [22m [36m67.39 kB[39m[2m | [22m
+[32mchunk-FRTIIWIN.js[39m  [2m | [22m[2mwork-order-form[22m              [2m | [22m [36m55.53 kB[39m[2m | [22m
+[32mchunk-ETPEY7HI.js[39m  [2m | [22m[2memployee-form[22m                [2m | [22m [36m51.36 kB[39m[2m | [22m
+[32mchunk-PVNL4OQ4.js[39m  [2m | [22m[2mcable-tv-subscription-report[22m [2m | [22m [36m44.47 kB[39m[2m | [22m
+[32mchunk-X3BB5GGE.js[39m  [2m | [22m[2memployee-salary[22m              [2m | [22m [36m43.98 kB[39m[2m | [22m
+[32mchunk-4ANKM3N6.js[39m  [2m | [22m[2muser-list[22m                    [2m | [22m [36m42.92 kB[39m[2m | [22m
+[32mchunk-WUWJHVTF.js[39m  [2m | [22m[2mpurchase-form[22m                [2m | [22m [36m40.83 kB[39m[2m | [22m
+[32mchunk-3VP4VBQG.js[39m  [2m | [22m[2mcategories-list[22m              [2m | [22m [36m38.69 kB[39m[2m | [22m
+[2m...and 52 more lazy chunks files. Use "--verbose" to show all the files.[22m
+
+Application bundle generation complete. [0.872 seconds] - 2026-07-24T09:27:34.705Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+
+No output file changes.
+
+Application bundle generation complete. [0.802 seconds] - 2026-07-24T09:28:05.240Z
 
 Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-DD6H4O7Q.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m185.78 kB[39m[2m | [22m
-
-Application bundle generation complete. [5.014 seconds] - 2026-07-15T05:23:11.060Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-7GMOLZX6.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m185.88 kB[39m[2m | [22m
-[32mchunk-53YI3JPH.js[39m  [2m | [22m[2mrole-permissions[22m         [2m | [22m [36m24.86 kB[39m[2m | [22m
-[32mchunk-7OTPS6WE.js[39m  [2m | [22m[2mcable-tv-account-pending[22m [2m | [22m [36m13.98 kB[39m[2m | [22m
-
-Application bundle generation complete. [4.126 seconds] - 2026-07-15T05:32:40.424Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-G35B25A2.js[39m  [2m | [22m[2mcable-tv-stbs[22m[2m | [22m[36m22.97 kB[39m[2m | [22m
-
-Application bundle generation complete. [4.063 seconds] - 2026-07-15T09:11:34.097Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-Z25CW4GX.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m114.26 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.652 seconds] - 2026-07-15T09:11:48.535Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-OBPUJ5WE.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m187.26 kB[39m[2m | [22m
-
-Application bundle generation complete. [8.270 seconds] - 2026-07-15T09:12:10.168Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-XXNS242R.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m115.38 kB[39m[2m | [22m
-
-Application bundle generation complete. [6.625 seconds] - 2026-07-15T09:33:55.079Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-ORNGZ2K5.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m115.43 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.406 seconds] - 2026-07-15T09:34:12.959Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-KBZHCQ7H.js[39m  [2m | [22m[2mcable-tv-stbs[22m[2m | [22m[36m24.94 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.745 seconds] - 2026-07-15T09:43:36.863Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-WL23GDME.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m187.26 kB[39m[2m | [22m
-[32mchunk-MOFNPRBG.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m115.43 kB[39m[2m | [22m
-[32mchunk-GNPYQ3D7.js[39m  [2m | [22m[2mcable-tv-customer-view[22m   [2m | [22m [36m74.19 kB[39m[2m | [22m
-[32mchunk-5BTDLIJL.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.65 kB[39m[2m | [22m
-[32mchunk-TOX3727Z.js[39m  [2m | [22m[2mcable-tv-stbs[22m            [2m | [22m [36m24.94 kB[39m[2m | [22m
-[32mchunk-YHNDUCMX.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m22.75 kB[39m[2m | [22m
-[32mchunk-M2RR47ZM.js[39m  [2m | [22m[2mcable-tv-packages[22m        [2m | [22m [36m17.60 kB[39m[2m | [22m
-[32mchunk-ROOSHTSW.js[39m  [2m | [22m[2mcable-tv-account-pending[22m [2m | [22m [36m13.98 kB[39m[2m | [22m
-[32mchunk-AZO6WX6V.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m5.43 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.888 seconds] - 2026-07-15T09:44:21.460Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-XEZQELSJ.js[39m  [2m | [22m[2mcable-tv-stbs[22m[2m | [22m[36m27.15 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.102 seconds] - 2026-07-15T09:44:34.669Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-JW7SRMCT.js[39m  [2m | [22m[2mcable-tv-stbs[22m[2m | [22m[36m27.41 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.734 seconds] - 2026-07-15T09:50:34.019Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-EZGBF7B2.js[39m  [2m | [22m[2mcable-tv-stbs[22m[2m | [22m[36m27.77 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.789 seconds] - 2026-07-15T09:50:48.000Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-T3CBPUOS.js[39m  [2m | [22m[2mcable-tv-stbs[22m[2m | [22m[36m28.37 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.098 seconds] - 2026-07-15T09:53:43.297Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-SGWHAZU2.js[39m  [2m | [22m[2mcable-tv-stbs[22m[2m | [22m[36m33.51 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.713 seconds] - 2026-07-15T09:56:23.420Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m         [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m        [2m | [22m[1mRaw size[22m
-[32mchunk-BQYV5EXU.js[39m  [2m | [22m[2mcable-tv-stbs[22m[2m | [22m[36m34.18 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.255 seconds] - 2026-07-15T09:56:31.613Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-W352U6RC.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.41 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.231 seconds] - 2026-07-15T10:17:38.338Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-55PAPMJZ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.40 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.946 seconds] - 2026-07-15T10:18:00.697Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-U6AEYWSU.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.55 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.132 seconds] - 2026-07-15T10:21:46.794Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-DC6SECO4.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m113.10 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.834 seconds] - 2026-07-15T10:21:56.307Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m       [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m        [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m       [2m | [22m[1mRaw size[22m
-[32mchunk-L5XXQIJT.js[39m  [2m | [22m[2mproduct-list[22m[2m | [22m[36m37.63 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.188 seconds] - 2026-07-15T10:25:02.467Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-CUOSM4GM.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m117.07 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.732 seconds] - 2026-07-15T10:36:27.122Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m              [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m               [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m              [2m | [22m [1mRaw size[22m
-[32mchunk-25QJOZFG.js[39m  [2m | [22m[2mquotation-form[22m     [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-GDE3ENDN.js[39m  [2m | [22m[2mwork-order-material[22m[2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-G45VSFVI.js[39m  [2m | [22m[2mlayout[22m             [2m | [22m [36m67.97 kB[39m[2m | [22m
-[32mchunk-D33PPGFE.js[39m  [2m | [22m[2mwork-order-form[22m    [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-7DT5PBGA.js[39m  [2m | [22m[2memployee-form[22m      [2m | [22m [36m51.36 kB[39m[2m | [22m
-[32mchunk-MGANRPTZ.js[39m  [2m | [22m[2memployee-salary[22m    [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-MSXX6HG7.js[39m  [2m | [22m[2muser-list[22m          [2m | [22m [36m43.03 kB[39m[2m | [22m
-[32mchunk-PUHCMT4B.js[39m  [2m | [22m[2mpurchase-form[22m      [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-YNPDFTNE.js[39m  [2m | [22m[2msales[22m              [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-TEB4JBAD.js[39m  [2m | [22m[2mcustomer-form[22m      [2m | [22m [36m30.27 kB[39m[2m | [22m
-[32mchunk-W4VOQSFZ.js[39m  [2m | [22m[2msupplier-payments[22m  [2m | [22m [36m26.61 kB[39m[2m | [22m
-[32mchunk-INUOWWF2.js[39m  [2m | [22m[2mbrands-list[22m        [2m | [22m [36m25.87 kB[39m[2m | [22m
-[32mchunk-FSCYU4DB.js[39m  [2m | [22m[2mlogin[22m              [2m | [22m [36m25.69 kB[39m[2m | [22m
-[32mchunk-UBQIQDKB.js[39m  [2m | [22m[2madd-supplier[22m       [2m | [22m [36m22.30 kB[39m[2m | [22m
-[32mchunk-YHUGF2JF.js[39m  [2m | [22m[2mservice-tickets[22m    [2m | [22m [36m19.74 kB[39m[2m | [22m
-[2m...and 5 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [4.462 seconds] - 2026-07-15T11:43:59.940Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m              [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m               [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m              [2m | [22m [1mRaw size[22m
-[32mchunk-VGUAFPQW.js[39m  [2m | [22m[2mquotation-form[22m     [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-U6RFAE65.js[39m  [2m | [22m[2mwork-order-material[22m[2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-D7SQLNKE.js[39m  [2m | [22m[2mlayout[22m             [2m | [22m [36m67.97 kB[39m[2m | [22m
-[32mchunk-WGNES6OQ.js[39m  [2m | [22m[2mwork-order-form[22m    [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-JTB3DNL7.js[39m  [2m | [22m[2memployee-form[22m      [2m | [22m [36m51.36 kB[39m[2m | [22m
-[32mchunk-B4WPJHXX.js[39m  [2m | [22m[2memployee-salary[22m    [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-MRNBELCH.js[39m  [2m | [22m[2muser-list[22m          [2m | [22m [36m43.03 kB[39m[2m | [22m
-[32mchunk-I6BMYD7P.js[39m  [2m | [22m[2mpurchase-form[22m      [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-KMZWPBHO.js[39m  [2m | [22m[2msales[22m              [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-ARU2WX4W.js[39m  [2m | [22m[2mcustomer-form[22m      [2m | [22m [36m30.27 kB[39m[2m | [22m
-[32mchunk-AVB6YZGL.js[39m  [2m | [22m[2msupplier-payments[22m  [2m | [22m [36m26.61 kB[39m[2m | [22m
-[32mchunk-42P7XY6X.js[39m  [2m | [22m[2mbrands-list[22m        [2m | [22m [36m25.87 kB[39m[2m | [22m
-[32mchunk-6LWDPLIE.js[39m  [2m | [22m[2mlogin[22m              [2m | [22m [36m25.69 kB[39m[2m | [22m
-[32mchunk-4A7ERTMR.js[39m  [2m | [22m[2madd-supplier[22m       [2m | [22m [36m22.30 kB[39m[2m | [22m
-[32mchunk-5EVIPI3T.js[39m  [2m | [22m[2mservice-tickets[22m    [2m | [22m [36m19.74 kB[39m[2m | [22m
-[2m...and 5 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [2.952 seconds] - 2026-07-15T11:46:42.017Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-ISSVOLYL.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m187.63 kB[39m[2m | [22m
-
-Application bundle generation complete. [10.356 seconds] - 2026-07-15T11:56:42.154Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-XL7NW7EV.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m187.79 kB[39m[2m | [22m
-[32mchunk-T57MDSKR.js[39m  [2m | [22m[2mcable-tv-customer-view[22m   [2m | [22m [36m74.83 kB[39m[2m | [22m
-
-Application bundle generation complete. [7.415 seconds] - 2026-07-15T11:59:26.000Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-2NRBOQYP.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m117.99 kB[39m[2m | [22m
-
-Application bundle generation complete. [3.717 seconds] - 2026-07-15T12:09:10.691Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                  [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                 [2m | [22m [1mRaw size[22m
-[32mchunk-22HMRVSQ.js[39m  [2m | [22m[2mcable-tv-customer-form[22m[2m | [22m[36m117.94 kB[39m[2m | [22m
-[32mchunk-7RSDSEEL.js[39m  [2m | [22m[2mcable-tv-customer-view[22m[2m | [22m [36m74.93 kB[39m[2m | [22m
-
-Application bundle generation complete. [3.610 seconds] - 2026-07-15T12:18:26.627Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-RZJWOS7N.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m187.79 kB[39m[2m | [22m
-[32mchunk-RZIL5DMM.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m117.94 kB[39m[2m | [22m
-[32mchunk-BFQPXOAO.js[39m  [2m | [22m[2mcable-tv-customer-view[22m   [2m | [22m [36m74.93 kB[39m[2m | [22m
-[32mchunk-D4P23P6L.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.65 kB[39m[2m | [22m
-[32mchunk-3NJN2WOX.js[39m  [2m | [22m[2mcable-tv-stbs[22m            [2m | [22m [36m34.18 kB[39m[2m | [22m
-[32mchunk-PEXBPYBX.js[39m  [2m | [22m[2mcable-tv-account-pending[22m [2m | [22m [36m26.67 kB[39m[2m | [22m
-[32mchunk-FVHYIHDE.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m22.75 kB[39m[2m | [22m
-[32mchunk-2KGCYRWK.js[39m  [2m | [22m[2mcable-tv-packages[22m        [2m | [22m [36m17.60 kB[39m[2m | [22m
-[32mchunk-Z4FFH2HL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m5.75 kB[39m[2m | [22m
-
-Application bundle generation complete. [6.154 seconds] - 2026-07-16T05:06:57.651Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-DLTT6RI6.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m187.79 kB[39m[2m | [22m
-[32mchunk-MGKIZNZA.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m117.94 kB[39m[2m | [22m
-[32mchunk-5U5LGQZS.js[39m  [2m | [22m[2mcable-tv-customer-view[22m   [2m | [22m [36m74.93 kB[39m[2m | [22m
-[32mchunk-2P5GFR5B.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.65 kB[39m[2m | [22m
-[32mchunk-C6DOCVY4.js[39m  [2m | [22m[2mcable-tv-stbs[22m            [2m | [22m [36m34.18 kB[39m[2m | [22m
-[32mchunk-S4WPQVBO.js[39m  [2m | [22m[2mcable-tv-account-pending[22m [2m | [22m [36m29.22 kB[39m[2m | [22m
-[32mchunk-EOACUWGK.js[39m  [2m | [22m[2mcable-tv-customer-list[22m   [2m | [22m [36m22.75 kB[39m[2m | [22m
-[32mchunk-42JK5L2D.js[39m  [2m | [22m[2mcable-tv-packages[22m        [2m | [22m [36m17.60 kB[39m[2m | [22m
-[32mchunk-EILCREYZ.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m5.75 kB[39m[2m | [22m
-
-Application bundle generation complete. [6.976 seconds] - 2026-07-16T06:20:59.944Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [3.184 seconds] - 2026-07-16T06:42:46.138Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.94 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-[32mchunk-DC6TAH7J.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.98 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m439.32 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-CCWQHPIR.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m187.79 kB[39m[2m | [22m
-[32mchunk-HB7QWG7D.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m117.94 kB[39m[2m | [22m
-[32mchunk-VGUAFPQW.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-5VFAN6BD.js[39m  [2m | [22m[2mcable-tv-customer-view[22m   [2m | [22m [36m74.93 kB[39m[2m | [22m
-[32mchunk-U6RFAE65.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-D7SQLNKE.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.97 kB[39m[2m | [22m
-[32mchunk-WGNES6OQ.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-JTB3DNL7.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m51.36 kB[39m[2m | [22m
-[32mchunk-IKHORUDY.js[39m  [2m | [22m[2mcable-tv-account-pending[22m [2m | [22m [36m49.84 kB[39m[2m | [22m
-[32mchunk-B4WPJHXX.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-MRNBELCH.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m43.03 kB[39m[2m | [22m
-[32mchunk-I6BMYD7P.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-TXQSTYSE.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.65 kB[39m[2m | [22m
-[32mchunk-KMZWPBHO.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-L5XXQIJT.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m37.63 kB[39m[2m | [22m
-[2m...and 48 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [2.541 seconds] - 2026-07-16T06:44:01.509Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-N6PEU7OG.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m54.07 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.657 seconds] - 2026-07-16T06:44:26.965Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-PMCDZQG3.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m186.05 kB[39m[2m | [22m
-[32mchunk-2C7PYIRL.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m116.07 kB[39m[2m | [22m
-
-Application bundle generation complete. [9.722 seconds] - 2026-07-16T06:45:29.576Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-UFM33J35.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m55.82 kB[39m[2m | [22m
-
-Application bundle generation complete. [7.260 seconds] - 2026-07-16T07:09:51.769Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-4B5UJNLD.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m55.75 kB[39m[2m | [22m
-
-Application bundle generation complete. [4.631 seconds] - 2026-07-16T07:18:20.384Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-C5XR3PXG.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m59.80 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.261 seconds] - 2026-07-16T07:34:14.576Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-DHT7HEBK.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m63.51 kB[39m[2m | [22m
-
-Application bundle generation complete. [1.479 seconds] - 2026-07-16T07:35:13.325Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-GXZTXQL4.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m65.12 kB[39m[2m | [22m
-
-Application bundle generation complete. [2.236 seconds] - 2026-07-16T07:35:28.809Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-Application bundle generation failed. [3.013 seconds] - 2026-07-16T08:37:19.355Z
-
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mstyles.css[39m         [2m | [22m[2mstyles[22m                   [2m | [22m[36m303.94 kB[39m[2m | [22m
-[32mscripts.js[39m         [2m | [22m[2mscripts[22m                  [2m | [22m[36m107.73 kB[39m[2m | [22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-[32mchunk-DC6TAH7J.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m3.98 kB[39m[2m | [22m
-[32mchunk-4RWJN4ZL.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m2.62 kB[39m[2m | [22m
-[32mchunk-VGKOSW2G.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.10 kB[39m[2m | [22m
-[32mchunk-CZJLB7T5.js[39m  [2m | [22m[2m-[22m                        [2m | [22m  [36m1.08 kB[39m[2m | [22m
-[32mpolyfills.js[39m       [2m | [22m[2mpolyfills[22m                [2m | [22m [36m95 bytes[39m[2m | [22m
-
-[1m [22m                  [2m | [22m[1mInitial total[22m            [2m | [22m[1m439.32 kB[22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-PMCDZQG3.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m186.05 kB[39m[2m | [22m
-[32mchunk-2C7PYIRL.js[39m  [2m | [22m[2mcable-tv-customer-form[22m   [2m | [22m[36m116.07 kB[39m[2m | [22m
-[32mchunk-VGUAFPQW.js[39m  [2m | [22m[2mquotation-form[22m           [2m | [22m[36m105.86 kB[39m[2m | [22m
-[32mchunk-5VFAN6BD.js[39m  [2m | [22m[2mcable-tv-customer-view[22m   [2m | [22m [36m74.93 kB[39m[2m | [22m
-[32mchunk-U6RFAE65.js[39m  [2m | [22m[2mwork-order-material[22m      [2m | [22m [36m71.08 kB[39m[2m | [22m
-[32mchunk-D7SQLNKE.js[39m  [2m | [22m[2mlayout[22m                   [2m | [22m [36m67.97 kB[39m[2m | [22m
-[32mchunk-QYAWDDAR.js[39m  [2m | [22m[2mcable-tv-account-pending[22m [2m | [22m [36m66.63 kB[39m[2m | [22m
-[32mchunk-WGNES6OQ.js[39m  [2m | [22m[2mwork-order-form[22m          [2m | [22m [36m55.53 kB[39m[2m | [22m
-[32mchunk-JTB3DNL7.js[39m  [2m | [22m[2memployee-form[22m            [2m | [22m [36m51.36 kB[39m[2m | [22m
-[32mchunk-B4WPJHXX.js[39m  [2m | [22m[2memployee-salary[22m          [2m | [22m [36m43.98 kB[39m[2m | [22m
-[32mchunk-MRNBELCH.js[39m  [2m | [22m[2muser-list[22m                [2m | [22m [36m43.03 kB[39m[2m | [22m
-[32mchunk-I6BMYD7P.js[39m  [2m | [22m[2mpurchase-form[22m            [2m | [22m [36m40.83 kB[39m[2m | [22m
-[32mchunk-TXQSTYSE.js[39m  [2m | [22m[2mcable-tv-masters[22m         [2m | [22m [36m38.65 kB[39m[2m | [22m
-[32mchunk-KMZWPBHO.js[39m  [2m | [22m[2msales[22m                    [2m | [22m [36m37.75 kB[39m[2m | [22m
-[32mchunk-L5XXQIJT.js[39m  [2m | [22m[2mproduct-list[22m             [2m | [22m [36m37.63 kB[39m[2m | [22m
-[2m...and 48 more lazy chunks files. Use "--verbose" to show all the files.[22m
-
-Application bundle generation complete. [3.139 seconds] - 2026-07-16T08:37:37.565Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                    [2m | [22m[36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                   [2m | [22m[1mRaw size[22m
-[32mchunk-3SMQZPXH.js[39m  [2m | [22m[2mcable-tv-account-pending[22m[2m | [22m[36m67.24 kB[39m[2m | [22m
-
-Application bundle generation complete. [3.624 seconds] - 2026-07-16T09:21:09.695Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-2DTD6DBQ.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m188.24 kB[39m[2m | [22m
-
-Application bundle generation complete. [7.141 seconds] - 2026-07-16T09:38:11.829Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-TEBDCM6X.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m195.50 kB[39m[2m | [22m
-
-Application bundle generation complete. [5.717 seconds] - 2026-07-16T09:38:29.757Z
-
-Component update sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-CWX2A6Z4.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m196.23 kB[39m[2m | [22m
-
-Application bundle generation complete. [8.975 seconds] - 2026-07-16T09:43:05.791Z
-
-Page reload sent to client(s).
-[33m>[39m Changes detected. Rebuilding...
-[32m√[39m Changes detected. Rebuilding...
-[1mInitial chunk files[22m[2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mmain.js[39m            [2m | [22m[2mmain[22m                     [2m | [22m [36m18.79 kB[39m[2m | [22m
-
-[1mLazy chunk files[22m   [2m | [22m[1mNames[22m                    [2m | [22m [1mRaw size[22m
-[32mchunk-BI7FZR6G.js[39m  [2m | [22m[2mcable-tv-customer-history[22m[2m | [22m[36m196.16 kB[39m[2m | [22m
-[32mchunk-RQ5SX2XK.js[39m  [2m | [22m[2mcable-tv-account-pending[22m [2m | [22m [36m68.36 kB[39m[2m | [22m
-
-Application bundle generation complete. [10.542 seconds] - 2026-07-16T10:13:30.368Z
-
-Page reload sent to client(s).

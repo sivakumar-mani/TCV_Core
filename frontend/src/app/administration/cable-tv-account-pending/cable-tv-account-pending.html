@@ -1,9 +1,13 @@
 <div class="page-shell">
   <div class="page-header">
     <h1>Pending Account Report</h1>
-    <button *ngIf="selectedReportAccounts.length" type="button" (click)="exportSelectedPaymentInvoice()">
-      Export Payment Invoice PDF ({{ selectedReportAccounts.length }})
-    </button>
+    <div class="header-actions">
+      <button type="button" class="excel" [disabled]="!accounts.length" (click)="exportExcel()">Export Excel</button>
+      <button type="button" class="secondary" [disabled]="!accounts.length" (click)="openReportPreview()">View</button>
+      <button *ngIf="selectedReportAccounts.length" type="button" (click)="exportSelectedPaymentInvoice()">
+        Payment Invoice ({{ selectedReportAccounts.length }})
+      </button>
+    </div>
   </div>
 
   <section class="report-filters">
@@ -41,7 +45,7 @@
         <th>Customer</th>
         <th>Mobile</th>
         <th>Installed By</th>
-        <th>Location</th>
+        <th>Connection Type</th>
         <th>STB</th>
         <th>Connection</th>
         <th>Material</th>
@@ -59,7 +63,7 @@
         <td>{{ item.customer_code }} - {{ item.full_name }}</td>
         <td>{{ item.mobile_no }}</td>
         <td>{{ item.installed_by_name || '-' }}</td>
-        <td>{{ item.location_name }} / {{ item.area_name }} / {{ item.street_name }}</td>
+        <td>{{ connectionTypeLabel(item.connection_type) }}</td>
         <td>{{ item.stb_amount }}</td>
         <td>{{ item.connection_amount }}</td>
         <td>{{ item.material_cost }}</td>
@@ -80,8 +84,93 @@
       <tr *ngIf="!accounts.length">
         <td [attr.colspan]="permissions.isAdmin() ? 16 : 15" class="empty-row">No account records match the selected filters.</td>
       </tr>
+      <tr *ngIf="accounts.length" class="report-total-row">
+        <td colspan="5">Grand Total ({{ accounts.length }} records)</td>
+        <td>{{ reportTotals.stb | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.connection | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.material | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.subscription | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.total | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.customerPaid | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.balance | number:'1.2-2' }}</td>
+        <td [attr.colspan]="permissions.isAdmin() ? 4 : 3"></td>
+      </tr>
     </table>
   </section>
+
+  <div class="modal-backdrop report-preview-backdrop" *ngIf="showReportPreview">
+    <section class="report-preview-modal" role="dialog" aria-modal="true" aria-labelledby="report-preview-title">
+      <div class="modal-header">
+        <h2 id="report-preview-title">Pending Account Report</h2>
+        <button type="button" class="close-button" (click)="closeReportPreview()">Close</button>
+      </div>
+
+      <div class="preview-meta">
+        <strong>Installed By: {{ reportInstalledByLabel }}</strong>
+        <span>Start Date: {{ reportStartDateLabel }}</span>
+        <span>End Date: {{ reportEndDateLabel }}</span>
+        <span>Status: {{ statusFilter || 'ALL' }}</span>
+        <span>Total Records: {{ accounts.length }}</span>
+      </div>
+
+      <div class="preview-table-scroll">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th>S.No</th>
+              <th>Account Date</th>
+              <th>Customer No</th>
+              <th>Name</th>
+              <th>Installed By</th>
+              <th>Type</th>
+              <th>STB</th>
+              <th>Connection</th>
+              <th>Subscription</th>
+              <th>Customer Paid</th>
+              <th>Materials</th>
+              <th>Balance</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of accounts; let index = index">
+              <td>{{ index + 1 }}</td>
+              <td>{{ item.account_date | date:'dd-MM-yyyy' }}</td>
+              <td>{{ item.customer_code || '-' }}</td>
+              <td>{{ item.full_name || '-' }}</td>
+              <td>{{ item.installed_by_name || '-' }}</td>
+              <td>{{ connectionTypeLabel(item.connection_type) }}</td>
+              <td>{{ item.stb_amount | number:'1.2-2' }}</td>
+              <td>{{ item.connection_amount | number:'1.2-2' }}</td>
+              <td>{{ item.subscription_amount | number:'1.2-2' }}</td>
+              <td>{{ item.customer_paid_amount | number:'1.2-2' }}</td>
+              <td>{{ item.material_cost | number:'1.2-2' }}</td>
+              <td>{{ item.balance_amount | number:'1.2-2' }}</td>
+              <td>{{ item.grand_total | number:'1.2-2' }}</td>
+              <td>{{ item.account_status }}</td>
+            </tr>
+            <tr class="report-total-row">
+              <td colspan="6">Grand Total ({{ accounts.length }} records)</td>
+              <td>{{ reportTotals.stb | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.connection | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.subscription | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.customerPaid | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.material | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.balance | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.total | number:'1.2-2' }}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-actions preview-actions">
+        <button type="button" class="secondary" (click)="closeReportPreview()">Close</button>
+        <button type="button" (click)="printReport()">Print</button>
+      </div>
+    </section>
+  </div>
 
   <div class="modal-backdrop" *ngIf="showPaymentModal">
     <section class="payment-modal" role="dialog" aria-modal="true" aria-labelledby="payment-title">
@@ -117,7 +206,7 @@
       </div>
 
       <p class="validation-note" *ngIf="receivedAmount > officeCurrentBalance">
-        Cash + Online cannot exceed the amount collected from the customer.
+        Cash + Online cannot exceed Total Payment.
       </p>
       <p class="validation-note" *ngIf="receivedAmount > 0 && paymentBalance > 0 && !paymentForm.due_date">
         Due date is required for a partial payment.

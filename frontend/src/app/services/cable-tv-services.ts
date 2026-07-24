@@ -114,6 +114,14 @@ export class CableTvServices {
     return this.http.post(`${this.endpoint}/masters/stbs`, data, { headers: this.jsonHeaders });
   }
 
+  updateStbMaster(stbMasterId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/masters/stbs/${stbMasterId}`, data, { headers: this.jsonHeaders });
+  }
+
+  deleteStbMaster(stbMasterId: number) {
+    return this.http.delete(`${this.endpoint}/masters/stbs/${stbMasterId}`);
+  }
+
   assignStbMaster(stbMasterId: number, assignedEmployeeId: number) {
     return this.http.patch(`${this.endpoint}/masters/stbs/${stbMasterId}/assign`, { assigned_employee_id: assignedEmployeeId }, { headers: this.jsonHeaders });
   }

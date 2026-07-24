@@ -8,11 +8,11 @@ import { NgxUiLoaderModule, NgxUiLoaderService } from 'ngx-ui-loader';
 import { Snackbar } from '../../../services/snackbar';
 import { UserServices } from '../../../services/user-services';
 import { Router } from '@angular/router';
-import { MatIcon } from '@angular/material/icon';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-change-password',
-  imports: [ MatDialogActions, MatDialogModule,InputFormField, MatIcon,  ReactiveFormsModule],
+  imports: [MatDialogActions, MatDialogModule, InputFormField, NgClass, ReactiveFormsModule],
   templateUrl: './change-password.html',
   styleUrl: './change-password.scss',
 })

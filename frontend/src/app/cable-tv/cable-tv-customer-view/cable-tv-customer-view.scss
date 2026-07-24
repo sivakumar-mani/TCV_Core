@@ -44,10 +44,11 @@
   padding: 8px 15px;
 }
 
-.heading-actions mat-icon,
-.print-link mat-icon { font-size: 18px; height: 18px; width: 18px; }
+.heading-actions .bi,
+.print-link .bi { font-size: 18px; height: 18px; width: 18px; }
 .secondary-button { background: #e3e9f1; color: #243447; }
 .print-button { background: #17263d; color: #fff; }
+.approve-button { background: #198754; color: #fff; }
 
 .print-sheet {
   background: #fff;
@@ -94,8 +95,8 @@
   width: 100%;
 }
 
-.accordion-heading mat-icon { transition: transform .2s ease; }
-.accordion.collapsed .accordion-heading mat-icon { transform: rotate(-90deg); }
+.accordion-heading .bi { transition: transform .2s ease; }
+.accordion.collapsed .accordion-heading .bi { transform: rotate(-90deg); }
 .accordion-content { display: block; }
 .accordion.collapsed .accordion-content { display: none; }
 
@@ -133,6 +134,53 @@ tbody tr:nth-child(even) { background: #f8fafb; }
 .print-footer { display: flex; justify-content: center; padding: 6px 0 2px; }
 .print-link { background: transparent; color: #1f2937; text-decoration: underline; }
 
+.review-mode {
+  .print-sheet {
+    box-shadow: none;
+  }
+
+  .accordion {
+    border-color: #dde3ea;
+    border-radius: 6px;
+    overflow: visible;
+  }
+
+  .accordion-heading {
+    background: #fff;
+    color: #172033;
+    cursor: default;
+    font-size: 18px;
+    min-height: auto;
+    padding: 16px 16px 8px;
+  }
+
+  .accordion-heading .bi {
+    display: none;
+  }
+
+  .accordion-content {
+    padding: 0 16px 16px;
+  }
+
+  .accordion-content.table-wrap {
+    padding-top: 6px;
+  }
+
+  .print-footer {
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .print-footer button {
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 650;
+    min-height: 38px;
+    padding: 8px 16px;
+  }
+}
+
 @media (max-width: 800px) {
   .view-page { padding: 12px; }
   .page-heading { align-items: stretch; flex-direction: column; }
@@ -155,7 +203,7 @@ tbody tr:nth-child(even) { background: #f8fafb; }
   .accordion { break-inside: avoid; margin-bottom: 8px; }
   .accordion.collapsed .accordion-content { display: block !important; }
   .accordion-heading { background: #65727e !important; color: #fff !important; min-height: 28px; padding: 5px 8px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .accordion-heading mat-icon { display: none; }
+  .accordion-heading .bi { display: none; }
   .customer-primary { padding: 8px 10px; }
   .connection-summary { padding: 7px 10px; }
   .info-grid div { min-height: 42px; padding: 5px 7px; }

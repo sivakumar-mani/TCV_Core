@@ -1,7 +1,7 @@
 <mat-toolbar class="p-0 border-bottom">
   <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="#"><mat-icon>home</mat-icon></a></li>
+      <li class="breadcrumb-item"><a href="#"><i class="bi bi-house" aria-hidden="true"></i></a></li>
       <li class="breadcrumb-item active" aria-current="page">Products</li>
       <li class="breadcrumb-item active" aria-current="page">Categories List</li>
     </ol>
@@ -51,12 +51,13 @@
           <td>{{ formatIndiaDate(rowData.created_at) }}</td>
           <td>{{ formatIndiaDate(rowData.updated_at) }}</td>
 
-          <td>
-            <button mat-button [matMenuTriggerFor]="menu">Action</button>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="editCategory(rowData)">Edit</button>
-              <button mat-menu-item (click)="deleteCategory(rowData)">Delete</button>
-            </mat-menu>
+          <td class="action-cell">
+            <button type="button" class="table-icon-btn" title="Edit" aria-label="Edit category" (click)="editCategory(rowData)">
+              <i class="bi bi-pencil-square" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="table-icon-btn" title="Delete" aria-label="Delete category" (click)="deleteCategory(rowData)">
+              <i class="bi bi-trash" aria-hidden="true"></i>
+            </button>
           </td>
         </tr>
       </ng-template>

@@ -3,7 +3,6 @@ import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatToolbar } from '@angular/material/toolbar';
-import { MatIcon } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { TreeTableModule } from 'primeng/treetable';
 import { TagModule } from 'primeng/tag';
@@ -16,7 +15,7 @@ import { Category } from '../dialog/category/category';
 
 @Component({
   selector: 'app-categories-list',
-  imports: [MatToolbar, MatIcon, TagModule, MatButtonModule, MatMenuModule, TreeTableModule],
+  imports: [MatToolbar, TagModule, MatButtonModule, MatMenuModule, TreeTableModule],
   templateUrl: './categories-list.html',
   styleUrl: './categories-list.scss',
 })

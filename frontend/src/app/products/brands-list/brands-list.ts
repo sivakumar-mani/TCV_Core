@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router } from '@angular/router';
 import { ColDef } from 'ag-grid-community';
@@ -15,7 +14,7 @@ import { Brands } from '../dialog/brands/brands';
 
 @Component({
   selector: 'app-brands-list',
-  imports: [MatIconModule, MatToolbarModule, AgGridList],
+  imports: [MatToolbarModule, AgGridList],
   templateUrl: './brands-list.html',
   styleUrl: './brands-list.scss',
 })

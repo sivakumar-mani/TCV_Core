@@ -24,6 +24,7 @@
         </label>
         <label>Customer Type
           <select formControlName="customer_type">
+            <option value="">Select customer type (optional)</option>
             <option *ngFor="let type of customerTypes" [value]="type.value">{{ type.label }}</option>
           </select>
         </label>
