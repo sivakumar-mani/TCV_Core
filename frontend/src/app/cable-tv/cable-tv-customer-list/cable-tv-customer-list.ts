@@ -8,6 +8,7 @@ import { CableTvServices } from '../../services/cable-tv-services';
 import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 import { CommonMethods } from '../../shared/common-methods';
 import { ActionMenu } from '../../shared/list-action-menu';
+import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-customer-list',
@@ -77,7 +78,11 @@ export class CableTvCustomerList {
       cellRendererParams: {
         dropdownMenu: [
           { label: 'View', action: (row: any) => this.viewCustomer(row) },
-          { label: 'Update', action: (row: any) => this.editCustomer(row) }
+          {
+            label: 'Update',
+            action: (row: any) => this.editCustomer(row),
+            visible: (row: any) => this.canUpdateCustomer(row)
+          }
         ]
       },
       filter: false,
@@ -91,8 +96,15 @@ export class CableTvCustomerList {
     private commonMethods: CommonMethods,
     private router: Router,
     private route: ActivatedRoute,
-    private zone: NgZone
+    private zone: NgZone,
+    private permissions: PermissionService
   ) {}
+
+  canUpdateCustomer(row: any) {
+    if (this.permissions.isAdmin()) return true;
+    const status = String(row?.status || '').trim().toUpperCase();
+    return !['WAITING APPROVAL', 'PENDING PAYMENT'].includes(status);
+  }
 
   ngOnInit() {
     this.route.queryParamMap.subscribe((params) => {

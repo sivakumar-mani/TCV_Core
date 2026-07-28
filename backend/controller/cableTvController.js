@@ -1364,7 +1364,9 @@ const getPendingAccounts = async (req, res) => {
     await ensureCableTvExtendedTables(db);
     const status = String(req.query.status || 'PENDING').toUpperCase();
     const name = String(req.query.name || '').trim();
-    const installedByEmployeeId = intOrNull(req.query.installed_by_employee_id);
+    const installedByEmployeeId = isAdmin(req)
+      ? intOrNull(req.query.installed_by_employee_id)
+      : await resolveEmployeeId(db, req);
     const startDate = textOrNull(req.query.start_date);
     const endDate = textOrNull(req.query.end_date);
     const filters = [];
@@ -1379,8 +1381,15 @@ const getPendingAccounts = async (req, res) => {
       values.push(search, search, search);
     }
     if (installedByEmployeeId) {
-      filters.push('c.installed_by_employee_id = ?');
-      values.push(installedByEmployeeId);
+      if (isAdmin(req)) {
+        filters.push('c.installed_by_employee_id = ?');
+        values.push(installedByEmployeeId);
+      } else {
+        filters.push('(c.installed_by_employee_id = ? OR ca.created_by_user_id = ?)');
+        values.push(installedByEmployeeId, currentUserId(req) || 0);
+      }
+    } else if (!isAdmin(req)) {
+      filters.push('1 = 0');
     }
     if (startDate) {
       filters.push('DATE(ca.created_at) >= ?');
@@ -2060,6 +2069,24 @@ const receiveAccount = async (req, res) => {
         dueDate, newBalance, paymentStatus, currentUserId(req), receiverEmployeeId]
     );
 
+    await db.query(
+      `UPDATE cable_customer_accounts
+       SET office_received_amount = ?,
+           office_balance_amount = ?,
+           balance_amount = ?,
+           due_date = ?,
+           account_status = ?,
+           received_by_user_id = ?,
+           received_by_employee_id = ?,
+           received_at = TIMESTAMP(?, CURRENT_TIME()),
+           updated_at = NOW()
+       WHERE account_id = ?`,
+      [
+        newOfficeReceivedAmount, newBalance, newBalance, dueDate, paymentStatus,
+        currentUserId(req), receiverEmployeeId, receivedDate, accountId
+      ]
+    );
+
     if (paymentStatus === 'PAID') {
       const [pendingAccessories] = await db.query(
         `SELECT acc.stb_accessory_id, acc.customer_stb_id, acc.product_id, acc.accessory_name,
@@ -2101,20 +2128,6 @@ const receiveAccount = async (req, res) => {
       await applyApprovedLocationChange(db, account.approval_group_id);
       await synchronizeLatestCustomerStbStatus(db, [account.cable_customer_id]);
     }
-
-    await db.query(
-      `UPDATE cable_customer_accounts
-       SET office_received_amount = ?,
-            office_balance_amount = ?,
-            due_date = ?,
-            account_status = ?,
-            received_by_user_id = ?,
-            received_by_employee_id = ?,
-            received_at = TIMESTAMP(?, CURRENT_TIME()),
-            updated_at = NOW()
-        WHERE account_id = ?`,
-      [newOfficeReceivedAmount, newBalance, dueDate, paymentStatus, currentUserId(req), receiverEmployeeId, receivedDate, accountId]
-    );
 
     await db.commit();
     return res.json({
@@ -2222,7 +2235,6 @@ const getCableCustomers = async (req, res) => {
   try {
     const db = connection.promise();
     await ensureCableTvExtendedTables(db);
-    await synchronizeLatestCustomerStbStatus(db);
     const status = req.query.approval_status || 'ALL';
     const values = [];
     let where = 'WHERE 1 = 1';
@@ -2235,11 +2247,22 @@ const getCableCustomers = async (req, res) => {
     const [rows] = await db.query(
       `SELECT c.cable_customer_id, c.customer_code, c.legacy_customer_no, c.full_name,
                c.door_no, c.city, c.pincode, c.mobile_no, c.aadhaar_no, c.alternate_mobile_no,
-               COALESCE(CASE UPPER(stb.status)
-                 WHEN 'ACTIVE' THEN 'ACTIVE' WHEN 'RETRIEVED' THEN 'RETRIEVED'
-                 WHEN 'RETURNED' THEN 'RETRIEVED' WHEN 'FAULT' THEN 'FAULT'
-                 WHEN 'FAULTY' THEN 'FAULT' WHEN 'UPGRADE' THEN 'UPGRADE'
-                 WHEN 'REPLACED' THEN 'ACTIVE' ELSE 'DISCONNECTED' END, c.status) AS status,
+               CASE
+                 WHEN UPPER(c.approval_status) = 'PENDING' THEN 'Waiting Approval'
+                 WHEN UPPER(c.approval_status) = 'REJECTED' THEN 'Rejected'
+                 WHEN UPPER(COALESCE(acc.account_status, 'PENDING')) IN ('PENDING', 'PARTIAL')
+                   AND NOT EXISTS (
+                     SELECT 1 FROM cable_customer_account_payments paid_account
+                     WHERE paid_account.account_id = acc.account_id
+                       AND paid_account.payment_status = 'PAID'
+                   )
+                 THEN 'Pending Payment'
+                 ELSE COALESCE(CASE UPPER(stb.status)
+                   WHEN 'ACTIVE' THEN 'Active' WHEN 'RETRIEVED' THEN 'Retrieved'
+                   WHEN 'RETURNED' THEN 'Retrieved' WHEN 'FAULT' THEN 'Fault'
+                   WHEN 'FAULTY' THEN 'Fault' WHEN 'UPGRADE' THEN 'Upgrade'
+                   WHEN 'REPLACED' THEN 'Active' ELSE 'Disconnected' END, c.status)
+               END AS status,
                c.approval_status, c.created_at,
                c.network_id, c.location_id, c.area_id, c.street_id,
                c.network_type, n.network_name, l.location_name, a.area_name, s.street_name, src.source_name,
@@ -2263,7 +2286,6 @@ const getCableCustomers = async (req, res) => {
          SELECT latest_stb.customer_stb_id
          FROM cable_customer_stbs latest_stb
          WHERE latest_stb.cable_customer_id = c.cable_customer_id
-           AND latest_stb.approval_status = 'APPROVED'
          ORDER BY latest_stb.customer_stb_id DESC
          LIMIT 1
        )
@@ -2319,7 +2341,19 @@ const getCableCustomerById = async (req, res) => {
       `SELECT stb.*, CONCAT_WS(' ', installed.first_name, installed.last_name) AS installed_by_name,
               CONCAT_WS(' ', entered.first_name, entered.last_name) AS entered_by_name,
               installed_mso.mso_name AS installed_mso_name,
-              exchange_mso.mso_name AS exchange_original_mso_name
+              exchange_mso.mso_name AS exchange_original_mso_name,
+              COALESCE((
+                SELECT CASE
+                  WHEN EXISTS (
+                    SELECT 1 FROM cable_customer_account_payments cap
+                    WHERE cap.account_id = ca.account_id AND cap.payment_status = 'PAID'
+                  ) THEN 'PAID'
+                  ELSE ca.account_status
+                END
+                FROM cable_customer_accounts ca
+                WHERE ca.approval_group_id = stb.approval_group_id
+                ORDER BY ca.account_id DESC LIMIT 1
+              ), 'PENDING') AS payment_status
        FROM cable_customer_stbs stb
        LEFT JOIN employees installed ON installed.employee_id = stb.installed_by_employee_id
        LEFT JOIN employees entered ON entered.employee_id = stb.entered_by_employee_id
@@ -2333,7 +2367,19 @@ const getCableCustomerById = async (req, res) => {
     );
     const [connections] = await db.query(
       `SELECT conn.*, CONCAT_WS(' ', installed.first_name, installed.last_name) AS installed_by_name,
-              CONCAT_WS(' ', entered.first_name, entered.last_name) AS entered_by_name
+              CONCAT_WS(' ', entered.first_name, entered.last_name) AS entered_by_name,
+              COALESCE((
+                SELECT CASE
+                  WHEN EXISTS (
+                    SELECT 1 FROM cable_customer_account_payments cap
+                    WHERE cap.account_id = ca.account_id AND cap.payment_status = 'PAID'
+                  ) THEN 'PAID'
+                  ELSE ca.account_status
+                END
+                FROM cable_customer_accounts ca
+                WHERE ca.approval_group_id = conn.approval_group_id
+                ORDER BY ca.account_id DESC LIMIT 1
+              ), 'PENDING') AS payment_status
        FROM cable_connections conn
        LEFT JOIN employees installed ON installed.employee_id = conn.connected_by_employee_id
        LEFT JOIN employees entered ON entered.employee_id = conn.entered_by_employee_id
@@ -2390,8 +2436,22 @@ const getCableCustomerById = async (req, res) => {
       [id]
     );
     const [accounts] = await db.query('SELECT * FROM cable_customer_accounts WHERE cable_customer_id = ? ORDER BY account_id DESC', [id]);
+    const [approvalGroups] = await db.query(
+      `SELECT cag.approval_group_id, cag.approval_group_no, cag.group_type, cag.approval_status
+       FROM cable_approval_groups cag
+       WHERE cag.approval_group_id IN (
+         SELECT approval_group_id FROM cable_tv_customers WHERE cable_customer_id = ?
+         UNION SELECT approval_group_id FROM cable_connections WHERE cable_customer_id = ?
+         UNION SELECT approval_group_id FROM cable_customer_stbs WHERE cable_customer_id = ?
+         UNION SELECT approval_group_id FROM cable_customer_packages WHERE cable_customer_id = ?
+         UNION SELECT approval_group_id FROM cable_subscriptions WHERE cable_customer_id = ?
+         UNION SELECT approval_group_id FROM cable_customer_accounts WHERE cable_customer_id = ?
+       )
+       ORDER BY cag.approval_group_id DESC`,
+      [id, id, id, id, id, id]
+    );
 
-    return res.json({ customer, stbs, stbAccessories, connections, materials, customerPackages, subscriptions, accounts });
+    return res.json({ customer, stbs, stbAccessories, connections, materials, customerPackages, subscriptions, accounts, approvalGroups });
   } catch (error) {
     return res.status(500).json({ message: 'Cable TV customer details failed', error: error.message });
   }
@@ -2720,6 +2780,53 @@ const updateCableCustomer = async (req, res) => {
   }
 };
 
+const updateCableCustomerInformation = async (req, res) => {
+  try {
+    const cableCustomerId = Number(req.params.id);
+    const payload = req.body || {};
+    const fullName = String(payload.full_name || '').trim();
+    const mobileNo = String(payload.mobile_no || '').trim();
+    const alternateMobileNo = String(payload.alternate_mobile_no || '').trim();
+    const aadhaarNo = String(payload.aadhaar_no || '').trim();
+    if (!cableCustomerId || !fullName || !/^[0-9]{10}$/.test(mobileNo)) {
+      return res.status(400).json({ message: 'Network, Full Name and valid 10-digit Mobile No are required' });
+    }
+    if (alternateMobileNo && !/^[0-9]{10}$/.test(alternateMobileNo)) {
+      return res.status(400).json({ message: 'Alternate Mobile must contain 10 digits' });
+    }
+    if (aadhaarNo && !/^[0-9]{12}$/.test(aadhaarNo)) {
+      return res.status(400).json({ message: 'Aadhaar No must contain 12 digits' });
+    }
+
+    const db = connection.promise();
+    await ensureCableTvExtendedTables(db);
+    const networkId = intOrNull(payload.network_id);
+    const networkType = await resolveNetworkType(db, networkId);
+    if (!networkType) return res.status(400).json({ message: 'Select a valid Network' });
+    const sourceId = await resolveSourceId(db, payload.source_id || payload.source_name);
+    const installedByEmployeeId = await resolveEmployeeId(db, req, payload.installed_by_employee_id);
+    if (!installedByEmployeeId) {
+      return res.status(400).json({ message: 'Installed By employee is required' });
+    }
+
+    const [result] = await db.query(
+      `UPDATE cable_tv_customers
+       SET network_id = ?, network_type = ?, full_name = ?, mobile_no = ?,
+           alternate_mobile_no = ?, aadhaar_no = ?, source_id = ?,
+           installed_by_employee_id = ?, updated_at = NOW()
+       WHERE cable_customer_id = ?`,
+      [
+        networkId, networkType, fullName, mobileNo, nullable(alternateMobileNo),
+        nullable(aadhaarNo), sourceId, installedByEmployeeId, cableCustomerId
+      ]
+    );
+    if (!result.affectedRows) return res.status(404).json({ message: 'Cable TV customer not found' });
+    return res.json({ message: 'Customer information updated successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Customer information update failed', error: error.message });
+  }
+};
+
 const assignStbMaster = async (req, res) => {
   try {
     const stbMasterId = Number(req.params.stbMasterId);
@@ -2911,14 +3018,17 @@ const addCustomerStb = async (req, res) => {
     const { approvalGroupId, approvalStatus, createdBy } = await createApprovalGroup(db, req, 'STB_UPDATE');
     const employeeId = await resolveEmployeeId(db, req, payload.installed_by_employee_id || payload.entered_by_employee_id);
     const updateReason = String(payload.reason || payload.update_reason || 'DISCONNECT').toUpperCase();
+    const activeReasons = new Set(['FAULT', 'BROKEN', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED']);
+    const disconnectedReasons = new Set(['REACTIVATE', 'REPLACED', 'UPGRADE']);
+    if (!activeReasons.has(updateReason) && !disconnectedReasons.has(updateReason)) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Invalid STB update reason' });
+    }
     const remarks = textOrNull(payload.remarks || payload.reason_remarks);
     const updatedDate = payload.updated_date || payload.installed_date || new Date();
     const isReplacement = updateReason === 'REPLACED';
     const isReturn = updateReason === 'RETURNED';
-    const selectedStbStatus = String(isReturn
-      ? 'RETRIEVED'
-      : (payload.status || (updateReason === 'REACTIVATE' ? 'ACTIVE' : isReplacement ? 'ACTIVE' : 'DISCONNECTED'))
-    ).toUpperCase();
+    const selectedStbStatus = disconnectedReasons.has(updateReason) ? 'ACTIVE' : 'DISCONNECTED';
     const customerStatus = customerStatusForStbStatus(selectedStbStatus);
 
     const [activeStbs] = await db.query(
@@ -2932,6 +3042,15 @@ const addCustomerStb = async (req, res) => {
        LIMIT 1`,
       [cableCustomerId]
     );
+    const currentStatus = String(activeStbs[0]?.status || '').toUpperCase();
+    if (currentStatus === 'ACTIVE' && !activeReasons.has(updateReason)) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Active STB can only be disconnected, faulted, vacated, lost, outstation or returned' });
+    }
+    if (currentStatus && currentStatus !== 'ACTIVE' && !disconnectedReasons.has(updateReason)) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Disconnected STB can only be Reactivated, Replaced or Upgraded' });
+    }
 
     if (!isReplacement) {
       let targetStbs = activeStbs;
@@ -2983,14 +3102,9 @@ const addCustomerStb = async (req, res) => {
         });
       }
       if (approvalStatus === 'APPROVED') {
-        await db.query(
-          `UPDATE cable_customer_stbs SET status = ?, updated_at = NOW()
-           WHERE customer_stb_id = ?`,
-          [selectedStbStatus, targetStb.customer_stb_id]
-        );
         if (isReturn && targetStb.stb_master_id) {
           await db.query(
-            "UPDATE cable_stb_master SET status = 'AVAILABLE', assigned_employee_id = NULL, updated_at = NOW() WHERE stb_master_id = ?",
+            "UPDATE cable_stb_master SET stock_type = 'RETURNED', status = 'AVAILABLE', assigned_employee_id = NULL, updated_at = NOW() WHERE stb_master_id = ?",
             [targetStb.stb_master_id]
           );
           await db.query(
@@ -3047,12 +3161,6 @@ const addCustomerStb = async (req, res) => {
 
     if (activeStbs.length && approvalStatus === 'APPROVED') {
       const activeIds = activeStbs.map((item) => item.customer_stb_id);
-      await db.query(
-        `UPDATE cable_customer_stbs
-         SET status = 'REPLACED', updated_date = ?, update_reason = ?, reason_remarks = ?, updated_at = NOW()
-         WHERE customer_stb_id IN (?)`,
-        [updatedDate, updateReason, remarks, activeIds]
-      );
       const oldMasterIds = activeStbs.map((item) => item.stb_master_id).filter(Boolean);
       if (oldMasterIds.length) {
         await db.query(
@@ -3194,7 +3302,11 @@ const addCustomerPackage = async (req, res) => {
     const payload = req.body || {};
     const { approvalGroupId, approvalStatus, createdBy } = await createApprovalGroup(db, req, 'PACKAGE_UPDATE');
     const packageType = normalizePackageType(payload.package_type);
-    const employeeId = await resolveEmployeeId(db, req, payload.updated_by_employee_id);
+    const employeeId = await resolveEmployeeId(
+      db,
+      req,
+      req.res?.locals?.employee_id || payload.updated_by_employee_id
+    );
     const [[activeSameType]] = await db.query(
       `SELECT customer_package_id
        FROM cable_customer_packages
@@ -3234,7 +3346,11 @@ const updateCustomerPackage = async (req, res) => {
     const customerPackageId = Number(req.params.packageId);
     const packageType = normalizePackageType(req.body.package_type);
     const isActive = Number(req.body.is_active ?? 1) === 1 ? 1 : 0;
-    const employeeId = await resolveEmployeeId(db, req, req.body.updated_by_employee_id);
+    const employeeId = await resolveEmployeeId(
+      db,
+      req,
+      req.res?.locals?.employee_id || req.body.updated_by_employee_id
+    );
     if (isActive) {
       const [[activeSameType]] = await db.query(
         `SELECT customer_package_id
@@ -3580,6 +3696,7 @@ module.exports = {
   getCableCustomerById,
   addCableCustomer,
   updateCableCustomer,
+  updateCableCustomerInformation,
   addCustomerConnection,
   updateCustomerConnection,
   deleteCustomerConnection,

@@ -1,0 +1,2301 @@
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:186:23:
+[37m      186 │             <th *ngIf="[32msection === 'connections'[37m">Date</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:187:23:
+[37m      187 │             <th *ngIf="[32msection === 'connections'[37m">Type</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:188:23:
+[37m      188 │             <th *ngIf="[32msection === 'connections'[37m">Installed By</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:189:23:
+[37m      189 │             <th *ngIf="[32msection === 'connections'[37m">Old Address</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:190:23:
+[37m      190 │             <th *ngIf="[32msection === 'connections'[37m">New Address</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:191:23:
+[37m      191 │             <th *ngIf="[32msection === 'connections'[37m">Charge</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:192:23:
+[37m      192 │             <th *ngIf="[32msection === 'connections'[37m">Labor</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:193:23:
+[37m      193 │             <th *ngIf="[32msection === 'stbs'[37m">Updated Date</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:194:23:
+[37m      194 │             <th *ngIf="[32msection === 'stbs'[37m">Reason Type</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:195:23:
+[37m      195 │             <th *ngIf="[32msection === 'stbs'[37m">Type</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:196:23:
+[37m      196 │             <th *ngIf="[32msection === 'stbs'[37m">STB No</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:197:23:
+[37m      197 │             <th *ngIf="[32msection === 'stbs'[37m">Updated By</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:198:23:
+[37m      198 │             <th *ngIf="[32msection === 'stbs'[37m">STB Amount</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:199:23:
+[37m      199 │             <th *ngIf="[32msection === 'stbs'[37m">Discount</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:200:23:
+[37m      200 │             <th *ngIf="[32msection === 'stbs'[37m">Labor/Service Charge</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:201:23:
+[37m      201 │             <th *ngIf="[32msection === 'stbs'[37m">Payment Status</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:202:23:
+[37m      202 │             <th *ngIf="[32msection === 'packages'[37m">Type</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:203:23:
+[37m      203 │             <th *ngIf="[32msection === 'packages'[37m">Package Name</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:204:23:
+[37m      204 │             <th *ngIf="[32msection === 'packages'[37m">Price</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:205:23:
+[37m      205 │             <th *ngIf="[32msection === 'packages'[37m">Start Date</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:206:23:
+[37m      206 │             <th *ngIf="[32msection === 'packages'[37m">End Date</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:207:23:
+[37m      207 │             <th *ngIf="[32msection === 'packages'[37m">Updated By</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:208:23:
+[37m      208 │             <th *ngIf="[32msection === 'packages'[37m">Approval Status</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:217:19:
+[37m      217 │             <th>{{ [32msection === 'connections'[37m ? 'Payment Status' :...
+          ╵                    [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:223:23:
+[37m      223 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.connectio...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:224:23:
+[37m      224 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ connectionTyp...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:225:23:
+[37m      225 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.installed...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:226:23:
+[37m      226 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.old_addre...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:227:23:
+[37m      227 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.new_addre...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:228:23:
+[37m      228 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.connectio...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:229:23:
+[37m      229 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.labour_se...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:230:23:
+[37m      230 │             <td *ngIf="[32msection === 'stbs'[37m">{{ (row.updated_date |...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:231:23:
+[37m      231 │             <td *ngIf="[32msection === 'stbs'[37m">{{ reasonLabel(row.upd...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:232:23:
+[37m      232 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.stb_type }}</td>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:233:23:
+[37m      233 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.stb_no }}</td>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:234:23:
+[37m      234 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.entered_by_name...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:235:23:
+[37m      235 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.stb_amount }}</td>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:236:23:
+[37m      236 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.stb_discount }}...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:237:23:
+[37m      237 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.labour_service_...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:238:23:
+[37m      238 │             <td *ngIf="[32msection === 'stbs'[37m">
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:243:23:
+[37m      243 │             <td *ngIf="[32msection === 'packages'[37m">{{ packageTypeLabe...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:244:23:
+[37m      244 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.package_nam...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:245:23:
+[37m      245 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.package_pri...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:246:23:
+[37m      246 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.start_date ...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:247:23:
+[37m      247 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.end_date | ...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:248:23:
+[37m      248 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.updated_by_...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:249:23:
+[37m      249 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.approval_st...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:270:29:
+[37m      270 │ ...     <button *ngIf="[32msection === 'packages'[37m && row.is_active ==...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:186:23:
+[37m      186 │             <th *ngIf="[32msection === 'connections'[37m">Date</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:187:23:
+[37m      187 │             <th *ngIf="[32msection === 'connections'[37m">Type</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:188:23:
+[37m      188 │             <th *ngIf="[32msection === 'connections'[37m">Installed By</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:189:23:
+[37m      189 │             <th *ngIf="[32msection === 'connections'[37m">Old Address</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:190:23:
+[37m      190 │             <th *ngIf="[32msection === 'connections'[37m">New Address</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:191:23:
+[37m      191 │             <th *ngIf="[32msection === 'connections'[37m">Charge</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:192:23:
+[37m      192 │             <th *ngIf="[32msection === 'connections'[37m">Labor</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:193:23:
+[37m      193 │             <th *ngIf="[32msection === 'stbs'[37m">Updated Date</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:194:23:
+[37m      194 │             <th *ngIf="[32msection === 'stbs'[37m">Reason Type</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:195:23:
+[37m      195 │             <th *ngIf="[32msection === 'stbs'[37m">Type</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:196:23:
+[37m      196 │             <th *ngIf="[32msection === 'stbs'[37m">STB No</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:197:23:
+[37m      197 │             <th *ngIf="[32msection === 'stbs'[37m">Updated By</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:198:23:
+[37m      198 │             <th *ngIf="[32msection === 'stbs'[37m">STB Amount</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:199:23:
+[37m      199 │             <th *ngIf="[32msection === 'stbs'[37m">Discount</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:200:23:
+[37m      200 │             <th *ngIf="[32msection === 'stbs'[37m">Labor/Service Charge</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:201:23:
+[37m      201 │             <th *ngIf="[32msection === 'stbs'[37m">Payment Status</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:202:23:
+[37m      202 │             <th *ngIf="[32msection === 'packages'[37m">Type</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:203:23:
+[37m      203 │             <th *ngIf="[32msection === 'packages'[37m">Package Name</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:204:23:
+[37m      204 │             <th *ngIf="[32msection === 'packages'[37m">Price</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:205:23:
+[37m      205 │             <th *ngIf="[32msection === 'packages'[37m">Start Date</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:206:23:
+[37m      206 │             <th *ngIf="[32msection === 'packages'[37m">End Date</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:207:23:
+[37m      207 │             <th *ngIf="[32msection === 'packages'[37m">Updated By</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:208:23:
+[37m      208 │             <th *ngIf="[32msection === 'packages'[37m">Approval Status</th>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:217:19:
+[37m      217 │             <th>{{ [32msection === 'connections'[37m ? 'Payment Status' :...
+          ╵                    [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:223:23:
+[37m      223 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.connectio...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:224:23:
+[37m      224 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ connectionTyp...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:225:23:
+[37m      225 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.installed...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:226:23:
+[37m      226 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.old_addre...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:227:23:
+[37m      227 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.new_addre...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:228:23:
+[37m      228 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.connectio...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"connections"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:229:23:
+[37m      229 │ ...        <td *ngIf="[32msection === 'connections'[37m">{{ row.labour_se...
+          ╵                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:230:23:
+[37m      230 │             <td *ngIf="[32msection === 'stbs'[37m">{{ (row.updated_date |...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:231:23:
+[37m      231 │             <td *ngIf="[32msection === 'stbs'[37m">{{ reasonLabel(row.upd...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:232:23:
+[37m      232 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.stb_type }}</td>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:233:23:
+[37m      233 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.stb_no }}</td>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:234:23:
+[37m      234 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.entered_by_name...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:235:23:
+[37m      235 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.stb_amount }}</td>
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:236:23:
+[37m      236 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.stb_discount }}...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:237:23:
+[37m      237 │             <td *ngIf="[32msection === 'stbs'[37m">{{ row.labour_service_...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"stbs"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:238:23:
+[37m      238 │             <td *ngIf="[32msection === 'stbs'[37m">
+          ╵                        [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:243:23:
+[37m      243 │             <td *ngIf="[32msection === 'packages'[37m">{{ packageTypeLabe...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:244:23:
+[37m      244 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.package_nam...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:245:23:
+[37m      245 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.package_pri...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:246:23:
+[37m      246 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.start_date ...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:247:23:
+[37m      247 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.end_date | ...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:248:23:
+[37m      248 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.updated_by_...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:249:23:
+[37m      249 │             <td *ngIf="[32msection === 'packages'[37m">{{ row.approval_st...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"subscriptions"' and '"packages"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:270:29:
+[37m      270 │ ...     <button *ngIf="[32msection === 'packages'[37m && row.is_active ==...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isUpdateSection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:57:43:
+[37m      57 │ ...tive]="tab.key === 'stbs' ? [32misUpdateSection[37m : section === tab.key"
+         ╵                                [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isUpdateSection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:65:43:
+[37m      65 │   <section class="update-workspace" *ngIf="[32misUpdateSection[37m">
+         ╵                                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'openCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:67:57:
+[37m      67 │ ... type="button" class="primary-btn" (click)="[32mopenCombinedUpdate[37m()">
+         ╵                                                [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleUpdateAccordion' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:73:68:
+[37m      73 │ ...="update-accordion-title" (click)="[32mtoggleUpdateAccordion[37m('stbs')">
+         ╵                                       [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'expandedUpdates' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:74:57:
+[37m      74 │ ...i class="bi" [ngClass]="[32mexpandedUpdates[37m.stbs ? 'bi-chevron-up' ...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'expandedUpdates' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:76:48:
+[37m      76 │ ...  <div class="update-accordion-body" *ngIf="[32mexpandedUpdates[37m.stbs">
+         ╵                                                [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateRows' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:81:37:
+[37m      81 │               <tr *ngFor="let row of [32mupdateRows[37m('stbs')">
+         ╵                                      [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'editUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:86:138:
+[37m      86 │ ...dit" title="Edit" (click)="[32meditUpdate[37m('stbs', row)"><i class="b...
+         ╵                               [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateRows' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:88:26:
+[37m      88 │               <tr *ngIf="![32mupdateRows[37m('stbs').length"><td colspan="...
+         ╵                           [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleUpdateAccordion' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:96:68:
+[37m      96 │ ...e-accordion-title" (click)="[32mtoggleUpdateAccordion[37m('connections')">
+         ╵                                [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'expandedUpdates' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:97:64:
+[37m      97 │ ...i class="bi" [ngClass]="[32mexpandedUpdates[37m.connections ? 'bi-chevr...
+         ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'expandedUpdates' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:99:48:
+[37m      99 │ ...class="update-accordion-body" *ngIf="[32mexpandedUpdates[37m.connections">
+         ╵                                         [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateRows' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:104:37:
+[37m      104 │               <tr *ngFor="let row of [32mupdateRows[37m('connections')">
+          ╵                                      [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'editUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:108:138:
+[37m      108 │ ...it" title="Edit" (click)="[32meditUpdate[37m('connections', row)"><i c...
+          ╵                              [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateRows' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:110:26:
+[37m      110 │               <tr *ngIf="![32mupdateRows[37m('connections').length"><td c...
+          ╵                           [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'toggleUpdateAccordion' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:118:68:
+[37m      118 │ ...ate-accordion-title" (click)="[32mtoggleUpdateAccordion[37m('packages')">
+          ╵                                  [32m~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'expandedUpdates' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:119:60:
+[37m      119 │ ...i class="bi" [ngClass]="[32mexpandedUpdates[37m.packages ? 'bi-chevron...
+          ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'expandedUpdates' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:121:48:
+[37m      121 │ ...v class="update-accordion-body" *ngIf="[32mexpandedUpdates[37m.packages">
+          ╵                                           [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateRows' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:126:37:
+[37m      126 │               <tr *ngFor="let row of [32mupdateRows[37m('packages')">
+          ╵                                      [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'editUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:130:138:
+[37m      130 │ ...it" title="Edit" (click)="[32meditUpdate[37m('packages', row)"><i clas...
+          ╵                              [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateRows' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:132:26:
+[37m      132 │               <tr *ngIf="![32mupdateRows[37m('packages').length"><td cols...
+          ╵                           [32m~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isUpdateSection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:177:40:
+[37m      177 │ ...="form-section" *ngIf="![32misUpdateSection[37m && section !== 'custom...
+          ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isUpdateSection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:180:55:
+[37m      180 │ ...(section, 'create') && ![32misUpdateSection[37m" type="button" class="...
+          ╵                            [32m~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'showUpdateSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:296:37:
+[37m      296 │   <div class="modal-backdrop" *ngIf="[32mshowUpdateSelection[37m">
+          ╵                                      [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'showUpdateSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:300:61:
+[37m      300 │ ...condary-btn" (click)="[32mshowUpdateSelection[37m = false"><i class="b...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:304:49:
+[37m      304 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.stbs" (ngModelChange)=...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'selectCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:304:89:
+[37m      304 │ ...bs" (ngModelChange)="[32mselectCombinedUpdate[37m('stbs', $event)"> <s...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:305:49:
+[37m      305 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.connections" (ngModelC...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'selectCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:305:96:
+[37m      305 │ ...ns" (ngModelChange)="[32mselectCombinedUpdate[37m('connections', $even...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:306:49:
+[37m      306 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.packages" (ngModelChan...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'selectCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:306:93:
+[37m      306 │ ...es" (ngModelChange)="[32mselectCombinedUpdate[37m('packages', $event)"...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'showUpdateSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:309:61:
+[37m      309 │ ...condary-btn" (click)="[32mshowUpdateSelection[37m = false">Cancel</but...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:318:61:
+[37m      318 │ ...condary-btn" (click)="[32mcombinedUpdateMode[37m ? cancelCombinedUpdat...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cancelCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:318:82:
+[37m      318 │ ...combinedUpdateMode ? [32mcancelCombinedUpdate[37m() : showModal = fals...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:320:47:
+[37m      320 │       <div class="combined-choice-line" *ngIf="[32mcombinedUpdateMode[37m">
+          ╵                                                [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:321:49:
+[37m      321 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.stbs" (ngModelChange)=...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'changeCombinedSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:321:89:
+[37m      321 │ ...s" (ngModelChange)="[32mchangeCombinedSelection[37m('stbs', $event)" [...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:322:49:
+[37m      322 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.connections" (ngModelC...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'changeCombinedSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:322:96:
+[37m      322 │ ...s" (ngModelChange)="[32mchangeCombinedSelection[37m('connections', $ev...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:323:49:
+[37m      323 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.packages" (ngModelChan...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'changeCombinedSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:323:93:
+[37m      323 │ ...s" (ngModelChange)="[32mchangeCombinedSelection[37m('packages', $event...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'supportsNoPayment' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:388:62:
+[37m      388 │ ...lass="checkbox-card no-payment-option" *ngIf="[32msupportsNoPayment[37m">
+          ╵                                                  [32m~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:505:53:
+[37m      505 │ ...<div class="combined-account-details" *ngIf="[32mcombinedUpdateMode[37m">
+          ╵                                                 [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'combinedSectionTotal' does not exist on type 'CableTvCustomerHistory'. Did you mean 'connectionTotal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:506:50:
+[37m      506 │ ...unt</span><strong>{{ [32mcombinedSectionTotal[37m('stbs') | number:'1....
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'combinedSectionTotal' does not exist on type 'CableTvCustomerHistory'. Did you mean 'connectionTotal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:507:57:
+[37m      507 │ ...unt</span><strong>{{ [32mcombinedSectionTotal[37m('connections') | num...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'combinedSectionTotal' does not exist on type 'CableTvCustomerHistory'. Did you mean 'connectionTotal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:508:54:
+[37m      508 │ ...unt</span><strong>{{ [32mcombinedSectionTotal[37m('packages') | number...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedOverallTotal' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:509:70:
+[37m      509 │ ...unt</span><strong>{{ [32mcombinedOverallTotal[37m() | number:'1.2-2' }...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:511:61:
+[37m      511 │ ...condary-btn" (click)="[32mcombinedUpdateMode[37m ? cancelCombinedUpdat...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cancelCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:511:82:
+[37m      511 │ ...combinedUpdateMode ? [32mcancelCombinedUpdate[37m() : showModal = fals...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:512:70:
+[37m      512 │ ..." (click)="save()">{{ [32mcombinedUpdateMode[37m && updateQueue.length...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateQueue' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:512:92:
+[37m      512 │ ...>{{ combinedUpdateMode && [32mupdateQueue[37m.length ? 'Next' : combin...
+          ╵                              [32m~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:512:122:
+[37m      512 │ ...eue.length ? 'Next' : [32mcombinedUpdateMode[37m ? 'Save All Updates' ...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'showUpdateSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:221:37:
+[37m      221 │   <div class="modal-backdrop" *ngIf="[32mshowUpdateSelection[37m">
+          ╵                                      [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'showUpdateSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:225:61:
+[37m      225 │ ...condary-btn" (click)="[32mshowUpdateSelection[37m = false"><i class="b...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:229:49:
+[37m      229 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.stbs" (ngModelChange)=...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'selectCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:229:89:
+[37m      229 │ ...bs" (ngModelChange)="[32mselectCombinedUpdate[37m('stbs', $event)"> <s...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:230:49:
+[37m      230 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.connections" (ngModelC...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'selectCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:230:96:
+[37m      230 │ ...ns" (ngModelChange)="[32mselectCombinedUpdate[37m('connections', $even...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:231:49:
+[37m      231 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.packages" (ngModelChan...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'selectCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:231:93:
+[37m      231 │ ...es" (ngModelChange)="[32mselectCombinedUpdate[37m('packages', $event)"...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'showUpdateSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:234:61:
+[37m      234 │ ...condary-btn" (click)="[32mshowUpdateSelection[37m = false">Cancel</but...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:243:61:
+[37m      243 │ ...condary-btn" (click)="[32mcombinedUpdateMode[37m ? cancelCombinedUpdat...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cancelCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:243:82:
+[37m      243 │ ...combinedUpdateMode ? [32mcancelCombinedUpdate[37m() : showModal = fals...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:245:47:
+[37m      245 │       <div class="combined-choice-line" *ngIf="[32mcombinedUpdateMode[37m">
+          ╵                                                [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:246:49:
+[37m      246 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.stbs" (ngModelChange)=...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'changeCombinedSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:246:89:
+[37m      246 │ ...s" (ngModelChange)="[32mchangeCombinedSelection[37m('stbs', $event)" [...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:247:49:
+[37m      247 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.connections" (ngModelC...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'changeCombinedSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:247:96:
+[37m      247 │ ...s" (ngModelChange)="[32mchangeCombinedSelection[37m('connections', $ev...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateSelections' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:248:49:
+[37m      248 │ ...="checkbox" [ngModel]="[32mupdateSelections[37m.packages" (ngModelChan...
+          ╵                           [32m~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'changeCombinedSelection' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:248:93:
+[37m      248 │ ...s" (ngModelChange)="[32mchangeCombinedSelection[37m('packages', $event...
+          ╵                        [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'supportsNoPayment' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:313:62:
+[37m      313 │ ...lass="checkbox-card no-payment-option" *ngIf="[32msupportsNoPayment[37m">
+          ╵                                                  [32m~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:430:53:
+[37m      430 │ ...<div class="combined-account-details" *ngIf="[32mcombinedUpdateMode[37m">
+          ╵                                                 [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'combinedSectionTotal' does not exist on type 'CableTvCustomerHistory'. Did you mean 'connectionTotal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:431:50:
+[37m      431 │ ...unt</span><strong>{{ [32mcombinedSectionTotal[37m('stbs') | number:'1....
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'combinedSectionTotal' does not exist on type 'CableTvCustomerHistory'. Did you mean 'connectionTotal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:432:57:
+[37m      432 │ ...unt</span><strong>{{ [32mcombinedSectionTotal[37m('connections') | num...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2551: Property 'combinedSectionTotal' does not exist on type 'CableTvCustomerHistory'. Did you mean 'connectionTotal'?[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:433:54:
+[37m      433 │ ...unt</span><strong>{{ [32mcombinedSectionTotal[37m('packages') | number...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedOverallTotal' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:434:70:
+[37m      434 │ ...unt</span><strong>{{ [32mcombinedOverallTotal[37m() | number:'1.2-2' }...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:436:61:
+[37m      436 │ ...condary-btn" (click)="[32mcombinedUpdateMode[37m ? cancelCombinedUpdat...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'cancelCombinedUpdate' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:436:82:
+[37m      436 │ ...combinedUpdateMode ? [32mcancelCombinedUpdate[37m() : showModal = fals...
+          ╵                         [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:437:70:
+[37m      437 │ ..." (click)="save()">{{ [32mcombinedUpdateMode[37m && updateQueue.length...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'updateQueue' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:437:92:
+[37m      437 │ ...>{{ combinedUpdateMode && [32mupdateQueue[37m.length ? 'Next' : combin...
+          ╵                              [32m~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'combinedUpdateMode' does not exist on type 'CableTvCustomerHistory'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:437:122:
+[37m      437 │ ...eue.length ? 'Next' : [32mcombinedUpdateMode[37m ? 'Save All Updates' ...
+          ╵                          [32m~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

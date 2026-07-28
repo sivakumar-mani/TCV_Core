@@ -771,3 +771,7 @@ button,
 .final-qc-advSearch+.srchPad {
   padding-top: 0px !important;
 }
+// Keep page shells flush with the shared layout across all feature screens.
+.page-shell {
+  padding: 0 !important;
+}

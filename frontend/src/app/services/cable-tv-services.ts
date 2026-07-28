@@ -16,7 +16,7 @@ export class CableTvServices {
     return this.http.get(`${this.endpoint}/masters`);
   }
 
-  getCustomers(approvalStatus = 'APPROVED') {
+  getCustomers(approvalStatus = 'ALL') {
     return this.http.get(`${this.endpoint}/customers`, {
       params: { approval_status: approvalStatus }
     });
@@ -32,6 +32,10 @@ export class CableTvServices {
 
   updateCustomer(customerId: number, data: any) {
     return this.http.patch(`${this.endpoint}/customers/${customerId}`, data, { headers: this.jsonHeaders });
+  }
+
+  updateCustomerInformation(customerId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/customers/${customerId}/information`, data, { headers: this.jsonHeaders });
   }
 
   addCustomerConnection(customerId: number, data: any) {

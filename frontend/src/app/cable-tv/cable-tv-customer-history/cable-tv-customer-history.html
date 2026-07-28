@@ -10,10 +10,9 @@
       <div class="summary-identity">
         <div class="name-line">
           <h1>{{ customer.full_name || 'Customer' }}</h1>
-          <span class="status-pill"><span></span>{{ headerStatus }}</span>
+          <span class="customer-no">Customer No. {{ customer.customer_code || '-' }}</span>
         </div>
         <div class="meta-line">
-          <span class="customer-no">Customer No. {{ customer.customer_code || '-' }}</span>
           <span class="address-line"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ headerAddress }}</span>
         </div>
       </div>
@@ -46,7 +45,7 @@
       <div class="summary-tile tile-orange">
         <span class="tile-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
         <span class="tile-label">Customer Status</span>
-        <strong>{{ headerStatus }}</strong>
+        <strong class="summary-status">{{ headerStatus }}</strong>
       </div>
     </div>
   </section>
@@ -59,9 +58,48 @@
       (click)="switchSection(tab.key)">
       {{ tab.label }}
     </button>
+    <button *ngIf="permissions.isAdmin()" type="button" [class.active]="section === 'customer'"
+      (click)="switchSection('customer')">Customer Information</button>
   </nav>
 
-  <section class="form-section">
+  <section class="form-section" *ngIf="section === 'customer' && permissions.isAdmin()">
+    <div class="section-title-row">
+      <h2>Customer Information</h2>
+    </div>
+    <div class="form-grid" [formGroup]="form">
+      <label>Network
+        <select formControlName="network_id">
+          <option [ngValue]="null">Select Network</option>
+          <option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">
+            {{ network.network_code || network.network_name }}
+          </option>
+        </select>
+      </label>
+      <label>Full Name<input type="text" formControlName="full_name"></label>
+      <label>Mobile No<input type="text" maxlength="10" formControlName="mobile_no"></label>
+      <label>Alternate Mobile<input type="text" maxlength="10" formControlName="alternate_mobile_no"></label>
+      <label>Aadhaar No<input type="text" maxlength="12" formControlName="aadhaar_no"></label>
+      <label>Source
+        <select formControlName="source_id">
+          <option [ngValue]="null">Select Source</option>
+          <option *ngFor="let source of lookups.sources || []" [ngValue]="source.source_id">{{ source.source_name }}</option>
+        </select>
+      </label>
+      <label>Installed By
+        <select formControlName="installed_by_employee_id">
+          <option [ngValue]="null">Select Employee</option>
+          <option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">
+            {{ employee.employee_code }} - {{ employee.employee_name }}
+          </option>
+        </select>
+      </label>
+    </div>
+    <div class="form-actions" *ngIf="!isReviewMode">
+      <button type="button" class="primary-btn" (click)="saveCustomerInformation()" [disabled]="form.invalid">Update Customer</button>
+    </div>
+  </section>
+
+  <section class="form-section" *ngIf="section !== 'customer'">
     <div class="section-title-row">
       <h2>{{ title }}</h2>
       <button *ngIf="canSection(section, 'create')" type="button" class="primary-btn add-btn" (click)="openAdd()"><i class="bi bi-file-earmark-plus" aria-hidden="true"></i>{{ addButtonLabel }}</button>
@@ -85,14 +123,14 @@
             <th *ngIf="section === 'stbs'">STB Amount</th>
             <th *ngIf="section === 'stbs'">Discount</th>
             <th *ngIf="section === 'stbs'">Labor/Service Charge</th>
-            <th *ngIf="section === 'stbs'">Status</th>
+            <th *ngIf="section === 'stbs'">Payment Status</th>
             <th *ngIf="section === 'packages'">Type</th>
             <th *ngIf="section === 'packages'">Package Name</th>
             <th *ngIf="section === 'packages'">Price</th>
             <th *ngIf="section === 'packages'">Start Date</th>
             <th *ngIf="section === 'packages'">End Date</th>
             <th *ngIf="section === 'packages'">Updated By</th>
-            <th *ngIf="section === 'packages'">Status</th>
+            <th *ngIf="section === 'packages'">Approval Status</th>
             <th *ngIf="section === 'subscriptions'">Period</th>
             <th *ngIf="section === 'subscriptions'">Collected Date</th>
             <th *ngIf="section === 'subscriptions'">Collected By</th>
@@ -101,21 +139,21 @@
             <th *ngIf="section === 'subscriptions'">End Date</th>
             <th *ngIf="section === 'subscriptions'">Amount</th>
             <th *ngIf="section === 'subscriptions'">Balance</th>
-            <th>Status</th>
+            <th>{{ section === 'connections' ? 'Payment Status' : 'Status' }}</th>
             <th *ngIf="canSection(section, 'update') || canSection(section, 'delete')">Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of rows">
             <td *ngIf="section === 'connections'">{{ row.connection_date | date:'yyyy-MM-dd' }}</td>
-            <td *ngIf="section === 'connections'">{{ connectionTypeLabel(row.connection_type) }}</td>
+            <td *ngIf="section === 'connections'">{{ connectionTypeLabel(row) }}</td>
             <td *ngIf="section === 'connections'">{{ row.installed_by_name || row.entered_by_name || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.old_address || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.new_address || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.connection_charge }}</td>
             <td *ngIf="section === 'connections'">{{ row.labour_service_charge }}</td>
             <td *ngIf="section === 'stbs'">{{ (row.updated_date || row.installed_date) | date:'yyyy-MM-dd' }}</td>
-            <td *ngIf="section === 'stbs'">{{ reasonLabel(row.update_reason || '-') }}</td>
+            <td *ngIf="section === 'stbs'">{{ reasonLabel(row.update_reason || row.stb_type || '-') }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_type }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_no }}</td>
             <td *ngIf="section === 'stbs'">{{ row.entered_by_name || row.installed_by_name || '-' }}</td>
@@ -123,8 +161,8 @@
             <td *ngIf="section === 'stbs'">{{ row.stb_discount }}</td>
             <td *ngIf="section === 'stbs'">{{ row.labour_service_charge }}</td>
             <td *ngIf="section === 'stbs'">
-              <span class="table-status-pill" [class.pending]="row.approval_status === 'PENDING'">
-                {{ row.approval_status === 'PENDING' ? 'Pending' : row.status }}
+              <span class="table-status-pill" [class.pending]="row.payment_status !== 'PAID'">
+                {{ paymentStatusLabel(row.payment_status) }}
               </span>
             </td>
             <td *ngIf="section === 'packages'">{{ packageTypeLabel(row.package_type) }}</td>
@@ -133,9 +171,9 @@
             <td *ngIf="section === 'packages'">{{ row.start_date | date:'yyyy-MM-dd' }}</td>
             <td *ngIf="section === 'packages'">{{ row.end_date | date:'yyyy-MM-dd' }}</td>
             <td *ngIf="section === 'packages'">{{ row.updated_by_name || '-' }}</td>
-            <td *ngIf="section === 'packages'">{{ packageStatusLabel(row) }}</td>
+            <td *ngIf="section === 'packages'">{{ row.approval_status }}</td>
             <td *ngIf="section === 'subscriptions'">{{ subscriptionPeriodLabel(row) }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ row.collect_date | date:'yyyy-MM-dd' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ (row.collect_date || row.created_at) | date:'yyyy-MM-dd' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ subscriptionCollectedByLabel(row) }}</td>
             <td *ngIf="section === 'subscriptions'">{{ noOfPeriodLabel(row.number_of_days_or_months, row.billing_basis) }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.start_date | date:'yyyy-MM-dd' }}</td>
@@ -144,7 +182,13 @@
             <td *ngIf="section === 'subscriptions'">{{ row.balance_amount }}</td>
             <td>
               <span [ngClass]="section === 'subscriptions' ? subscriptionStatusClass(row) : ''">
-                {{ section === 'subscriptions' ? subscriptionStatusLabel(row) : row.approval_status }}
+                {{ section === 'subscriptions'
+                  ? subscriptionStatusLabel(row)
+                  : section === 'stbs'
+                    ? row.status
+                    : section === 'connections'
+                      ? paymentStatusLabel(row.payment_status)
+                      : packageStatusLabel(row) }}
               </span>
             </td>
             <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete')">
@@ -165,6 +209,14 @@
       </table>
     </div>
   </section>
+
+  <div class="review-approval-bar" *ngIf="isReviewMode && permissions.isAdmin()">
+    <button *ngIf="reviewApprovalPending" type="button" class="primary-btn" (click)="approveReview()" [disabled]="approvalInProgress">
+      <i class="bi bi-check-circle" aria-hidden="true"></i>
+      {{ approvalInProgress ? 'Approving...' : 'Approve' }}
+    </button>
+    <span *ngIf="!reviewApprovalPending" class="review-approved"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Approved</span>
+  </div>
 
   <div class="modal-backdrop" *ngIf="showModal">
     <section class="modal-panel" [formGroup]="form">
@@ -229,7 +281,7 @@
         <label>Updated Date<input type="date" formControlName="updated_date"></label>
         <label>Reason
           <select formControlName="reason">
-            <option *ngFor="let reason of stbReasons" [ngValue]="reason">{{ reasonLabel(reason) }}</option>
+            <option *ngFor="let reason of availableStbReasons" [ngValue]="reason">{{ reasonLabel(reason) }}</option>
           </select>
         </label>
         <label *ngIf="permissions.isAdmin()">Installed/Attended By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>

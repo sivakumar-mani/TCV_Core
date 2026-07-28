@@ -8,6 +8,7 @@ export interface ActionItem {
   label: string;
   icon?: string;
   action: () => void;
+  visible?: (row: any) => boolean;
 }
 @Component({
   selector: 'app-action-menu',
@@ -47,7 +48,8 @@ export class ActionMenu {
     const key = params.permissionKey || this.permissions.keyForRoute(this.router.url);
     this.visibleActions = (params.dropdownMenu || []).filter((item: any) => {
       const inferredAction = /^delete$/i.test(item.label) ? 'delete' : /^(edit|approve|review)/i.test(item.label) ? 'update' : 'view';
-      return this.permissions.can(key, item.permission || inferredAction);
+      return this.permissions.can(key, item.permission || inferredAction)
+        && (typeof item.visible !== 'function' || item.visible(params.data));
     });
   }
 

@@ -7,8 +7,9 @@ import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CableTvServices } from '../../services/cable-tv-services';
 import { CommonMethods } from '../../shared/common-methods';
 import { PermissionAction, PermissionService } from '../../services/permission.service';
+import { WorkflowServices } from '../../services/workflow-services';
 
-type Section = 'connections' | 'stbs' | 'packages' | 'subscriptions';
+type Section = 'customer' | 'connections' | 'stbs' | 'packages' | 'subscriptions';
 
 @Component({
   selector: 'app-cable-tv-customer-history',
@@ -27,9 +28,13 @@ export class CableTvCustomerHistory {
   showModal = false;
   editId = 0;
   customerSearchNo = '';
+  isReviewMode = false;
+  workflowId = '';
+  approvalInProgress = false;
   private returnAccessoriesInitialized = false;
 
   readonly titles: Record<Section, string> = {
+    customer: 'Customer Information',
     connections: 'Connection Details',
     stbs: 'STB Details',
     packages: 'Package Details',
@@ -42,6 +47,7 @@ export class CableTvCustomerHistory {
     { key: 'packages', label: 'Package' }
   ];
   readonly sectionPermissionKeys: Record<Section, string> = {
+    customer: 'CABLE_TV_CUSTOMERS',
     connections: 'CABLE_TV_CONNECTIONS',
     stbs: 'CABLE_TV_CUSTOMER_STBS',
     packages: 'CABLE_TV_CUSTOMER_PACKAGES',
@@ -55,7 +61,6 @@ export class CableTvCustomerHistory {
     'REACTIVATE',
     'REPLACED',
     'UPGRADE',
-    'REPLACE',
     'FAULT',
     'BROKEN',
     'BURNT',
@@ -65,6 +70,8 @@ export class CableTvCustomerHistory {
     'OUTSTATION',
     'RETURNED'
   ];
+  readonly activeStbReasons = ['FAULT', 'BROKEN', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
+  readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED', 'UPGRADE'];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
     label: new Date(2026, index, 1).toLocaleString('en-US', { month: 'long' })
@@ -79,6 +86,7 @@ export class CableTvCustomerHistory {
     private router: Router,
     private fb: FormBuilder,
     private cableTvService: CableTvServices,
+    private workflowService: WorkflowServices,
     private ngxLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
     public permissions: PermissionService
@@ -87,11 +95,20 @@ export class CableTvCustomerHistory {
   ngOnInit() {
     this.customerId = Number(this.route.snapshot.paramMap.get('id'));
     this.section = this.asSection(this.route.snapshot.paramMap.get('section'));
+    this.isReviewMode = this.route.snapshot.queryParamMap.get('review') === 'true';
+    this.workflowId = this.route.snapshot.queryParamMap.get('workflowId') || '';
     this.buildForm();
     this.loadData();
   }
 
   get title() { return this.titles[this.section]; }
+  get reviewApprovalPending() {
+    const approvalGroupId = Number(String(this.workflowId || '').replace(/^CTV-/i, ''));
+    const group = (this.details.approvalGroups || []).find(
+      (item: any) => Number(item.approval_group_id) === approvalGroupId
+    );
+    return !group || String(group.approval_status || '').toUpperCase() === 'PENDING';
+  }
   get materials(): FormArray { return this.form.get('materials') as FormArray; }
   get stbAccessories(): FormArray { return this.form.get('accessories') as FormArray; }
   get addButtonLabel() {
@@ -103,7 +120,18 @@ export class CableTvCustomerHistory {
   get latestConnection() { return (this.details.connections || [])[0] || {}; }
   get latestStb() { return (this.details.stbs || [])[0] || {}; }
   get currentActiveStb() {
-    return (this.details.stbs || []).find((item: any) => String(item.status || '').toUpperCase() === 'ACTIVE') || this.latestStb || {};
+    return (this.details.stbs || []).find((item: any) => String(item.stb_no || '').trim())
+      || (this.customer.stb_no ? {
+        stb_no: this.customer.stb_no,
+        stb_master_id: this.customer.stb_master_id,
+        customer_stb_id: this.customer.customer_stb_id,
+        status: this.customer.stb_status || this.customer.status
+      } : {})
+      || {};
+  }
+  get availableStbReasons() {
+    const currentStatus = String(this.latestStb.status || this.customer.status || '').toUpperCase();
+    return currentStatus === 'ACTIVE' ? this.activeStbReasons : this.disconnectedStbReasons;
   }
   get headerStatus() {
     return String(this.latestStb.approval_status || '').toUpperCase() === 'PENDING'
@@ -166,10 +194,9 @@ export class CableTvCustomerHistory {
   }
 
   canSection(section: Section, action: PermissionAction = 'view') {
+    if (section === 'customer') return this.permissions.isAdmin();
     if (action === 'view') return true;
-    if (section === 'subscriptions' && action === 'update') {
-      return this.permissions.isAdmin() || this.permissions.can(this.sectionPermissionKeys[section], 'view');
-    }
+    if (this.isReviewMode) return false;
     if (action === 'update' || action === 'delete') return this.permissions.isAdmin();
     return this.permissions.can(this.sectionPermissionKeys[section], action);
   }
@@ -183,6 +210,18 @@ export class CableTvCustomerHistory {
 
   buildForm() {
     const today = new Date().toISOString().slice(0, 10);
+    if (this.section === 'customer') {
+      this.form = this.fb.group({
+        network_id: [this.customer.network_id || null, Validators.required],
+        full_name: [this.customer.full_name || '', Validators.required],
+        mobile_no: [this.customer.mobile_no || '', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+        alternate_mobile_no: [this.customer.alternate_mobile_no || '', Validators.pattern(/^[0-9]{10}$/)],
+        aadhaar_no: [this.customer.aadhaar_no || '', Validators.pattern(/^[0-9]{12}$/)],
+        source_id: [this.customer.source_id || null],
+        installed_by_employee_id: [this.customer.installed_by_employee_id || null, Validators.required]
+      });
+      return;
+    }
     if (this.section === 'connections') {
       this.form = this.fb.group({
         connection_date: [today, Validators.required],
@@ -216,10 +255,11 @@ export class CableTvCustomerHistory {
     }
     if (this.section === 'stbs') {
       this.returnAccessoriesInitialized = false;
+      const defaultReason = this.availableStbReasons[0] || 'DISCONNECT';
       this.form = this.fb.group({
         current_stb_no: [this.currentActiveStb.stb_no || ''],
         updated_date: [today, Validators.required],
-        reason: ['DISCONNECT', Validators.required],
+        reason: [defaultReason, Validators.required],
         remarks: ['', [Validators.maxLength(500)]],
         stb_master_id: [null],
         stb_no: [''],
@@ -233,7 +273,7 @@ export class CableTvCustomerHistory {
         balance_amount: [0],
         due_date: [''],
         overall_discount: [0],
-        status: ['DISCONNECTED', Validators.required],
+        status: [this.statusForStbReason(defaultReason), Validators.required],
         accessories: this.fb.array([])
       });
       this.buildStbAccessoryRows();
@@ -353,6 +393,7 @@ export class CableTvCustomerHistory {
             this.details = response || {};
             this.customer = response.customer || {};
             this.customerSearchNo = this.customer.customer_code || this.customerSearchNo;
+            if (this.section === 'stbs' && !this.showModal) this.buildForm();
             if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
             this.refreshRows();
           },
@@ -407,6 +448,7 @@ export class CableTvCustomerHistory {
 
   refreshRows() {
     const map: Record<Section, any[]> = {
+      customer: [],
       connections: this.details.connections || [],
       stbs: this.details.stbs || [],
       packages: this.details.customerPackages || [],
@@ -427,6 +469,24 @@ export class CableTvCustomerHistory {
     this.buildForm();
     if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
     this.refreshRows();
+  }
+
+  saveCustomerInformation() {
+    if (!this.permissions.isAdmin() || this.section !== 'customer') return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.commonMethods.handleError({ error: { message: 'Enter valid customer information before saving' } });
+      return;
+    }
+    this.ngxLoader.start();
+    this.cableTvService.updateCustomerInformation(this.customerId, this.form.getRawValue()).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleTokenAndMessage(response);
+        this.loadData();
+      },
+      error: (error: any) => this.handleError(error)
+    });
   }
 
   openAdd() {
@@ -549,8 +609,8 @@ export class CableTvCustomerHistory {
       this.commonMethods.handleError({ error: { message: 'Please fill the required fields before saving' } });
       return;
     }
-    this.ngxLoader.start();
     const payload = this.form.getRawValue();
+    this.ngxLoader.start();
     const request = this.requestForSave(payload);
     request.subscribe({
       next: (response: any) => {
@@ -908,6 +968,32 @@ export class CableTvCustomerHistory {
     return Number(row.is_active) === 1 ? 'Active' : 'Removed';
   }
 
+  paymentStatusLabel(value: any) {
+    const status = String(value || 'PENDING').toUpperCase();
+    if (status === 'PAID') return 'Paid';
+    if (status === 'PARTIAL') return 'Partially Paid';
+    return 'Payment Pending';
+  }
+
+  approveReview() {
+    if (!this.permissions.isAdmin() || !this.isReviewMode || !this.workflowId || !this.reviewApprovalPending || this.approvalInProgress) return;
+    if (!confirm('Approve the reviewed Cable TV customer details?')) return;
+    this.approvalInProgress = true;
+    this.ngxLoader.start();
+    this.workflowService.approveWorkflow(this.workflowId).subscribe({
+      next: (response: any) => {
+        this.approvalInProgress = false;
+        this.ngxLoader.stop();
+        this.commonMethods.handleTokenAndMessage(response);
+        this.router.navigateByUrl('/cable-tv/customers');
+      },
+      error: (error: any) => {
+        this.approvalInProgress = false;
+        this.handleError(error);
+      }
+    });
+  }
+
   normalizePackageType(value: any) {
     const type = String(value || '').trim().toUpperCase().replace(/\s+/g, '_');
     if (type === 'ALA_CARTE' || type === 'ALACARTE') return 'ALACARTE';
@@ -983,9 +1069,7 @@ export class CableTvCustomerHistory {
         balance_amount: 0,
         due_date: '',
         overall_discount: 0,
-        status: returned
-          ? 'RETRIEVED'
-          : (this.form.get('reason')?.value === 'REACTIVATE' ? 'ACTIVE' : 'DISCONNECTED')
+        status: this.statusForStbReason(this.form.get('reason')?.value)
       }, { emitEvent: false });
       if (returned) {
         if (!this.returnAccessoriesInitialized) {
@@ -1014,8 +1098,20 @@ export class CableTvCustomerHistory {
     return String(reason || '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
-  connectionTypeLabel(type: string) {
-    return String(type || '').toUpperCase() === 'SHIFTED' ? 'Location Change' : 'Reconnection';
+  statusForStbReason(reason: any) {
+    return this.disconnectedStbReasons.includes(String(reason || '').toUpperCase()) ? 'ACTIVE' : 'DISCONNECTED';
+  }
+
+  connectionTypeLabel(row: any) {
+    const firstConnectionId = Math.min(
+      ...(this.details.connections || []).map((item: any) => Number(item.connection_id)).filter(Number.isFinite)
+    );
+    if (Number(row?.connection_id) === firstConnectionId) return 'New';
+    const value = String(row?.connection_type || '').toUpperCase();
+    if (value === 'NEW') return 'New';
+    if (value === 'SHIFTED') return 'Location Change';
+    if (value === 'TRANSFERRED') return 'Transferred';
+    return 'Reconnection';
   }
 
   applyLocationChangeState() {

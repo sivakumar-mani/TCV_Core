@@ -326,13 +326,6 @@ const approveWorkflow = async (req, res) => {
                      LIMIT 1 FOR UPDATE`,
                     [stb.cable_customer_id, stb.customer_stb_id]
                 );
-                if (previousActive.length) {
-                    await conn.query(
-                        `UPDATE cable_customer_stbs SET status = ?, updated_at = NOW()
-                         WHERE customer_stb_id IN (?)`,
-                        [reason === 'REPLACED' ? 'REPLACED' : desiredStatus, previousActive.map((item) => item.customer_stb_id)]
-                    );
-                }
                 if (reason === 'RETURNED' || reason === 'REPLACED') {
                     const returnedMasterIds = (reason === 'RETURNED'
                         ? [stb.stb_master_id, ...previousActive.map((item) => item.stb_master_id)]
@@ -341,9 +334,10 @@ const approveWorkflow = async (req, res) => {
                     if (returnedMasterIds.length) {
                         await conn.query(
                             `UPDATE cable_stb_master
-                             SET status = 'AVAILABLE', assigned_employee_id = NULL, updated_at = NOW()
+                             SET stock_type = CASE WHEN ? = 'RETURNED' THEN 'RETURNED' ELSE stock_type END,
+                                 status = 'AVAILABLE', assigned_employee_id = NULL, updated_at = NOW()
                              WHERE stb_master_id IN (?)`,
-                            [returnedMasterIds]
+                            [reason, returnedMasterIds]
                         );
                         await conn.query(
                             `UPDATE cable_stb_issue_master SET issue_status = 'RETURNED'

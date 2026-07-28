@@ -22,15 +22,6 @@
             <option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">{{ network.network_name }}</option>
           </select>
         </label>
-        <label>Customer Type
-          <select formControlName="customer_type">
-            <option value="">Select customer type (optional)</option>
-            <option *ngFor="let type of customerTypes" [value]="type.value">{{ type.label }}</option>
-          </select>
-        </label>
-        <label>Customer No
-          <input type="text" formControlName="customer_code" placeholder="Auto generated" readonly>
-        </label>
         <label>Full Name
           <input type="text" formControlName="full_name">
         </label>
@@ -84,6 +75,15 @@
         </label>
         <label *ngIf="!permissions.isAdmin()">Installed By
           <input type="text" [value]="loggedInEmployeeName" readonly>
+        </label>
+        <label>Customer Type
+          <select formControlName="customer_type">
+            <option value="">Select customer type (optional)</option>
+            <option *ngFor="let type of customerTypes" [value]="type.value">{{ type.label }}</option>
+          </select>
+        </label>
+        <label>Customer No
+          <input type="text" formControlName="customer_code" placeholder="Auto generated">
         </label>
       </div>
     </section>

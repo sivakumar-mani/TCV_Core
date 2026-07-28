@@ -36,6 +36,7 @@ const {
   revertAccountToPending,
   updateLocationInfo,
   updateCableCustomer,
+  updateCableCustomerInformation,
   updateCustomerConnection,
   updateCustomerPackage,
   updateCustomerStb,
@@ -76,6 +77,7 @@ router.get('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableC
 router.get('/customers/:id', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomerById);
 router.post('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), addCableCustomer);
 router.patch('/customers/:id', auth.requirePermission('CABLE_TV_CUSTOMERS'), updateCableCustomer);
+router.patch('/customers/:id/information', auth.requireAdmin, updateCableCustomerInformation);
 router.post('/customers/:id/connections', auth.requirePermission('CABLE_TV_CONNECTIONS'), addCustomerConnection);
 router.patch('/customers/:id/connections/:connectionId', auth.requireAdmin, updateCustomerConnection);
 router.delete('/customers/:id/connections/:connectionId', auth.requireAdmin, deleteCustomerConnection);
@@ -86,7 +88,7 @@ router.post('/customers/:id/packages', auth.requirePermission('CABLE_TV_CUSTOMER
 router.patch('/customers/:id/packages/:packageId', auth.requireAdmin, updateCustomerPackage);
 router.delete('/customers/:id/packages/:packageId', auth.requireAdmin, deleteCustomerPackage);
 router.post('/customers/:id/subscriptions', auth.requirePermission('CABLE_TV_SUBSCRIPTIONS'), addCustomerSubscription);
-router.patch('/customers/:id/subscriptions/:subscriptionId', auth.requirePermissionAction('CABLE_TV_SUBSCRIPTIONS', 'can_view'), updateCustomerSubscription);
+router.patch('/customers/:id/subscriptions/:subscriptionId', auth.requireAdmin, updateCustomerSubscription);
 router.delete('/customers/:id/subscriptions/:subscriptionId', auth.requireAdmin, deleteCustomerSubscription);
 
 module.exports = router;

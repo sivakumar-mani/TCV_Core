@@ -5,7 +5,6 @@ import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { WorkflowServices } from '../../services/workflow-services';
 import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 import { CommonMethods } from '../../shared/common-methods';
-import { ActionMenu } from '../../shared/list-action-menu';
 
 @Component({
   selector: 'app-workflow-list',
@@ -39,13 +38,14 @@ export class WorkflowList {
     { field: 'requested_at', headerName: 'Requested At', maxWidth: 180, valueFormatter: (params) => this.displayDateTime(params.value) },
     {
       headerName: 'Action',
-      maxWidth: 120,
-      cellRenderer: ActionMenu,
-      cellRendererParams: {
-        dropdownMenu: [
-          { label: 'Review', action: (row: any) => this.review(row) },
-          { label: 'Approve', action: (row: any) => this.approve(row) }
-        ]
+      maxWidth: 130,
+      cellRenderer: (params: any) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm btn-outline-primary';
+        button.innerHTML = '<i class="bi bi-eye" aria-hidden="true"></i> Review';
+        button.addEventListener('click', () => this.review(params.data));
+        return button;
       },
       filter: false,
       sortable: false

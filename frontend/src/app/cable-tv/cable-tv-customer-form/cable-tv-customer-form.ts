@@ -56,6 +56,12 @@ export class CableTvCustomerForm {
 
   ngOnInit() {
     this.buildForm();
+    if (!this.permissions.isAdmin()) {
+      this.form.get('customer_type')?.disable({ emitEvent: false });
+      this.form.get('customer_code')?.disable({ emitEvent: false });
+      this.form.get('subscription.subscription_month')?.disable({ emitEvent: false });
+      this.form.get('subscription.subscription_year')?.disable({ emitEvent: false });
+    }
     this.setupDependencies();
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
