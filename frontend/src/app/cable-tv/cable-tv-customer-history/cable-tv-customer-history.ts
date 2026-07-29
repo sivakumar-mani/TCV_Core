@@ -31,6 +31,7 @@ export class CableTvCustomerHistory {
   isReviewMode = false;
   workflowId = '';
   approvalInProgress = false;
+  editingInitialStb = false;
   private returnAccessoriesInitialized = false;
 
   readonly titles: Record<Section, string> = {
@@ -62,7 +63,7 @@ export class CableTvCustomerHistory {
     'REPLACED',
     'UPGRADE',
     'FAULT',
-    'BROKEN',
+    'DAMAGED',
     'BURNT',
     'DISCONNECT',
     'VACATED',
@@ -70,7 +71,7 @@ export class CableTvCustomerHistory {
     'OUTSTATION',
     'RETURNED'
   ];
-  readonly activeStbReasons = ['FAULT', 'BROKEN', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
+  readonly activeStbReasons = ['FAULT', 'DAMAGED', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
   readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED', 'UPGRADE'];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
@@ -120,14 +121,26 @@ export class CableTvCustomerHistory {
   get latestConnection() { return (this.details.connections || [])[0] || {}; }
   get latestStb() { return (this.details.stbs || [])[0] || {}; }
   get currentActiveStb() {
-    return (this.details.stbs || []).find((item: any) => String(item.stb_no || '').trim())
-      || (this.customer.stb_no ? {
+    const history = (this.details.stbs || []).find((item: any) =>
+      String(item.stb_no || this.stbMasterNumber(item.stb_master_id) || '').trim()
+    );
+    if (history) {
+      return {
+        ...history,
+        stb_no: history.stb_no || this.stbMasterNumber(history.stb_master_id)
+      };
+    }
+    return this.customer.stb_no ? {
         stb_no: this.customer.stb_no,
         stb_master_id: this.customer.stb_master_id,
         customer_stb_id: this.customer.customer_stb_id,
         status: this.customer.stb_status || this.customer.status
-      } : {})
-      || {};
+      } : {};
+  }
+  private stbMasterNumber(stbMasterId: any) {
+    return (this.lookups.stbMasters || []).find(
+      (item: any) => Number(item.stb_master_id) === Number(stbMasterId)
+    )?.stb_number || '';
   }
   get availableStbReasons() {
     const currentStatus = String(this.latestStb.status || this.customer.status || '').toUpperCase();
@@ -141,6 +154,7 @@ export class CableTvCustomerHistory {
   get headerStbNo() { return this.latestStb.stb_no || '-'; }
   get headerDate() { return this.latestStb.installed_date || this.latestConnection.connection_date || this.customer.installation_date || ''; }
   get isReplacementReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'REPLACED'; }
+  get showStbIssueDetails() { return this.isReplacementReason || this.editingInitialStb; }
   get isReturnReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'RETURNED'; }
   get isLocationChange() { return this.section === 'connections' && String(this.form?.get('connection_type')?.value || '').toUpperCase() === 'SHIFTED'; }
   get locationChangePostalAreas() {
@@ -266,8 +280,12 @@ export class CableTvCustomerHistory {
         stb_type: ['NEW', Validators.required],
         issue_mode: ['BOX_ONLY', Validators.required],
         stb_amount: [0],
+        master_stb_amount: [0],
+        master_full_set_amount: [0],
         stb_discount: [0],
         labour_service_charge: [0],
+        refund_amount: [0],
+        refund_payment_mode: ['CASH'],
         installed_by_employee_id: [null],
         customer_paid_amount: [0],
         balance_amount: [0],
@@ -466,6 +484,7 @@ export class CableTvCustomerHistory {
     this.section = section;
     this.showModal = false;
     this.editId = 0;
+    this.editingInitialStb = false;
     this.buildForm();
     if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
     this.refreshRows();
@@ -492,6 +511,7 @@ export class CableTvCustomerHistory {
   openAdd() {
     if (!this.canSection(this.section, 'create')) return;
     this.editId = 0;
+    this.editingInitialStb = false;
     this.buildForm();
     if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
     this.showModal = true;
@@ -562,16 +582,29 @@ export class CableTvCustomerHistory {
       if (!this.materials.length) this.materials.push(this.createMaterialRow());
     }
     if (this.section === 'stbs') {
+      this.editingInitialStb = !row.update_reason;
       this.buildStbAccessoryRows((this.details.stbAccessories || [])
         .filter((item: any) => Number(item.customer_stb_id) === Number(row.customer_stb_id)));
       this.form.patchValue({
         current_stb_no: this.currentActiveStb.stb_no || row.current_stb_no || row.stb_no || '',
-        updated_date: row.updated_date || row.installed_date || new Date().toISOString().slice(0, 10),
-        reason: row.update_reason || row.reason || 'REPLACED',
+        updated_date: new Date().toISOString().slice(0, 10),
+        reason: row.update_reason || row.reason || 'NEW',
         remarks: row.reason_remarks || row.remarks || '',
+        stb_master_id: Number(row.stb_master_id) || null,
+        stb_no: row.stb_no || '',
+        stb_type: row.stb_type || 'NEW',
+        issue_mode: row.issue_mode || 'FULL_SET',
+        stb_amount: Number(row.stb_amount) || 0,
+        master_stb_amount: Number(row.master_stb_amount) || 0,
+        master_full_set_amount: Number(row.master_full_set_amount) || 0,
+        stb_discount: Number(row.stb_discount) || 0,
+        status: row.status || 'ACTIVE',
         labour_service_charge: row.labour_service_charge || 0,
+        refund_amount: row.refund_amount || 0,
         overall_discount: row.overall_discount || 0
       }, { emitEvent: false });
+      this.form.get('stb_type')?.disable({ emitEvent: false });
+      this.form.get('stb_master_id')?.disable({ emitEvent: false });
       this.applyStbReasonState();
     }
     this.showModal = true;
@@ -733,7 +766,7 @@ export class CableTvCustomerHistory {
       this.patchBalance(total);
     }
     if (this.section === 'stbs') {
-      if (!this.isReplacementReason) return;
+      if (!this.showStbIssueDetails) return;
       const total = (Number(this.form.get('stb_amount')?.value) || 0)
         + (Number(this.form.get('labour_service_charge')?.value) || 0)
         - (Number(this.form.get('stb_discount')?.value) || 0)
@@ -904,7 +937,6 @@ export class CableTvCustomerHistory {
   }
 
   subscriptionStatusLabel(row: any) {
-    if (String(row?.approval_status || '').toUpperCase() === 'PENDING') return 'Pending';
     const status = String(row?.payment_status || '').toUpperCase();
     if (status === 'PAID') return 'Paid';
     if (status === 'PARTIAL') return 'Partially Paid';
@@ -912,7 +944,6 @@ export class CableTvCustomerHistory {
   }
 
   subscriptionStatusClass(row: any) {
-    if (String(row?.approval_status || '').toUpperCase() === 'PENDING') return 'status-badge pending';
     return String(row?.payment_status || '').toUpperCase() === 'PAID' ? 'status-badge paid' : 'status-badge unpaid';
   }
 
@@ -985,7 +1016,7 @@ export class CableTvCustomerHistory {
         this.approvalInProgress = false;
         this.ngxLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
-        this.router.navigateByUrl('/cable-tv/customers');
+        this.router.navigateByUrl('/workflow-approval');
       },
       error: (error: any) => {
         this.approvalInProgress = false;
@@ -1028,7 +1059,15 @@ export class CableTvCustomerHistory {
     if (this.section !== 'stbs') return;
     const selected = (this.lookups.stbMasters || []).find((item: any) => Number(item.stb_master_id) === Number(this.form.get('stb_master_id')?.value));
     const fullSet = this.form.get('issue_mode')?.value === 'FULL_SET';
-    this.form.patchValue({ stb_amount: selected ? Number(fullSet ? selected.full_set_amount : selected.stb_amount) || (fullSet ? 800 : 500) : 0 }, { emitEvent: false });
+    const fallbackAmount = Number(fullSet
+      ? this.form.get('master_full_set_amount')?.value
+      : this.form.get('master_stb_amount')?.value
+    );
+    this.form.patchValue({
+      stb_amount: selected
+        ? Number(fullSet ? selected.full_set_amount : selected.stb_amount) || (fullSet ? 800 : 500)
+        : fallbackAmount || 0
+    }, { emitEvent: false });
     if (!fullSet) this.stbAccessories.controls.forEach((row) => row.patchValue({ selected: false }, { emitEvent: false }));
     this.calculateBalance();
   }
@@ -1048,14 +1087,17 @@ export class CableTvCustomerHistory {
 
   applyStbReasonState() {
     if (this.section !== 'stbs' || !this.form) return;
-    const replacement = this.isReplacementReason;
+    const replacement = this.showStbIssueDetails;
     const returned = this.isReturnReason;
     const stbNo = this.form.get('stb_no');
     const stbMaster = this.form.get('stb_master_id');
+    const refundAmount = this.form.get('refund_amount');
     if (replacement) {
       stbNo?.setValidators([Validators.required]);
       stbMaster?.setValidators([Validators.required]);
       this.form.patchValue({ status: 'ACTIVE' }, { emitEvent: false });
+      refundAmount?.clearValidators();
+      this.form.patchValue({ refund_amount: 0 }, { emitEvent: false });
     } else {
       stbNo?.clearValidators();
       stbMaster?.clearValidators();
@@ -1072,6 +1114,7 @@ export class CableTvCustomerHistory {
         status: this.statusForStbReason(this.form.get('reason')?.value)
       }, { emitEvent: false });
       if (returned) {
+        refundAmount?.setValidators([Validators.required, Validators.min(0)]);
         if (!this.returnAccessoriesInitialized) {
           const activeStbId = Number(this.currentActiveStb.customer_stb_id);
           const returnedProductIds = new Set((this.details.stbAccessories || [])
@@ -1085,21 +1128,37 @@ export class CableTvCustomerHistory {
           this.returnAccessoriesInitialized = true;
         }
       } else {
+        refundAmount?.clearValidators();
+        this.form.patchValue({ refund_amount: 0 }, { emitEvent: false });
         this.returnAccessoriesInitialized = false;
         this.stbAccessories.controls.forEach((row) => row.patchValue({ selected: false }, { emitEvent: false }));
       }
     }
     stbNo?.updateValueAndValidity({ emitEvent: false });
     stbMaster?.updateValueAndValidity({ emitEvent: false });
+    refundAmount?.updateValueAndValidity({ emitEvent: false });
     this.calculateBalance();
   }
 
   reasonLabel(reason: string) {
+    if (['BROKEN', 'DAMAGED'].includes(String(reason || '').toUpperCase())) return 'Damaged';
     return String(reason || '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
   statusForStbReason(reason: any) {
-    return this.disconnectedStbReasons.includes(String(reason || '').toUpperCase()) ? 'ACTIVE' : 'DISCONNECTED';
+    const value = String(reason || '').toUpperCase();
+    if (this.disconnectedStbReasons.includes(value)) return 'ACTIVE';
+    if (['FAULT', 'DAMAGED', 'BROKEN', 'BURNT'].includes(value)) return 'FAULT';
+    if (value === 'RETURNED') return 'RETRIEVED';
+    return 'DISCONNECTED';
+  }
+
+  stbTypeLabel(row: any) {
+    const reason = String(row?.update_reason || '').toUpperCase();
+    if (['FAULT', 'DAMAGED', 'BROKEN', 'BURNT'].includes(reason)) return 'Fault';
+    if (['DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION'].includes(reason)) return 'Disconnected';
+    if (reason === 'RETURNED') return 'Retrieved';
+    return row?.stb_type || '-';
   }
 
   connectionTypeLabel(row: any) {

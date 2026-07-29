@@ -2299,3 +2299,17 @@
          ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
 [39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'successRegex' does not exist on type 'typeof globalConstants'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/transactions/transaction-list/transaction-list.ts:66:106:
+[37m      66 │ ...| 'Transaction added successfully', globalConstants.[32msuccessRegex[37m);
+         ╵                                                        [32m~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2872: This kind of expression is always truthy.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:132:11:
+[37m      132 │     return [32m(this.customer.stb_no ? {[37m
+          ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

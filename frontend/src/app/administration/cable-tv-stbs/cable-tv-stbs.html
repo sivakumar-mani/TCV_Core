@@ -9,6 +9,12 @@
       <label>STB Number
         <input type="search" [(ngModel)]="filters.stbNumber" placeholder="Search STB number">
       </label>
+      <label>Type
+        <select [(ngModel)]="filters.stockType">
+          <option value="">All types</option>
+          <option *ngFor="let type of stockTypes" [value]="type">{{ type }}</option>
+        </select>
+      </label>
       <label>Assigned Employee
         <select [(ngModel)]="filters.employeeId">
           <option value="">All employees</option>
@@ -82,8 +88,9 @@
         </label>
         <label>Stock Type
           <select formControlName="stock_type">
-            <option *ngFor="let type of stockTypes" [ngValue]="type">{{ type }}</option>
+            <option *ngFor="let type of availableStockTypes" [ngValue]="type">{{ type }}</option>
           </select>
+          <small>Fault, Damaged or Burnt STBs can be added again only as Serviced.</small>
         </label>
         <label>MSO
           <select formControlName="mso_id">

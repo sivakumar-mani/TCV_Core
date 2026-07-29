@@ -61,6 +61,7 @@ export class CableTvCustomerForm {
       this.form.get('customer_code')?.disable({ emitEvent: false });
       this.form.get('subscription.subscription_month')?.disable({ emitEvent: false });
       this.form.get('subscription.subscription_year')?.disable({ emitEvent: false });
+      this.form.get('subscription.collect_date')?.disable({ emitEvent: false });
     }
     this.setupDependencies();
     const id = this.route.snapshot.paramMap.get('id');
@@ -270,6 +271,21 @@ export class CableTvCustomerForm {
       (!assignedEmployeeId || Number(stb.assigned_employee_id) === assignedEmployeeId)
       && (!selectedType || String(stb.stock_type || '').toUpperCase() === selectedType)
     );
+  }
+
+  get assignedStbCounts() {
+    const employeeId = Number(
+      this.form?.get('installed_by_employee_id')?.value || this.loggedInEmployee?.employee_id
+    );
+    const assigned = (this.lookups.stbMasters || []).filter((stb: any) =>
+      !employeeId || Number(stb.assigned_employee_id) === employeeId
+    );
+    return this.stbTypes.map(type => ({
+      type,
+      count: assigned.filter((stb: any) =>
+        String(stb.stock_type || '').toUpperCase() === type
+      ).length
+    }));
   }
 
   get filteredStbSearchOptions() {

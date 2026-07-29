@@ -1,0 +1,58 @@
+<div class="transaction-page">
+  <header class="page-header">
+    <div><h1>Transactions</h1><p>Record expenses and income, and print the date-wise report.</p></div>
+    <button type="button" class="primary" (click)="openForm()"><i class="bi bi-plus-circle"></i> Add Transaction</button>
+  </header>
+
+  <section class="filter-card">
+    <label>Start Date<input type="date" [(ngModel)]="filters.start_date"></label>
+    <label>End Date<input type="date" [(ngModel)]="filters.end_date" [min]="filters.start_date"></label>
+    <label>Type<select [(ngModel)]="filters.transaction_type"><option value="">Debit & Credit</option><option value="DEBIT">Debit</option><option value="CREDIT">Credit</option></select></label>
+    <label>User Name
+      <select [(ngModel)]="filters.created_by_user_id">
+        <option value="">All Users</option>
+        <option *ngFor="let user of users" [value]="user.user_id">{{ user.user_name }}{{ user.username ? ' (' + user.username + ')' : '' }}</option>
+      </select>
+    </label>
+    <div class="actions"><button class="primary" type="button" (click)="load()">Search</button><button class="secondary" type="button" (click)="reset()">Reset</button><button class="print" type="button" (click)="printReport()"><i class="bi bi-printer"></i> Print</button></div>
+  </section>
+
+  <section class="summary">
+    <article><span>Total Debit</span><strong class="debit">{{ summary.total_debit | number:'1.2-2' }}</strong></article>
+    <article><span>Total Credit</span><strong class="credit">{{ summary.total_credit | number:'1.2-2' }}</strong></article>
+    <article><span>Balance</span><strong>{{ summary.balance | number:'1.2-2' }}</strong></article>
+  </section>
+
+  <section class="table-card">
+    <table>
+      <thead><tr><th>S.No</th><th>Date</th><th>Type</th><th>Category</th><th>Mode</th><th>Reference</th><th>Description</th><th>Entered By</th><th class="number">Amount</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let row of rows; let i = index">
+          <td>{{ i + 1 }}</td><td>{{ displayDate(row.transaction_date) }}</td>
+          <td><span class="type-pill" [class.credit]="row.transaction_type === 'CREDIT'">{{ row.transaction_type }}</span></td>
+          <td>{{ row.category }}</td><td>{{ row.payment_mode }}</td><td>{{ row.reference_no || '-' }}</td>
+          <td>{{ row.description || '-' }}</td><td>{{ row.entered_by_name || '-' }}</td>
+          <td class="number">{{ row.amount | number:'1.2-2' }}</td>
+        </tr>
+        <tr *ngIf="!rows.length"><td colspan="9" class="empty">No transactions found for the selected period.</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="8">Net Balance</td><td class="number">{{ summary.balance | number:'1.2-2' }}</td></tr></tfoot>
+    </table>
+  </section>
+</div>
+
+<div class="modal-backdrop" *ngIf="showForm">
+  <section class="transaction-modal">
+    <header><h2>Add Transaction</h2><button type="button" class="close" (click)="showForm = false" aria-label="Close">&times;</button></header>
+    <div class="form-grid">
+      <label>Date<input type="date" [(ngModel)]="form.transaction_date"></label>
+      <label>Type<select [(ngModel)]="form.transaction_type"><option value="DEBIT">Debit (Expense)</option><option value="CREDIT">Credit (Income)</option></select></label>
+      <label>Category<input type="text" [(ngModel)]="form.category" placeholder="Example: Travel, STB Refund"></label>
+      <label>Amount<input type="number" min="0.01" [(ngModel)]="form.amount"></label>
+      <label>Payment Mode<select [(ngModel)]="form.payment_mode"><option value="CASH">Cash</option><option value="ONLINE">Online</option><option value="BANK">Bank</option><option value="UPI">UPI</option><option value="OTHER">Other</option></select></label>
+      <label>Reference No<input type="text" [(ngModel)]="form.reference_no"></label>
+      <label class="wide">Description<textarea rows="3" maxlength="500" [(ngModel)]="form.description"></textarea></label>
+    </div>
+    <footer><button type="button" class="secondary" (click)="showForm = false">Cancel</button><button type="button" class="primary" (click)="save()">Save</button></footer>
+  </section>
+</div>

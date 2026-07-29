@@ -124,6 +124,7 @@
             <th *ngIf="section === 'stbs'">Discount</th>
             <th *ngIf="section === 'stbs'">Labor/Service Charge</th>
             <th *ngIf="section === 'stbs'">Payment Status</th>
+            <th *ngIf="section === 'stbs'">Refund</th>
             <th *ngIf="section === 'packages'">Type</th>
             <th *ngIf="section === 'packages'">Package Name</th>
             <th *ngIf="section === 'packages'">Price</th>
@@ -154,7 +155,7 @@
             <td *ngIf="section === 'connections'">{{ row.labour_service_charge }}</td>
             <td *ngIf="section === 'stbs'">{{ (row.updated_date || row.installed_date) | date:'yyyy-MM-dd' }}</td>
             <td *ngIf="section === 'stbs'">{{ reasonLabel(row.update_reason || row.stb_type || '-') }}</td>
-            <td *ngIf="section === 'stbs'">{{ row.stb_type }}</td>
+            <td *ngIf="section === 'stbs'">{{ stbTypeLabel(row) }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_no }}</td>
             <td *ngIf="section === 'stbs'">{{ row.entered_by_name || row.installed_by_name || '-' }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_amount }}</td>
@@ -165,6 +166,7 @@
                 {{ paymentStatusLabel(row.payment_status) }}
               </span>
             </td>
+            <td *ngIf="section === 'stbs'">{{ row.refund_amount || 0 | number:'1.2-2' }}</td>
             <td *ngIf="section === 'packages'">{{ packageTypeLabel(row.package_type) }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_name || row.package_id }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_price }}</td>
@@ -280,7 +282,8 @@
         <label>Current STB Number<input type="text" formControlName="current_stb_no" readonly></label>
         <label>Updated Date<input type="date" formControlName="updated_date"></label>
         <label>Reason
-          <select formControlName="reason">
+          <input *ngIf="editingInitialStb" type="text" value="New" readonly>
+          <select *ngIf="!editingInitialStb" formControlName="reason">
             <option *ngFor="let reason of availableStbReasons" [ngValue]="reason">{{ reasonLabel(reason) }}</option>
           </select>
         </label>
@@ -289,7 +292,7 @@
         <label class="wide-field">Remarks<textarea formControlName="remarks" maxlength="500" rows="1"></textarea><small>{{ form.get('remarks')?.value?.length || 0 }}/500</small></label>
       </div>
 
-      <div class="form-grid" *ngIf="section === 'stbs' && isReplacementReason">
+      <div class="form-grid" *ngIf="section === 'stbs' && showStbIssueDetails">
         <label>STB Type<select formControlName="stb_type"><option *ngFor="let type of stbTypes" [ngValue]="type">{{ type }}</option></select></label>
         <label>New STB Number
           <select formControlName="stb_master_id" (change)="selectStbMaster()">
@@ -310,7 +313,7 @@
         </label>
       </div>
 
-      <div class="accessory-box" *ngIf="section === 'stbs' && (isReplacementReason || isReturnReason)" formArrayName="accessories">
+      <div class="accessory-box" *ngIf="section === 'stbs' && (showStbIssueDetails || isReturnReason)" formArrayName="accessories">
         <h3>{{ isReturnReason ? 'Returned Accessories (Used Stock)' : 'Accessories' }}</h3>
         <div class="accessory-grid" *ngIf="stbAccessories.length; else noStbAccessories">
           <label class="checkbox-card" *ngFor="let accessory of stbAccessories.controls; let i = index" [formGroupName]="i">
@@ -326,7 +329,22 @@
           <p class="empty-note">No CATV accessories available.</p>
         </ng-template>
       </div>
-      <div *ngIf="section === 'stbs' && isReplacementReason" class="additional-box">
+      <div *ngIf="section === 'stbs' && isReturnReason" class="additional-box">
+        <h2>Customer Refund</h2>
+        <div class="form-grid">
+          <label>Refund Amount<input type="number" min="0" formControlName="refund_amount"></label>
+          <label>Payment Mode
+            <select formControlName="refund_payment_mode">
+              <option value="CASH">Cash</option>
+              <option value="ONLINE">Online</option>
+              <option value="BANK">Bank</option>
+              <option value="UPI">UPI</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div *ngIf="section === 'stbs' && showStbIssueDetails" class="additional-box">
         <h2>Additional Info</h2>
         <div class="form-grid">
           <label>Customer Paid<input type="number" formControlName="customer_paid_amount"></label>
@@ -334,7 +352,7 @@
           <label>Overall Discount<input type="number" formControlName="overall_discount"></label>
         </div>
       </div>
-      <div *ngIf="section === 'stbs' && isReplacementReason" class="account-box">
+      <div *ngIf="section === 'stbs' && showStbIssueDetails" class="account-box">
         <h2>Account Details</h2>
         <div class="account-line"><span>STB Amount</span><strong>{{ (form.get('stb_amount')?.value || 0) | number:'1.2-2' }}</strong></div>
         <div class="account-line"><span>STB Discount</span><strong>- {{ (form.get('stb_discount')?.value || 0) | number:'1.2-2' }}</strong></div>

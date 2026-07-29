@@ -107,6 +107,12 @@ export const routes: Routes = [
             data:{ expectedRole:['admin','user'] }
         },
          {
+            path:'transactions',
+            loadComponent: ()=> import('./transactions/transaction-list/transaction-list').then(n => n.TransactionList),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
+        },
+         {
             path:'purchases',
             loadComponent: ()=> import('./purchases/purchase-list/purchase-list').then(n => n.PurchaseList),
             canActivate:[RouteGuard],

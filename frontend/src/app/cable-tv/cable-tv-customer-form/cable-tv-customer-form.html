@@ -89,7 +89,15 @@
     </section>
 
     <section class="form-section" formGroupName="stb">
-      <h2>STB Details</h2>
+      <div class="stb-section-heading">
+        <h2>STB Details</h2>
+        <div class="stb-assigned-counts" aria-label="Assigned STB counts">
+          <span *ngFor="let item of assignedStbCounts" [class]="item.type.toLowerCase()">
+            {{ item.type === 'NEW' ? 'New' : item.type === 'SERVICED' ? 'Serviced' : 'Returned' }}:
+            <strong>{{ item.count }}</strong>
+          </span>
+        </div>
+      </div>
       <div class="form-grid stb-details-grid">
         <label>STB Type
           <select formControlName="stb_type">

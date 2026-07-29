@@ -33,6 +33,7 @@ const permissionCatalog = [
   ['Accounts', 'CABLE_TV_ACCOUNTS', 'Pending Accounts', '/cable-tv-account-pending'],
   ['Accounts', 'CABLE_TV_SUBSCRIPTION_DUES', 'CATV Subscription', '/cable-tv-subscription-pending'],
   ['Accounts', 'CABLE_TV_SUBSCRIPTION_GENERATE', 'Append CATV Subscriptions', '/cable-tv-subscription-append'],
+  ['Accounts', 'TRANSACTIONS', 'Transactions', '/transactions'],
   ['Reports', 'CABLE_TV_SUBSCRIPTION_REPORT', 'CATV Subscription Report', '/cable-tv-subscription-report'],
 ].map(([group, key, label, route]) => ({ group, key, label, route }));
 

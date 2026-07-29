@@ -1,4 +1,5 @@
 const connection = require('../connection');
+const { ensureTransactionTable } = require('./transactionController');
 const { ensureCustomerSchema } = require('../utils/customerSchema');
 const { customerStatusForStbStatus, synchronizeLatestCustomerStbStatus, applyApprovedLocationChange } = require('../utils/cableTvStatus');
 
@@ -232,6 +233,7 @@ const approveWorkflow = async (req, res) => {
     const conn = connection.promise();
     try {
         await ensureWorkflowTable();
+        await ensureTransactionTable(conn);
         await conn.beginTransaction();
         const workflowId = String(req.params.workflow_id || '');
         if (workflowId.startsWith('CTV-')) {
@@ -309,7 +311,8 @@ const approveWorkflow = async (req, res) => {
             }
 
             const [pendingStbs] = await conn.query(
-                `SELECT customer_stb_id, cable_customer_id, stb_master_id, status, update_reason
+                `SELECT customer_stb_id, cable_customer_id, stb_master_id, stb_no, status, update_reason,
+                        refund_amount, refund_payment_mode, updated_date, entered_by_employee_id, created_by_user_id
                  FROM cable_customer_stbs
                  WHERE approval_group_id = ? AND approval_status = 'PENDING'
                  FOR UPDATE`,
@@ -318,6 +321,12 @@ const approveWorkflow = async (req, res) => {
             for (const stb of pendingStbs) {
                 const desiredStatus = String(stb.status || 'DISCONNECTED').toUpperCase();
                 const reason = String(stb.update_reason || '').toUpperCase();
+                if (['FAULT', 'DAMAGED', 'BROKEN', 'BURNT'].includes(reason) && stb.stb_master_id) {
+                    await conn.query(
+                        "UPDATE cable_stb_master SET stock_type = 'FAULT', status = 'NOT_AVAILABLE', updated_at = NOW() WHERE stb_master_id = ?",
+                        [stb.stb_master_id]
+                    );
+                }
                 const [previousActive] = await conn.query(
                     `SELECT customer_stb_id, stb_master_id
                      FROM cable_customer_stbs
@@ -345,6 +354,22 @@ const approveWorkflow = async (req, res) => {
                             [returnedMasterIds, stb.cable_customer_id]
                         );
                     }
+                }
+                if (reason === 'RETURNED' && Number(stb.refund_amount || 0) > 0) {
+                    await conn.query(
+                        `INSERT INTO finance_transactions (
+                            transaction_date, transaction_type, category, amount, payment_mode,
+                            reference_no, description, source_module, source_id,
+                            created_by_user_id, created_by_employee_id
+                         ) VALUES (?, 'DEBIT', 'STB Return Refund', ?, ?, ?, ?, 'CATV_STB_RETURN', ?, ?, ?)
+                         ON DUPLICATE KEY UPDATE finance_transaction_id = finance_transaction_id`,
+                        [
+                            stb.updated_date || new Date(), Number(stb.refund_amount), stb.refund_payment_mode || 'CASH',
+                            `CTV-STB-${stb.customer_stb_id}`, `Refund paid for returned STB ${stb.stb_no || ''}`,
+                            stb.customer_stb_id, stb.created_by_user_id || approvedBy,
+                            stb.entered_by_employee_id || approvedBy
+                        ]
+                    );
                 }
                 await conn.query(
                     'UPDATE cable_tv_customers SET status = ?, updated_at = NOW() WHERE cable_customer_id = ?',

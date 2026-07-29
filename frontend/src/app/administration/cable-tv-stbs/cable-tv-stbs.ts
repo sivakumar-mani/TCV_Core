@@ -24,15 +24,28 @@ export class CableTvStbs {
   boxTypes = ['HD', 'SD'];
   stockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT'];
   statuses = ['AVAILABLE', 'NOT_AVAILABLE'];
-  filters = { stbNumber: '', employeeId: '', status: '' };
+  filters = { stbNumber: '', stockType: '', employeeId: '', status: '' };
 
   get filteredStbs() {
     const stbNumber = this.filters.stbNumber.trim().toLowerCase();
     return this.stbs.filter((item) =>
       (!stbNumber || String(item.stb_number || '').toLowerCase().includes(stbNumber))
+      && (!this.filters.stockType || item.stock_type === this.filters.stockType)
       && (!this.filters.employeeId || String(item.assigned_employee_id || '') === this.filters.employeeId)
       && (!this.filters.status || item.status === this.filters.status)
     );
+  }
+
+  get availableStockTypes() {
+    if (this.editingStbId) return this.stockTypes;
+    const stbNumber = String(this.stbForm?.get('stb_number')?.value || '').trim().toLowerCase();
+    if (!stbNumber) return this.stockTypes;
+    const matches = this.stbs.filter(
+      (item) => String(item.stb_number || '').trim().toLowerCase() === stbNumber
+    );
+    return matches.length > 0 && matches.every((item) => item.stock_type === 'FAULT')
+      ? ['SERVICED']
+      : this.stockTypes;
   }
 
   constructor(
@@ -52,6 +65,11 @@ export class CableTvStbs {
       full_set_amount: [800, [Validators.required, Validators.min(0)]],
       assigned_employee_id: [null, Validators.required],
       status: ['AVAILABLE', Validators.required]
+    });
+    this.stbForm.get('stb_number')?.valueChanges.subscribe(() => {
+      if (!this.editingStbId && this.availableStockTypes.length === 1) {
+        this.stbForm.patchValue({ stock_type: 'SERVICED' }, { emitEvent: false });
+      }
     });
     this.loadStbs();
   }
@@ -99,7 +117,7 @@ export class CableTvStbs {
   }
 
   resetFilters() {
-    this.filters = { stbNumber: '', employeeId: '', status: '' };
+    this.filters = { stbNumber: '', stockType: '', employeeId: '', status: '' };
   }
 
   saveStb() {

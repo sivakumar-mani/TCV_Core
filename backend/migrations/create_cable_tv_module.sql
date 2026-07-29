@@ -292,7 +292,7 @@ CREATE TABLE IF NOT EXISTS cable_stb_master (
         FOREIGN KEY (assigned_employee_id) REFERENCES employees(employee_id)
         ON DELETE SET NULL ON UPDATE CASCADE,
 
-    UNIQUE KEY uk_cable_stb_master_number (stb_number),
+    INDEX idx_cable_stb_master_number (stb_number),
     INDEX idx_cable_stb_master_status (status),
     INDEX idx_cable_stb_master_stock_type (stock_type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -316,6 +316,8 @@ CREATE TABLE IF NOT EXISTS cable_customer_stbs (
     stb_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (stb_amount >= 0),
     stb_discount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (stb_discount >= 0),
     labour_service_charge DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (labour_service_charge >= 0),
+    refund_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (refund_amount >= 0),
+    refund_payment_mode ENUM('CASH','ONLINE','BANK','UPI','OTHER') NOT NULL DEFAULT 'CASH',
     installed_by_employee_id INT NULL,
     entered_by_employee_id INT NULL,
     installed_date DATE NOT NULL DEFAULT (CURDATE()),
@@ -773,6 +775,27 @@ COMMENT='Individual payments received against unpaid CATV subscription months';
 -- =====================================================
 -- INITIAL MASTER DATA
 -- =====================================================
+
+CREATE TABLE IF NOT EXISTS finance_transactions (
+    finance_transaction_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    transaction_date DATE NOT NULL,
+    transaction_type ENUM('DEBIT','CREDIT') NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    amount DECIMAL(12,2) NOT NULL,
+    payment_mode ENUM('CASH','ONLINE','BANK','UPI','OTHER') NOT NULL DEFAULT 'CASH',
+    reference_no VARCHAR(100) NULL,
+    description VARCHAR(500) NULL,
+    source_module VARCHAR(50) NULL,
+    source_id BIGINT NULL,
+    created_by_user_id INT NULL,
+    created_by_employee_id INT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_finance_transaction_date (transaction_date),
+    INDEX idx_finance_transaction_type (transaction_type),
+    UNIQUE KEY uk_finance_source (source_module, source_id),
+    CONSTRAINT fk_finance_transaction_user FOREIGN KEY (created_by_user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_finance_transaction_employee FOREIGN KEY (created_by_employee_id) REFERENCES employees(employee_id)
+);
 
 INSERT IGNORE INTO cable_network_master
     (network_code, network_name, customer_no_start, customer_no_end, remarks)
