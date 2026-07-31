@@ -178,13 +178,18 @@ const getWorkflowApprovals = async (req, res) => {
                         ), 'Connection Update')
                         WHEN 'STB_UPDATE' THEN COALESCE((
                           SELECT CASE UPPER(stb.update_reason)
-                            WHEN 'REACTIVATE' THEN 'Reactivation'
-                            WHEN 'RETURNED' THEN 'STB Returned'
-                            WHEN 'REPLACED' THEN 'STB Replacement'
-                            WHEN 'DISCONNECT' THEN 'Disconnection'
-                            WHEN 'FAULT' THEN 'STB Fault'
-                            WHEN 'UPGRADE' THEN 'STB Upgrade'
-                            ELSE 'STB Update' END
+                            WHEN 'REACTIVATE' THEN 'STB - Reactivate'
+                            WHEN 'RETURNED' THEN 'STB - Returned'
+                            WHEN 'REPLACED' THEN 'STB - Replaced'
+                            WHEN 'DISCONNECT' THEN 'STB - Disconnect'
+                            WHEN 'FAULT' THEN 'STB - Fault'
+                            WHEN 'DAMAGED' THEN 'STB - Damaged'
+                            WHEN 'BROKEN' THEN 'STB - Damaged'
+                            WHEN 'BURNT' THEN 'STB - Burnt'
+                            WHEN 'VACATED' THEN 'STB - Vacated'
+                            WHEN 'STB_LOST' THEN 'STB - Lost'
+                            WHEN 'OUTSTATION' THEN 'STB - Outstation'
+                            ELSE 'STB - Update' END
                           FROM cable_customer_stbs stb
                           WHERE stb.approval_group_id = cag.approval_group_id
                           ORDER BY stb.customer_stb_id DESC LIMIT 1
@@ -220,6 +225,7 @@ const getWorkflowApprovals = async (req, res) => {
              JOIN cable_tv_customers c ON c.cable_customer_id = cgr.cable_customer_id
              LEFT JOIN cable_customer_accounts ca ON ca.approval_group_id = cag.approval_group_id
              WHERE cag.approval_status = 'PENDING'
+               AND cag.group_type <> 'SUBSCRIPTION_UPDATE'
              ORDER BY workflow_status = 'PENDING' DESC, requested_at DESC`
         );
         return res.json(rows);

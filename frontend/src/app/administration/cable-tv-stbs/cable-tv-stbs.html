@@ -31,6 +31,7 @@
     </div>
     <table>
       <tr>
+        <th>Updated Date</th>
         <th>STB Number</th>
         <th>Signal</th>
         <th>Type</th>
@@ -42,6 +43,7 @@
         <th>Actions</th>
       </tr>
       <tr *ngFor="let item of filteredStbs">
+        <td>{{ (item.updated_date || item.updated_at) | date:'dd-MM-yyyy' }}</td>
         <td>{{ item.stb_number }}</td>
         <td>{{ item.box_type }}</td>
         <td>{{ item.stock_type }}</td>
@@ -66,7 +68,7 @@
         </td>
       </tr>
       <tr *ngIf="!filteredStbs.length">
-        <td colspan="9" class="empty-row">No STB records match the selected filters.</td>
+        <td colspan="10" class="empty-row">No STB records match the selected filters.</td>
       </tr>
     </table>
   </section>
@@ -114,6 +116,9 @@
           <select formControlName="status">
             <option *ngFor="let status of statuses" [ngValue]="status">{{ status }}</option>
           </select>
+        </label>
+        <label>Updated Date
+          <input type="date" formControlName="updated_date" required>
         </label>
       </form>
       <div class="modal-actions">

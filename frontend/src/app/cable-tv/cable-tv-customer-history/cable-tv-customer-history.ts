@@ -54,25 +54,12 @@ export class CableTvCustomerHistory {
     packages: 'CABLE_TV_CUSTOMER_PACKAGES',
     subscriptions: 'CABLE_TV_SUBSCRIPTIONS'
   };
-  readonly connectionTypes = ['RECONNECTION', 'SHIFTED'];
+  readonly connectionTypes = ['NEW', 'RECONNECTION', 'SHIFTED', 'TRANSFERRED'];
   readonly packageTypes = ['ADDON', 'ALACARTE', 'BROADCASTER'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE', 'RETURNED', 'FAULTY', 'REPLACED'];
-  readonly stbReasons = [
-    'REACTIVATE',
-    'REPLACED',
-    'UPGRADE',
-    'FAULT',
-    'DAMAGED',
-    'BURNT',
-    'DISCONNECT',
-    'VACATED',
-    'STB_LOST',
-    'OUTSTATION',
-    'RETURNED'
-  ];
   readonly activeStbReasons = ['FAULT', 'DAMAGED', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
-  readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED', 'UPGRADE'];
+  readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED'];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
     label: new Date(2026, index, 1).toLocaleString('en-US', { month: 'long' })
@@ -118,6 +105,11 @@ export class CableTvCustomerHistory {
     if (this.section === 'packages') return 'Add Package';
     return 'Add Subscription';
   }
+  get hasPendingStbApproval() {
+    return (this.details.stbs || []).some(
+      (item: any) => String(item.approval_status || '').toUpperCase() === 'PENDING'
+    );
+  }
   get latestConnection() { return (this.details.connections || [])[0] || {}; }
   get latestStb() { return (this.details.stbs || [])[0] || {}; }
   get currentActiveStb() {
@@ -153,8 +145,11 @@ export class CableTvCustomerHistory {
   }
   get headerStbNo() { return this.latestStb.stb_no || '-'; }
   get headerDate() { return this.latestStb.installed_date || this.latestConnection.connection_date || this.customer.installation_date || ''; }
+  get isReactivateReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'REACTIVATE'; }
   get isReplacementReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'REPLACED'; }
+  get isFullSetIssue() { return String(this.form?.get('issue_mode')?.value || '').toUpperCase() === 'FULL_SET'; }
   get showStbIssueDetails() { return this.isReplacementReason || this.editingInitialStb; }
+  get showStbChargeDetails() { return this.isReactivateReason || this.showStbIssueDetails; }
   get isReturnReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'RETURNED'; }
   get isLocationChange() { return this.section === 'connections' && String(this.form?.get('connection_type')?.value || '').toUpperCase() === 'SHIFTED'; }
   get locationChangePostalAreas() {
@@ -211,15 +206,19 @@ export class CableTvCustomerHistory {
     if (section === 'customer') return this.permissions.isAdmin();
     if (action === 'view') return true;
     if (this.isReviewMode) return false;
-    if (action === 'update' || action === 'delete') return this.permissions.isAdmin();
+    if (action === 'delete') return this.permissions.isAdmin();
+    if (action === 'update') {
+      return this.permissions.isAdmin()
+        || (section === 'subscriptions' && this.permissions.can(this.sectionPermissionKeys[section], 'create'));
+    }
     return this.permissions.can(this.sectionPermissionKeys[section], action);
   }
 
   canEditRow(row: any) {
     if (!this.canSection(this.section, 'update')) return false;
-    return this.section !== 'subscriptions'
-      || this.permissions.isAdmin()
-      || String(row?.payment_status || '').toUpperCase() !== 'PAID';
+    if (this.section !== 'subscriptions' || this.permissions.isAdmin()) return true;
+    return String(this.customer?.status || '').toUpperCase() === 'ACTIVE'
+      && String(row?.payment_status || '').toUpperCase() !== 'PAID';
   }
 
   buildForm() {
@@ -400,6 +399,57 @@ export class CableTvCustomerHistory {
     return String(name || '').replace(/\s*STB\s+Accessories\s*/i, ' ').replace(/\s+/g, ' ').trim();
   }
 
+  private normalizedAccessoryName(name: any) {
+    return String(name || '').toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+  }
+
+  isMandatoryFullSetAccessory(accessory: any) {
+    if (this.form?.get('issue_mode')?.value !== 'FULL_SET') return false;
+    const name = this.normalizedAccessoryName(accessory?.get?.('product_name')?.value ?? accessory?.product_name);
+    return name.includes('AAA BATTERY')
+      || (name.includes('ADAPTOR') && name.includes('12V') && name.includes('1AMP'))
+      || (name.includes('REMOTE') && name.includes('BLUE'));
+  }
+
+  private isFullSetVideoAccessory(accessory: any) {
+    const name = this.normalizedAccessoryName(accessory?.get?.('product_name')?.value ?? accessory?.product_name);
+    return (name.includes('HDMI') && (name.includes('1MTS') || name.includes('1 MTS') || name.includes('1M')))
+      || (name.includes('AV CARD') && name.includes('1 PIN'))
+      || (name.includes('AV CARD') && name.includes('3 PIN') && name.includes('3 RCA'));
+  }
+
+  private enforceFullSetAccessories() {
+    if (this.form?.get('issue_mode')?.value !== 'FULL_SET') return;
+    this.stbAccessories.controls
+      .filter(accessory => this.isMandatoryFullSetAccessory(accessory))
+      .forEach(accessory => accessory.patchValue({ selected: true, qty: 1 }, { emitEvent: false }));
+    const videoAccessories = this.stbAccessories.controls.filter(accessory => this.isFullSetVideoAccessory(accessory));
+    if (videoAccessories.length && !videoAccessories.some(accessory => accessory.get('selected')?.value)) {
+      const hdmi = videoAccessories.find(accessory =>
+        this.normalizedAccessoryName(accessory.get('product_name')?.value).includes('HDMI')
+      ) || videoAccessories[0];
+      hdmi.patchValue({ selected: true, qty: 1 }, { emitEvent: false });
+    }
+  }
+
+  stbAccessorySelectionChanged(index: number) {
+    if (this.form?.get('issue_mode')?.value !== 'FULL_SET') return;
+    const selectedAccessory = this.stbAccessories.at(index);
+    if (this.isMandatoryFullSetAccessory(selectedAccessory)) {
+      selectedAccessory.patchValue({ selected: true, qty: 1 }, { emitEvent: false });
+      return;
+    }
+    if (!this.isFullSetVideoAccessory(selectedAccessory)) return;
+    if (selectedAccessory.get('selected')?.value) {
+      this.stbAccessories.controls
+        .filter(accessory => accessory !== selectedAccessory && this.isFullSetVideoAccessory(accessory))
+        .forEach(accessory => accessory.patchValue({ selected: false }, { emitEvent: false }));
+      selectedAccessory.patchValue({ qty: 1 }, { emitEvent: false });
+    } else {
+      selectedAccessory.patchValue({ selected: true, qty: 1 }, { emitEvent: false });
+    }
+  }
+
   loadData() {
     this.ngxLoader.start();
     this.cableTvService.getLookups().subscribe({
@@ -510,6 +560,12 @@ export class CableTvCustomerHistory {
 
   openAdd() {
     if (!this.canSection(this.section, 'create')) return;
+    if (this.section === 'stbs' && this.hasPendingStbApproval) {
+      this.commonMethods.handleError({
+        error: { message: 'An STB update is pending for administrator approval. Add STB is disabled until approval is completed.' }
+      });
+      return;
+    }
     this.editId = 0;
     this.editingInitialStb = false;
     this.buildForm();
@@ -539,6 +595,19 @@ export class CableTvCustomerHistory {
       return;
     }
     this.form.patchValue(row);
+    if (this.section === 'connections') {
+      this.form.patchValue({
+        connection_date: this.dateInputValue(row.connection_date),
+        connection_type: String(row.connection_type || 'RECONNECTION').toUpperCase(),
+        installed_by_employee_id: Number(
+          row.connected_by_employee_id || row.installed_by_employee_id
+        ) || null,
+        connection_charge: Number(row.connection_charge) || 0,
+        labour_service_charge: Number(row.labour_service_charge) || 0,
+        remarks: row.remarks || ''
+      }, { emitEvent: false });
+      this.applyLocationChangeState();
+    }
     if (this.section === 'subscriptions') {
       const billingBasis = String(row.billing_basis || 'MONTH').toUpperCase();
       this.form.patchValue({
@@ -551,7 +620,7 @@ export class CableTvCustomerHistory {
         received_count: billingBasis === 'DAY' ? Number(row.received_count) || 1 : Number(row.received_count) || 1,
         start_date: this.dateInputValue(row.start_date),
         expiry_date: this.dateInputValue(row.expiry_date),
-        collect_date: this.permissions.isAdmin() ? this.dateInputValue(row.collect_date) : new Date().toISOString().slice(0, 10),
+        collect_date: this.dateInputValue(row.collect_date),
         collected_by_employee_id: row.collected_by_employee_id || null,
         package_amount: Number(row.package_price || row.amount) || 0,
         amount: Number(row.amount) || 0,
@@ -564,11 +633,9 @@ export class CableTvCustomerHistory {
       }, { emitEvent: false });
       if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
       if (!this.permissions.isAdmin()) {
-        [
-          'customer_package_id', 'subscription_month', 'subscription_year', 'billing_basis',
-          'number_of_days_or_months', 'days_in_month', 'received_count', 'start_date',
-          'expiry_date', 'package_amount', 'amount'
-        ].forEach(control => this.form.get(control)?.disable({ emitEvent: false }));
+        Object.keys(this.form.controls)
+          .filter(control => control !== 'paid_amount')
+          .forEach(control => this.form.get(control)?.disable({ emitEvent: false }));
       }
       this.form.get('subscription_month')?.disable({ emitEvent: false });
       this.form.get('subscription_year')?.disable({ emitEvent: false });
@@ -643,6 +710,16 @@ export class CableTvCustomerHistory {
       return;
     }
     const payload = this.form.getRawValue();
+    if (
+      this.section === 'stbs'
+      && payload.issue_mode === 'FULL_SET'
+      && !this.stbAccessories.controls.some(accessory =>
+        accessory.get('selected')?.value && this.isFullSetVideoAccessory(accessory)
+      )
+    ) {
+      this.commonMethods.handleError({ error: { message: 'Select HDMI 1 Mts, VK AV Card 1 Pin, or VK AV Card 3 Pin - 3 RCA for a Full Set' } });
+      return;
+    }
     this.ngxLoader.start();
     const request = this.requestForSave(payload);
     request.subscribe({
@@ -1068,7 +1145,11 @@ export class CableTvCustomerHistory {
         ? Number(fullSet ? selected.full_set_amount : selected.stb_amount) || (fullSet ? 800 : 500)
         : fallbackAmount || 0
     }, { emitEvent: false });
-    if (!fullSet) this.stbAccessories.controls.forEach((row) => row.patchValue({ selected: false }, { emitEvent: false }));
+    if (fullSet) {
+      this.enforceFullSetAccessories();
+    } else {
+      this.stbAccessories.controls.forEach((row) => row.patchValue({ selected: false }, { emitEvent: false }));
+    }
     this.calculateBalance();
   }
 
@@ -1088,6 +1169,7 @@ export class CableTvCustomerHistory {
   applyStbReasonState() {
     if (this.section !== 'stbs' || !this.form) return;
     const replacement = this.showStbIssueDetails;
+    const reactivate = this.isReactivateReason;
     const returned = this.isReturnReason;
     const stbNo = this.form.get('stb_no');
     const stbMaster = this.form.get('stb_master_id');
@@ -1098,6 +1180,24 @@ export class CableTvCustomerHistory {
       this.form.patchValue({ status: 'ACTIVE' }, { emitEvent: false });
       refundAmount?.clearValidators();
       this.form.patchValue({ refund_amount: 0 }, { emitEvent: false });
+      this.enforceFullSetAccessories();
+    } else if (reactivate) {
+      stbNo?.clearValidators();
+      stbMaster?.clearValidators();
+      refundAmount?.clearValidators();
+      this.form.patchValue({
+        stb_master_id: null,
+        stb_no: '',
+        issue_mode: 'BOX_ONLY',
+        customer_paid_amount: 0,
+        balance_amount: 0,
+        due_date: '',
+        overall_discount: 0,
+        refund_amount: 0,
+        status: 'ACTIVE'
+      }, { emitEvent: false });
+      this.returnAccessoriesInitialized = false;
+      this.stbAccessories.controls.forEach((row) => row.patchValue({ selected: false }, { emitEvent: false }));
     } else {
       stbNo?.clearValidators();
       stbMaster?.clearValidators();

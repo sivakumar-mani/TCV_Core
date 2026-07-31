@@ -2313,3 +2313,98 @@
           ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
 
 [39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'number | null' is not assignable to type 'null'.
+  Type 'number' is not assignable to type 'null'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:100:4:
+[37m      100 │     [32mthis.complaint.cable_customer_id[37m = customerId || null;
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'number | null' is not assignable to type 'null'.
+  Type 'number' is not assignable to type 'null'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:150:8:
+[37m      150 │         [32mthis.attempt.assigned_employee_id[37m = response.assigned_emp...
+          ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'number | null' is not assignable to type 'null'.
+  Type 'number' is not assignable to type 'null'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:153:8:
+[37m      153 │         [32mthis.attempt.cable_customer_id[37m = response.cable_customer_id
+          ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'number | null' is not assignable to type 'null'.
+  Type 'number' is not assignable to type 'null'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:100:4:
+[37m      100 │     [32mthis.complaint.cable_customer_id[37m = customerId || null;
+          ╵     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'number | null' is not assignable to type 'null'.
+  Type 'number' is not assignable to type 'null'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:150:8:
+[37m      150 │         [32mthis.attempt.assigned_employee_id[37m = response.assigned_emp...
+          ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'number | null' is not assignable to type 'null'.
+  Type 'number' is not assignable to type 'null'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:153:8:
+[37m      153 │         [32mthis.attempt.cable_customer_id[37m = response.cable_customer_id
+          ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2367: This comparison appears to be unintentional because the types '"CATV" | "NET" | "CCTV" | "ANONYMOUS"' and '"CUSTOMER"' have no overlap.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.html:74:27:
+[37m      74 │       <ng-container *ngIf="[32mcallerType === 'CUSTOMER'[37m">
+         ╵                            [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvComplaints.
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:15:15:
+[37m      15 │   templateUrl: [32m'./cable-tv-complaints.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS4111: Property 'CATV' comes from an index signature, so it must be accessed with ['CATV'].[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:106:50:
+[37m      106 │         this.customers = this.customerDirectories.[32mCATV[37m;
+          ╵                                                   [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS4111: Property 'CATV' comes from an index signature, so it must be accessed with ['CATV'].[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:106:50:
+[37m      106 │         this.customers = this.customerDirectories.[32mCATV[37m;
+          ╵                                                   [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS4111: Property 'CATV' comes from an index signature, so it must be accessed with ['CATV'].[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-complaints/cable-tv-complaints.ts:106:50:
+[37m      106 │         this.customers = this.customerDirectories.[32mCATV[37m;
+          ╵                                                   [32m~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2322: Type 'string' is not assignable to type 'boolean'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.html:320:73:
+[37m      320 │ ...atus<input type="text" formControlName="status" [32mdisabled[37m></label>
+          ╵                                                    [32m~~~~~~~~[0m
+
+  Error occurs in the template of component CableTvCustomerHistory.
+
+    src/app/cable-tv/cable-tv-customer-history/cable-tv-customer-history.ts:17:15:
+[37m      17 │   templateUrl: [32m'./cable-tv-customer-history.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

@@ -472,6 +472,7 @@ CREATE TABLE `cable_stb_master` (
   `mso_id` int DEFAULT NULL,
   `stb_amount` decimal(12,2) NOT NULL DEFAULT '0.00',
   `status` enum('AVAILABLE','NOT_AVAILABLE') NOT NULL DEFAULT 'AVAILABLE',
+  `updated_date` date DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

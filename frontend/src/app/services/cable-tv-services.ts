@@ -179,4 +179,60 @@ export class CableTvServices {
   generateMonthlySubscriptions(data: { subscription_month: number; subscription_year: number; customer_ids: number[] }) {
     return this.http.post(`${this.endpoint}/subscriptions/generate`, data, { headers: this.jsonHeaders });
   }
+
+  getComplaints(filters: { search?: string; status?: string; assigned_employee_id?: string } = {}) {
+    const params: Record<string, string> = {};
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    return this.http.get(`${this.endpoint}/complaints`, { params });
+  }
+
+  getComplaintById(complaintId: number) {
+    return this.http.get(`${this.endpoint}/complaints/${complaintId}`);
+  }
+
+  getComplaintCustomers(type: 'CATV' | 'NET' | 'CCTV') {
+    return this.http.get(`${this.endpoint}/complaints/customers/lookup`, { params: { type } });
+  }
+
+  addComplaint(data: any) {
+    return this.http.post(`${this.endpoint}/complaints`, data, { headers: this.jsonHeaders });
+  }
+
+  addComplaintAttempt(complaintId: number, data: any) {
+    return this.http.post(`${this.endpoint}/complaints/${complaintId}/attempts`, data, { headers: this.jsonHeaders });
+  }
+
+  getMaterialSalesLookups() {
+    return this.http.get(`${this.endpoint}/material-sales/lookups`);
+  }
+
+  getTechnicianMaterialStock(employeeId = '') {
+    return this.http.get(`${this.endpoint}/material-sales/stock`, {
+      params: employeeId ? { employee_id: employeeId } : {}
+    });
+  }
+
+  getMaterialMovements(filters: Record<string, string> = {}) {
+    const params: Record<string, string> = {};
+    Object.entries(filters).forEach(([key, value]) => { if (value) params[key] = value; });
+    return this.http.get(`${this.endpoint}/material-sales/movements`, { params });
+  }
+
+  addMaterialMovement(data: any) {
+    return this.http.post(`${this.endpoint}/material-sales/movements`, data, { headers: this.jsonHeaders });
+  }
+
+  addMaterialIssueBatch(items: any[]) {
+    return this.http.post(`${this.endpoint}/material-sales/issues/batch`, { items }, { headers: this.jsonHeaders });
+  }
+
+  addMaterialSaleBatch(data: any) {
+    return this.http.post(`${this.endpoint}/material-sales/sales/batch`, data, { headers: this.jsonHeaders });
+  }
+
+  mapMaterialSaleCustomer(movementId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/material-sales/movements/${movementId}/customer`, data, { headers: this.jsonHeaders });
+  }
 }

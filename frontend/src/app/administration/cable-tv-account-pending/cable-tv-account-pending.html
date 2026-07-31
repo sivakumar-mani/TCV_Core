@@ -66,7 +66,7 @@
         <td>{{ connectionTypeLabel(item.connection_type) }}</td>
         <td>{{ item.stb_amount }}</td>
         <td>{{ item.connection_amount }}</td>
-        <td>{{ item.material_cost }}</td>
+        <td>{{ item.material_cost }}<small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
         <td>{{ item.subscription_amount }}</td>
         <td>{{ item.grand_total }}</td>
         <td>{{ item.customer_paid_amount }}</td>
@@ -77,7 +77,7 @@
         <td *ngIf="permissions.isAdmin()" class="action-cell">
           <button *ngIf="item.account_status === 'PENDING' || item.account_status === 'PARTIAL'" type="button"
             (click)="openPayment(item)">Payment</button>
-          <button *ngIf="item.account_status === 'PAID'" type="button" class="revert"
+          <button *ngIf="item.account_status === 'PAID' && item.account_id > 0" type="button" class="revert"
             (click)="revertToPending(item.account_id)">Revert to Pending</button>
         </td>
       </tr>
@@ -145,7 +145,7 @@
               <td>{{ item.connection_amount | number:'1.2-2' }}</td>
               <td>{{ item.subscription_amount | number:'1.2-2' }}</td>
               <td>{{ item.customer_paid_amount | number:'1.2-2' }}</td>
-              <td>{{ item.material_cost | number:'1.2-2' }}</td>
+              <td>{{ item.material_cost | number:'1.2-2' }}<small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
               <td>{{ item.balance_amount | number:'1.2-2' }}</td>
               <td>{{ item.grand_total | number:'1.2-2' }}</td>
               <td>{{ item.account_status }}</td>

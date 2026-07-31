@@ -345,6 +345,20 @@ export const routes: Routes = [
             }
         },
          {
+            path:'material-sales',
+            loadComponent: ()=> import('./cable-tv/material-sales/material-sales').then(n => n.MaterialSales),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
+        },
+         {
+            path:'cable-tv/complaints',
+            loadComponent: ()=> import('./cable-tv/cable-tv-complaints/cable-tv-complaints').then(n => n.CableTvComplaints),
+            canActivate:[RouteGuard],
+            data:{
+                expectedRole:['admin','user']
+            }
+        },
+         {
             path:'cable-tv/customers',
             loadComponent: ()=> import('./cable-tv/cable-tv-customer-list/cable-tv-customer-list').then(n => n.CableTvCustomerList),
             canActivate:[RouteGuard],

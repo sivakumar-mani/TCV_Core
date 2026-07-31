@@ -418,7 +418,7 @@ export class CableTvAccountPending {
     const amount = (value: any) => Number(value || 0).toFixed(2);
     const installedNames = [...new Set(items.map((item: any) => item.installed_by_name || '-'))].join(', ');
     const invoiceRows = items.map((item: any) => {
-      const date = item.account_date ? new Date(item.account_date).toLocaleDateString('en-GB') : '-';
+      const date = item.account_date ? new Date(item.account_date).toLocaleDateString('en-GB').replaceAll('/', '-') : '-';
       const type = this.escapeHtml(this.connectionTypeLabel(item.connection_type));
       const customerNo = this.escapeHtml(item.customer_code || '-');
       return `<tr><td>${date}</td><td>${customerNo}</td><td>${type}</td><td>${amount(item.stb_amount)}</td><td>${amount(item.connection_amount)}</td><td>${amount(item.subscription_amount)}</td><td>${amount(item.customer_paid_amount)}</td><td>${amount(item.material_cost)}</td><td>${amount(item.balance_amount)}</td><td>${amount(item.grand_total)}</td></tr>`;
@@ -432,7 +432,7 @@ export class CableTvAccountPending {
       th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}
       .grand td{font-weight:700;background:#f3f4f6}.note{font-size:11px;margin-top:18px;color:#4b5563}
       @media print{body{margin:12mm}.no-print{display:none}}
-    </style></head><body><h1>Payment Invoice</h1><div class="meta"><strong>Installed by: ${this.escapeHtml(installedNames)}</strong><span>Printed: ${new Date().toLocaleDateString('en-GB')}</span></div>
+    </style></head><body><h1>Payment Invoice</h1><div class="meta"><strong>Installed by: ${this.escapeHtml(installedNames)}</strong><span>Printed: ${new Date().toLocaleDateString('en-GB').replaceAll('/', '-')}</span></div>
     <table><thead><tr><th>Date</th><th>Customer No</th><th>Type</th><th>STB</th><th>Connection</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
     ${invoiceRows}<tr class="grand"><td colspan="9">Grand Total</td><td>${amount(grandTotal)}</td></tr>
     </tbody></table><p class="note">Selected customers: ${this.escapeHtml(customerNos)}</p>
@@ -464,7 +464,7 @@ export class CableTvAccountPending {
   private displayDate(value: any) {
     if (!value) return '-';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-GB');
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-GB').replaceAll('/', '-');
   }
 
   private csvValue(value: any) {

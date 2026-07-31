@@ -281,6 +281,7 @@ CREATE TABLE IF NOT EXISTS cable_stb_master (
     full_set_amount DECIMAL(12,2) NOT NULL DEFAULT 800 CHECK (full_set_amount >= 0),
     assigned_employee_id INT NULL,
     status ENUM('AVAILABLE','NOT_AVAILABLE') NOT NULL DEFAULT 'AVAILABLE',
+    updated_date DATE NOT NULL DEFAULT (CURDATE()),
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -838,5 +839,117 @@ INSERT IGNORE INTO cable_locations (location_name, post_short_code, city, pincod
 VALUES
     ('Chromepet', 'CMP', 'Chennai', '600044'),
     ('Pammal', 'PAM', 'Chennai', '600075');
+
+CREATE TABLE IF NOT EXISTS cable_tv_complaints (
+    complaint_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    complaint_no VARCHAR(30) NOT NULL,
+    complainant_type ENUM('CATV','NET','CCTV','ANONYMOUS') NOT NULL DEFAULT 'CATV',
+    cable_customer_id BIGINT NULL,
+    service_customer_id INT NULL,
+    anonymous_name VARCHAR(150) NULL,
+    anonymous_mobile VARCHAR(20) NULL,
+    reported_mobile VARCHAR(20) NULL,
+    anonymous_address VARCHAR(500) NULL,
+    nature_of_complaint VARCHAR(250) NOT NULL,
+    complaint_description TEXT NULL,
+    status ENUM('OPEN','IN_PROGRESS','HOLD','PENDING','COMPLETED') NOT NULL DEFAULT 'OPEN',
+    assigned_employee_id INT NULL,
+    registered_by_user_id INT NULL,
+    registered_by_employee_id INT NULL,
+    registered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_cable_tv_complaint_no (complaint_no),
+    INDEX idx_cable_tv_complaint_customer (cable_customer_id),
+    INDEX idx_cable_tv_complaint_service_customer (service_customer_id),
+    INDEX idx_cable_tv_complaint_status (status),
+    INDEX idx_cable_tv_complaint_assigned (assigned_employee_id),
+    CONSTRAINT fk_cable_tv_complaint_customer FOREIGN KEY (cable_customer_id) REFERENCES cable_tv_customers(cable_customer_id),
+    CONSTRAINT fk_cable_tv_complaint_service_customer FOREIGN KEY (service_customer_id) REFERENCES customers(customer_id),
+    CONSTRAINT fk_cable_tv_complaint_assigned FOREIGN KEY (assigned_employee_id) REFERENCES employees(employee_id)
+);
+
+CREATE TABLE IF NOT EXISTS cable_tv_complaint_attempts (
+    complaint_attempt_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    complaint_id BIGINT NOT NULL,
+    attempt_no INT NOT NULL,
+    status ENUM('OPEN','IN_PROGRESS','HOLD','PENDING','COMPLETED') NOT NULL,
+    assigned_employee_id INT NULL,
+    start_time DATETIME NULL,
+    end_time DATETIME NULL,
+    reason TEXT NULL,
+    remedy TEXT NULL,
+    notes TEXT NULL,
+    entered_by_user_id INT NULL,
+    entered_by_employee_id INT NULL,
+    entered_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_cable_tv_attempt_complaint (complaint_id),
+    CONSTRAINT fk_cable_tv_attempt_complaint FOREIGN KEY (complaint_id) REFERENCES cable_tv_complaints(complaint_id),
+    CONSTRAINT fk_cable_tv_attempt_employee FOREIGN KEY (assigned_employee_id) REFERENCES employees(employee_id)
+);
+
+CREATE TABLE IF NOT EXISTS technician_material_stock (
+    technician_material_stock_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    product_id INT NOT NULL,
+    available_qty DECIMAL(10,2) NOT NULL DEFAULT 0,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_technician_product (employee_id, product_id),
+    CONSTRAINT fk_technician_stock_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+    CONSTRAINT fk_technician_stock_product FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+CREATE TABLE IF NOT EXISTS technician_material_movements (
+    material_movement_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    movement_no VARCHAR(30) NOT NULL,
+    movement_type ENUM('ISSUE','SALE','FAULT','RETURN') NOT NULL,
+    employee_id INT NOT NULL,
+    product_id INT NOT NULL,
+    qty DECIMAL(10,2) NOT NULL,
+    unit_price DECIMAL(12,2) NOT NULL DEFAULT 0,
+    total_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    commission_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    balance_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_status ENUM('PENDING','PARTIAL','PAID') NOT NULL DEFAULT 'PENDING',
+    customer_type ENUM('CATV','NET','CCTV','ANONYMOUS') NULL,
+    cable_customer_id BIGINT NULL,
+    service_customer_id INT NULL,
+    anonymous_name VARCHAR(150) NULL,
+    anonymous_mobile VARCHAR(20) NULL,
+    reason VARCHAR(500) NULL,
+    remarks TEXT NULL,
+    movement_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by_user_id INT NULL,
+    created_by_employee_id INT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_material_movement_no (movement_no),
+    INDEX idx_material_movement_employee (employee_id),
+    INDEX idx_material_movement_product (product_id),
+    INDEX idx_material_movement_date (movement_date),
+    CONSTRAINT fk_material_movement_employee FOREIGN KEY (employee_id) REFERENCES employees(employee_id),
+    CONSTRAINT fk_material_movement_product FOREIGN KEY (product_id) REFERENCES products(product_id),
+    CONSTRAINT fk_material_movement_catv_customer FOREIGN KEY (cable_customer_id) REFERENCES cable_tv_customers(cable_customer_id),
+    CONSTRAINT fk_material_movement_service_customer FOREIGN KEY (service_customer_id) REFERENCES customers(customer_id)
+);
+
+CREATE TABLE IF NOT EXISTS technician_material_sale_payments (
+    material_sale_payment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    material_movement_id BIGINT NOT NULL,
+    cash_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    online_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    received_amount DECIMAL(12,2) NOT NULL,
+    balance_after_payment DECIMAL(12,2) NOT NULL,
+    payment_status ENUM('PARTIAL','PAID') NOT NULL,
+    received_by_user_id INT NULL,
+    received_by_employee_id INT NULL,
+    received_date DATE NOT NULL,
+    due_date DATE NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_material_sale_payment_movement (material_movement_id),
+    CONSTRAINT fk_material_sale_payment_movement FOREIGN KEY (material_movement_id)
+        REFERENCES technician_material_movements(material_movement_id)
+);
 
 SET FOREIGN_KEY_CHECKS = 1;

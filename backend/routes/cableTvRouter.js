@@ -2,6 +2,22 @@ const express = require('express');
 const auth = require('../services/authendication');
 const router = express.Router();
 const {
+  getMaterialSalesLookups,
+  getTechnicianStock,
+  getMaterialMovements,
+  addMaterialMovement,
+  mapMaterialSaleCustomer,
+  addMaterialIssueBatch,
+  addMaterialSaleBatch
+} = require('../controller/materialSalesController');
+const {
+  getComplaints,
+  getComplaintCustomers,
+  getComplaintById,
+  addComplaint,
+  addComplaintAttempt
+} = require('../controller/cableTvComplaintController');
+const {
   addArea,
   addCableCustomer,
   addCustomerConnection,
@@ -52,6 +68,18 @@ router.use('/lookups', auth.requireAnyPermission([
 ]));
 
 router.get('/lookups', getLookups);
+router.get('/material-sales/lookups', getMaterialSalesLookups);
+router.get('/material-sales/stock', getTechnicianStock);
+router.get('/material-sales/movements', getMaterialMovements);
+router.post('/material-sales/movements', addMaterialMovement);
+router.post('/material-sales/issues/batch', addMaterialIssueBatch);
+router.post('/material-sales/sales/batch', addMaterialSaleBatch);
+router.patch('/material-sales/movements/:movementId/customer', mapMaterialSaleCustomer);
+router.get('/complaints', getComplaints);
+router.get('/complaints/customers/lookup', getComplaintCustomers);
+router.get('/complaints/:complaintId', getComplaintById);
+router.post('/complaints', addComplaint);
+router.post('/complaints/:complaintId/attempts', addComplaintAttempt);
 router.get('/masters', auth.requireAnyPermission(['CABLE_TV_MASTERS', 'CABLE_TV_PACKAGES', 'CABLE_TV_STBS']), getMasters);
 router.post('/masters/locations', auth.requirePermission('CABLE_TV_MASTERS'), addLocation);
 router.post('/masters/areas', auth.requirePermission('CABLE_TV_MASTERS'), addArea);
@@ -88,7 +116,7 @@ router.post('/customers/:id/packages', auth.requirePermission('CABLE_TV_CUSTOMER
 router.patch('/customers/:id/packages/:packageId', auth.requireAdmin, updateCustomerPackage);
 router.delete('/customers/:id/packages/:packageId', auth.requireAdmin, deleteCustomerPackage);
 router.post('/customers/:id/subscriptions', auth.requirePermission('CABLE_TV_SUBSCRIPTIONS'), addCustomerSubscription);
-router.patch('/customers/:id/subscriptions/:subscriptionId', auth.requireAdmin, updateCustomerSubscription);
+router.patch('/customers/:id/subscriptions/:subscriptionId', auth.requirePermission('CABLE_TV_SUBSCRIPTIONS'), updateCustomerSubscription);
 router.delete('/customers/:id/subscriptions/:subscriptionId', auth.requireAdmin, deleteCustomerSubscription);
 
 module.exports = router;

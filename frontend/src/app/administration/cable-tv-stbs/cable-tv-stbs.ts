@@ -28,12 +28,17 @@ export class CableTvStbs {
 
   get filteredStbs() {
     const stbNumber = this.filters.stbNumber.trim().toLowerCase();
-    return this.stbs.filter((item) =>
-      (!stbNumber || String(item.stb_number || '').toLowerCase().includes(stbNumber))
-      && (!this.filters.stockType || item.stock_type === this.filters.stockType)
-      && (!this.filters.employeeId || String(item.assigned_employee_id || '') === this.filters.employeeId)
-      && (!this.filters.status || item.status === this.filters.status)
-    );
+    return this.stbs
+      .filter((item) =>
+        (!stbNumber || String(item.stb_number || '').toLowerCase().includes(stbNumber))
+        && (!this.filters.stockType || item.stock_type === this.filters.stockType)
+        && (!this.filters.employeeId || String(item.assigned_employee_id || '') === this.filters.employeeId)
+        && (!this.filters.status || item.status === this.filters.status)
+      )
+      .sort((left, right) =>
+        String(left.status || '').localeCompare(String(right.status || ''))
+        || String(left.stb_number || '').localeCompare(String(right.stb_number || ''))
+      );
   }
 
   get availableStockTypes() {
@@ -56,6 +61,7 @@ export class CableTvStbs {
   ) {}
 
   ngOnInit() {
+    const today = new Date().toISOString().slice(0, 10);
     this.stbForm = this.fb.group({
       stb_number: ['', Validators.required],
       box_type: ['HD', Validators.required],
@@ -64,7 +70,8 @@ export class CableTvStbs {
       stb_amount: [500, [Validators.required, Validators.min(0)]],
       full_set_amount: [800, [Validators.required, Validators.min(0)]],
       assigned_employee_id: [null, Validators.required],
-      status: ['AVAILABLE', Validators.required]
+      status: ['AVAILABLE', Validators.required],
+      updated_date: [today, Validators.required]
     });
     this.stbForm.get('stb_number')?.valueChanges.subscribe(() => {
       if (!this.editingStbId && this.availableStockTypes.length === 1) {
@@ -92,7 +99,15 @@ export class CableTvStbs {
 
   openStbModal() {
     this.editingStbId = null;
-    this.stbForm.reset({ box_type: 'HD', stock_type: 'NEW', stb_amount: 500, full_set_amount: 800, assigned_employee_id: null, status: 'AVAILABLE' });
+    this.stbForm.reset({
+      box_type: 'HD',
+      stock_type: 'NEW',
+      stb_amount: 500,
+      full_set_amount: 800,
+      assigned_employee_id: null,
+      status: 'AVAILABLE',
+      updated_date: new Date().toISOString().slice(0, 10)
+    });
     this.showStbModal = true;
   }
 
@@ -106,7 +121,8 @@ export class CableTvStbs {
       stb_amount: Number(item.stb_amount),
       full_set_amount: Number(item.full_set_amount),
       assigned_employee_id: item.assigned_employee_id ? Number(item.assigned_employee_id) : null,
-      status: item.status
+      status: item.status,
+      updated_date: this.dateInputValue(item.updated_date || item.updated_at)
     });
     this.showStbModal = true;
   }
@@ -172,5 +188,10 @@ export class CableTvStbs {
   private handleError(error: any) {
     this.ngxLoader.stop();
     this.snackbar.openSnackbar(error?.error?.message || globalConstants.genericError, globalConstants.errorRegex);
+  }
+
+  private dateInputValue(value: any) {
+    if (!value) return '';
+    return String(value).slice(0, 10);
   }
 }

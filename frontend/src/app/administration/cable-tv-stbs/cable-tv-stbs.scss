@@ -109,6 +109,11 @@ th {
   font-weight: 700;
 }
 
+th:first-child,
+td:first-child {
+  white-space: nowrap;
+}
+
 .empty-row {
   color: #667085;
   text-align: center;

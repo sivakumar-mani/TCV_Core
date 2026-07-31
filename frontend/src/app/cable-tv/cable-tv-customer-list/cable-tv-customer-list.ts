@@ -78,6 +78,7 @@ export class CableTvCustomerList {
       cellRendererParams: {
         dropdownMenu: [
           { label: 'View', action: (row: any) => this.viewCustomer(row) },
+          { label: 'Complaint', action: (row: any) => this.registerComplaint(row) },
           {
             label: 'Update',
             action: (row: any) => this.editCustomer(row),
@@ -188,6 +189,12 @@ export class CableTvCustomerList {
     this.router.navigate(['/cable-tv/customers/view', row.cable_customer_id]);
   }
 
+  registerComplaint(row: any) {
+    this.router.navigate(['/cable-tv/complaints'], {
+      queryParams: { customerId: row.cable_customer_id }
+    });
+  }
+
   decorateCustomer(customer: any) {
     const stbParts = customer.stb_no
       ? [
@@ -223,7 +230,7 @@ export class CableTvCustomerList {
   formatDate(value: any) {
     if (!value) return '';
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB');
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB').replaceAll('/', '-');
   }
 
   formatMoney(value: any) {

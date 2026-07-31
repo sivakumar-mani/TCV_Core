@@ -40,7 +40,7 @@
       <div class="summary-tile tile-green">
         <span class="tile-icon"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
         <span class="tile-label">Install Date</span>
-        <strong>{{ headerDate ? (headerDate | date:'dd MMM yyyy') : '-' }}</strong>
+        <strong>{{ headerDate ? (headerDate | date:'dd-MM-yyyy') : '-' }}</strong>
       </div>
       <div class="summary-tile tile-orange">
         <span class="tile-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
@@ -102,7 +102,18 @@
   <section class="form-section" *ngIf="section !== 'customer'">
     <div class="section-title-row">
       <h2>{{ title }}</h2>
-      <button *ngIf="canSection(section, 'create')" type="button" class="primary-btn add-btn" (click)="openAdd()"><i class="bi bi-file-earmark-plus" aria-hidden="true"></i>{{ addButtonLabel }}</button>
+      <button
+        *ngIf="canSection(section, 'create')"
+        type="button"
+        class="primary-btn add-btn"
+        [disabled]="section === 'stbs' && hasPendingStbApproval"
+        (click)="openAdd()">
+        <i class="bi bi-file-earmark-plus" aria-hidden="true"></i>{{ addButtonLabel }}
+      </button>
+    </div>
+    <div *ngIf="section === 'stbs' && hasPendingStbApproval" class="pending-approval-alert" role="alert">
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+      <span><strong>Pending for approval.</strong> Another STB cannot be added until the administrator completes the current STB approval.</span>
     </div>
     <div class="history-table">
       <table>
@@ -117,7 +128,7 @@
             <th *ngIf="section === 'connections'">Labor</th>
             <th *ngIf="section === 'stbs'">Updated Date</th>
             <th *ngIf="section === 'stbs'">Reason Type</th>
-            <th *ngIf="section === 'stbs'">Type</th>
+            <th *ngIf="section === 'stbs'">Update Reason</th>
             <th *ngIf="section === 'stbs'">STB No</th>
             <th *ngIf="section === 'stbs'">Updated By</th>
             <th *ngIf="section === 'stbs'">STB Amount</th>
@@ -146,16 +157,16 @@
         </thead>
         <tbody>
           <tr *ngFor="let row of rows">
-            <td *ngIf="section === 'connections'">{{ row.connection_date | date:'yyyy-MM-dd' }}</td>
+            <td *ngIf="section === 'connections'">{{ row.connection_date | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'connections'">{{ connectionTypeLabel(row) }}</td>
             <td *ngIf="section === 'connections'">{{ row.installed_by_name || row.entered_by_name || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.old_address || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.new_address || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.connection_charge }}</td>
             <td *ngIf="section === 'connections'">{{ row.labour_service_charge }}</td>
-            <td *ngIf="section === 'stbs'">{{ (row.updated_date || row.installed_date) | date:'yyyy-MM-dd' }}</td>
-            <td *ngIf="section === 'stbs'">{{ reasonLabel(row.update_reason || row.stb_type || '-') }}</td>
-            <td *ngIf="section === 'stbs'">{{ stbTypeLabel(row) }}</td>
+            <td *ngIf="section === 'stbs'">{{ (row.updated_date || row.installed_date) | date:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'stbs'">{{ reasonLabel(row.stb_type || '-') }}</td>
+            <td *ngIf="section === 'stbs'">{{ reasonLabel(row.update_reason || '-') }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_no }}</td>
             <td *ngIf="section === 'stbs'">{{ row.entered_by_name || row.installed_by_name || '-' }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_amount }}</td>
@@ -170,16 +181,16 @@
             <td *ngIf="section === 'packages'">{{ packageTypeLabel(row.package_type) }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_name || row.package_id }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_price }}</td>
-            <td *ngIf="section === 'packages'">{{ row.start_date | date:'yyyy-MM-dd' }}</td>
-            <td *ngIf="section === 'packages'">{{ row.end_date | date:'yyyy-MM-dd' }}</td>
+            <td *ngIf="section === 'packages'">{{ row.start_date | date:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'packages'">{{ row.end_date | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'packages'">{{ row.updated_by_name || '-' }}</td>
             <td *ngIf="section === 'packages'">{{ row.approval_status }}</td>
             <td *ngIf="section === 'subscriptions'">{{ subscriptionPeriodLabel(row) }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ (row.collect_date || row.created_at) | date:'yyyy-MM-dd' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ (row.collect_date || row.created_at) | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ subscriptionCollectedByLabel(row) }}</td>
             <td *ngIf="section === 'subscriptions'">{{ noOfPeriodLabel(row.number_of_days_or_months, row.billing_basis) }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ row.start_date | date:'yyyy-MM-dd' }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ row.expiry_date | date:'yyyy-MM-dd' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ row.start_date | date:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ row.expiry_date | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.amount }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.balance_amount }}</td>
             <td>
@@ -313,11 +324,22 @@
         </label>
       </div>
 
-      <div class="accessory-box" *ngIf="section === 'stbs' && (showStbIssueDetails || isReturnReason)" formArrayName="accessories">
+      <div class="form-grid" *ngIf="section === 'stbs' && isReactivateReason">
+        <label>STB Amount/Connection Charge<input type="number" min="0" formControlName="stb_amount"></label>
+        <label>STB Discount<input type="number" min="0" formControlName="stb_discount"></label>
+        <label>Labor/Service Charge<input type="number" min="0" formControlName="labour_service_charge"></label>
+        <label>STB Status<input type="text" value="Active" disabled></label>
+      </div>
+
+      <div class="accessory-box" *ngIf="section === 'stbs' && ((showStbIssueDetails && isFullSetIssue) || isReturnReason)" formArrayName="accessories">
         <h3>{{ isReturnReason ? 'Returned Accessories (Used Stock)' : 'Accessories' }}</h3>
         <div class="accessory-grid" *ngIf="stbAccessories.length; else noStbAccessories">
           <label class="checkbox-card" *ngFor="let accessory of stbAccessories.controls; let i = index" [formGroupName]="i">
-            <input type="checkbox" formControlName="selected">
+            <input
+              type="checkbox"
+              formControlName="selected"
+              [disabled]="isMandatoryFullSetAccessory(accessory)"
+              (change)="stbAccessorySelectionChanged(i)">
             <span>
               <strong>{{ accessoryDisplayName(accessory.get('product_name')?.value) }}</strong>
               <small *ngIf="!isReturnReason">Stock: {{ accessory.get('available_qty')?.value | number:'1.0-2' }} {{ accessory.get('unit')?.value }}</small>
