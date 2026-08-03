@@ -329,7 +329,7 @@ const approveWorkflow = async (req, res) => {
                 const reason = String(stb.update_reason || '').toUpperCase();
                 if (['FAULT', 'DAMAGED', 'BROKEN', 'BURNT'].includes(reason) && stb.stb_master_id) {
                     await conn.query(
-                        "UPDATE cable_stb_master SET stock_type = 'FAULT', status = 'NOT_AVAILABLE', updated_at = NOW() WHERE stb_master_id = ?",
+                        "UPDATE cable_stb_master SET stock_type = 'FAULT', status = 'NOT_AVAILABLE', assigned_employee_id = NULL, updated_at = NOW() WHERE stb_master_id = ?",
                         [stb.stb_master_id]
                     );
                 }

@@ -54,11 +54,11 @@ export class CableTvCustomerHistory {
     packages: 'CABLE_TV_CUSTOMER_PACKAGES',
     subscriptions: 'CABLE_TV_SUBSCRIPTIONS'
   };
-  readonly connectionTypes = ['NEW', 'RECONNECTION', 'SHIFTED', 'TRANSFERRED'];
+  readonly connectionTypes = ['RECONNECTION', 'SHIFTED'];
   readonly packageTypes = ['ADDON', 'ALACARTE', 'BROADCASTER'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE', 'RETURNED', 'FAULTY', 'REPLACED'];
-  readonly activeStbReasons = ['FAULT', 'DAMAGED', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
+  readonly activeStbReasons = ['FAULT', 'BROKEN', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
   readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED'];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
@@ -105,10 +105,11 @@ export class CableTvCustomerHistory {
     if (this.section === 'packages') return 'Add Package';
     return 'Add Subscription';
   }
-  get hasPendingStbApproval() {
-    return (this.details.stbs || []).some(
-      (item: any) => String(item.approval_status || '').toUpperCase() === 'PENDING'
-    );
+  get hasPendingWorkflowApproval() {
+    return String(this.customer?.approval_status || '').toUpperCase() === 'PENDING'
+      || (this.details.approvalGroups || []).some(
+        (item: any) => String(item.approval_status || '').toUpperCase() === 'PENDING'
+      );
   }
   get latestConnection() { return (this.details.connections || [])[0] || {}; }
   get latestStb() { return (this.details.stbs || [])[0] || {}; }
@@ -560,9 +561,9 @@ export class CableTvCustomerHistory {
 
   openAdd() {
     if (!this.canSection(this.section, 'create')) return;
-    if (this.section === 'stbs' && this.hasPendingStbApproval) {
+    if (this.section !== 'customer' && this.hasPendingWorkflowApproval) {
       this.commonMethods.handleError({
-        error: { message: 'An STB update is pending for administrator approval. Add STB is disabled until approval is completed.' }
+        error: { message: 'A workflow is pending for administrator approval. New details cannot be added until approval is completed.' }
       });
       return;
     }
@@ -1078,6 +1079,7 @@ export class CableTvCustomerHistory {
 
   paymentStatusLabel(value: any) {
     const status = String(value || 'PENDING').toUpperCase();
+    if (status === 'NA') return 'NA';
     if (status === 'PAID') return 'Paid';
     if (status === 'PARTIAL') return 'Partially Paid';
     return 'Payment Pending';
@@ -1241,7 +1243,8 @@ export class CableTvCustomerHistory {
   }
 
   reasonLabel(reason: string) {
-    if (['BROKEN', 'DAMAGED'].includes(String(reason || '').toUpperCase())) return 'Damaged';
+    if (String(reason || '').toUpperCase() === 'BROKEN') return 'Broken';
+    if (String(reason || '').toUpperCase() === 'DAMAGED') return 'Damaged';
     return String(reason || '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }
 

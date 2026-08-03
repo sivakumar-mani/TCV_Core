@@ -18,4 +18,12 @@ export class TransactionServices {
   addTransaction(data: any) {
     return this.http.post(this.endpoint, data);
   }
+
+  approveTransaction(transactionId: number) {
+    return this.http.patch(`${this.endpoint}/${transactionId}/approve`, {});
+  }
+
+  deleteTransaction(transactionId: number) {
+    return this.http.delete(`${this.endpoint}/${transactionId}`);
+  }
 }

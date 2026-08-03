@@ -50,6 +50,11 @@
     </div>
   </section>
 
+  <div *ngIf="hasPendingWorkflowApproval" class="pending-approval-alert" role="alert">
+    <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    <span><strong>Pending for approval.</strong> Subscription, STB, Connection, and Package details cannot be added until the administrator completes the current workflow approval.</span>
+  </div>
+
   <nav class="detail-tabs" aria-label="Cable TV customer detail sections">
     <button
       *ngFor="let tab of tabs"
@@ -106,14 +111,10 @@
         *ngIf="canSection(section, 'create')"
         type="button"
         class="primary-btn add-btn"
-        [disabled]="section === 'stbs' && hasPendingStbApproval"
+        [disabled]="hasPendingWorkflowApproval"
         (click)="openAdd()">
         <i class="bi bi-file-earmark-plus" aria-hidden="true"></i>{{ addButtonLabel }}
       </button>
-    </div>
-    <div *ngIf="section === 'stbs' && hasPendingStbApproval" class="pending-approval-alert" role="alert">
-      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-      <span><strong>Pending for approval.</strong> Another STB cannot be added until the administrator completes the current STB approval.</span>
     </div>
     <div class="history-table">
       <table>
@@ -129,6 +130,7 @@
             <th *ngIf="section === 'stbs'">Updated Date</th>
             <th *ngIf="section === 'stbs'">Reason Type</th>
             <th *ngIf="section === 'stbs'">Update Reason</th>
+            <th *ngIf="section === 'stbs'">Remarks</th>
             <th *ngIf="section === 'stbs'">STB No</th>
             <th *ngIf="section === 'stbs'">Updated By</th>
             <th *ngIf="section === 'stbs'">STB Amount</th>
@@ -167,13 +169,17 @@
             <td *ngIf="section === 'stbs'">{{ (row.updated_date || row.installed_date) | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'stbs'">{{ reasonLabel(row.stb_type || '-') }}</td>
             <td *ngIf="section === 'stbs'">{{ reasonLabel(row.update_reason || '-') }}</td>
+            <td *ngIf="section === 'stbs'">{{ row.reason_remarks || row.remarks || '-' }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_no }}</td>
             <td *ngIf="section === 'stbs'">{{ row.entered_by_name || row.installed_by_name || '-' }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_amount }}</td>
             <td *ngIf="section === 'stbs'">{{ row.stb_discount }}</td>
             <td *ngIf="section === 'stbs'">{{ row.labour_service_charge }}</td>
             <td *ngIf="section === 'stbs'">
-              <span class="table-status-pill" [class.pending]="row.payment_status !== 'PAID'">
+              <span
+                class="table-status-pill"
+                [class.pending]="row.payment_status !== 'PAID' && row.payment_status !== 'NA'"
+                [attr.title]="row.payment_status === 'NA' ? 'Not Applicable' : null">
                 {{ paymentStatusLabel(row.payment_status) }}
               </span>
             </td>

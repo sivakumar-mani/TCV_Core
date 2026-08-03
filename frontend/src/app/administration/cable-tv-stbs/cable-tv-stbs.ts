@@ -23,7 +23,7 @@ export class CableTvStbs {
   editingStbId: number | null = null;
   boxTypes = ['HD', 'SD'];
   stockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT'];
-  statuses = ['AVAILABLE', 'NOT_AVAILABLE'];
+  statuses = ['AVAILABLE', 'IN_SERVICE', 'NOT_SERVICEABLE', 'NOT_AVAILABLE'];
   filters = { stbNumber: '', stockType: '', employeeId: '', status: '' };
 
   get filteredStbs() {
@@ -69,12 +69,34 @@ export class CableTvStbs {
       mso_id: [null],
       stb_amount: [500, [Validators.required, Validators.min(0)]],
       full_set_amount: [800, [Validators.required, Validators.min(0)]],
-      assigned_employee_id: [null, Validators.required],
+      assigned_employee_id: [null],
       status: ['AVAILABLE', Validators.required],
       updated_date: [today, Validators.required]
     });
     this.stbForm.get('stb_number')?.valueChanges.subscribe(() => {
       if (!this.editingStbId && this.availableStockTypes.length === 1) {
+        this.stbForm.patchValue({ stock_type: 'SERVICED' }, { emitEvent: false });
+      }
+    });
+    this.stbForm.get('stock_type')?.valueChanges.subscribe((stockType) => {
+      if (String(stockType || '').toUpperCase() === 'FAULT') {
+        this.stbForm.patchValue({
+          status: 'NOT_AVAILABLE',
+          assigned_employee_id: null
+        }, { emitEvent: false });
+      }
+    });
+    this.stbForm.get('status')?.valueChanges.subscribe((status) => {
+      if (['IN_SERVICE', 'NOT_SERVICEABLE'].includes(status)) {
+        this.stbForm.patchValue({ stock_type: 'FAULT' }, { emitEvent: false });
+      }
+      if (
+        ['IN_SERVICE', 'NOT_SERVICEABLE'].includes(status)
+        || this.stbForm.get('stock_type')?.value === 'FAULT'
+      ) {
+        this.stbForm.patchValue({ assigned_employee_id: null }, { emitEvent: false });
+      }
+      if (status === 'AVAILABLE' && this.stbForm.get('stock_type')?.value === 'FAULT') {
         this.stbForm.patchValue({ stock_type: 'SERVICED' }, { emitEvent: false });
       }
     });
@@ -183,6 +205,14 @@ export class CableTvStbs {
       },
       error: (error: any) => this.handleError(error)
     });
+  }
+
+  canAssign(item: any) {
+    return item.status === 'AVAILABLE' && item.stock_type !== 'FAULT';
+  }
+
+  statusLabel(status: any) {
+    return String(status || '').replace(/_/g, ' ');
   }
 
   private handleError(error: any) {

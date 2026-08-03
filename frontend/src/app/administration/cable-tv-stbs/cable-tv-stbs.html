@@ -52,12 +52,12 @@
         <td>{{ item.full_set_amount }}</td>
         <td class="assignment-cell">
           <strong>{{ item.assigned_employee_name || 'Unassigned' }}</strong>
-          <select [value]="item.assigned_employee_id || ''" (change)="assignStb(item, $any($event.target).value)" [disabled]="item.status !== 'AVAILABLE'">
+          <select [value]="item.assigned_employee_id || ''" (change)="assignStb(item, $any($event.target).value)" [disabled]="!canAssign(item)">
             <option value="">Select employee</option>
             <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
           </select>
         </td>
-        <td><span class="status-pill" [class.not-available]="item.status === 'NOT_AVAILABLE'">{{ item.status }}</span></td>
+        <td><span class="status-pill" [class.not-available]="item.status !== 'AVAILABLE'">{{ statusLabel(item.status) }}</span></td>
         <td class="action-cell">
           <button type="button" class="table-icon-btn" title="Edit" aria-label="Edit STB" (click)="editStb(item)">
             <i class="bi bi-pencil-square" aria-hidden="true"></i>
@@ -108,13 +108,14 @@
         </label>
         <label>Assigned Employee
           <select formControlName="assigned_employee_id">
-            <option [ngValue]="null">Select employee</option>
+            <option [ngValue]="null">Unassigned</option>
             <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
           </select>
+          <small>Only Available, non-fault STBs can be assigned.</small>
         </label>
         <label>Status
           <select formControlName="status">
-            <option *ngFor="let status of statuses" [ngValue]="status">{{ status }}</option>
+            <option *ngFor="let status of statuses" [ngValue]="status">{{ statusLabel(status) }}</option>
           </select>
         </label>
         <label>Updated Date
