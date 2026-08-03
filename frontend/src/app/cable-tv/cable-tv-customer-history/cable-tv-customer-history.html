@@ -194,7 +194,7 @@
             <td *ngIf="section === 'subscriptions'">{{ subscriptionPeriodLabel(row) }}</td>
             <td *ngIf="section === 'subscriptions'">{{ (row.collect_date || row.created_at) | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ subscriptionCollectedByLabel(row) }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ noOfPeriodLabel(row.number_of_days_or_months, row.billing_basis) }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ noOfPeriodLabel(row.number_of_days_or_months, row.billing_basis, row.start_date) }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.start_date | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.expiry_date | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.amount }}</td>

@@ -50,6 +50,17 @@ const normalizePackageType = (value) => {
   if (type === 'ADDON') return type;
   return 'ADDON';
 };
+const subscriptionBillingDays = (startDate) => {
+  const start = new Date(`${dateOnly(startDate)}T00:00:00`);
+  if (Number.isNaN(start.getTime())) return 0;
+  const day = start.getDate();
+  if (day <= 5) return daysInMonth(start.getMonth() + 1, start.getFullYear());
+  if (day <= 10) return 25;
+  if (day <= 15) return 20;
+  if (day <= 20) return 15;
+  if (day <= 25) return 10;
+  return 5;
+};
 const customerStatusForStbStatus = (status) => ({
   ACTIVE: 'ACTIVE',
   RETRIEVED: 'RETRIEVED',
@@ -765,7 +776,7 @@ const addPendingAccount = async (db, req, data) => {
   const subscriptionAmount = money(data.subscription_amount);
   const discount = money(data.discount) + materialDiscount;
   const overallDiscount = money(data.overall_discount);
-  const subTotal = money(data.sub_total || (stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount));
+  const subTotal = money(data.sub_total || (stbAmount + connectionAmount + materialCost + subscriptionAmount));
   const grandTotal = Math.max(money(data.grand_total || (subTotal - discount - overallDiscount)), 0);
   const paidAmount = money(data.customer_paid_amount);
   const balanceAmount = Math.max(grandTotal - paidAmount, 0);
@@ -821,7 +832,7 @@ const recalculateLinkedPendingAccount = async (db, approvalGroupId) => {
   const subscriptionAmount = money(account.subscription_amount);
   const discount = money(account.stb_discount) + money(account.connection_discount)
     + money(account.material_discount) + money(account.overall_discount);
-  const subTotal = money(stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount);
+  const subTotal = money(stbAmount + connectionAmount + materialCost + subscriptionAmount);
   const grandTotal = Math.max(money(subTotal - discount), 0);
   const customerPaid = money(account.customer_paid_amount);
   const officeReceived = money(account.office_received_amount);
@@ -1518,7 +1529,10 @@ const getPendingAccounts = async (req, res) => {
       values.push(endDate);
     }
     const [rows] = await db.query(
-      `SELECT ca.*, c.customer_code, c.full_name, c.mobile_no, n.network_name,
+      `SELECT ca.*,
+              GREATEST(ca.grand_total - ca.labor_amount, 0) AS grand_total,
+              GREATEST(ca.grand_total - ca.labor_amount - ca.customer_paid_amount - ca.office_received_amount, 0) AS balance_amount,
+              c.customer_code, c.full_name, c.mobile_no, n.network_name,
               l.location_name, a.area_name, s.street_name,
               DATE(ca.created_at) AS account_date,
               CASE
@@ -2179,7 +2193,7 @@ const receiveAccount = async (req, res) => {
     await db.beginTransaction();
     const [[account]] = await db.query(
       `SELECT account_id, approval_group_id, cable_customer_id, account_status,
-              grand_total, customer_paid_amount, office_received_amount, office_balance_amount, balance_amount
+              grand_total, labor_amount, customer_paid_amount, office_received_amount, office_balance_amount, balance_amount
        FROM cable_customer_accounts
        WHERE account_id = ?
        FOR UPDATE`,
@@ -2198,7 +2212,8 @@ const receiveAccount = async (req, res) => {
     const onlineAmount = money(req.body.online_amount);
     const receivedAmount = Number((cashAmount + onlineAmount).toFixed(2));
     const currentBalance = Number(Math.max(
-      money(account.grand_total) - money(account.office_received_amount),
+      money(account.grand_total) - money(account.labor_amount)
+        - money(account.customer_paid_amount) - money(account.office_received_amount),
       0
     ).toFixed(2));
     const paidDate = textOrNull(req.body.paid_date) || dateOnly(new Date());
@@ -2847,14 +2862,16 @@ const addCableCustomer = async (req, res) => {
       const monthDays = Number(packageItem.days_in_month) || daysInMonth(subscriptionMonth, subscriptionYear);
       const endDate = packageItem.end_date || `${subscriptionYear}-${String(subscriptionMonth).padStart(2, '0')}-${monthDays}`;
       const billingBasis = String(packageItem.billing_basis || packageItem.payment_type || payload.subscription?.payment_type || 'DAY').toUpperCase();
-      const periodCount = money(packageItem.number_of_days_or_months || inclusiveDays(startDate, endDate));
-      const amount = money(packageItem.amount || (
+      const periodCount = billingBasis === 'DAY'
+        ? subscriptionBillingDays(startDate)
+        : money(packageItem.number_of_days_or_months || inclusiveDays(startDate, endDate));
+      const amount = money(
         billingBasis === 'YEAR'
           ? packagePrice * 12 * periodCount
           : billingBasis === 'MONTH'
             ? packagePrice * periodCount
             : (packagePrice / monthDays) * periodCount
-      ));
+      );
       const paymentStatus = 'PENDING';
       const paidAmount = 0;
       const balanceAmount = amount;
@@ -2901,8 +2918,8 @@ const addCableCustomer = async (req, res) => {
     const overallDiscount = money(accountPayload.overall_discount);
     const discount = money(payload.stb?.stb_discount) + money(payload.connection?.connection_discount) + materialDiscount + overallDiscount;
     const subTotal = money(accountPayload.sub_total || (accountStbAmount + connectionAmount + materialCost + subscriptionAmount));
-    const grandTotal = money(accountPayload.grand_total || (subTotal - discount));
-    const normalizedGrandTotal = Math.max(grandTotal, 0);
+    // Derive the pending amount on the server so material discount is always deducted.
+    const normalizedGrandTotal = Math.max(money(subTotal - discount), 0);
     const customerPaidAmount = money(accountPayload.customer_paid_amount);
     const balanceAmount = Math.max(normalizedGrandTotal - customerPaidAmount, 0);
     const dueDate = null;
@@ -3745,7 +3762,10 @@ const addCustomerSubscription = async (req, res) => {
     }
     const monthDays = Number(payload.days_in_month) || daysInMonth(subscriptionMonth, subscriptionYear);
     const expiryDate = payload.expiry_date || `${subscriptionYear}-${String(subscriptionMonth).padStart(2, '0')}-${monthDays}`;
-    const numberOfDays = money(payload.number_of_days_or_months || inclusiveDays(startDate, expiryDate));
+    const billingBasis = String(payload.billing_basis || 'MONTH').toUpperCase();
+    const numberOfDays = billingBasis === 'DAY'
+      ? subscriptionBillingDays(startDate)
+      : money(payload.number_of_days_or_months || inclusiveDays(startDate, expiryDate));
     const receivedCount = money(payload.received_count || (String(payload.billing_basis || '').toUpperCase() === 'YEAR'
       ? numberOfDays * 12
       : String(payload.billing_basis || '').toUpperCase() === 'DAY'
@@ -3760,7 +3780,9 @@ const addCustomerSubscription = async (req, res) => {
       [payload.customer_package_id, cableCustomerId]
     );
     const packageAmount = money(payload.package_amount ?? customerPackage?.package_price ?? customerPackage?.master_price);
-    const amount = money(payload.amount || packageAmount);
+    const amount = billingBasis === 'DAY'
+      ? money((packageAmount / monthDays) * numberOfDays)
+      : money(payload.amount || packageAmount);
     const paidAmount = money(payload.paid_amount);
     if (paidAmount > amount) {
       await db.rollback();

@@ -891,7 +891,7 @@ export class CableTvCustomerHistory {
     const dayEndDate = basis === 'DAY'
       ? this.form.get('expiry_date')?.value || this.monthLastDate(month, year)
       : this.monthLastDate(month, year);
-    const dayCount = basis === 'DAY' ? this.inclusiveDayCount(startDate, dayEndDate) : rawPeriodCount;
+    const dayCount = basis === 'DAY' ? this.subscriptionBillingDays(startDate) : rawPeriodCount;
     const periodCount = basis === 'DAY' ? dayCount : rawPeriodCount;
     const receivedCount = basis === 'YEAR'
       ? rawPeriodCount * 12
@@ -978,11 +978,29 @@ export class CableTvCustomerHistory {
     return `${month} - ${row.subscription_year || '-'}`;
   }
 
-  noOfPeriodLabel(value: any = this.form?.get('number_of_days_or_months')?.value, basis: any = this.form?.get('billing_basis')?.value) {
-    const count = Number(value) || 1;
+  noOfPeriodLabel(
+    value: any = this.form?.get('number_of_days_or_months')?.value,
+    basis: any = this.form?.get('billing_basis')?.value,
+    startDate?: string
+  ) {
     const unit = String(basis || 'MONTH').toLowerCase();
+    const count = unit === 'day' && startDate
+      ? this.subscriptionBillingDays(this.dateInputValue(startDate))
+      : Number(value) || 1;
     const label = unit === 'day' ? 'Days' : unit === 'year' ? 'Year' : 'Month';
     return `${count}${label}`;
+  }
+
+  subscriptionBillingDays(startDate: string) {
+    const start = new Date(`${startDate}T00:00:00`);
+    if (Number.isNaN(start.getTime())) return 1;
+    const day = start.getDate();
+    if (day <= 5) return new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
+    if (day <= 10) return 25;
+    if (day <= 15) return 20;
+    if (day <= 20) return 15;
+    if (day <= 25) return 10;
+    return 5;
   }
 
   daysInSelectedMonth() {

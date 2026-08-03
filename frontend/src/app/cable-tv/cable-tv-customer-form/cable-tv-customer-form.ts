@@ -428,7 +428,7 @@ export class CableTvCustomerForm {
       subscription_month: [month],
       subscription_year: [year],
       days_in_month: [daysInMonth],
-      number_of_days_or_months: [data.number_of_days_or_months || this.inclusiveDays(startDate, endDate)],
+      number_of_days_or_months: [data.number_of_days_or_months || this.subscriptionBillingDays(startDate)],
       amount: [data.amount || 0],
       paid_amount: [data.paid_amount || 0],
       balance_amount: [data.balance_amount || 0],
@@ -684,7 +684,7 @@ export class CableTvCustomerForm {
       ? Number(this.form.get('subscription.no_of_months')?.value) || 1
       : type === 'YEAR'
         ? Number(this.form.get('subscription.no_of_years')?.value) || 1
-        : this.inclusiveDays(startDate, endDate);
+        : this.subscriptionBillingDays(startDate);
     const packagePrice = Number(row.get('package_price')?.value) || 0;
     const amount = type === 'MONTH'
       ? Number((packagePrice * periodCount).toFixed(2))
@@ -866,5 +866,17 @@ export class CableTvCustomerForm {
     const end = new Date(endDate);
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 0;
     return Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+  }
+
+  subscriptionBillingDays(startDate: string) {
+    const start = new Date(`${startDate}T00:00:00`);
+    if (Number.isNaN(start.getTime())) return 0;
+    const day = start.getDate();
+    if (day <= 5) return this.daysInMonth(start.getMonth() + 1, start.getFullYear());
+    if (day <= 10) return 25;
+    if (day <= 15) return 20;
+    if (day <= 20) return 15;
+    if (day <= 25) return 10;
+    return 5;
   }
 }

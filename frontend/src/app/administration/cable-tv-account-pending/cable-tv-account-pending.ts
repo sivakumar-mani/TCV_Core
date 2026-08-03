@@ -154,7 +154,9 @@ export class CableTvAccountPending {
     return this.accounts.reduce((totals, item: any) => ({
       stb: totals.stb + (Number(item.stb_amount) || 0),
       connection: totals.connection + (Number(item.connection_amount) || 0),
+      labor: totals.labor + (Number(item.labor_amount) || 0),
       material: totals.material + (Number(item.material_cost) || 0),
+      materialDiscount: totals.materialDiscount + (Number(item.material_discount) || 0),
       subscription: totals.subscription + (Number(item.subscription_amount) || 0),
       total: totals.total + (Number(item.grand_total) || 0),
       customerPaid: totals.customerPaid + (Number(item.customer_paid_amount) || 0),
@@ -162,7 +164,9 @@ export class CableTvAccountPending {
     }), {
       stb: 0,
       connection: 0,
+      labor: 0,
       material: 0,
+      materialDiscount: 0,
       subscription: 0,
       total: 0,
       customerPaid: 0,
@@ -311,7 +315,7 @@ export class CableTvAccountPending {
     if (!this.accounts.length) return;
     const headers = [
       'S.No', 'Customer No', 'Customer Name', 'Mobile', 'Installed By', 'Connection Type',
-      'STB', 'Connection', 'Subscription', 'Customer Paid', 'Materials', 'Balance',
+      'STB', 'Connection', 'Labor', 'Subscription', 'Customer Paid', 'Materials', 'Balance',
       'Total', 'Due Date', 'Account Date', 'Status'
     ];
     const rows = this.accounts.map((item: any, index: number) => [
@@ -323,9 +327,10 @@ export class CableTvAccountPending {
       this.connectionTypeLabel(item.connection_type),
       this.amountValue(item.stb_amount),
       this.amountValue(item.connection_amount),
+      this.debitAmountValue(item.labor_amount),
       this.amountValue(item.subscription_amount),
       this.amountValue(item.customer_paid_amount),
-      this.amountValue(item.material_cost),
+      this.materialAmountValue(item),
       this.amountValue(item.balance_amount),
       this.amountValue(item.grand_total),
       this.displayDate(item.due_date),
@@ -337,9 +342,10 @@ export class CableTvAccountPending {
       '', '', '', '', '', 'Grand Total',
       this.amountValue(totals.stb),
       this.amountValue(totals.connection),
+      this.debitAmountValue(totals.labor),
       this.amountValue(totals.subscription),
       this.amountValue(totals.customerPaid),
-      this.amountValue(totals.material),
+      this.amountValue(totals.material - totals.materialDiscount),
       this.amountValue(totals.balance),
       this.amountValue(totals.total),
       '', '', ''
@@ -371,9 +377,10 @@ export class CableTvAccountPending {
       <td>${this.escapeHtml(this.connectionTypeLabel(item.connection_type))}</td>
       <td class="number">${this.amountValue(item.stb_amount)}</td>
       <td class="number">${this.amountValue(item.connection_amount)}</td>
+      <td class="number">${this.debitAmountValue(item.labor_amount)}</td>
       <td class="number">${this.amountValue(item.subscription_amount)}</td>
       <td class="number">${this.amountValue(item.customer_paid_amount)}</td>
-      <td class="number">${this.amountValue(item.material_cost)}</td>
+      <td class="number">${this.materialAmountValue(item)}</td>
       <td class="number">${this.amountValue(item.balance_amount)}</td>
       <td class="number">${this.amountValue(item.grand_total)}</td>
       <td>${this.escapeHtml(item.account_status || '-')}</td>
@@ -382,9 +389,10 @@ export class CableTvAccountPending {
     const totalRow = `<tr class="grand"><td colspan="6">Grand Total (${this.accounts.length} records)</td>
       <td class="number">${this.amountValue(totals.stb)}</td>
       <td class="number">${this.amountValue(totals.connection)}</td>
+      <td class="number">${this.debitAmountValue(totals.labor)}</td>
       <td class="number">${this.amountValue(totals.subscription)}</td>
       <td class="number">${this.amountValue(totals.customerPaid)}</td>
-      <td class="number">${this.amountValue(totals.material)}</td>
+      <td class="number">${this.amountValue(totals.material - totals.materialDiscount)}</td>
       <td class="number">${this.amountValue(totals.balance)}</td>
       <td class="number">${this.amountValue(totals.total)}</td><td></td></tr>`;
     popup.document.write(`<!doctype html><html><head><title>Pending Account Report</title><style>
@@ -401,7 +409,7 @@ export class CableTvAccountPending {
         <span>Printed: ${this.displayDate(new Date())}</span>
       </div>
       <table><thead><tr><th>S.No</th><th>Account Date</th><th>Customer No</th><th>Name</th><th>Installed By</th><th>Type</th>
-      <th>STB</th><th>Connection</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th>
+      <th>STB</th><th>Connection</th><th>Labor</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th>
       <th>Balance</th><th>Total</th><th>Status</th></tr></thead><tbody>${rows}${totalRow}</tbody></table>
       <script>window.onload=()=>window.print();<\/script></body></html>`);
     popup.document.close();
@@ -421,7 +429,7 @@ export class CableTvAccountPending {
       const date = item.account_date ? new Date(item.account_date).toLocaleDateString('en-GB').replaceAll('/', '-') : '-';
       const type = this.escapeHtml(this.connectionTypeLabel(item.connection_type));
       const customerNo = this.escapeHtml(item.customer_code || '-');
-      return `<tr><td>${date}</td><td>${customerNo}</td><td>${type}</td><td>${amount(item.stb_amount)}</td><td>${amount(item.connection_amount)}</td><td>${amount(item.subscription_amount)}</td><td>${amount(item.customer_paid_amount)}</td><td>${amount(item.material_cost)}</td><td>${amount(item.balance_amount)}</td><td>${amount(item.grand_total)}</td></tr>`;
+      return `<tr><td>${date}</td><td>${customerNo}</td><td>${type}</td><td>${amount(item.stb_amount)}</td><td>${amount(item.connection_amount)}</td><td>${this.debitAmountValue(item.labor_amount)}</td><td>${amount(item.subscription_amount)}</td><td>${amount(item.customer_paid_amount)}</td><td>${this.materialAmountValue(item)}</td><td>${amount(item.balance_amount)}</td><td>${amount(item.grand_total)}</td></tr>`;
     }).join('');
     const grandTotal = items.reduce((sum: number, item: any) => sum + Number(item.grand_total || 0), 0);
     const customerNos = items.map((item: any) => item.customer_code).join(', ');
@@ -433,8 +441,8 @@ export class CableTvAccountPending {
       .grand td{font-weight:700;background:#f3f4f6}.note{font-size:11px;margin-top:18px;color:#4b5563}
       @media print{body{margin:12mm}.no-print{display:none}}
     </style></head><body><h1>Payment Invoice</h1><div class="meta"><strong>Installed by: ${this.escapeHtml(installedNames)}</strong><span>Printed: ${new Date().toLocaleDateString('en-GB').replaceAll('/', '-')}</span></div>
-    <table><thead><tr><th>Date</th><th>Customer No</th><th>Type</th><th>STB</th><th>Connection</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
-    ${invoiceRows}<tr class="grand"><td colspan="9">Grand Total</td><td>${amount(grandTotal)}</td></tr>
+    <table><thead><tr><th>Date</th><th>Customer No</th><th>Type</th><th>STB</th><th>Connection</th><th>Labor</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
+    ${invoiceRows}<tr class="grand"><td colspan="10">Grand Total</td><td>${amount(grandTotal)}</td></tr>
     </tbody></table><p class="note">Selected customers: ${this.escapeHtml(customerNos)}</p>
     <script>window.onload=()=>{window.print();}</script></body></html>`);
     popup.document.close();
@@ -442,6 +450,16 @@ export class CableTvAccountPending {
 
   private amountValue(value: any) {
     return Number(value || 0).toFixed(2);
+  }
+
+  private debitAmountValue(value: any) {
+    return `- ${this.amountValue(value)}`;
+  }
+
+  private materialAmountValue(item: any) {
+    const material = this.amountValue(item?.material_cost);
+    const discount = Number(item?.material_discount) || 0;
+    return discount ? `${material} - ${this.amountValue(discount)}` : material;
   }
 
   connectionTypeLabel(value: any) {

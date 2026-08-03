@@ -133,9 +133,23 @@ export class CableTvCustomerView {
   }
 
   periodCount(row: any) {
-    const count = Number(row.number_of_days_or_months || 0);
     const basis = String(row.billing_basis || '').toLowerCase();
+    const count = basis === 'day' && row.start_date
+      ? this.subscriptionBillingDays(row.start_date)
+      : Number(row.number_of_days_or_months || 0);
     return count ? `${count} ${basis}${count === 1 ? '' : 's'}` : '-';
+  }
+
+  private subscriptionBillingDays(startDate: string) {
+    const start = new Date(startDate);
+    if (Number.isNaN(start.getTime())) return 0;
+    const day = start.getDate();
+    if (day <= 5) return new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
+    if (day <= 10) return 25;
+    if (day <= 15) return 20;
+    if (day <= 20) return 15;
+    if (day <= 25) return 10;
+    return 5;
   }
 
   packageStatus(row: any) {

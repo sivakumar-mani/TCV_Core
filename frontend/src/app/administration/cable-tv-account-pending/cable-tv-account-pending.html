@@ -48,6 +48,7 @@
         <th>Connection Type</th>
         <th>STB</th>
         <th>Connection</th>
+        <th>Labor</th>
         <th>Material</th>
         <th>Subscription</th>
         <th>Total</th>
@@ -66,7 +67,8 @@
         <td>{{ connectionTypeLabel(item.connection_type) }}</td>
         <td>{{ item.stb_amount }}</td>
         <td>{{ item.connection_amount }}</td>
-        <td>{{ item.material_cost }}<small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
+        <td>- {{ item.labor_amount | number:'1.2-2' }}</td>
+        <td>{{ item.material_cost | number:'1.2-2' }}<span *ngIf="item.material_discount"> - {{ item.material_discount | number:'1.2-2' }}</span><small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
         <td>{{ item.subscription_amount }}</td>
         <td>{{ item.grand_total }}</td>
         <td>{{ item.customer_paid_amount }}</td>
@@ -82,13 +84,14 @@
         </td>
       </tr>
       <tr *ngIf="!accounts.length">
-        <td [attr.colspan]="permissions.isAdmin() ? 16 : 15" class="empty-row">No account records match the selected filters.</td>
+        <td [attr.colspan]="permissions.isAdmin() ? 17 : 16" class="empty-row">No account records match the selected filters.</td>
       </tr>
       <tr *ngIf="accounts.length" class="report-total-row">
         <td colspan="5">Grand Total ({{ accounts.length }} records)</td>
         <td>{{ reportTotals.stb | number:'1.2-2' }}</td>
         <td>{{ reportTotals.connection | number:'1.2-2' }}</td>
-        <td>{{ reportTotals.material | number:'1.2-2' }}</td>
+        <td>- {{ reportTotals.labor | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.material - reportTotals.materialDiscount | number:'1.2-2' }}</td>
         <td>{{ reportTotals.subscription | number:'1.2-2' }}</td>
         <td>{{ reportTotals.total | number:'1.2-2' }}</td>
         <td>{{ reportTotals.customerPaid | number:'1.2-2' }}</td>
@@ -125,6 +128,7 @@
               <th>Type</th>
               <th>STB</th>
               <th>Connection</th>
+              <th>Labor</th>
               <th>Subscription</th>
               <th>Customer Paid</th>
               <th>Materials</th>
@@ -143,9 +147,10 @@
               <td>{{ connectionTypeLabel(item.connection_type) }}</td>
               <td>{{ item.stb_amount | number:'1.2-2' }}</td>
               <td>{{ item.connection_amount | number:'1.2-2' }}</td>
+              <td>- {{ item.labor_amount | number:'1.2-2' }}</td>
               <td>{{ item.subscription_amount | number:'1.2-2' }}</td>
               <td>{{ item.customer_paid_amount | number:'1.2-2' }}</td>
-              <td>{{ item.material_cost | number:'1.2-2' }}<small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
+              <td>{{ item.material_cost | number:'1.2-2' }}<span *ngIf="item.material_discount"> - {{ item.material_discount | number:'1.2-2' }}</span><small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
               <td>{{ item.balance_amount | number:'1.2-2' }}</td>
               <td>{{ item.grand_total | number:'1.2-2' }}</td>
               <td>{{ item.account_status }}</td>
@@ -154,9 +159,10 @@
               <td colspan="6">Grand Total ({{ accounts.length }} records)</td>
               <td>{{ reportTotals.stb | number:'1.2-2' }}</td>
               <td>{{ reportTotals.connection | number:'1.2-2' }}</td>
+              <td>- {{ reportTotals.labor | number:'1.2-2' }}</td>
               <td>{{ reportTotals.subscription | number:'1.2-2' }}</td>
               <td>{{ reportTotals.customerPaid | number:'1.2-2' }}</td>
-              <td>{{ reportTotals.material | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.material - reportTotals.materialDiscount | number:'1.2-2' }}</td>
               <td>{{ reportTotals.balance | number:'1.2-2' }}</td>
               <td>{{ reportTotals.total | number:'1.2-2' }}</td>
               <td></td>
