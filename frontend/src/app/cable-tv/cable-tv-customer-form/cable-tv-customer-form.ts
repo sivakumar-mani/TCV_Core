@@ -454,6 +454,12 @@ export class CableTvCustomerForm {
   selectPackage(index: number) {
     const row = this.packages.at(index) as FormGroup;
     const packageId = row.get('package_id')?.value;
+    if (packageId && this.isPackageSelected(packageId, index)) {
+      row.patchValue({ package_id: null, package_price: 0 }, { emitEvent: false });
+      this.calculatePackageRow(index);
+      this.commonMethods.handleError({ error: { message: 'The same package cannot be added more than once' } });
+      return;
+    }
     const selectedPackage = (this.lookups.packages || []).find((item: any) => Number(item.package_id) === Number(packageId));
     if (!selectedPackage) return;
     row.patchValue({ package_price: Number(selectedPackage.price) || 0 });
@@ -650,6 +656,12 @@ export class CableTvCustomerForm {
   selectMaterialProduct(index: number) {
     const row = this.materials.at(index) as FormGroup;
     const productId = row.get('product_id')?.value;
+    if (productId && this.isMaterialSelected(productId, index)) {
+      row.patchValue({ product_id: null, item_name: '', unit: 'PCS', unit_rate: 0, amount: 0 }, { emitEvent: false });
+      this.calculateAccountTotals();
+      this.commonMethods.handleError({ error: { message: 'The same used material cannot be added more than once' } });
+      return;
+    }
     const product = (this.lookups.products || []).find((item: any) => Number(item.product_id) === Number(productId));
     if (!product) return;
     row.patchValue({
@@ -777,6 +789,14 @@ export class CableTvCustomerForm {
       this.form.markAllAsTouched();
       return;
     }
+    if (this.hasDuplicatePackages()) {
+      this.commonMethods.handleError({ error: { message: 'The same package cannot be added more than once' } });
+      return;
+    }
+    if (this.hasDuplicateMaterials()) {
+      this.commonMethods.handleError({ error: { message: 'The same used material cannot be added more than once' } });
+      return;
+    }
 
     this.ngxLoader.start();
     this.applySubscriptionPeriod();
@@ -813,6 +833,34 @@ export class CableTvCustomerForm {
 
   daysInMonth(month: number, year: number) {
     return new Date(year, month, 0).getDate();
+  }
+
+  isPackageSelected(packageId: any, currentIndex: number) {
+    return this.packages.controls.some((row, index) =>
+      index !== currentIndex && Number(row.get('package_id')?.value) === Number(packageId)
+    );
+  }
+
+  isMaterialSelected(productId: any, currentIndex: number) {
+    return this.materials.controls.some((row, index) =>
+      index !== currentIndex && Number(row.get('product_id')?.value) === Number(productId)
+    );
+  }
+
+  hasDuplicatePackages() {
+    const packageIds = this.packages.controls
+      .map((row) => Number(row.get('package_id')?.value))
+      .filter(Boolean);
+    return new Set(packageIds).size !== packageIds.length;
+  }
+
+  hasDuplicateMaterials() {
+    const keys = this.materials.controls
+      .filter((row) => row.get('product_id')?.value || String(row.get('item_name')?.value || '').trim())
+      .map((row) => row.get('product_id')?.value
+        ? `product:${Number(row.get('product_id')?.value)}`
+        : `item:${String(row.get('item_name')?.value || '').trim().toLowerCase()}`);
+    return new Set(keys).size !== keys.length;
   }
 
   subscriptionStartDate() {

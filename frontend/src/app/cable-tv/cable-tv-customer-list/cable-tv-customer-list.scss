@@ -88,9 +88,9 @@ select {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 18px 42px rgba(15, 23, 42, .22);
-  max-width: 420px;
+  max-width: 620px;
   padding: 18px;
-  width: min(420px, 100%);
+  width: min(620px, 100%);
 }
 
 .modal-header {
@@ -120,19 +120,34 @@ select {
   width: 30px;
 }
 
-.package-detail-row {
-  border-top: 1px solid #e5ebf2;
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-  padding: 10px 0;
+.package-table-wrap {
+  overflow-x: auto;
 }
 
-.package-detail-row span {
-  color: #667085;
+.package-table {
+  border-collapse: collapse;
+  width: 100%;
 }
 
-.package-detail-row strong {
+.package-table th,
+.package-table td {
+  border: 1px solid #dce3ec;
   color: #101828;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.package-table thead th,
+.package-table tfoot th {
+  background: #f4f7fb;
+  font-weight: 750;
+}
+
+.package-table .amount-cell {
   text-align: right;
+}
+
+.package-table .empty-cell {
+  color: #667085;
+  text-align: center;
 }

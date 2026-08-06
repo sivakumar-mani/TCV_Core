@@ -26,6 +26,11 @@ tbody tr:nth-child(odd) { background: #f7f7f7; }
 .empty { padding: 28px; text-align: center; }
 tfoot td { background: #fafcff; font-size: 14px; font-weight: 600; }
 .grand-total { text-align: right; }
+.payment-mode-total td {
+  background: #f3f8ff;
+
+  &:first-child { color: #344054; text-align: right; }
+}
 .pagination { align-items: center; display: flex; justify-content: flex-end; gap: 28px; padding: 14px 16px; }
 .pagination label { align-items: center; flex-direction: row; }
 .pagination select { min-height: 38px; width: 78px; }

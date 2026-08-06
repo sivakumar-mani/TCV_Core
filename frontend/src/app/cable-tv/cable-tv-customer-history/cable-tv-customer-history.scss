@@ -68,6 +68,8 @@ tfoot td { background: #f8fafc; font-weight: 750; }
 .table-icon-btn:hover { background: #eaf1ff; }
 .table-icon-btn.edit { color: #113a64; }
 .table-icon-btn.deactivate { background: #fff4e6; color: #b54708; }
+.package-remove-btn { background: #fff4e6; border: 1px solid #f5c58a; border-radius: 5px; color: #b54708; cursor: pointer; font-weight: 700; min-height: 30px; padding: 4px 10px; }
+.package-remove-btn:hover { background: #ffead0; }
 .table-icon-btn.delete { color: #113a64; }
 .primary-btn { background: #1565c0; color: #fff; }
 .secondary-btn { background: #e9eef5; color: #243447; }
@@ -79,6 +81,11 @@ tfoot td { background: #f8fafc; font-weight: 750; }
 label { color: #344054; display: grid; font-size: 13px; font-weight: 600; gap: 6px; }
 input, select, textarea { border: 1px solid #c8d0dc; border-radius: 5px; color: #111827; font: inherit; min-height: 38px; padding: 7px 9px; width: 100%; }
 input[readonly] { background: #f5f7fb; }
+.stb-count-badges { display: flex; flex: 1; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+.stb-count-badge { border: 1px solid; border-radius: 24px; font-size: 14px; font-weight: 500; padding: 8px 14px; white-space: nowrap; }
+.stb-count-badge.new { background: #f3f7ff; border-color: #c9d9ff; color: #174ea6; }
+.stb-count-badge.serviced { background: #effcf5; border-color: #b7ebcb; color: #08783e; }
+.stb-count-badge.returned { background: #fff7ed; border-color: #fed0a5; color: #b54708; }
 textarea { resize: vertical; }
 .inline-pair { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) 120px; }
 .month-year-control { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-width: 0; }
@@ -111,6 +118,8 @@ textarea { resize: vertical; }
 .review-approval-bar { align-items: center; background: #fff; border-top: 1px solid #dbe3ee; bottom: 0; display: flex; justify-content: flex-end; margin-top: 18px; padding: 14px 20px; position: sticky; z-index: 20; }
 .review-approval-bar .primary-btn { align-items: center; display: inline-flex; gap: 7px; min-width: 130px; justify-content: center; }
 .review-approved { align-items: center; color: #18794e; display: inline-flex; font-weight: 700; gap: 7px; }
+.review-tab-approval { display: flex; justify-content: flex-end; margin-left: auto; }
+.review-tab-approval .primary-btn { align-items: center; display: inline-flex; gap: 7px; min-width: 130px; justify-content: center; }
 @media (max-width: 760px) {
   .page-header, .section-title-row, .form-actions { align-items: stretch; flex-direction: column; }
   .summary-top { padding: 24px 20px; }

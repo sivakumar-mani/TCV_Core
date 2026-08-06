@@ -22,9 +22,28 @@ export class CableTvStbs {
   showStbModal = false;
   editingStbId: number | null = null;
   boxTypes = ['HD', 'SD'];
-  stockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT'];
+  stockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT', 'DAMAGED', 'BURNT'];
   statuses = ['AVAILABLE', 'IN_SERVICE', 'NOT_SERVICEABLE', 'NOT_AVAILABLE'];
   filters = { stbNumber: '', stockType: '', employeeId: '', status: '' };
+
+  get countWidgets() {
+    const definitions = [
+      { key: 'NEW', label: 'New', matches: (item: any) => String(item.stock_type || '').toUpperCase() === 'NEW' },
+      { key: 'IN_SERVICE', label: 'In Service', matches: (item: any) => String(item.status || '').toUpperCase() === 'IN_SERVICE' },
+      { key: 'SERVICED', label: 'Serviced', matches: (item: any) => String(item.stock_type || '').toUpperCase() === 'SERVICED' },
+      { key: 'RETURNED', label: 'Returned', matches: (item: any) => String(item.stock_type || '').toUpperCase() === 'RETURNED' }
+    ];
+    return definitions.map((definition) => {
+      const rows = this.stbs.filter(definition.matches);
+      const available = rows.filter((item) => String(item.status || '').toUpperCase() === 'AVAILABLE').length;
+      return {
+        ...definition,
+        total: rows.length,
+        available,
+        unavailable: rows.length - available
+      };
+    });
+  }
 
   get filteredStbs() {
     const stbNumber = this.filters.stbNumber.trim().toLowerCase();
@@ -48,9 +67,17 @@ export class CableTvStbs {
     const matches = this.stbs.filter(
       (item) => String(item.stb_number || '').trim().toLowerCase() === stbNumber
     );
-    return matches.length > 0 && matches.every((item) => item.stock_type === 'FAULT')
+    if (!matches.length) return this.stockTypes;
+    const latest = [...matches].sort((a, b) => {
+      const dateDifference = new Date(b.updated_date || b.updated_at || 0).getTime()
+        - new Date(a.updated_date || a.updated_at || 0).getTime();
+      return dateDifference || Number(b.stb_master_id || 0) - Number(a.stb_master_id || 0);
+    })[0];
+    return this.isFaultType(latest.stock_type)
       ? ['SERVICED']
-      : this.stockTypes;
+      : String(latest.stock_type || '').toUpperCase() === 'SERVICED'
+        ? ['FAULT', 'DAMAGED', 'BURNT']
+        : [];
   }
 
   constructor(
@@ -79,9 +106,9 @@ export class CableTvStbs {
       }
     });
     this.stbForm.get('stock_type')?.valueChanges.subscribe((stockType) => {
-      if (String(stockType || '').toUpperCase() === 'FAULT') {
+      if (this.isFaultType(stockType)) {
         this.stbForm.patchValue({
-          status: 'NOT_AVAILABLE',
+          status: 'IN_SERVICE',
           assigned_employee_id: null
         }, { emitEvent: false });
       }
@@ -92,11 +119,11 @@ export class CableTvStbs {
       }
       if (
         ['IN_SERVICE', 'NOT_SERVICEABLE'].includes(status)
-        || this.stbForm.get('stock_type')?.value === 'FAULT'
+        || this.isFaultType(this.stbForm.get('stock_type')?.value)
       ) {
         this.stbForm.patchValue({ assigned_employee_id: null }, { emitEvent: false });
       }
-      if (status === 'AVAILABLE' && this.stbForm.get('stock_type')?.value === 'FAULT') {
+      if (status === 'AVAILABLE' && this.isFaultType(this.stbForm.get('stock_type')?.value)) {
         this.stbForm.patchValue({ stock_type: 'SERVICED' }, { emitEvent: false });
       }
     });
@@ -145,7 +172,7 @@ export class CableTvStbs {
       assigned_employee_id: item.assigned_employee_id ? Number(item.assigned_employee_id) : null,
       status: item.status,
       updated_date: this.dateInputValue(item.updated_date || item.updated_at)
-    });
+    }, { emitEvent: false });
     this.showStbModal = true;
   }
 
@@ -208,11 +235,15 @@ export class CableTvStbs {
   }
 
   canAssign(item: any) {
-    return item.status === 'AVAILABLE' && item.stock_type !== 'FAULT';
+    return item.status === 'AVAILABLE' && !this.isFaultType(item.stock_type);
   }
 
   statusLabel(status: any) {
     return String(status || '').replace(/_/g, ' ');
+  }
+
+  private isFaultType(value: any) {
+    return ['FAULT', 'DAMAGED', 'BURNT'].includes(String(value || '').toUpperCase());
   }
 
   private handleError(error: any) {

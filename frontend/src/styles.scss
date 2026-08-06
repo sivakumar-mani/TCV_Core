@@ -73,6 +73,8 @@
   --tcv-shadow-lg: 0 12px 32px rgba(30, 36, 56, 0.12);
 
   --ag-grid-header: var(--tcv-primary-50);
+
+  --tzen-brand: #ff4081;
 }
 
 // =====================================================================
@@ -339,6 +341,13 @@ body {
 
 .mdc-floating-label {
   font-size: 0.95rem !important;
+}
+
+// =====================================================================
+// Radio buttons
+// =====================================================================
+.mat-mdc-radio-button {
+  --mat-radio-selected-icon-color: var(--tzen-brand);
 }
 
 .error-message {

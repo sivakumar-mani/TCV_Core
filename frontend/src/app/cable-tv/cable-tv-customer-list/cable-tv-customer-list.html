@@ -22,17 +22,25 @@
       <h2>Package Information</h2>
       <button type="button" class="close-btn" (click)="closePackageInfo()">x</button>
     </div>
-    <div class="package-detail-row">
-      <span>Package Name</span>
-      <strong>{{ selectedPackageInfo.package_name }}</strong>
-    </div>
-    <div class="package-detail-row">
-      <span>Package Type</span>
-      <strong>{{ selectedPackageInfo.package_type }}</strong>
-    </div>
-    <div class="package-detail-row">
-      <span>Package Price</span>
-      <strong>{{ selectedPackageInfo.package_price !== null && selectedPackageInfo.package_price !== undefined ? (selectedPackageInfo.package_price | number:'1.2-2') : '-' }}</strong>
+    <div class="package-table-wrap">
+      <table class="package-table">
+        <thead>
+          <tr><th>Package Name</th><th>Type</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let package of selectedPackageInfo.packages">
+            <td>{{ package.package_name }}</td>
+            <td>{{ package.package_type }}</td>
+            <td class="amount-cell">{{ package.amount | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="!selectedPackageInfo.packages.length">
+            <td colspan="3" class="empty-cell">No active package information</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr><th colspan="2">Total</th><th class="amount-cell">{{ selectedPackageInfo.total | number:'1.2-2' }}</th></tr>
+        </tfoot>
+      </table>
     </div>
   </section>
 </div>

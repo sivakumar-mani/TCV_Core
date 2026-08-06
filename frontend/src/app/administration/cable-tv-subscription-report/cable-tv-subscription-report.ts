@@ -86,6 +86,20 @@ export class CableTvSubscriptionReport {
     return this.rows.slice(start, start + this.pageSize);
   }
   get pageTotal() { return this.pageRows.reduce((sum, row) => sum + Math.round(Number(row.paid_amount) || 0), 0); }
+  get paymentModeBreakdown() {
+    const totals = this.rows.reduce((result: Record<string, number>, row: any) => {
+      const rawMode = String(row.payment_mode || 'CASH').toUpperCase();
+      const mode = ['CASH', 'ONLINE', 'OFFICE'].includes(rawMode) ? rawMode : 'OTHER';
+      result[mode] = (result[mode] || 0) + Math.round(Number(row.paid_amount) || 0);
+      return result;
+    }, {});
+    return [
+      { mode: 'CASH', label: 'Cash Amount', amount: totals['CASH'] || 0 },
+      { mode: 'ONLINE', label: 'Online Amount', amount: totals['ONLINE'] || 0 },
+      { mode: 'OFFICE', label: 'Office Amount', amount: totals['OFFICE'] || 0 },
+      ...(totals['OTHER'] ? [{ mode: 'OTHER', label: 'Other Amount', amount: totals['OTHER'] }] : [])
+    ];
+  }
 
   loadReport() {
     if (!this.filters.start_date || !this.filters.end_date) return this.showError('From Date and To Date are required');
@@ -155,7 +169,7 @@ export class CableTvSubscriptionReport {
       <div class="meta"><span>Collected By: ${this.escapeHtml(this.collectorLabel)}</span><span>Network: ${this.escapeHtml(this.networkLabel)}</span><span>Customer Type: ${this.escapeHtml(this.customerTypeLabel)}</span><span>Period: ${this.escapeHtml(this.displayDate(this.filters.start_date))} to ${this.escapeHtml(this.displayDate(this.filters.end_date))}</span></div>
       <table><thead><tr><th>S.No</th><th>Collected Date</th><th>C No</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="11">No records found.</td></tr>'}</tbody>
-      <tfoot><tr><td colspan="7">Total Records: ${this.summary.total_records}</td><td>Grand Total</td><td class="number">${this.summary.total_count}</td><td class="number">${this.amount(this.summary.total_balance)}</td><td class="number">${this.amount(this.summary.total_amount)}</td></tr></tfoot></table>
+      <tfoot>${this.paymentModeBreakdown.map(item => `<tr><td colspan="10">${this.escapeHtml(item.label)}</td><td class="number">${this.amount(item.amount)}</td></tr>`).join('')}<tr><td colspan="7">Total Records: ${this.summary.total_records}</td><td>Grand Total</td><td class="number">${this.summary.total_count}</td><td class="number">${this.amount(this.summary.total_balance)}</td><td class="number">${this.amount(this.summary.total_amount)}</td></tr></tfoot></table>
       <script>window.onload=()=>window.print();<\/script></body></html>`);
     popup.document.close();
   }
@@ -168,6 +182,9 @@ export class CableTvSubscriptionReport {
       this.paymentType(row), Number(row.received_count) || 0,
       Math.round(Number(row.balance_amount) || 0), Math.round(Number(row.paid_amount) || 0)
     ]);
+    this.paymentModeBreakdown.forEach(item => {
+      data.push(['', '', '', '', '', '', '', '', '', item.label, item.amount]);
+    });
     data.push(['', '', '', '', '', '', `Total Records: ${this.summary.total_records}`, 'Grand Total', this.summary.total_count, this.summary.total_balance, this.summary.total_amount]);
     const csv = [headers, ...data].map(columns => columns.map(value => this.csvValue(value)).join(',')).join('\r\n');
     const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' });

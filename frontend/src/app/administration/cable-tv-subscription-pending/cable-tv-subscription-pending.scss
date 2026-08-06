@@ -6,7 +6,17 @@
 .filter-card { align-items: end; background: #fff; border: 1px solid #e3e8ef; border-radius: 10px; display: grid; gap: 14px; grid-template-columns: repeat(4, minmax(150px, 1fr)) auto; margin-bottom: 18px; padding: 16px; }
 label { color: #344054; display: flex; flex-direction: column; font-size: 13px; font-weight: 650; gap: 6px; }
 input, select, textarea { background: #fff; border: 1px solid #cfd8e5; border-radius: 6px; color: #202b3c; font: inherit; min-height: 42px; padding: 8px 11px; width: 100%; }
-input:disabled, select:disabled { background: #eef1f5; color: #475467; cursor: not-allowed; opacity: 1; }
+input:disabled,
+input[readonly],
+select:disabled,
+textarea:disabled,
+textarea[readonly] {
+  background: #e5e7eb;
+  border-color: #cbd0d8;
+  color: #667085;
+  cursor: not-allowed;
+  opacity: 1;
+}
 textarea { min-height: 68px; resize: vertical; }
 .filter-actions, .modal-actions { display: flex; gap: 10px; }
 button { border: 0; border-radius: 6px; cursor: pointer; font-weight: 700; min-height: 42px; padding: 9px 16px; }

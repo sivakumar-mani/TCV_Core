@@ -58,7 +58,7 @@ export class CableTvCustomerHistory {
   readonly packageTypes = ['ADDON', 'ALACARTE', 'BROADCASTER'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE', 'RETURNED', 'FAULTY', 'REPLACED'];
-  readonly activeStbReasons = ['FAULT', 'BROKEN', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
+  readonly activeStbReasons = ['FAULT', 'DAMAGED', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
   readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED'];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
@@ -90,12 +90,30 @@ export class CableTvCustomerHistory {
   }
 
   get title() { return this.titles[this.section]; }
-  get reviewApprovalPending() {
+  get reviewWorkflowGroup() {
     const approvalGroupId = Number(String(this.workflowId || '').replace(/^CTV-/i, ''));
-    const group = (this.details.approvalGroups || []).find(
+    return (this.details.approvalGroups || []).find(
       (item: any) => Number(item.approval_group_id) === approvalGroupId
     );
-    return !group || String(group.approval_status || '').toUpperCase() === 'PENDING';
+  }
+  get isStbReviewWorkflow() {
+    return String(this.reviewWorkflowGroup?.group_type || '').toUpperCase() === 'STB_UPDATE';
+  }
+  get isConnectionReviewWorkflow() {
+    return String(this.reviewWorkflowGroup?.group_type || '').toUpperCase() === 'CONNECTION_UPDATE';
+  }
+  get isPackageReviewWorkflow() {
+    return String(this.reviewWorkflowGroup?.group_type || '').toUpperCase() === 'PACKAGE_UPDATE';
+  }
+  get reviewWorkflowSection(): Section | null {
+    if (this.isStbReviewWorkflow) return 'stbs';
+    if (this.isConnectionReviewWorkflow) return 'connections';
+    if (this.isPackageReviewWorkflow) return 'packages';
+    return null;
+  }
+  get reviewApprovalPending() {
+    const group = this.reviewWorkflowGroup;
+    return Boolean(group) && String(group.approval_status || '').toUpperCase() === 'PENDING';
   }
   get materials(): FormArray { return this.form.get('materials') as FormArray; }
   get stbAccessories(): FormArray { return this.form.get('accessories') as FormArray; }
@@ -110,6 +128,9 @@ export class CableTvCustomerHistory {
       || (this.details.approvalGroups || []).some(
         (item: any) => String(item.approval_status || '').toUpperCase() === 'PENDING'
       );
+  }
+  get addActionsDisabled() {
+    return this.isReviewMode ? this.reviewApprovalPending : this.hasPendingWorkflowApproval;
   }
   get latestConnection() { return (this.details.connections || [])[0] || {}; }
   get latestStb() { return (this.details.stbs || [])[0] || {}; }
@@ -154,14 +175,14 @@ export class CableTvCustomerHistory {
   get isReturnReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'RETURNED'; }
   get isLocationChange() { return this.section === 'connections' && String(this.form?.get('connection_type')?.value || '').toUpperCase() === 'SHIFTED'; }
   get locationChangePostalAreas() {
-    const networkId = Number(this.customer?.network_id);
+    const networkId = Number(this.form?.get('network_id')?.value);
     const locationIds = new Set((this.lookups.areas || [])
       .filter((area: any) => Number(area.network_id) === networkId)
       .map((area: any) => Number(area.location_id)));
     return (this.lookups.locations || []).filter((location: any) => locationIds.has(Number(location.location_id)));
   }
   get locationChangeAreas() {
-    const networkId = Number(this.customer?.network_id);
+    const networkId = Number(this.form?.get('network_id')?.value);
     const locationId = Number(this.form?.get('new_location_id')?.value);
     return (this.lookups.areas || []).filter((area: any) =>
       Number(area.network_id) === networkId && Number(area.location_id) === locationId
@@ -174,6 +195,12 @@ export class CableTvCustomerHistory {
   get filteredStbMasters() {
     const selectedType = String(this.form?.get('stb_type')?.value || 'NEW').toUpperCase();
     return (this.lookups.stbMasters || []).filter((stb: any) => String(stb.stock_type || '').toUpperCase() === selectedType);
+  }
+  assignedStbCount(stockType: string) {
+    return (this.lookups.stbMasters || []).filter((stb: any) =>
+      String(stb.stock_type || '').toUpperCase() === stockType
+      && String(stb.status || 'AVAILABLE').toUpperCase() === 'AVAILABLE'
+    ).length;
   }
   get filteredPackages() {
     const selectedType = String(this.form?.get('package_type')?.value || '').toUpperCase();
@@ -206,20 +233,38 @@ export class CableTvCustomerHistory {
   canSection(section: Section, action: PermissionAction = 'view') {
     if (section === 'customer') return this.permissions.isAdmin();
     if (action === 'view') return true;
-    if (this.isReviewMode) return false;
     if (action === 'delete') return this.permissions.isAdmin();
+    if (this.isReviewMode) {
+      if (action === 'create') return this.permissions.isAdmin();
+      return false;
+    }
     if (action === 'update') {
+      if (section === 'subscriptions') {
+        return this.permissions.isAdmin()
+          || this.permissions.can(this.sectionPermissionKeys[section], 'create');
+      }
       return this.permissions.isAdmin()
-        || (section === 'subscriptions' && this.permissions.can(this.sectionPermissionKeys[section], 'create'));
+        || this.permissions.can(this.sectionPermissionKeys[section], 'update');
     }
     return this.permissions.can(this.sectionPermissionKeys[section], action);
   }
 
   canEditRow(row: any) {
     if (!this.canSection(this.section, 'update')) return false;
-    if (this.section !== 'subscriptions' || this.permissions.isAdmin()) return true;
-    return String(this.customer?.status || '').toUpperCase() === 'ACTIVE'
-      && String(row?.payment_status || '').toUpperCase() !== 'PAID';
+    if (this.section === 'subscriptions' && !this.permissions.isAdmin()) {
+      return String(row?.payment_status || '').toUpperCase() !== 'PAID';
+    }
+    return true;
+  }
+
+  canDeleteRow(row: any) {
+    if (!this.canSection(this.section, 'delete')) return false;
+    if (this.section !== 'stbs') return true;
+    const latestStbId = Math.max(
+      0,
+      ...this.rows.map((item: any) => Number(item.customer_stb_id) || 0)
+    );
+    return Number(row?.customer_stb_id) !== latestStbId;
   }
 
   buildForm() {
@@ -239,7 +284,8 @@ export class CableTvCustomerHistory {
     if (this.section === 'connections') {
       this.form = this.fb.group({
         connection_date: [today, Validators.required],
-        connection_type: ['RECONNECTION', Validators.required],
+        connection_type: ['SHIFTED', Validators.required],
+        network_id: [this.customer.network_id || null, Validators.required],
         new_door_no: [''],
         new_location_id: [null],
         new_area_id: [null],
@@ -257,6 +303,9 @@ export class CableTvCustomerHistory {
         materials: this.fb.array([this.createMaterialRow()])
       });
       this.form.get('connection_type')?.valueChanges.subscribe(() => this.applyLocationChangeState());
+      this.form.get('network_id')?.valueChanges.subscribe(() => {
+        this.form.patchValue({ new_location_id: null, new_area_id: null, new_street_id: null }, { emitEvent: false });
+      });
       this.form.get('new_location_id')?.valueChanges.subscribe(() => {
         this.form.patchValue({ new_area_id: null, new_street_id: null }, { emitEvent: false });
       });
@@ -308,13 +357,18 @@ export class CableTvCustomerHistory {
         package_id: [null, Validators.required],
         package_price: [0],
         start_date: [today],
-        end_date: [''],
+        end_date: [this.oneYearFromDate(today)],
         updated_by_employee_id: [null],
         is_active: [1]
       });
       this.form.get('package_type')?.valueChanges.subscribe(() => {
         this.form.patchValue({ package_id: null, package_price: 0 }, { emitEvent: false });
       });
+      if (!this.editId) {
+        this.form.get('start_date')?.valueChanges.subscribe((startDate: any) => {
+          this.form.patchValue({ end_date: this.oneYearFromDate(startDate) }, { emitEvent: false });
+        });
+      }
       this.form.get('is_active')?.valueChanges.subscribe(() => this.applyPackageStatusPrice());
       return;
     }
@@ -462,6 +516,11 @@ export class CableTvCustomerHistory {
             this.details = response || {};
             this.customer = response.customer || {};
             this.customerSearchNo = this.customer.customer_code || this.customerSearchNo;
+            const reviewSection = this.reviewWorkflowSection;
+            if (this.isReviewMode && reviewSection && this.section !== reviewSection) {
+              this.section = reviewSection;
+              this.buildForm();
+            }
             if (this.section === 'stbs' && !this.showModal) this.buildForm();
             if (!this.permissions.isAdmin()) this.applyLoggedInEmployee();
             this.refreshRows();
@@ -561,7 +620,7 @@ export class CableTvCustomerHistory {
 
   openAdd() {
     if (!this.canSection(this.section, 'create')) return;
-    if (this.section !== 'customer' && this.hasPendingWorkflowApproval) {
+    if (this.section !== 'customer' && this.addActionsDisabled) {
       this.commonMethods.handleError({
         error: { message: 'A workflow is pending for administrator approval. New details cannot be added until approval is completed.' }
       });
@@ -756,7 +815,7 @@ export class CableTvCustomerHistory {
   }
 
   delete(row: any) {
-    if (!this.canSection(this.section, 'delete')) return;
+    if (!this.canDeleteRow(row)) return;
     if (!confirm('Delete this record?')) return;
     this.ngxLoader.start();
     const id = this.idFor(row);
@@ -790,6 +849,28 @@ export class CableTvCustomerHistory {
       is_active: 0
     };
     this.cableTvService.updateCustomerPackage(this.customerId, Number(row.customer_package_id), payload).subscribe({
+      next: (response: any) => {
+        this.ngxLoader.stop();
+        this.commonMethods.handleTokenAndMessage(response);
+        this.loadData();
+      },
+      error: (error: any) => this.handleError(error)
+    });
+  }
+
+  canRemovePackage(row: any) {
+    const packageType = String(row?.package_type || '').toUpperCase();
+    return Number(row?.is_active) === 1
+      && String(row?.removal_status || 'NONE').toUpperCase() !== 'PENDING'
+      && ['ALACARTE', 'BROADCASTER'].includes(packageType)
+      && (this.canSection('packages', 'create') || this.canSection('packages', 'update'));
+  }
+
+  removePackage(row: any) {
+    if (!this.canRemovePackage(row)) return;
+    if (!confirm(`Remove ${row.package_name || 'this package'}?`)) return;
+    this.ngxLoader.start();
+    this.cableTvService.removeCustomerPackage(this.customerId, Number(row.customer_package_id)).subscribe({
       next: (response: any) => {
         this.ngxLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
@@ -854,8 +935,11 @@ export class CableTvCustomerHistory {
   }
 
   defaultCustomerPackageId() {
-    const activePackage = (this.details.customerPackages || []).find((item: any) => Number(item.is_active) === 1);
-    return activePackage?.customer_package_id || (this.details.customerPackages || [])[0]?.customer_package_id || null;
+    const approvedPackages = (this.details.customerPackages || []).filter(
+      (item: any) => String(item.approval_status || 'APPROVED').toUpperCase() === 'APPROVED'
+    );
+    const activePackage = approvedPackages.find((item: any) => Number(item.is_active) === 1);
+    return activePackage?.customer_package_id || approvedPackages[0]?.customer_package_id || null;
   }
 
   selectedCustomerPackage() {
@@ -1091,6 +1175,7 @@ export class CableTvCustomerHistory {
   }
 
   packageStatusLabel(row: any) {
+    if (String(row.removal_status || '').toUpperCase() === 'PENDING') return 'Pending';
     if (String(row.approval_status || '').toUpperCase() === 'PENDING') return 'Pending';
     return Number(row.is_active) === 1 ? 'Active' : 'Removed';
   }
@@ -1113,7 +1198,15 @@ export class CableTvCustomerHistory {
         this.approvalInProgress = false;
         this.ngxLoader.stop();
         this.commonMethods.handleTokenAndMessage(response);
-        this.router.navigateByUrl('/workflow-approval');
+        this.isReviewMode = false;
+        this.workflowId = '';
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { review: null, workflowId: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        });
+        this.loadData();
       },
       error: (error: any) => {
         this.approvalInProgress = false;
@@ -1139,6 +1232,14 @@ export class CableTvCustomerHistory {
     if (typeof value === 'string') return value.slice(0, 10);
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
+  }
+
+  oneYearFromDate(value: any) {
+    const startDate = this.dateInputValue(value);
+    if (!startDate) return '';
+    const date = new Date(`${startDate}T00:00:00.000Z`);
+    date.setUTCFullYear(date.getUTCFullYear() + 1);
+    return date.toISOString().slice(0, 10);
   }
 
   selectStbMaster() {
@@ -1287,7 +1388,7 @@ export class CableTvCustomerHistory {
       ...(this.details.connections || []).map((item: any) => Number(item.connection_id)).filter(Number.isFinite)
     );
     if (Number(row?.connection_id) === firstConnectionId) return 'New';
-    const value = String(row?.connection_type || '').toUpperCase();
+    const value = String(typeof row === 'string' ? row : row?.connection_type || '').toUpperCase();
     if (value === 'NEW') return 'New';
     if (value === 'SHIFTED') return 'Location Change';
     if (value === 'TRANSFERRED') return 'Transferred';

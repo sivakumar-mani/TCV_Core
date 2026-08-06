@@ -155,7 +155,10 @@ const getTransactions = async (req, res) => {
       values.push(createdByUserId);
     }
     const [rows] = await db.query(
-      `SELECT ft.*, COALESCE(NULLIF(CONCAT_WS(' ', e.first_name, e.last_name), ''), NULLIF(CONCAT_WS(' ', u.first_name, u.last_name), ''), u.username, '-') AS entered_by_name
+      `SELECT ft.*,
+              DATE_FORMAT(ft.transaction_date, '%Y-%m-%d') AS transaction_date,
+              DATE_FORMAT(ft.received_date, '%Y-%m-%d') AS received_date,
+              COALESCE(NULLIF(CONCAT_WS(' ', e.first_name, e.last_name), ''), NULLIF(CONCAT_WS(' ', u.first_name, u.last_name), ''), u.username, '-') AS entered_by_name
        FROM finance_transactions ft
        LEFT JOIN employees e ON e.employee_id = ft.created_by_employee_id
        LEFT JOIN users u ON u.user_id = ft.created_by_user_id

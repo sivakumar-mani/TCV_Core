@@ -240,6 +240,12 @@ const approveWorkflow = async (req, res) => {
     try {
         await ensureWorkflowTable();
         await ensureTransactionTable(conn);
+        try {
+            await conn.query("ALTER TABLE cable_stb_master MODIFY stock_type ENUM('NEW','SERVICED','RETURNED','FAULT','DAMAGED','BURNT') NOT NULL DEFAULT 'NEW'");
+            await conn.query("ALTER TABLE cable_stb_master MODIFY status ENUM('AVAILABLE','IN_SERVICE','NOT_SERVICEABLE','NOT_AVAILABLE') NOT NULL DEFAULT 'AVAILABLE'");
+        } catch (_error) {
+            // Existing installations may already have the expanded STB enums.
+        }
         await conn.beginTransaction();
         const workflowId = String(req.params.workflow_id || '');
         if (workflowId.startsWith('CTV-')) {
@@ -317,7 +323,8 @@ const approveWorkflow = async (req, res) => {
             }
 
             const [pendingStbs] = await conn.query(
-                `SELECT customer_stb_id, cable_customer_id, stb_master_id, stb_no, status, update_reason,
+                `SELECT customer_stb_id, cable_customer_id, stb_master_id, stb_no, stb_type,
+                        installed_mso_id, stb_amount, status, update_reason,
                         refund_amount, refund_payment_mode, updated_date, entered_by_employee_id, created_by_user_id
                  FROM cable_customer_stbs
                  WHERE approval_group_id = ? AND approval_status = 'PENDING'
@@ -327,11 +334,44 @@ const approveWorkflow = async (req, res) => {
             for (const stb of pendingStbs) {
                 const desiredStatus = String(stb.status || 'DISCONNECTED').toUpperCase();
                 const reason = String(stb.update_reason || '').toUpperCase();
-                if (['FAULT', 'DAMAGED', 'BROKEN', 'BURNT'].includes(reason) && stb.stb_master_id) {
-                    await conn.query(
-                        "UPDATE cable_stb_master SET stock_type = 'FAULT', status = 'NOT_AVAILABLE', assigned_employee_id = NULL, updated_at = NOW() WHERE stb_master_id = ?",
-                        [stb.stb_master_id]
-                    );
+                if (['FAULT', 'DAMAGED', 'BROKEN', 'BURNT'].includes(reason)) {
+                    const faultStockType = reason === 'BROKEN' ? 'DAMAGED' : reason;
+                    let faultMasterId = Number(stb.stb_master_id) || null;
+                    if (!faultMasterId && stb.stb_no) {
+                        const [matchingMasters] = await conn.query(
+                            `SELECT stb_master_id FROM cable_stb_master
+                             WHERE LOWER(stb_number) = LOWER(?) AND is_active = 1
+                             ORDER BY stb_master_id DESC LIMIT 1 FOR UPDATE`,
+                            [stb.stb_no]
+                        );
+                        faultMasterId = Number(matchingMasters[0]?.stb_master_id) || null;
+                    }
+                    if (faultMasterId) {
+                        await conn.query(
+                            "UPDATE cable_stb_master SET stock_type = ?, status = 'IN_SERVICE', assigned_employee_id = NULL, updated_at = NOW() WHERE stb_master_id = ?",
+                            [faultStockType, faultMasterId]
+                        );
+                    } else if (stb.stb_no) {
+                        const [createdMaster] = await conn.query(
+                            `INSERT INTO cable_stb_master (
+                                stb_number, box_type, stock_type, mso_id, stb_amount, full_set_amount,
+                                assigned_employee_id, status, updated_date
+                             ) VALUES (?, 'HD', ?, ?, ?, 800, NULL, 'IN_SERVICE', ?)`,
+                            [
+                                stb.stb_no, faultStockType, stb.installed_mso_id || null,
+                                Number(stb.stb_amount || 500),
+                                stb.updated_date || new Date()
+                            ]
+                        );
+                        faultMasterId = createdMaster.insertId;
+                    }
+                    if (faultMasterId && Number(stb.stb_master_id) !== faultMasterId) {
+                        await conn.query(
+                            'UPDATE cable_customer_stbs SET stb_master_id = ? WHERE customer_stb_id = ?',
+                            [faultMasterId, stb.customer_stb_id]
+                        );
+                        stb.stb_master_id = faultMasterId;
+                    }
                 }
                 const [previousActive] = await conn.query(
                     `SELECT customer_stb_id, stb_master_id
@@ -361,6 +401,31 @@ const approveWorkflow = async (req, res) => {
                         );
                     }
                 }
+                if (reason === 'REACTIVATE' && stb.stb_master_id) {
+                    await conn.query(
+                        "UPDATE cable_stb_master SET stock_type = 'SERVICED', status = 'NOT_AVAILABLE', updated_date = ?, updated_at = NOW() WHERE stb_master_id = ?",
+                        [stb.updated_date || new Date(), stb.stb_master_id]
+                    );
+                    await conn.query(
+                        "UPDATE cable_customer_stbs SET stb_type = 'SERVICED' WHERE customer_stb_id = ?",
+                        [stb.customer_stb_id]
+                    );
+                    await conn.query(
+                        `INSERT INTO cable_stb_issue_master (
+                            stb_master_id, cable_customer_id, customer_stb_id, issued_by_employee_id, issue_status
+                         )
+                         SELECT ?, ?, ?, ?, 'ISSUED'
+                         WHERE NOT EXISTS (
+                            SELECT 1 FROM cable_stb_issue_master
+                            WHERE stb_master_id = ? AND cable_customer_id = ? AND issue_status = 'ISSUED'
+                         )`,
+                        [
+                            stb.stb_master_id, stb.cable_customer_id, stb.customer_stb_id,
+                            stb.entered_by_employee_id || approvedBy,
+                            stb.stb_master_id, stb.cable_customer_id
+                        ]
+                    );
+                }
                 if (reason === 'RETURNED' && Number(stb.refund_amount || 0) > 0) {
                     await conn.query(
                         `INSERT INTO finance_transactions (
@@ -380,6 +445,43 @@ const approveWorkflow = async (req, res) => {
                 await conn.query(
                     'UPDATE cable_tv_customers SET status = ?, updated_at = NOW() WHERE cable_customer_id = ?',
                     [customerStatusForStbStatus(desiredStatus), stb.cable_customer_id]
+                );
+            }
+            const [pendingPackages] = await conn.query(
+                `SELECT customer_package_id, cable_customer_id, package_type
+                 FROM cable_customer_packages
+                 WHERE approval_group_id = ? AND approval_status = 'PENDING' AND is_active = 1
+                 FOR UPDATE`,
+                [approvalGroupId]
+            );
+            for (const packageRow of pendingPackages) {
+                if (String(packageRow.package_type || '').toUpperCase() === 'ADDON') {
+                    await conn.query(
+                        `UPDATE cable_customer_packages
+                         SET is_active = 0, package_price = 0,
+                             end_date = COALESCE(end_date, CURDATE()), updated_at = NOW()
+                         WHERE cable_customer_id = ? AND package_type = 'ADDON' AND is_active = 1
+                           AND approval_status = 'APPROVED' AND customer_package_id <> ?`,
+                        [packageRow.cable_customer_id, packageRow.customer_package_id]
+                    );
+                }
+            }
+            const [pendingPackageRemovals] = await conn.query(
+                `SELECT customer_package_id, cable_customer_id, package_id, package_type
+                 FROM cable_customer_packages
+                 WHERE approval_group_id = ? AND removal_status = 'PENDING' AND is_active = 1
+                   AND package_type IN ('ALACARTE', 'BROADCASTER')
+                 FOR UPDATE`,
+                [approvalGroupId]
+            );
+            for (const packageRow of pendingPackageRemovals) {
+                await conn.query(
+                    `UPDATE cable_customer_packages
+                     SET is_active = 0, package_price = 0, end_date = CURDATE(),
+                         removal_status = 'APPROVED', updated_at = NOW()
+                     WHERE customer_package_id = ? AND cable_customer_id = ?
+                       AND approval_group_id = ? AND removal_status = 'PENDING'`,
+                    [packageRow.customer_package_id, packageRow.cable_customer_id, approvalGroupId]
                 );
             }
             const approvalTables = [

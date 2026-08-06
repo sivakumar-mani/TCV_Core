@@ -55,6 +55,7 @@ const {
   updateCableCustomerInformation,
   updateCustomerConnection,
   updateCustomerPackage,
+  removeCustomerPackage,
   updateCustomerStb,
   updateCustomerSubscription
 } = require('../controller/cableTvController');
@@ -113,10 +114,11 @@ router.post('/customers/:id/stbs', auth.requirePermission('CABLE_TV_CUSTOMER_STB
 router.patch('/customers/:id/stbs/:stbId', auth.requireAdmin, updateCustomerStb);
 router.delete('/customers/:id/stbs/:stbId', auth.requireAdmin, deleteCustomerStb);
 router.post('/customers/:id/packages', auth.requirePermission('CABLE_TV_CUSTOMER_PACKAGES'), addCustomerPackage);
+router.post('/customers/:id/packages/:packageId/remove', auth.requirePermission('CABLE_TV_CUSTOMER_PACKAGES'), removeCustomerPackage);
 router.patch('/customers/:id/packages/:packageId', auth.requireAdmin, updateCustomerPackage);
 router.delete('/customers/:id/packages/:packageId', auth.requireAdmin, deleteCustomerPackage);
 router.post('/customers/:id/subscriptions', auth.requirePermission('CABLE_TV_SUBSCRIPTIONS'), addCustomerSubscription);
-router.patch('/customers/:id/subscriptions/:subscriptionId', auth.requirePermission('CABLE_TV_SUBSCRIPTIONS'), updateCustomerSubscription);
+router.patch('/customers/:id/subscriptions/:subscriptionId', auth.requirePermissionAction('CABLE_TV_SUBSCRIPTIONS', 'can_create'), updateCustomerSubscription);
 router.delete('/customers/:id/subscriptions/:subscriptionId', auth.requireAdmin, deleteCustomerSubscription);
 
 module.exports = router;

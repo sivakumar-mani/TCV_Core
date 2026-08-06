@@ -55,6 +55,14 @@
     <span><strong>Pending for approval.</strong> Subscription, STB, Connection, and Package details cannot be added until the administrator completes the current workflow approval.</span>
   </div>
 
+  <div class="review-approval-bar" *ngIf="isReviewMode && permissions.isAdmin() && !reviewWorkflowSection">
+    <button *ngIf="reviewApprovalPending" type="button" class="primary-btn" (click)="approveReview()" [disabled]="approvalInProgress">
+      <i class="bi bi-check-circle" aria-hidden="true"></i>
+      {{ approvalInProgress ? 'Approving...' : 'Approve' }}
+    </button>
+    <span *ngIf="!reviewApprovalPending" class="review-approved"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Approved</span>
+  </div>
+
   <nav class="detail-tabs" aria-label="Cable TV customer detail sections">
     <button
       *ngFor="let tab of tabs"
@@ -107,11 +115,18 @@
   <section class="form-section" *ngIf="section !== 'customer'">
     <div class="section-title-row">
       <h2>{{ title }}</h2>
+      <div class="review-tab-approval" *ngIf="reviewWorkflowSection === section && isReviewMode && permissions.isAdmin()">
+        <button *ngIf="reviewApprovalPending" type="button" class="primary-btn" (click)="approveReview()" [disabled]="approvalInProgress">
+          <i class="bi bi-check-circle" aria-hidden="true"></i>
+          {{ approvalInProgress ? 'Approving...' : 'Approve' }}
+        </button>
+        <span *ngIf="!reviewApprovalPending" class="review-approved"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Approved</span>
+      </div>
       <button
         *ngIf="canSection(section, 'create')"
         type="button"
         class="primary-btn add-btn"
-        [disabled]="hasPendingWorkflowApproval"
+        [disabled]="addActionsDisabled"
         (click)="openAdd()">
         <i class="bi bi-file-earmark-plus" aria-hidden="true"></i>{{ addButtonLabel }}
       </button>
@@ -154,7 +169,7 @@
             <th *ngIf="section === 'subscriptions'">Amount</th>
             <th *ngIf="section === 'subscriptions'">Balance</th>
             <th>{{ section === 'connections' ? 'Payment Status' : 'Status' }}</th>
-            <th *ngIf="canSection(section, 'update') || canSection(section, 'delete')">Action</th>
+            <th *ngIf="canSection(section, 'update') || canSection(section, 'delete') || (section === 'packages' && canSection(section, 'create'))">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -178,7 +193,7 @@
             <td *ngIf="section === 'stbs'">
               <span
                 class="table-status-pill"
-                [class.pending]="row.payment_status !== 'PAID' && row.payment_status !== 'NA'"
+                [class.pending]="row.payment_status !== 'PAID'"
                 [attr.title]="row.payment_status === 'NA' ? 'Not Applicable' : null">
                 {{ paymentStatusLabel(row.payment_status) }}
               </span>
@@ -210,10 +225,11 @@
                       : packageStatusLabel(row) }}
               </span>
             </td>
-            <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete')">
-              <button *ngIf="section === 'packages' && row.is_active == 1 && canSection(section, 'update')" type="button" class="table-icon-btn deactivate" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)"><i class="bi bi-slash-circle" aria-hidden="true"></i></button>
+            <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete') || (section === 'packages' && canSection(section, 'create'))">
+              <button *ngIf="section === 'packages' && row.is_active == 1 && packageTypeLabel(row.package_type) === 'Addon' && canSection(section, 'update')" type="button" class="table-icon-btn deactivate" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)"><i class="bi bi-slash-circle" aria-hidden="true"></i></button>
+              <button *ngIf="section === 'packages' && canRemovePackage(row)" type="button" class="package-remove-btn" (click)="removePackage(row)">Remove</button>
               <button *ngIf="canEditRow(row)" type="button" class="table-icon-btn edit" [title]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" [attr.aria-label]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" (click)="edit(row)"><i class="bi bi-pencil-square" aria-hidden="true"></i></button>
-              <button *ngIf="canSection(section, 'delete')" type="button" class="table-icon-btn delete" title="Delete" aria-label="Delete" (click)="delete(row)"><i class="bi bi-trash" aria-hidden="true"></i></button>
+              <button *ngIf="canDeleteRow(row)" type="button" class="table-icon-btn delete" title="Delete" aria-label="Delete" (click)="delete(row)"><i class="bi bi-trash" aria-hidden="true"></i></button>
             </td>
           </tr>
           <tr *ngIf="!rows.length"><td colspan="8" class="empty-row">No records added yet.</td></tr>
@@ -229,24 +245,22 @@
     </div>
   </section>
 
-  <div class="review-approval-bar" *ngIf="isReviewMode && permissions.isAdmin()">
-    <button *ngIf="reviewApprovalPending" type="button" class="primary-btn" (click)="approveReview()" [disabled]="approvalInProgress">
-      <i class="bi bi-check-circle" aria-hidden="true"></i>
-      {{ approvalInProgress ? 'Approving...' : 'Approve' }}
-    </button>
-    <span *ngIf="!reviewApprovalPending" class="review-approved"><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Approved</span>
-  </div>
-
   <div class="modal-backdrop" *ngIf="showModal">
     <section class="modal-panel" [formGroup]="form">
       <div class="page-header">
         <h1>{{ editId ? 'Edit' : 'Add' }} {{ title }}</h1>
+        <div class="stb-count-badges" *ngIf="section === 'stbs'">
+          <span class="stb-count-badge new">New: <strong>{{ assignedStbCount('NEW') }}</strong></span>
+          <span class="stb-count-badge serviced">Serviced: <strong>{{ assignedStbCount('SERVICED') }}</strong></span>
+          <span class="stb-count-badge returned">Returned: <strong>{{ assignedStbCount('RETURNED') }}</strong></span>
+        </div>
         <button type="button" class="secondary-btn" (click)="showModal = false">Close</button>
       </div>
 
       <div class="form-grid" *ngIf="section === 'connections'">
         <label>Connection Date<input type="date" formControlName="connection_date"></label>
         <label>Connection Type<select formControlName="connection_type"><option *ngFor="let type of connectionTypes" [ngValue]="type">{{ connectionTypeLabel(type) }}</option></select></label>
+        <label>Network<select formControlName="network_id"><option [ngValue]="null">Select network</option><option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">{{ network.network_name }}</option></select></label>
         <label *ngIf="isLocationChange">Door No<input type="text" formControlName="new_door_no" placeholder="Enter new door no"></label>
         <label *ngIf="isLocationChange">Postal Area
           <select formControlName="new_location_id"><option [ngValue]="null">Select postal area</option><option *ngFor="let location of locationChangePostalAreas" [ngValue]="location.location_id">{{ location.location_name }}</option></select>

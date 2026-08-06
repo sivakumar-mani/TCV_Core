@@ -4,6 +4,19 @@
     <button type="button" (click)="openStbModal()">Add STB</button>
   </div>
 
+  <section class="stb-count-grid" aria-label="STB inventory counts">
+    <article class="stb-count-card" *ngFor="let widget of countWidgets" [attr.data-type]="widget.key">
+      <div class="count-card-heading">
+        <span>{{ widget.label }}</span>
+        <strong>{{ widget.total }}</strong>
+      </div>
+      <div class="count-card-breakdown">
+        <span class="available-count"><i aria-hidden="true"></i>Available <strong>{{ widget.available }}</strong></span>
+        <span class="unavailable-count"><i aria-hidden="true"></i>Unavailable <strong>{{ widget.unavailable }}</strong></span>
+      </div>
+    </article>
+  </section>
+
   <section class="stb-panel">
     <div class="filter-bar">
       <label>STB Number
@@ -29,13 +42,13 @@
       </label>
       <button type="button" class="secondary-btn reset-filter" (click)="resetFilters()">Reset</button>
     </div>
+    <div class="stb-table-scroll">
     <table>
       <tr>
         <th>Updated Date</th>
         <th>STB Number</th>
         <th>Signal</th>
         <th>Type</th>
-        <th>MSO</th>
         <th>Box Only</th>
         <th>Full Set</th>
         <th>Assigned Employee</th>
@@ -47,7 +60,6 @@
         <td>{{ item.stb_number }}</td>
         <td>{{ item.box_type }}</td>
         <td>{{ item.stock_type }}</td>
-        <td>{{ item.mso_name }}</td>
         <td>{{ item.stb_amount }}</td>
         <td>{{ item.full_set_amount }}</td>
         <td class="assignment-cell">
@@ -68,9 +80,10 @@
         </td>
       </tr>
       <tr *ngIf="!filteredStbs.length">
-        <td colspan="10" class="empty-row">No STB records match the selected filters.</td>
+        <td colspan="9" class="empty-row">No STB records match the selected filters.</td>
       </tr>
     </table>
+    </div>
   </section>
 
   <div class="modal-backdrop" *ngIf="showStbModal">
@@ -93,12 +106,6 @@
             <option *ngFor="let type of availableStockTypes" [ngValue]="type">{{ type }}</option>
           </select>
           <small>Fault, Damaged or Burnt STBs can be added again only as Serviced.</small>
-        </label>
-        <label>MSO
-          <select formControlName="mso_id">
-            <option [ngValue]="null">Select MSO (optional)</option>
-            <option *ngFor="let mso of msos" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
-          </select>
         </label>
         <label>Box Only Amount
           <input type="number" formControlName="stb_amount">

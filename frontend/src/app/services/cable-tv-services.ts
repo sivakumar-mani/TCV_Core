@@ -70,6 +70,10 @@ export class CableTvServices {
     return this.http.patch(`${this.endpoint}/customers/${customerId}/packages/${packageId}`, data, { headers: this.jsonHeaders });
   }
 
+  removeCustomerPackage(customerId: number, packageId: number) {
+    return this.http.post(`${this.endpoint}/customers/${customerId}/packages/${packageId}/remove`, {}, { headers: this.jsonHeaders });
+  }
+
   deleteCustomerPackage(customerId: number, packageId: number) {
     return this.http.delete(`${this.endpoint}/customers/${customerId}/packages/${packageId}`);
   }

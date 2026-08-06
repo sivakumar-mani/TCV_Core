@@ -62,6 +62,8 @@ export class CableTvCustomerList {
         button.type = 'button';
         button.className = 'package-info';
         button.textContent = 'i';
+        button.title = 'View package information';
+        button.setAttribute('aria-label', 'View package information');
         button.addEventListener('click', (event) => {
           event.stopPropagation();
           this.zone.run(() => this.openPackageInfo(params.data));
@@ -203,7 +205,7 @@ export class CableTvCustomerList {
           customer.stb_installed_by_name || customer.installed_by_name
         ].filter(Boolean)
       : [];
-    const amountValue = customer.package_price ?? customer.master_package_price ?? customer.subscription_amount;
+    const amountValue = customer.package_amount ?? customer.package_price ?? customer.master_package_price ?? customer.subscription_amount;
     return {
       ...customer,
       network_display: customer.network_type || customer.network_name || '-',
@@ -215,11 +217,16 @@ export class CableTvCustomerList {
   }
 
   openPackageInfo(customer: any) {
+    const packages = Array.isArray(customer?.package_information)
+      ? customer.package_information.map((item: any) => ({
+          package_name: item.package_name || '-',
+          package_type: this.formatPackageType(item.package_type),
+          amount: Number(item.amount) || 0
+        }))
+      : [];
     this.selectedPackageInfo = {
-      package_name: customer?.package_name || '-',
-      package_type: customer?.package_type || '-',
-      package_price: customer?.package_price ?? customer?.master_package_price,
-      subscription_amount: customer?.subscription_amount
+      packages,
+      total: packages.reduce((total: number, item: any) => total + item.amount, 0)
     };
   }
 
@@ -236,6 +243,13 @@ export class CableTvCustomerList {
   formatMoney(value: any) {
     const amount = Number(value);
     return Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
+  }
+
+  formatPackageType(value: any) {
+    return String(value || '-')
+      .toLowerCase()
+      .replaceAll('_', ' ')
+      .replace(/\b\w/g, (character) => character.toUpperCase());
   }
 
 }

@@ -57,7 +57,13 @@
           </tr>
           <tr *ngIf="!pageRows.length"><td colspan="11" class="empty">No subscription collection records found.</td></tr>
         </tbody>
-        <tfoot><tr><td colspan="7">Total Records: <strong>{{ summary.total_records }}</strong></td><td class="grand-total">Grand Total</td><td class="number"><strong>{{ summary.total_count | number:'1.0-2' }}</strong></td><td class="number">{{ summary.total_balance | number:'1.0-0' }}</td><td class="number"><strong>{{ summary.total_amount | number:'1.0-0' }}</strong></td></tr></tfoot>
+        <tfoot>
+          <tr class="payment-mode-total" *ngFor="let item of paymentModeBreakdown">
+            <td colspan="10">{{ item.label }}</td>
+            <td class="number"><strong>{{ item.amount | number:'1.0-0' }}</strong></td>
+          </tr>
+          <tr><td colspan="7">Total Records: <strong>{{ summary.total_records }}</strong></td><td class="grand-total">Grand Total</td><td class="number"><strong>{{ summary.total_count | number:'1.0-2' }}</strong></td><td class="number">{{ summary.total_balance | number:'1.0-0' }}</td><td class="number"><strong>{{ summary.total_amount | number:'1.0-0' }}</strong></td></tr>
+        </tfoot>
       </table>
     </div>
 

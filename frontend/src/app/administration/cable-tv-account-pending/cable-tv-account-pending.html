@@ -10,6 +10,24 @@
     </div>
   </div>
 
+  <section class="account-summary-grid" aria-label="Pending account summary">
+    <article class="account-summary-card pending-card">
+      <span>Pending</span>
+      <strong>{{ accountSummary.pendingCount }}</strong>
+      <small>{{ permissions.isAdmin() ? 'All users' : 'My accounts' }}</small>
+    </article>
+    <article class="account-summary-card partial-card">
+      <span>Partial</span>
+      <strong>{{ accountSummary.partialCount }}</strong>
+      <small>{{ permissions.isAdmin() ? 'All users' : 'My accounts' }}</small>
+    </article>
+    <article class="account-summary-card amount-card">
+      <span>Total Amount</span>
+      <strong>{{ accountSummary.totalAmount | number:'1.2-2' }}</strong>
+      <small>Pending + Partial balance</small>
+    </article>
+  </section>
+
   <section class="report-filters">
     <label>Customer Name / No
       <input type="search" [(ngModel)]="nameFilter" (keyup.enter)="loadAccounts()" placeholder="Name, customer no or mobile">
@@ -47,6 +65,7 @@
         <th>Installed By</th>
         <th>Connection Type</th>
         <th>STB</th>
+        <th>STB Discount</th>
         <th>Connection</th>
         <th>Labor</th>
         <th>Material</th>
@@ -66,16 +85,17 @@
         <td>{{ item.installed_by_name || '-' }}</td>
         <td>{{ connectionTypeLabel(item.connection_type) }}</td>
         <td>{{ item.stb_amount }}</td>
+        <td>{{ item.stb_discount | number:'1.2-2' }}</td>
         <td>{{ item.connection_amount }}</td>
-        <td>- {{ item.labor_amount | number:'1.2-2' }}</td>
+        <td>{{ item.labor_amount | number:'1.2-2' }}</td>
         <td>{{ item.material_cost | number:'1.2-2' }}<span *ngIf="item.material_discount"> - {{ item.material_discount | number:'1.2-2' }}</span><small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
         <td>{{ item.subscription_amount }}</td>
         <td>{{ item.grand_total }}</td>
         <td>{{ item.customer_paid_amount }}</td>
-        <td>{{ item.balance_amount }}</td>
+        <td>{{ reportBalance(item) | number:'1.2-2' }}</td>
         <td>{{ item.due_date ? (item.due_date | date:'dd-MM-yyyy') : '-' }}</td>
         <td>{{ item.account_date | date:'dd-MM-yyyy' }}</td>
-        <td><span class="status-badge" [class.partial]="item.account_status === 'PARTIAL'" [class.paid]="item.account_status === 'PAID'">{{ item.account_status }}</span></td>
+        <td><span class="status-badge" [class.paid]="reportPaymentStatus(item) === 'PAID'">{{ reportPaymentStatus(item) }}</span></td>
         <td *ngIf="permissions.isAdmin()" class="action-cell">
           <button *ngIf="item.account_status === 'PENDING' || item.account_status === 'PARTIAL'" type="button"
             (click)="openPayment(item)">Payment</button>
@@ -84,13 +104,14 @@
         </td>
       </tr>
       <tr *ngIf="!accounts.length">
-        <td [attr.colspan]="permissions.isAdmin() ? 17 : 16" class="empty-row">No account records match the selected filters.</td>
+        <td [attr.colspan]="permissions.isAdmin() ? 18 : 17" class="empty-row">No account records match the selected filters.</td>
       </tr>
       <tr *ngIf="accounts.length" class="report-total-row">
         <td colspan="5">Grand Total ({{ accounts.length }} records)</td>
         <td>{{ reportTotals.stb | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.stbDiscount | number:'1.2-2' }}</td>
         <td>{{ reportTotals.connection | number:'1.2-2' }}</td>
-        <td>- {{ reportTotals.labor | number:'1.2-2' }}</td>
+        <td>{{ reportTotals.labor | number:'1.2-2' }}</td>
         <td>{{ reportTotals.material - reportTotals.materialDiscount | number:'1.2-2' }}</td>
         <td>{{ reportTotals.subscription | number:'1.2-2' }}</td>
         <td>{{ reportTotals.total | number:'1.2-2' }}</td>
@@ -127,6 +148,7 @@
               <th>Installed By</th>
               <th>Type</th>
               <th>STB</th>
+              <th>STB Discount</th>
               <th>Connection</th>
               <th>Labor</th>
               <th>Subscription</th>
@@ -146,20 +168,22 @@
               <td>{{ item.installed_by_name || '-' }}</td>
               <td>{{ connectionTypeLabel(item.connection_type) }}</td>
               <td>{{ item.stb_amount | number:'1.2-2' }}</td>
+              <td>{{ item.stb_discount | number:'1.2-2' }}</td>
               <td>{{ item.connection_amount | number:'1.2-2' }}</td>
-              <td>- {{ item.labor_amount | number:'1.2-2' }}</td>
+              <td>{{ item.labor_amount | number:'1.2-2' }}</td>
               <td>{{ item.subscription_amount | number:'1.2-2' }}</td>
               <td>{{ item.customer_paid_amount | number:'1.2-2' }}</td>
               <td>{{ item.material_cost | number:'1.2-2' }}<span *ngIf="item.material_discount"> - {{ item.material_discount | number:'1.2-2' }}</span><small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
-              <td>{{ item.balance_amount | number:'1.2-2' }}</td>
+              <td>{{ reportBalance(item) | number:'1.2-2' }}</td>
               <td>{{ item.grand_total | number:'1.2-2' }}</td>
-              <td>{{ item.account_status }}</td>
+              <td>{{ reportPaymentStatus(item) }}</td>
             </tr>
             <tr class="report-total-row">
               <td colspan="6">Grand Total ({{ accounts.length }} records)</td>
               <td>{{ reportTotals.stb | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.stbDiscount | number:'1.2-2' }}</td>
               <td>{{ reportTotals.connection | number:'1.2-2' }}</td>
-              <td>- {{ reportTotals.labor | number:'1.2-2' }}</td>
+              <td>{{ reportTotals.labor | number:'1.2-2' }}</td>
               <td>{{ reportTotals.subscription | number:'1.2-2' }}</td>
               <td>{{ reportTotals.customerPaid | number:'1.2-2' }}</td>
               <td>{{ reportTotals.material - reportTotals.materialDiscount | number:'1.2-2' }}</td>

@@ -202,7 +202,7 @@
         <div *ngFor="let row of materials.controls; let i = index" [formGroupName]="i" class="material-row">
           <select formControlName="product_id" (change)="selectMaterialProduct(i)">
             <option [ngValue]="null">Select product</option>
-            <option *ngFor="let product of lookups.products || []" [ngValue]="product.product_id">{{ product.product_name }}</option>
+            <option *ngFor="let product of lookups.products || []" [ngValue]="product.product_id" [disabled]="isMaterialSelected(product.product_id, i)">{{ product.product_name }}</option>
           </select>
           <input type="text" formControlName="item_name">
           <input type="number" formControlName="qty" (input)="calculateMaterialAmount(i)">
@@ -226,7 +226,7 @@
         <div *ngFor="let row of packages.controls; let i = index" [formGroupName]="i" class="package-row">
           <select formControlName="package_id" (change)="selectPackage(i)">
             <option [ngValue]="null">Select package</option>
-            <option *ngFor="let item of lookups.packages || []" [ngValue]="item.package_id">{{ item.package_name }} - {{ item.package_type }}</option>
+            <option *ngFor="let item of lookups.packages || []" [ngValue]="item.package_id" [disabled]="isPackageSelected(item.package_id, i)">{{ item.package_name }} - {{ item.package_type }}</option>
           </select>
           <input type="number" formControlName="package_price" (input)="calculatePackageRow(i)">
           <input type="date" formControlName="start_date" (change)="calculatePackageRow(i)">

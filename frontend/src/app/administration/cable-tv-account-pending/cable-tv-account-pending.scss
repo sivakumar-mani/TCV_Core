@@ -32,6 +32,35 @@ button.excel {
   background: #08783e;
 }
 
+.account-summary-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(180px, 1fr));
+  margin-bottom: 16px;
+}
+
+.account-summary-card {
+  background: linear-gradient(145deg, #fff 0%, #f8fafc 100%);
+  border: 1px solid #d7e1ef;
+  border-left: 4px solid #d97706;
+  border-radius: 8px;
+  box-shadow: 0 2px 7px rgb(16 24 40 / 6%);
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+
+  span { color: #475467; font-size: 13px; font-weight: 700; }
+  strong { color: #101828; font-size: 25px; line-height: 1.15; }
+  small { color: #667085; font-size: 11px; }
+}
+
+.partial-card { border-left-color: #ea580c; }
+.amount-card { border-left-color: #1565c0; }
+
+@media (max-width: 700px) {
+  .account-summary-grid { grid-template-columns: 1fr; }
+}
+
 .account-panel {
   background: #fff;
   border: 1px solid #d7dee8;
@@ -50,7 +79,13 @@ button.excel {
   border-radius: 6px;
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns:
+    minmax(0, 1.3fr)
+    minmax(0, .8fr)
+    minmax(0, 1.3fr)
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(120px, .9fr);
   max-width: 100%;
   min-width: 0;
   margin-bottom: 16px;
@@ -62,6 +97,7 @@ button.excel {
     font-size: 12px;
     font-weight: 650;
     gap: 5px;
+    min-width: 0;
   }
 
   input,
@@ -69,8 +105,13 @@ button.excel {
     background: #fff;
     border: 1px solid #cbd5e1;
     border-radius: 5px;
+    box-sizing: border-box;
+    display: block;
+    max-width: 100%;
+    min-width: 0;
     min-height: 36px;
     padding: 6px 9px;
+    width: 100%;
   }
 }
 
@@ -345,7 +386,7 @@ input[type='checkbox'] {
 
 @media (max-width: 1000px) {
   .report-filters {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .payment-grid {
