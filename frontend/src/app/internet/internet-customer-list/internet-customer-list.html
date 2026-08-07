@@ -1,0 +1,2 @@
+<section class="filter"><label>Search<input type="search" [(ngModel)]="search" (ngModelChange)="filter()" placeholder="Customer no, name, Netid or mobile"></label></section>
+<app-ag-grid-list title="Internet Customers" addButtonLabel="Add Internet Customer" [rowData]="rows" [columnDefs]="colDefs" [defaultColDef]="defaultColDef" (add)="add()"></app-ag-grid-list>

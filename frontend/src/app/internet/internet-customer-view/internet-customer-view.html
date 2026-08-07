@@ -1,0 +1,26 @@
+<div class="customer-page">
+  <section class="hero">
+    <div class="identity"><div class="name-line"><h1>{{details.customer?.full_name||'Internet Customer'}}</h1><span>Customer No. {{details.customer?.customer_code||'-'}}</span></div><p>⌖ {{address()}}</p></div>
+    <div class="hero-actions"><button *ngIf="reviewMode" class="approve" type="button" [disabled]="approving" (click)="approve()">{{approving?'Approving...':'Approve'}}</button><button type="button" class="back" (click)="back()">← Back</button></div>
+  </section>
+
+  <section class="widgets">
+    <div class="widget"><i class="blue">♙</i><div><small>Customer Number</small><b>{{details.customer?.customer_code||'-'}}</b></div></div>
+    <div class="widget"><i class="purple">⌁</i><div><small>Router</small><b>{{details.routers?.[0]?.product_name||'Not Assigned'}}</b></div></div>
+    <div class="widget"><i class="green">▣</i><div><small>Install Date</small><b>{{details.customer?.installed_date|date:'dd-MM-yyyy'}}</b></div></div>
+    <div class="widget"><i class="orange">♢</i><div><small>Customer Status</small><b class="status">{{details.customer?.status||'ACTIVE'}}</b></div></div>
+  </section>
+
+  <div class="review-actions" *ngIf="reviewMode"><button class="approve" type="button" [disabled]="approving" (click)="approve()">{{approving?'Approving...':'Approve'}}</button></div>
+  <nav class="tabs"><button *ngFor="let tab of tabs" type="button" [class.active]="activeTab===tab[0]" (click)="activeTab=tab[0]">{{tab[1]}}</button></nav>
+
+  <section class="panel" *ngIf="activeTab==='subscription'"><h2>Subscription Details</h2><div class="table-wrap"><table><thead><tr><th>Period</th><th>Collected Date</th><th>Collected By</th><th>No of Period</th><th>Start Date</th><th>End Date</th><th>Amount</th><th>Balance</th><th>Status</th></tr></thead><tbody><tr *ngFor="let x of details.subscriptions"><td>{{monthName(x.subscription_month)}} - {{x.subscription_year}}</td><td>{{details.customer?.installed_date|date:'dd-MM-yyyy'}}</td><td>{{details.customer?.installed_by_name||'-'}}</td><td>{{((x.end_date|date:'d')||0)}} Days</td><td>{{x.start_date|date:'dd-MM-yyyy'}}</td><td>{{x.end_date|date:'dd-MM-yyyy'}}</td><td>{{x.amount|number:'1.2-2'}}</td><td>{{x.balance_amount|number:'1.2-2'}}</td><td><span class="pill">{{x.payment_status}}</span></td></tr><tr *ngIf="!details.subscriptions?.length"><td colspan="9" class="empty">No subscription details</td></tr></tbody></table></div><div class="overall">Overall Balance <b>{{details.account?.balance_amount||0|number:'1.2-2'}}</b></div></section>
+
+  <section class="panel" *ngIf="activeTab==='router'"><h2>Router Details</h2><div class="table-wrap"><table><thead><tr><th>Type</th><th>Router Name</th><th>HSN</th><th>Quantity</th><th>Unit</th><th>Rate</th><th>Amount</th></tr></thead><tbody><tr *ngFor="let x of details.routers"><td>{{x.router_type}}</td><td>{{x.product_name}}</td><td>{{x.hsn_code||'-'}}</td><td>{{x.qty}}</td><td>{{x.unit}}</td><td>{{x.rate|number:'1.2-2'}}</td><td>{{x.amount|number:'1.2-2'}}</td></tr><tr *ngIf="!details.routers?.length"><td colspan="7" class="empty">No router details</td></tr></tbody></table></div></section>
+
+  <section class="panel" *ngIf="activeTab==='connection'"><h2>Connection Details</h2><div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Charge</th><th>Discount</th><th>Labour / Service</th><th>Remarks</th></tr></thead><tbody><tr *ngFor="let x of details.connections"><td>{{x.connection_date|date:'dd-MM-yyyy'}}</td><td>{{x.connection_type}}</td><td>{{x.connection_charge|number:'1.2-2'}}</td><td>{{x.connection_discount|number:'1.2-2'}}</td><td>{{x.labour_service_charge|number:'1.2-2'}}</td><td>{{x.remarks||'-'}}</td></tr><tr *ngIf="!details.connections?.length"><td colspan="6" class="empty">No connection details</td></tr></tbody></table></div></section>
+
+  <section class="panel" *ngIf="activeTab==='package'"><h2>Package Details</h2><div class="table-wrap"><table><thead><tr><th>Package</th><th>Type</th><th>GST</th><th>Price</th><th>Start Date</th><th>End Date</th><th>Status</th></tr></thead><tbody><tr *ngFor="let x of details.packages"><td>{{x.package_name}}</td><td>{{x.package_type}}</td><td>{{x.gst_percent||0}}%</td><td>{{x.package_price|number:'1.2-2'}}</td><td>{{x.start_date|date:'dd-MM-yyyy'}}</td><td>{{x.end_date|date:'dd-MM-yyyy'}}</td><td><span class="pill">{{x.is_active?'ACTIVE':'INACTIVE'}}</span></td></tr><tr *ngIf="!details.packages?.length"><td colspan="7" class="empty">No package details</td></tr></tbody></table></div></section>
+
+  <section class="panel" *ngIf="activeTab==='customer'"><h2>Customer Information</h2><div class="info-grid"><p><small>Network</small><b>{{details.customer?.network_type}}</b></p><p><small>Netid</small><b>{{details.customer?.net_id}}</b></p><p><small>Mobile</small><b>{{details.customer?.mobile_no}}</b></p><p><small>Alternate Mobile</small><b>{{details.customer?.alternate_mobile_no||'-'}}</b></p><p><small>Installed By</small><b>{{details.customer?.installed_by_name}}</b></p><p><small>Approval Status</small><b>{{details.customer?.approval_status}}</b></p><p class="wide"><small>Address</small><b>{{address()}}</b></p></div></section>
+</div>

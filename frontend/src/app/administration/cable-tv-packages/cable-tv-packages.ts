@@ -29,8 +29,18 @@ export class CableTvPackages {
     this.packageForm = this.fb.group({
       package_name: ['', Validators.required],
       package_type: ['MSO_PACKAGE', Validators.required],
+      service_category: ['CATV', Validators.required],
+      internet_network_type: [null],
       price: [0, [Validators.required, Validators.min(0)]],
+      gst_percent: [0, [Validators.min(0), Validators.max(100)]],
+      price_including_gst: [0, [Validators.min(0)]],
       description: ['']
+    });
+    this.packageForm.get('price')?.valueChanges.subscribe(() => this.calculateInternetPackagePrice());
+    this.packageForm.get('gst_percent')?.valueChanges.subscribe(() => this.calculateInternetPackagePrice());
+    this.packageForm.get('service_category')?.valueChanges.subscribe(category => {
+      this.packageForm.patchValue({ package_type: 'MSO_PACKAGE', internet_network_type: category === 'INTERNET' ? 'KRISHI' : null, gst_percent: category === 'INTERNET' ? 18 : 0 }, { emitEvent: false });
+      this.calculateInternetPackagePrice();
     });
     this.loadPackages();
   }
@@ -47,7 +57,7 @@ export class CableTvPackages {
   }
 
   openPackageModal() {
-    this.packageForm.reset({ package_type: 'MSO_PACKAGE', price: 0 });
+    this.packageForm.reset({ package_type: 'MSO_PACKAGE', service_category: 'CATV', internet_network_type: null, price: 0, gst_percent: 0, price_including_gst: 0 });
     this.showPackageModal = true;
   }
 
@@ -71,6 +81,16 @@ export class CableTvPackages {
       },
       error: (error: any) => this.handleError(error)
     });
+  }
+
+  private calculateInternetPackagePrice() {
+    if (!this.packageForm || this.packageForm.get('service_category')?.value !== 'INTERNET') {
+      this.packageForm?.get('price_including_gst')?.setValue(0, { emitEvent: false });
+      return;
+    }
+    const price = Number(this.packageForm.get('price')?.value) || 0;
+    const gst = 18;
+    this.packageForm.get('price_including_gst')?.setValue(Number((price + price * gst / 100).toFixed(2)), { emitEvent: false });
   }
 
   private handleError(error: any) {

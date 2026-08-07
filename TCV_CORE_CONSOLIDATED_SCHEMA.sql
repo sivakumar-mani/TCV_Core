@@ -741,6 +741,14 @@ INSERT INTO `cable_package_master` VALUES (1,'VK TAMIL','MSO_PACKAGE',300.00,NUL
 /*!40000 ALTER TABLE `cable_package_master` ENABLE KEYS */;
 UNLOCK TABLES;
 
+-- Shared package master remains backward compatible: every existing package is CATV.
+ALTER TABLE `cable_package_master`
+  ADD COLUMN `service_category` enum('CATV','INTERNET') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'CATV' AFTER `package_type`,
+  ADD COLUMN `internet_network_type` enum('KRISHI','RAILWIRE') COLLATE utf8mb4_unicode_ci NULL AFTER `service_category`,
+  ADD COLUMN `gst_percent` decimal(5,2) NOT NULL DEFAULT 0 AFTER `price`,
+  ADD COLUMN `price_including_gst` decimal(12,2) NOT NULL DEFAULT 0 AFTER `gst_percent`,
+  ADD KEY `idx_cable_package_service_category` (`service_category`);
+
 --
 -- Table structure for table `cable_stb_issue_master`
 --
@@ -1868,6 +1876,18 @@ INSERT INTO `role_permissions` VALUES ('MANAGER','AUDIT_LOGS',0,0,0,0,1,'2026-07
 /*!40000 ALTER TABLE `role_permissions` ENABLE KEYS */;
 UNLOCK TABLES;
 
+-- Internet Customers are available to every authenticated non-admin role.
+INSERT INTO `role_permissions`
+  (`role`,`permission_key`,`can_view`,`can_create`,`can_update`,`can_delete`,`updated_by`)
+VALUES
+  ('MANAGER','INTERNET_CUSTOMERS',1,1,1,0,NULL),
+  ('EMPLOYEE','INTERNET_CUSTOMERS',1,1,1,0,NULL),
+  ('SALES','INTERNET_CUSTOMERS',1,1,1,0,NULL),
+  ('SERVICE','INTERNET_CUSTOMERS',1,1,1,0,NULL)
+ON DUPLICATE KEY UPDATE
+  `can_view`=VALUES(`can_view`), `can_create`=VALUES(`can_create`),
+  `can_update`=VALUES(`can_update`), `can_delete`=VALUES(`can_delete`);
+
 --
 -- Table structure for table `sales_items`
 --
@@ -2695,6 +2715,104 @@ UNLOCK TABLES;
 --
 -- Dumping events for database 'tcvonedb'
 --
+
+-- Internet Customer module (isolated from CATV customer transaction tables).
+CREATE TABLE `internet_customers` (
+  `internet_customer_id` bigint NOT NULL AUTO_INCREMENT, `customer_code` int NOT NULL,
+  `network_type` enum('KRISHI','RAILWIRE','DMNET') NOT NULL, `full_name` varchar(200) NOT NULL,
+  `net_id` varchar(150) NOT NULL, `network_password` varchar(255) DEFAULT NULL,
+  `door_no` varchar(50) NOT NULL, `location_id` int NOT NULL, `area_id` int NOT NULL, `street_id` int NOT NULL,
+  `state` varchar(100) NOT NULL DEFAULT 'Tamil Nadu', `city` varchar(100) NOT NULL, `pincode` varchar(10) DEFAULT NULL,
+  `mobile_no` varchar(20) NOT NULL, `alternate_mobile_no` varchar(20) DEFAULT NULL, `aadhaar_no` varchar(20) DEFAULT NULL,
+  `source_name` enum('Customer Approach Office','Direct','Customer Approach Engineer') NOT NULL DEFAULT 'Direct',
+  `installed_by_employee_id` int DEFAULT NULL, `installed_date` date NOT NULL,
+  `status` enum('ACTIVE','INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+  `approval_status` enum('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING', `created_by_user_id` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`internet_customer_id`), UNIQUE KEY `uk_internet_customer_code` (`customer_code`),
+  UNIQUE KEY `uk_internet_net_id` (`net_id`), KEY `idx_internet_customer_name` (`full_name`), KEY `idx_internet_customer_mobile` (`mobile_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `internet_customer_packages` (
+  `internet_customer_package_id` bigint NOT NULL AUTO_INCREMENT, `internet_customer_id` bigint NOT NULL,
+  `package_id` int NOT NULL, `package_price` decimal(12,2) NOT NULL DEFAULT 0, `start_date` date NOT NULL,
+  `end_date` date NOT NULL, `is_active` tinyint(1) NOT NULL DEFAULT 1, `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`internet_customer_package_id`), KEY `idx_internet_package_customer` (`internet_customer_id`),
+  CONSTRAINT `fk_internet_package_customer` FOREIGN KEY (`internet_customer_id`) REFERENCES `internet_customers` (`internet_customer_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_internet_package_master` FOREIGN KEY (`package_id`) REFERENCES `cable_package_master` (`package_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `internet_customer_routers` (
+  `internet_router_id` bigint NOT NULL AUTO_INCREMENT, `internet_customer_id` bigint NOT NULL,
+  `router_type` enum('NEW','SERVICED','RETURNED') NOT NULL DEFAULT 'NEW', `product_id` int NOT NULL,
+  `hsn_code` varchar(30) DEFAULT NULL, `qty` decimal(10,2) NOT NULL DEFAULT 1, `unit` varchar(20) NOT NULL DEFAULT 'PCS',
+  `rate` decimal(12,2) NOT NULL DEFAULT 0, `amount` decimal(12,2) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`internet_router_id`), KEY `idx_internet_router_customer` (`internet_customer_id`),
+  CONSTRAINT `fk_internet_router_customer` FOREIGN KEY (`internet_customer_id`) REFERENCES `internet_customers` (`internet_customer_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_internet_router_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `internet_connections` (
+  `internet_connection_id` bigint NOT NULL AUTO_INCREMENT, `internet_customer_id` bigint NOT NULL,
+  `connection_date` date NOT NULL, `connection_type` enum('NEW','RECONNECTION','LOCATION_CHANGE') NOT NULL DEFAULT 'NEW',
+  `connection_charge` decimal(12,2) NOT NULL DEFAULT 0, `connection_discount` decimal(12,2) NOT NULL DEFAULT 0,
+  `labour_service_charge` decimal(12,2) NOT NULL DEFAULT 0, `remarks` varchar(500) DEFAULT NULL,
+  PRIMARY KEY (`internet_connection_id`), CONSTRAINT `fk_internet_connection_customer` FOREIGN KEY (`internet_customer_id`) REFERENCES `internet_customers` (`internet_customer_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `internet_connection_materials` (
+  `internet_material_id` bigint NOT NULL AUTO_INCREMENT, `internet_customer_id` bigint NOT NULL, `product_id` int DEFAULT NULL,
+  `item_name` varchar(200) NOT NULL, `qty` decimal(10,2) NOT NULL DEFAULT 1, `unit` varchar(20) NOT NULL DEFAULT 'PCS',
+  `unit_rate` decimal(12,2) NOT NULL DEFAULT 0, `amount` decimal(12,2) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`internet_material_id`), CONSTRAINT `fk_internet_material_customer` FOREIGN KEY (`internet_customer_id`) REFERENCES `internet_customers` (`internet_customer_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_internet_material_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `internet_subscriptions` (
+  `internet_subscription_id` bigint NOT NULL AUTO_INCREMENT, `internet_customer_id` bigint NOT NULL,
+  `internet_customer_package_id` bigint NOT NULL, `subscription_month` int NOT NULL, `subscription_year` int NOT NULL,
+  `start_date` date NOT NULL, `end_date` date NOT NULL, `amount` decimal(12,2) NOT NULL DEFAULT 0,
+  `paid_amount` decimal(12,2) NOT NULL DEFAULT 0, `balance_amount` decimal(12,2) NOT NULL DEFAULT 0,
+  `payment_status` enum('PENDING','PARTIAL','PAID') NOT NULL DEFAULT 'PENDING', `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`internet_subscription_id`), KEY `idx_internet_subscription_period` (`internet_customer_id`,`subscription_month`,`subscription_year`),
+  CONSTRAINT `fk_internet_subscription_customer` FOREIGN KEY (`internet_customer_id`) REFERENCES `internet_customers` (`internet_customer_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_internet_subscription_package` FOREIGN KEY (`internet_customer_package_id`) REFERENCES `internet_customer_packages` (`internet_customer_package_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `internet_customer_accounts` (
+  `internet_account_id` bigint NOT NULL AUTO_INCREMENT, `internet_customer_id` bigint NOT NULL,
+  `router_amount` decimal(12,2) NOT NULL DEFAULT 0, `router_discount` decimal(12,2) NOT NULL DEFAULT 0,
+  `connection_amount` decimal(12,2) NOT NULL DEFAULT 0, `labor_amount` decimal(12,2) NOT NULL DEFAULT 0,
+  `material_cost` decimal(12,2) NOT NULL DEFAULT 0, `material_discount` decimal(12,2) NOT NULL DEFAULT 0,
+  `subscription_amount` decimal(12,2) NOT NULL DEFAULT 0, `overall_discount` decimal(12,2) NOT NULL DEFAULT 0,
+  `grand_total` decimal(12,2) NOT NULL DEFAULT 0, `customer_paid_amount` decimal(12,2) NOT NULL DEFAULT 0,
+  `office_received_amount` decimal(12,2) NOT NULL DEFAULT 0, `office_balance_amount` decimal(12,2) NOT NULL DEFAULT 0,
+  `balance_amount` decimal(12,2) NOT NULL DEFAULT 0, `due_date` date DEFAULT NULL,
+  `account_status` enum('PENDING','PARTIAL','PAID') NOT NULL DEFAULT 'PENDING',
+  `approval_status` enum('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP, `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`internet_account_id`), CONSTRAINT `fk_internet_account_customer` FOREIGN KEY (`internet_customer_id`) REFERENCES `internet_customers` (`internet_customer_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `internet_customer_account_payments` (
+  `internet_payment_id` bigint NOT NULL AUTO_INCREMENT, `internet_account_id` bigint NOT NULL,
+  `cash_amount` decimal(12,2) NOT NULL DEFAULT 0, `online_amount` decimal(12,2) NOT NULL DEFAULT 0,
+  `received_amount` decimal(12,2) NOT NULL DEFAULT 0, `paid_date` date NOT NULL, `received_date` date NOT NULL,
+  `due_date` date DEFAULT NULL, `balance_after_payment` decimal(12,2) NOT NULL DEFAULT 0,
+  `payment_status` enum('PARTIAL','PAID') NOT NULL, `received_by_user_id` int DEFAULT NULL,
+  `received_by_employee_id` int DEFAULT NULL, `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`internet_payment_id`),
+  CONSTRAINT `fk_internet_account_payment` FOREIGN KEY (`internet_account_id`) REFERENCES `internet_customer_accounts` (`internet_account_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `internet_customer_complaints` (
+  `internet_complaint_id` bigint NOT NULL AUTO_INCREMENT, `internet_customer_id` bigint NOT NULL,
+  `complaint_date` date NOT NULL, `subject` varchar(200) NOT NULL, `description` varchar(1000) DEFAULT NULL,
+  `complaint_status` enum('OPEN','IN_PROGRESS','RESOLVED','CLOSED') NOT NULL DEFAULT 'OPEN',
+  `created_by_user_id` int DEFAULT NULL, `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`internet_complaint_id`), KEY `idx_internet_complaint_customer` (`internet_customer_id`),
+  CONSTRAINT `fk_internet_complaint_customer` FOREIGN KEY (`internet_customer_id`) REFERENCES `internet_customers` (`internet_customer_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping routines for database 'tcvonedb'

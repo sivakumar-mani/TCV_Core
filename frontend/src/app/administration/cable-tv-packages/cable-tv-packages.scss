@@ -83,13 +83,16 @@ th {
   justify-content: center;
   padding: 18px;
   position: fixed;
-  z-index: 1000;
+  z-index: 10000;
 }
 
 .modal-panel {
   display: grid;
   gap: 14px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: calc(100vh - 36px);
   max-width: 560px;
+  overflow: hidden;
   width: min(560px, 100%);
 
   h2 {
@@ -101,6 +104,13 @@ th {
 .entry-form {
   display: grid;
   gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.package-field {
+  grid-column: 1 / -1;
 }
 
 label {
@@ -122,4 +132,22 @@ select {
 
 .modal-actions {
   justify-content: flex-end;
+}
+
+@media (max-width: 600px) {
+  .modal-backdrop {
+    padding: 10px;
+  }
+
+  .modal-panel {
+    max-height: calc(100vh - 20px);
+  }
+
+  .entry-form {
+    grid-template-columns: 1fr;
+  }
+
+  .package-field {
+    grid-column: auto;
+  }
 }

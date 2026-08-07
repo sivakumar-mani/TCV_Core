@@ -359,6 +359,31 @@ export const routes: Routes = [
             }
         },
          {
+            path:'internet/customers',
+            loadComponent: ()=> import('./internet/internet-customer-list/internet-customer-list').then(n => n.InternetCustomerList),
+            canActivate:[RouteGuard], data:{ expectedRole:['admin','user'] }
+        },
+         {
+            path:'internet/customers/add',
+            loadComponent: ()=> import('./internet/internet-customer-form/internet-customer-form').then(n => n.InternetCustomerForm),
+            canActivate:[RouteGuard], data:{ expectedRole:['admin','user'] }
+        },
+         {
+            path:'internet/customers/edit/:id',
+            loadComponent: ()=> import('./internet/internet-customer-form/internet-customer-form').then(n => n.InternetCustomerForm),
+            canActivate:[RouteGuard], data:{ expectedRole:['admin','user'] }
+        },
+         {
+            path:'internet/customers/view/:id',
+            loadComponent: ()=> import('./internet/internet-customer-view/internet-customer-view').then(n => n.InternetCustomerView),
+            canActivate:[RouteGuard], data:{ expectedRole:['admin','user'] }
+        },
+         {
+            path:'internet/customers/:id/complaints',
+            loadComponent: ()=> import('./internet/internet-complaints/internet-complaints').then(n => n.InternetComplaints),
+            canActivate:[RouteGuard], data:{ expectedRole:['admin','user'] }
+        },
+         {
             path:'cable-tv/customers',
             loadComponent: ()=> import('./cable-tv/cable-tv-customer-list/cable-tv-customer-list').then(n => n.CableTvCustomerList),
             canActivate:[RouteGuard],

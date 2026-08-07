@@ -90,6 +90,25 @@ const existingColumns = async (db, tableName, columnNames) => {
 
 const ensureCableTvExtendedTables = async (db) => {
   await ensureTransactionTable(db);
+  const [[packageCategoryColumn]] = await db.query(
+    `SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_package_master' AND COLUMN_NAME = 'service_category'`
+  );
+  if (!packageCategoryColumn.count) {
+    await db.query("ALTER TABLE cable_package_master ADD COLUMN service_category ENUM('CATV','INTERNET') NOT NULL DEFAULT 'CATV' AFTER package_type");
+  }
+  for (const [column, definition] of [
+    ['gst_percent', 'DECIMAL(5,2) NOT NULL DEFAULT 0 AFTER price'],
+    ['price_including_gst', 'DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER gst_percent'],
+    ['internet_network_type', "ENUM('KRISHI','RAILWIRE') NULL AFTER service_category"]
+  ]) {
+    const [[existing]] = await db.query(
+      `SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_package_master' AND COLUMN_NAME = ?`,
+      [column]
+    );
+    if (!existing.count) await db.query(`ALTER TABLE cable_package_master ADD COLUMN ${column} ${definition}`);
+  }
   await db.query(`
     CREATE TABLE IF NOT EXISTS cable_stb_master (
       stb_master_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -922,7 +941,7 @@ const getLookups = async (req, res) => {
       'SELECT mso_id, mso_name FROM cable_mso_master WHERE is_active = 1 ORDER BY mso_name'
     );
     const packages = await safeLookup(db,
-      'SELECT package_id, package_name, package_type, price FROM cable_package_master WHERE is_active = 1 ORDER BY package_name'
+      "SELECT package_id, package_name, package_type, price FROM cable_package_master WHERE is_active = 1 AND service_category = 'CATV' ORDER BY package_name"
     );
     const employees = await safeLookup(db,
       `SELECT employee_id, employee_code,
@@ -1412,17 +1431,26 @@ const addPackage = async (req, res) => {
   try {
     const packageName = String(req.body.package_name || '').trim();
     const packageType = req.body.package_type || 'MSO_PACKAGE';
+    const serviceCategory = String(req.body.service_category || 'CATV').toUpperCase() === 'INTERNET' ? 'INTERNET' : 'CATV';
+    const internetNetworkType = String(req.body.internet_network_type || '').toUpperCase();
+    const basePrice = money(req.body.price);
+    const gstPercent = serviceCategory === 'INTERNET' ? 18 : 0;
+    const priceIncludingGst = serviceCategory === 'INTERNET'
+      ? money(basePrice + (basePrice * gstPercent / 100))
+      : 0;
     if (!packageName) return res.status(400).json({ message: 'Package name is required' });
+    if (serviceCategory === 'INTERNET' && !['KRISHI', 'RAILWIRE'].includes(internetNetworkType)) return res.status(400).json({ message: 'Internet package type is required' });
     const db = connection.promise();
+    await ensureCableTvExtendedTables(db);
     const [[existing]] = await db.query(
-      'SELECT package_id FROM cable_package_master WHERE package_name = ? AND package_type = ? LIMIT 1',
-      [packageName, packageType]
+      'SELECT package_id FROM cable_package_master WHERE package_name = ? AND package_type = ? AND service_category = ? LIMIT 1',
+      [packageName, packageType, serviceCategory]
     );
     if (existing) return res.status(409).json({ message: 'Package already exists for selected type' });
     await db.query(
-      `INSERT INTO cable_package_master (package_name, package_type, price, description)
-       VALUES (?, ?, ?, ?)`,
-      [packageName, packageType, money(req.body.price), nullable(req.body.description)]
+      `INSERT INTO cable_package_master (package_name, package_type, service_category, internet_network_type, price, gst_percent, price_including_gst, description)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [packageName, packageType, serviceCategory, serviceCategory === 'INTERNET' ? internetNetworkType : null, basePrice, gstPercent, priceIncludingGst, nullable(req.body.description)]
     );
     return res.status(201).json({ message: 'Package saved successfully' });
   } catch (error) {
@@ -1741,7 +1769,43 @@ const getPendingAccounts = async (req, res) => {
        WHERE ${materialFilters.join(' AND ')}`,
       materialValues
     );
-    return res.json([...rows, ...materialRows].sort(
+    const [internetSourceRows] = await db.query(
+      `SELECT -(1000000000 + ia.internet_account_id) AS account_id, NULL approval_group_id,
+              ic.internet_customer_id AS cable_customer_id, ic.customer_code, ic.full_name, ic.mobile_no,
+              ic.network_type AS network_name, NULL location_name, NULL area_name, NULL street_name,
+              DATE(ia.created_at) account_date, 'INTERNET' connection_type,
+              COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), e.employee_code) installed_by_name,
+              NULL received_by_name, ia.router_amount AS stb_amount, ia.router_discount AS stb_discount,
+              ia.connection_amount, ia.labor_amount, ia.material_cost, ia.material_discount,
+              ia.subscription_amount, ia.grand_total AS sub_total, 0 discount, ia.overall_discount,
+              ia.grand_total, ia.customer_paid_amount, ia.office_received_amount, ia.office_balance_amount,
+              GREATEST(ia.grand_total-ia.office_received_amount,0) balance_amount, ia.account_status,
+              COALESCE(pay.cash_received,0) cash_received, COALESCE(pay.online_received,0) online_received,
+              ia.created_at, NULL material_sale_detail, ia.due_date
+       FROM internet_customer_accounts ia
+       JOIN internet_customers ic ON ic.internet_customer_id=ia.internet_customer_id
+       LEFT JOIN employees e ON e.employee_id=ic.installed_by_employee_id
+       LEFT JOIN (SELECT internet_account_id,SUM(cash_amount) cash_received,SUM(online_amount) online_received
+                  FROM internet_customer_account_payments GROUP BY internet_account_id) pay ON pay.internet_account_id=ia.internet_account_id
+       WHERE (? OR ic.installed_by_employee_id=?)`,
+      [isAdmin(req) ? 1 : 0, installedByEmployeeId || 0]
+    );
+    const internetRows = internetSourceRows.map(item => {
+      for (const key of ['stb_amount','stb_discount','connection_amount','labor_amount','material_cost','material_discount','subscription_amount','sub_total','overall_discount','grand_total','customer_paid_amount','office_received_amount','office_balance_amount','balance_amount','cash_received','online_received']) {
+        item[key] = Math.round(money(item[key]));
+      }
+      return item;
+    }).filter(item => {
+      const accountStatus=String(item.account_status||'PENDING').toUpperCase();
+      if(status==='PENDING'&&accountStatus!=='PENDING')return false;
+      if(status==='PARTIAL'&&accountStatus!=='PARTIAL')return false;
+      if(['PAID','RECEIVED'].includes(status)&&accountStatus!=='PAID')return false;
+      if(name&&!`${item.full_name} ${item.customer_code} ${item.mobile_no}`.toLowerCase().includes(name.toLowerCase()))return false;
+      if(startDate&&String(item.account_date).slice(0,10)<startDate)return false;
+      if(endDate&&String(item.account_date).slice(0,10)>endDate)return false;
+      return true;
+    });
+    return res.json([...rows, ...materialRows, ...internetRows].sort(
       (left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
     ));
   } catch (error) {
@@ -2278,6 +2342,11 @@ const receiveSubscriptionPayment = async (req, res) => {
 const getAccountPayments = async (req, res) => {
   try {
     const accountId = Number(req.params.accountId);
+    if (accountId <= -1000000000) {
+      const internetAccountId=-accountId-1000000000,db=connection.promise();
+      const [rows]=await db.query(`SELECT p.internet_payment_id payment_id,p.cash_amount,p.online_amount,p.received_amount,p.paid_date,p.received_date,p.due_date,p.balance_after_payment,p.payment_status,p.created_at,COALESCE(NULLIF(TRIM(CONCAT_WS(' ',e.first_name,e.last_name)),''),u.username) received_by_name FROM internet_customer_account_payments p LEFT JOIN users u ON u.user_id=p.received_by_user_id LEFT JOIN employees e ON e.employee_id=COALESCE(p.received_by_employee_id,u.employee_id) WHERE p.internet_account_id=? ORDER BY p.internet_payment_id DESC`,[internetAccountId]);
+      return res.json(rows);
+    }
     if (accountId < 0) return getMaterialSalePayments(req, res, accountId);
     const db = connection.promise();
     await ensureCableTvExtendedTables(db);
@@ -2309,6 +2378,19 @@ const receiveAccount = async (req, res) => {
     await ensureCableTvExtendedTables(db);
     const accountId = Number(req.params.accountId);
     if (!accountId) return res.status(400).json({ message: 'account_id is required' });
+    if(accountId<=-1000000000){
+      const internetAccountId=-accountId-1000000000,cash=Math.round(money(req.body.cash_amount)),online=Math.round(money(req.body.online_amount)),received=Math.round(cash+online),paidDate=textOrNull(req.body.paid_date)||dateOnly(new Date()),receivedDate=textOrNull(req.body.received_date)||dateOnly(new Date()),receiver=intOrNull(req.body.received_by_employee_id||req.res?.locals?.employee_id);
+      await db.beginTransaction();
+      const [[account]]=await db.query('SELECT * FROM internet_customer_accounts WHERE internet_account_id=? FOR UPDATE',[internetAccountId]);
+      if(!account){await db.rollback();return res.status(404).json({message:'Pending Internet account was not found'});}
+      const current=Math.round(Math.max(money(account.grand_total)-money(account.office_received_amount),0));
+      if((current>0&&received<=0)||received>current){await db.rollback();return res.status(400).json({message:received>current?`Cash + Online cannot exceed Total Payment balance: ${current.toFixed(2)}`:'Enter a cash or online received amount greater than zero'});}
+      const newReceived=Math.round(money(account.office_received_amount)+received),balance=Math.round(Math.max(current-received,0)),paymentStatus=balance<=0?'PAID':'PARTIAL',dueDate=paymentStatus==='PARTIAL'?textOrNull(req.body.due_date):null;
+      if(paymentStatus==='PARTIAL'&&!dueDate){await db.rollback();return res.status(400).json({message:'Due date is required for a partial payment'});}
+      await db.query(`INSERT INTO internet_customer_account_payments(internet_account_id,cash_amount,online_amount,received_amount,paid_date,received_date,due_date,balance_after_payment,payment_status,received_by_user_id,received_by_employee_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)`,[internetAccountId,cash,online,received,paidDate,receivedDate,dueDate,balance,paymentStatus,currentUserId(req),receiver]);
+      await db.query('UPDATE internet_customer_accounts SET office_received_amount=?,office_balance_amount=?,balance_amount=?,due_date=?,account_status=?,updated_at=NOW() WHERE internet_account_id=?',[newReceived,balance,balance,dueDate,paymentStatus,internetAccountId]);
+      await db.commit();return res.json({message:paymentStatus==='PAID'?'Internet payment received in full':'Partial Internet payment recorded',payment_status:paymentStatus,received_amount:received,balance_amount:balance});
+    }
     if (accountId < 0) return receiveMaterialSale(req, res, accountId);
 
     await db.beginTransaction();

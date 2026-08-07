@@ -3,6 +3,7 @@ const permissionCatalog = [
   ['General', 'NOTIFICATIONS', 'Notifications', '/notifications'],
   ['Business Partners', 'CUSTOMERS', 'Customers', '/customers'],
   ['Business Partners', 'CABLE_TV_CUSTOMERS', 'Cable TV Customers', '/cable-tv/customers'],
+  ['Business Partners', 'INTERNET_CUSTOMERS', 'Internet Customers', '/internet/customers'],
   ['Cable TV Customer Actions', 'CABLE_TV_CONNECTIONS', 'Connection Actions', '/cable-tv/customers/:id/connections'],
   ['Cable TV Customer Actions', 'CABLE_TV_CUSTOMER_STBS', 'STB Actions', '/cable-tv/customers/:id/stbs'],
   ['Cable TV Customer Actions', 'CABLE_TV_CUSTOMER_PACKAGES', 'Package Actions', '/cable-tv/customers/:id/packages'],

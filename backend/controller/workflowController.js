@@ -226,6 +226,17 @@ const getWorkflowApprovals = async (req, res) => {
              LEFT JOIN cable_customer_accounts ca ON ca.approval_group_id = cag.approval_group_id
              WHERE cag.approval_status = 'PENDING'
                AND cag.group_type <> 'SUBSCRIPTION_UPDATE'
+             UNION ALL
+             SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
+                    wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
+                    'Internet Customer' AS subject,
+                    NULL, NULL, ic.installed_date, NULL, ia.grand_total,
+                    NULL, ic.full_name, NULL, NULL, ia.balance_amount,
+                    ic.status, ic.approval_status, NULL
+             FROM workflow_approvals wa
+             JOIN internet_customers ic ON wa.module_name='INTERNET_CUSTOMER' AND ic.internet_customer_id=wa.reference_id
+             LEFT JOIN internet_customer_accounts ia ON ia.internet_customer_id=ic.internet_customer_id
+             WHERE wa.workflow_status='PENDING'
              ORDER BY workflow_status = 'PENDING' DESC, requested_at DESC`
         );
         return res.json(rows);
@@ -538,6 +549,9 @@ const approveWorkflow = async (req, res) => {
 
         if (workflow.module_name === 'WORK_ORDER') {
             await conn.query("UPDATE work_orders SET approval_status = 'APPROVED', updated_at = NOW() WHERE work_order_id = ?", [workflow.reference_id]);
+        } else if (workflow.module_name === 'INTERNET_CUSTOMER') {
+            await conn.query("UPDATE internet_customers SET approval_status='APPROVED', updated_at=NOW() WHERE internet_customer_id=?", [workflow.reference_id]);
+            await conn.query("UPDATE internet_customer_accounts SET approval_status='APPROVED', updated_at=NOW() WHERE internet_customer_id=?", [workflow.reference_id]);
         } else if (workflow.module_name === 'MATERIAL_ISSUE') {
             const [issues] = await conn.query('SELECT * FROM work_order_material_issues WHERE issue_id = ? FOR UPDATE', [workflow.reference_id]);
             if (!issues.length) throw new Error('Material issue not found');

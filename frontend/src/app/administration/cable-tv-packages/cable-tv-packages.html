@@ -6,15 +6,16 @@
 
   <section class="package-panel">
     <table>
-      <tr><th>Package</th><th>Type</th><th>Price</th><th>Description</th></tr>
+      <tr><th>Package</th><th>Category</th><th>Type</th><th>Price</th><th>Description</th></tr>
       <tr *ngFor="let item of packages">
         <td>{{ item.package_name }}</td>
-        <td>{{ item.package_type }}</td>
+        <td>{{ item.service_category || 'CATV' }}</td>
+        <td>{{ item.service_category === 'INTERNET' ? (item.internet_network_type === 'KRISHI' ? 'Krishi Package' : item.internet_network_type || 'Internet') : item.package_type }}</td>
         <td>{{ item.price }}</td>
         <td>{{ item.description }}</td>
       </tr>
       <tr *ngIf="!packages.length">
-        <td colspan="4" class="empty-row">No packages added yet.</td>
+        <td colspan="5" class="empty-row">No packages added yet.</td>
       </tr>
     </table>
   </section>
@@ -26,10 +27,13 @@
         <button type="button" class="icon-btn" (click)="closePackageModal()">x</button>
       </div>
       <form [formGroup]="packageForm" class="entry-form">
-        <label>Package
+        <label class="package-field">Package
           <input type="text" formControlName="package_name">
         </label>
-        <label>Type
+        <label>Service Category
+          <select formControlName="service_category"><option value="CATV">CATV</option><option value="INTERNET">Internet</option></select>
+        </label>
+        <label *ngIf="packageForm.get('service_category')?.value !== 'INTERNET'">Type
           <select formControlName="package_type">
             <option *ngFor="let type of packageTypes" [ngValue]="type">{{ type }}</option>
           </select>
@@ -37,6 +41,17 @@
         <label>Price
           <input type="number" formControlName="price">
         </label>
+        <ng-container *ngIf="packageForm.get('service_category')?.value === 'INTERNET'">
+          <label>Type
+            <select formControlName="internet_network_type"><option value="KRISHI">Krishi Package</option><option value="RAILWIRE">Railwire</option></select>
+          </label>
+          <label>GST %
+            <input type="number" formControlName="gst_percent" readonly>
+          </label>
+          <label>Package Price (Including GST)
+            <input type="number" formControlName="price_including_gst" readonly>
+          </label>
+        </ng-container>
         <label>Description
           <input type="text" formControlName="description">
         </label>

@@ -26,6 +26,7 @@ const notificationRoute = require('./routes/notificationRouter')
 const permissionRoute = require('./routes/permissionRouter')
 const cableTvRoute = require('./routes/cableTvRouter')
 const transactionRoute = require('./routes/transactionRouter')
+const internetCustomerRoute = require('./routes/internetCustomerRouter')
 const auth = require('./services/authendication');
 const { apiModules } = require('./utils/permissionCatalog');
 const app = express()
@@ -76,6 +77,7 @@ app.use('/api/warranty', warrantyRoute);
 app.use('/api/notifications', notificationRoute);
 app.use('/api/cable-tv', cableTvRoute);
 app.use('/api/transactions', transactionRoute);
+app.use('/api/internet', internetCustomerRoute);
 app.use('/api/v1/employee-attendance', employeeAttendanceRoute);
 app.use('/api/v1/customer-payments', customerPaymentRoute);
 app.use('/api/v1/supplier-payments', supplierPaymentRoute);
@@ -85,4 +87,5 @@ app.use('/api/v1/warranties', warrantyRoute);
 app.use('/api/v1/notifications', notificationRoute);
 app.use('/api/v1/cable-tv', cableTvRoute);
 app.use('/api/v1/transactions', transactionRoute);
+app.use('/api/v1/internet', internetCustomerRoute);
 module.exports = app;

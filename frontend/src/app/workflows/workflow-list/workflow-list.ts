@@ -43,7 +43,9 @@ export class WorkflowList {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'btn btn-sm btn-outline-primary';
-        button.innerHTML = '<i class="bi bi-eye" aria-hidden="true"></i> Review';
+        button.innerHTML = params.data?.module_name === 'INTERNET_CUSTOMER'
+          ? '<i class="bi bi-check-circle" aria-hidden="true"></i> Approve'
+          : '<i class="bi bi-eye" aria-hidden="true"></i> Review';
         button.addEventListener('click', () => this.review(params.data));
         return button;
       },
@@ -97,6 +99,10 @@ export class WorkflowList {
       this.router.navigate(['/cable-tv/customers', row.reference_id], {
         queryParams: { review: true, workflowId: row.workflow_id }
       });
+    } else if (row.module_name === 'INTERNET_CUSTOMER') {
+      this.router.navigate(['/internet/customers/view', row.reference_id], {
+        queryParams: { review: true, workflowId: row.workflow_id }
+      });
     }
   }
 
@@ -115,6 +121,21 @@ export class WorkflowList {
         return;
       }
       if (!confirm(`Approve Cable TV customer ${row.reference_no}?`)) return;
+      this.workflowService.approveWorkflow(row.workflow_id).subscribe({
+        next: (response: any) => {
+          this.commonMethods.handleTokenAndMessage(response);
+          this.loadWorkflows();
+        },
+        error: (error: any) => this.commonMethods.handleError(error)
+      });
+      return;
+    }
+    if (row.module_name === 'INTERNET_CUSTOMER') {
+      if (row.workflow_status !== 'PENDING') {
+        alert('This Internet customer request has already been reviewed.');
+        return;
+      }
+      if (!confirm(`Approve Internet customer ${row.reference_no}?`)) return;
       this.workflowService.approveWorkflow(row.workflow_id).subscribe({
         next: (response: any) => {
           this.commonMethods.handleTokenAndMessage(response);

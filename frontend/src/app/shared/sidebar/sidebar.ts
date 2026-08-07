@@ -16,7 +16,7 @@ export class Sidebar {
   expandedGroup = '';
   readonly panelOpenState = signal(false);
   readonly groups = [
-    { label: 'Business Partners', icon: 'bi-people', items: [['CCTV Customer', '/customers', 'CUSTOMERS'], ['Cable TV Customers', '/cable-tv/customers', 'CABLE_TV_CUSTOMERS'], ['Suppliers', '/suppliers', 'SUPPLIERS']] },
+    { label: 'Business Partners', icon: 'bi-people', items: [['CCTV Customer', '/customers', 'CUSTOMERS'], ['Cable TV Customers', '/cable-tv/customers', 'CABLE_TV_CUSTOMERS'], ['Internet Customers', '/internet/customers', 'INTERNET_CUSTOMERS'], ['Suppliers', '/suppliers', 'SUPPLIERS']] },
     { label: 'Inventory', icon: 'bi-box-seam', items: [['Brands', '/brands', 'BRANDS'], ['Categories', '/categoriesLists', 'CATEGORIES'], ['Products', '/productList', 'PRODUCTS'], ['Stock', '/stock', 'STOCK'], ['Purchases', '/purchases', 'PURCHASES']] },
     { label: 'Sales', icon: 'bi-receipt', items: [['Quotations', '/quotations', 'QUOTATIONS'], ['Sales', '/sales', 'SALES'], ['Material Sales', '/material-sales', 'MATERIAL_SALES'], ['Work Orders', '/work-orders', 'WORK_ORDERS'], ['Customer Payments', '/customer-payments', 'CUSTOMER_PAYMENTS'], ['Supplier Payments', '/supplier-payments', 'SUPPLIER_PAYMENTS']] },
     { label: 'Service', icon: 'bi-headset', items: [['Complaints', '/cable-tv/complaints', 'CABLE_TV_CUSTOMERS'], ['Service Tickets', '/service-tickets', 'SERVICE_TICKETS'], ['Warranty Master', '/warranty-master', 'WARRANTIES']] },
