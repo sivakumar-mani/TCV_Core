@@ -12,7 +12,7 @@ const localHosts = ['localhost', '127.0.0.1', '::1'];
 const isLocal = localHosts.includes(window.location.hostname);
 
 const defaultConfig: AppConfig = {
-  apiUrl: isLocal ? 'http://localhost:8080/api' : 'http://timecablevision.in/api',
+  apiUrl: isLocal ? 'http://localhost:8080/api' : 'https://timecablevision.in/api',
 };
 
 const runtimeConfig = window.APP_CONFIG ?? {};

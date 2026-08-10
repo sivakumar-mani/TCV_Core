@@ -3,6 +3,6 @@
   var isLocal = localHosts.indexOf(window.location.hostname) !== -1;
 
   window.APP_CONFIG = {
-    apiUrl: isLocal ? 'http://localhost:8080/api' : 'http://timecablevision.in/api',
+    apiUrl: isLocal ? 'http://localhost:8080/api' : 'https://timecablevision.in/api',
   };
 })();
