@@ -33,8 +33,8 @@ export class WorkflowList {
     { headerName: 'Date', maxWidth: 150, valueGetter: (params: any) => params.data?.quotation_date || params.data?.purchase_date, valueFormatter: (params) => this.displayDate(params.value) },
     { field: 'net_amount', headerName: 'Amount', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
     { field: 'balance_amount', headerName: 'Balance', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
-    { headerName: 'Status', maxWidth: 160, valueGetter: (params: any) => params.data?.quotation_status || params.data?.workflow_status },
-    { field: 'workflow_status', headerName: 'Workflow', maxWidth: 160 },
+    { headerName: 'Status', maxWidth: 160, valueGetter: (params: any) => params.data?.quotation_status || params.data?.workflow_status, cellRenderer: (params: any) => this.statusPill(params.value) },
+    { field: 'workflow_status', headerName: 'Workflow', maxWidth: 160, cellRenderer: (params: any) => this.statusPill(params.value) },
     { field: 'requested_at', headerName: 'Requested At', maxWidth: 180, valueFormatter: (params) => this.displayDateTime(params.value) },
     {
       headerName: 'Action',
@@ -43,7 +43,7 @@ export class WorkflowList {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'btn btn-sm btn-outline-primary';
-        button.innerHTML = params.data?.module_name === 'INTERNET_CUSTOMER'
+        button.innerHTML = ['INTERNET_CUSTOMER','INTERNET_CUSTOMER_UPDATE'].includes(params.data?.module_name)
           ? '<i class="bi bi-check-circle" aria-hidden="true"></i> Approve'
           : '<i class="bi bi-eye" aria-hidden="true"></i> Review';
         button.addEventListener('click', () => this.review(params.data));
@@ -99,7 +99,7 @@ export class WorkflowList {
       this.router.navigate(['/cable-tv/customers', row.reference_id], {
         queryParams: { review: true, workflowId: row.workflow_id }
       });
-    } else if (row.module_name === 'INTERNET_CUSTOMER') {
+    } else if (['INTERNET_CUSTOMER','INTERNET_CUSTOMER_UPDATE'].includes(row.module_name)) {
       this.router.navigate(['/internet/customers/view', row.reference_id], {
         queryParams: { review: true, workflowId: row.workflow_id }
       });
@@ -130,7 +130,7 @@ export class WorkflowList {
       });
       return;
     }
-    if (row.module_name === 'INTERNET_CUSTOMER') {
+    if (['INTERNET_CUSTOMER','INTERNET_CUSTOMER_UPDATE'].includes(row.module_name)) {
       if (row.workflow_status !== 'PENDING') {
         alert('This Internet customer request has already been reviewed.');
         return;
@@ -165,6 +165,15 @@ export class WorkflowList {
 
   money(value: number | string) {
     return `Rs. ${(Number(value) || 0).toFixed(2)}`;
+  }
+
+  statusPill(value: any) {
+    const status = String(value || 'PENDING').trim();
+    const pill = document.createElement('span');
+    pill.className = 'status-pill';
+    pill.dataset['status'] = status;
+    pill.textContent = status;
+    return pill;
   }
 
   displayDate(value: string | Date) {

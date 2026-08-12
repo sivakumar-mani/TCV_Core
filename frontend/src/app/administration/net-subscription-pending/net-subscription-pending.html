@@ -1,0 +1,206 @@
+<div class="page-shell">
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Internet Accounts</p>
+      <h1>Net Subscription</h1>
+    </div>
+  </div>
+  <section class="filter-card">
+    <label>Customer No<input [(ngModel)]="filters.customer_no" (keyup.enter)="load()" /></label
+    ><label>Customer Name<input [(ngModel)]="filters.customer_name" (keyup.enter)="load()" /></label
+    ><label
+      >Area<select [(ngModel)]="filters.area_id" (change)="filters.street_id = ''">
+        <option value="">All Areas</option>
+        <option *ngFor="let x of areas" [value]="x.area_id">{{ x.area_name }}</option>
+      </select></label
+    ><label
+      >Street<select [(ngModel)]="filters.street_id">
+        <option value="">All Streets</option>
+        <option *ngFor="let x of streets" [value]="x.street_id">{{ x.street_name }}</option>
+      </select></label
+    >
+    <div class="actions">
+      <button class="primary" (click)="load()">Search</button
+      ><button (click)="reset()">Reset</button>
+    </div>
+  </section>
+  <section class="list-card">
+    <div class="summary">
+      Total Net Subscription Customers: <strong>{{ customers.length }}</strong>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>S No</th>
+            <th>Customer No</th>
+            <th>Customer Name</th>
+            <th>Network</th>
+            <th>Net ID</th>
+            <th>Address</th>
+            <th>Package</th>
+            <th>Unpaid Subscription</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of customers; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ c.customer_code }}</td>
+            <td>{{ c.full_name }}</td>
+            <td>{{ c.network_type }}</td>
+            <td>{{ c.net_id }}</td>
+            <td>{{ address(c) }}</td>
+            <td>{{ c.package_name || '-' }}</td>
+            <td class="dues">
+              <button
+                type="button"
+                *ngFor="let s of c.pending_subscriptions"
+                title="Enter subscription payment"
+                (click)="open(c, s); $event.stopPropagation()"
+              >
+                {{ monthYear(s) }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!customers.length">
+            <td colspan="8" class="empty">No unpaid Internet subscriptions found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <div class="backdrop" *ngIf="selected">
+    <section class="modal">
+      <div class="modal-head">
+        <div>
+          <p class="eyebrow">Enter Net Subscription</p>
+          <h2>{{ customer?.customer_code }} - {{ customer?.full_name }}</h2>
+        </div>
+        <button (click)="close()">Close</button>
+      </div>
+      <div class="customer-summary">
+        <div>
+          <span>Customer Number</span><strong>{{ customer?.customer_code }}</strong>
+        </div>
+        <div>
+          <span>Net ID</span><strong>{{ customer?.net_id }}</strong>
+        </div>
+        <div>
+          <span>Address</span><strong>{{ address(customer) }}</strong>
+        </div>
+        <div>
+          <span>Customer Status</span><strong>{{ customer?.customer_status }}</strong>
+        </div>
+      </div>
+      <div class="grid">
+        <label
+          >Month / Year
+          <div class="inline">
+            <select [(ngModel)]="form.subscription_month" disabled>
+              <option *ngFor="let m of monthNames; let i = index" [ngValue]="i + 1">
+                {{ m }}
+              </option></select
+            ><input
+              type="number"
+              [(ngModel)]="form.subscription_year"
+              disabled
+            /></div></label
+        ><label
+          >No of Period / Count
+          <div class="period">
+            <select [(ngModel)]="form.period_value" (ngModelChange)="calculate()">
+              <option *ngFor="let n of periodOptions(form.period_unit)" [ngValue]="n">
+                {{ n }}
+              </option></select
+            ><select [(ngModel)]="form.period_unit" (ngModelChange)="unitChanged()">
+              <option value="MONTH">Month</option>
+              <option value="DAYS">Days</option>
+              <option value="YEAR">Year</option></select
+            ><input [(ngModel)]="form.period_count" disabled /></div></label
+        ><label
+          >Free No of Period
+          <div class="inline">
+            <select [(ngModel)]="form.free_period_value" (ngModelChange)="calculate()">
+              <option *ngFor="let n of periodOptions(form.free_period_unit, true)" [ngValue]="n">
+                {{ n }}
+              </option></select
+            ><select [(ngModel)]="form.free_period_unit" (ngModelChange)="unitChanged(true)">
+              <option value="MONTH">Month</option>
+              <option value="DAYS">Days</option>
+              <option value="YEAR">Year</option>
+            </select>
+          </div></label
+        ><label>Start Date<input type="date" [(ngModel)]="form.start_date" disabled /></label
+        ><label>End Date<input type="date" [(ngModel)]="form.end_date" disabled /></label
+        ><label>Subscription Amount<input type="number" [(ngModel)]="form.amount" disabled /></label
+        ><label
+          >Paid Amount<input
+            type="number"
+            min="0"
+            [max]="form.amount"
+            [(ngModel)]="form.paid_amount"
+            (ngModelChange)="paidChanged()" /></label
+        ><label>Balance<input type="number" [(ngModel)]="form.balance_amount" disabled /></label
+        ><label
+          >Status<select [(ngModel)]="form.payment_status" disabled>
+            <option value="PENDING">Unpaid</option>
+            <option value="PARTIAL">Partial</option>
+            <option value="PAID">Paid</option>
+          </select></label
+        ><label
+          >Collected Date<input
+            type="date"
+            [(ngModel)]="form.collect_date"
+            [disabled]="!permissions.isAdmin()" /></label
+        ><label
+          >Collected By<select
+            [(ngModel)]="form.collected_by_employee_id"
+            [disabled]="!permissions.isAdmin()"
+          >
+            <option [ngValue]="null">Select employee</option>
+            <option *ngFor="let e of employees" [ngValue]="e.employee_id">
+              {{ e.employee_name }}
+            </option>
+          </select></label
+        ><label
+          >Renewed By<select [(ngModel)]="form.renewed_by_value" (ngModelChange)="renewedChanged()">
+            <ng-container *ngFor="let e of employees"
+              ><option
+                *ngIf="permissions.isAdmin() || e.employee_id === lookups.logged_in_employee_id"
+                [value]="'EMPLOYEE:' + e.employee_id"
+              >
+                {{ e.employee_name }}
+              </option></ng-container
+            >
+            <option *ngIf="permissions.isAdmin()" value="ADMIN">Admin</option>
+            <option value="CUSTOMER">Customer</option>
+          </select></label
+        ><label
+          >Mode of Payment<select
+            [(ngModel)]="form.payment_mode"
+            [disabled]="!permissions.isAdmin() || form.renewed_by_value !== 'ADMIN'"
+          >
+            <option value="DASHBOARD">Dashboard</option>
+            <option value="CASH">Cash</option>
+            <option value="ONLINE">Online</option>
+          </select></label
+        ><label *ngIf="permissions.isAdmin()"
+          >Payment Reference<input [(ngModel)]="form.payment_reference" /></label
+        ><label *ngIf="permissions.isAdmin()"
+          >Payment Mapped Employee<select [(ngModel)]="form.payment_mapped_employee_id">
+            <option [ngValue]="null">Select employee</option>
+            <option *ngFor="let e of employees" [ngValue]="e.employee_id">
+              {{ e.employee_name }}
+            </option>
+          </select></label
+        >
+      </div>
+      <div class="actions end">
+        <button (click)="close()">Cancel</button
+        ><button class="primary" [disabled]="saving" (click)="save()">
+          {{ saving ? 'Saving...' : 'Save Subscription' }}
+        </button>
+      </div>
+    </section>
+  </div>
+</div>

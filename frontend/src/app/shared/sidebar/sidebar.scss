@@ -103,7 +103,17 @@ mat-nav-list {
 
 :host ::ng-deep .mat-expansion-panel-body .mat-mdc-list-item {
   height: 34px !important;
-  padding-left: 2.35rem !important;
+  padding-left: 1.65rem !important;
+}
+
+:host ::ng-deep .mat-expansion-panel-body .submenu-icon {
+  color: var(--tcv-muted);
+  flex: 0 0 17px;
+  font-size: 15px;
+  height: 17px;
+  margin-right: 0.55rem;
+  text-align: center;
+  width: 17px;
 }
 
 :host ::ng-deep .mat-expansion-panel-body .mat-mdc-list-item .mdc-list-item__primary-text {

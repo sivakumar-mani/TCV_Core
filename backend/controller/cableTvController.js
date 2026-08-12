@@ -1769,6 +1769,18 @@ const getPendingAccounts = async (req, res) => {
        WHERE ${materialFilters.join(' AND ')}`,
       materialValues
     );
+    const internetFilters = ["COALESCE(ia.account_source,'LEGACY') NOT IN ('SUBSCRIPTION','PACKAGE')"];
+    const internetValues = [];
+    if(installedByEmployeeId){internetFilters.push('ic.installed_by_employee_id=?');internetValues.push(installedByEmployeeId);}
+    else if(!isAdmin(req))internetFilters.push('1=0');
+    const internetOutstandingSql = 'GREATEST(ia.grand_total-COALESCE(ia.office_received_amount,0),0)';
+    const internetReceivedSql = 'COALESCE(ia.office_received_amount,0)';
+    if(status==='PENDING')internetFilters.push(`${internetOutstandingSql}>0 AND ${internetReceivedSql}<=0`);
+    else if(status==='PARTIAL')internetFilters.push(`${internetOutstandingSql}>0 AND ${internetReceivedSql}>0`);
+    else if(['PAID','RECEIVED'].includes(status))internetFilters.push(`${internetOutstandingSql}<=0`);
+    if(name){const search=`%${name}%`;internetFilters.push('(ic.full_name LIKE ? OR CAST(ic.customer_code AS CHAR) LIKE ? OR ic.mobile_no LIKE ?)');internetValues.push(search,search,search);}
+    if(startDate){internetFilters.push('DATE(ia.created_at)>=?');internetValues.push(startDate);}
+    if(endDate){internetFilters.push('DATE(ia.created_at)<=?');internetValues.push(endDate);}
     const [internetSourceRows] = await db.query(
       `SELECT -(1000000000 + ia.internet_account_id) AS account_id, NULL approval_group_id,
               ic.internet_customer_id AS cable_customer_id, ic.customer_code, ic.full_name, ic.mobile_no,
@@ -1787,23 +1799,14 @@ const getPendingAccounts = async (req, res) => {
        LEFT JOIN employees e ON e.employee_id=ic.installed_by_employee_id
        LEFT JOIN (SELECT internet_account_id,SUM(cash_amount) cash_received,SUM(online_amount) online_received
                   FROM internet_customer_account_payments GROUP BY internet_account_id) pay ON pay.internet_account_id=ia.internet_account_id
-       WHERE (? OR ic.installed_by_employee_id=?)`,
-      [isAdmin(req) ? 1 : 0, installedByEmployeeId || 0]
+       WHERE ${internetFilters.join(' AND ')}`,
+      internetValues
     );
     const internetRows = internetSourceRows.map(item => {
       for (const key of ['stb_amount','stb_discount','connection_amount','labor_amount','material_cost','material_discount','subscription_amount','sub_total','overall_discount','grand_total','customer_paid_amount','office_received_amount','office_balance_amount','balance_amount','cash_received','online_received']) {
         item[key] = Math.round(money(item[key]));
       }
       return item;
-    }).filter(item => {
-      const accountStatus=String(item.account_status||'PENDING').toUpperCase();
-      if(status==='PENDING'&&accountStatus!=='PENDING')return false;
-      if(status==='PARTIAL'&&accountStatus!=='PARTIAL')return false;
-      if(['PAID','RECEIVED'].includes(status)&&accountStatus!=='PAID')return false;
-      if(name&&!`${item.full_name} ${item.customer_code} ${item.mobile_no}`.toLowerCase().includes(name.toLowerCase()))return false;
-      if(startDate&&String(item.account_date).slice(0,10)<startDate)return false;
-      if(endDate&&String(item.account_date).slice(0,10)>endDate)return false;
-      return true;
     });
     return res.json([...rows, ...materialRows, ...internetRows].sort(
       (left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
@@ -2379,17 +2382,25 @@ const receiveAccount = async (req, res) => {
     const accountId = Number(req.params.accountId);
     if (!accountId) return res.status(400).json({ message: 'account_id is required' });
     if(accountId<=-1000000000){
-      const internetAccountId=-accountId-1000000000,cash=Math.round(money(req.body.cash_amount)),online=Math.round(money(req.body.online_amount)),received=Math.round(cash+online),paidDate=textOrNull(req.body.paid_date)||dateOnly(new Date()),receivedDate=textOrNull(req.body.received_date)||dateOnly(new Date()),receiver=intOrNull(req.body.received_by_employee_id||req.res?.locals?.employee_id);
+      const internetAccountId=-accountId-1000000000;
       await db.beginTransaction();
       const [[account]]=await db.query('SELECT * FROM internet_customer_accounts WHERE internet_account_id=? FOR UPDATE',[internetAccountId]);
       if(!account){await db.rollback();return res.status(404).json({message:'Pending Internet account was not found'});}
-      const current=Math.round(Math.max(money(account.grand_total)-money(account.office_received_amount),0));
-      if((current>0&&received<=0)||received>current){await db.rollback();return res.status(400).json({message:received>current?`Cash + Online cannot exceed Total Payment balance: ${current.toFixed(2)}`:'Enter a cash or online received amount greater than zero'});}
-      const newReceived=Math.round(money(account.office_received_amount)+received),balance=Math.round(Math.max(current-received,0)),paymentStatus=balance<=0?'PAID':'PARTIAL',dueDate=paymentStatus==='PARTIAL'?textOrNull(req.body.due_date):null;
+      const current=Number(Math.max(money(account.grand_total)-money(account.office_received_amount),0).toFixed(2));
+      if(!['PENDING','PARTIAL'].includes(account.account_status)&&current>0){await db.rollback();return res.status(409).json({message:'This account is already fully paid'});}
+      const cash=money(req.body.cash_amount),online=money(req.body.online_amount),received=Number((cash+online).toFixed(2));
+      const paidDate=textOrNull(req.body.paid_date)||dateOnly(new Date()),receivedDate=textOrNull(req.body.received_date)||dateOnly(new Date());
+      if(cash<0||online<0||(current>0&&received<=0)){await db.rollback();return res.status(400).json({message:'Enter a cash or online received amount greater than zero unless Total Payment is zero'});}
+      if(received>current){await db.rollback();return res.status(400).json({message:`Cash + Online cannot exceed Total Payment balance: ${current.toFixed(2)}`});}
+      const receiver=intOrNull(req.body.received_by_employee_id||req.res?.locals?.employee_id);
+      if(receiver){const [[employee]]=await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1 LIMIT 1',[receiver]);if(!employee){await db.rollback();return res.status(400).json({message:'Selected Received By employee is not active'});}}
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(paidDate)||!/^\d{4}-\d{2}-\d{2}$/.test(receivedDate)){await db.rollback();return res.status(400).json({message:'Valid paid date and received date are required'});}
+      const newReceived=Number((money(account.office_received_amount)+received).toFixed(2)),balance=Number(Math.max(current-received,0).toFixed(2)),paymentStatus=balance<=0?'PAID':'PARTIAL',dueDate=paymentStatus==='PARTIAL'?textOrNull(req.body.due_date):null;
       if(paymentStatus==='PARTIAL'&&!dueDate){await db.rollback();return res.status(400).json({message:'Due date is required for a partial payment'});}
       await db.query(`INSERT INTO internet_customer_account_payments(internet_account_id,cash_amount,online_amount,received_amount,paid_date,received_date,due_date,balance_after_payment,payment_status,received_by_user_id,received_by_employee_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)`,[internetAccountId,cash,online,received,paidDate,receivedDate,dueDate,balance,paymentStatus,currentUserId(req),receiver]);
       await db.query('UPDATE internet_customer_accounts SET office_received_amount=?,office_balance_amount=?,balance_amount=?,due_date=?,account_status=?,updated_at=NOW() WHERE internet_account_id=?',[newReceived,balance,balance,dueDate,paymentStatus,internetAccountId]);
-      await db.commit();return res.json({message:paymentStatus==='PAID'?'Internet payment received in full':'Partial Internet payment recorded',payment_status:paymentStatus,received_amount:received,balance_amount:balance});
+      if(paymentStatus==='PAID') await db.query("UPDATE internet_subscriptions SET paid_amount=amount,balance_amount=0,payment_status='PAID',collect_date=?,collected_by_employee_id=COALESCE(?,collected_by_employee_id) WHERE internet_customer_id=? AND payment_status<>'PAID'",[receivedDate,receiver,account.internet_customer_id]);
+      await db.commit();return res.json({message:paymentStatus==='PAID'?'Payment received in full':'Partial payment recorded',payment_status:paymentStatus,received_amount:received,balance_amount:balance});
     }
     if (accountId < 0) return receiveMaterialSale(req, res, accountId);
 

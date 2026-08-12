@@ -784,3 +784,100 @@ button,
 .page-shell {
   padding: 0 !important;
 }
+
+// Keep the Net Subscription dialog above the sidenav/header stacking layers.
+app-net-subscription-pending .backdrop {
+  z-index: 2147483646 !important;
+}
+
+app-net-subscription-pending .backdrop > .modal {
+  background: #fff !important;
+  box-sizing: border-box;
+  color: #1d2939 !important;
+  display: block !important;
+  opacity: 1 !important;
+  position: relative !important;
+  visibility: visible !important;
+  z-index: 2147483647 !important;
+}
+
+// Custom feature dialogs share the viewport below the sticky application header.
+app-layout .modal-backdrop,
+app-layout .backdrop {
+  bottom: 0 !important;
+  height: auto !important;
+  max-height: calc(100vh - 60px) !important;
+  top: 60px !important;
+  z-index: 10000 !important;
+}
+
+.cdk-overlay-container {
+  z-index: 20000 !important;
+}
+
+app-net-subscription-pending .dues button:disabled {
+  background: #fff3cd !important;
+  color: #9a6700 !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+// Shared semantic status pills used by every feature module.
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status, [data-status]) {
+  align-items: center !important;
+  background: #fff3cd !important;
+  border: 1px solid #ffe08a !important;
+  border-radius: 999px !important;
+  color: #8a5a00 !important;
+  display: inline-flex !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  justify-content: center !important;
+  line-height: 1.2 !important;
+  min-height: 26px !important;
+  padding: 4px 11px !important;
+  white-space: nowrap !important;
+}
+
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).paid,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).active,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).approved,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).completed,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).success,
+[data-status="PAID" i], [data-status="ACTIVE" i], [data-status="APPROVED" i],
+[data-status="COMPLETED" i], [data-status="SUCCESS" i], [data-status="AVAILABLE" i],
+[data-status="RESOLVED" i], [data-status="CLOSED" i], [data-status="RECEIVED" i] {
+  background: #dcfce7 !important;
+  border-color: #a7e8bd !important;
+  color: #166534 !important;
+}
+
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).pending,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).partial,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).unpaid,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).warning,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).fault,
+[data-status="PENDING" i], [data-status="PARTIAL" i], [data-status="UNPAID" i],
+[data-status="WAITING APPROVAL" i], [data-status="PENDING PAYMENT" i], [data-status="IN PROGRESS" i],
+[data-status="IN_PROGRESS" i], [data-status="OPEN" i], [data-status="DRAFT" i],
+[data-status="FAULT" i], [data-status="FAULTY" i] {
+  background: #fff3cd !important;
+  border-color: #ffe08a !important;
+  color: #8a5a00 !important;
+}
+
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).danger,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).rejected,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).failed,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).inactive,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).not-available,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).disconnect,
+:is(.status-pill, .status-badge, .status-cell, .table-status-pill, .summary-status, .pill, span.status).disconnected,
+[data-status="REJECTED" i], [data-status="FAILED" i], [data-status="INACTIVE" i],
+[data-status="CANCELLED" i], [data-status="CANCELED" i], [data-status="NOT AVAILABLE" i],
+[data-status="NOT_AVAILABLE" i], [data-status="REFUNDED" i], [data-status="DISCONNECT" i],
+[data-status="DISCONNECTED" i] {
+  background: #fee2e2 !important;
+  border-color: #fecaca !important;
+  color: #991b1b !important;
+}

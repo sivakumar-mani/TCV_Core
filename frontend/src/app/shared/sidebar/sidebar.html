@@ -8,7 +8,9 @@
       [expanded]="expandedGroup === group.label">
       <mat-expansion-panel-header><mat-panel-title><i class="bi" [ngClass]="group.icon" aria-hidden="true"></i><span matLine>{{ group.label }}</span></mat-panel-title></mat-expansion-panel-header>
       <mat-nav-list>
-        <a *ngFor="let item of group.items" [style.display]="permissions.can(item[2]) ? '' : 'none'" mat-list-item [routerLink]="item[1]" routerLinkActive="active-link">{{ item[0] }}</a>
+        <a *ngFor="let item of group.items" [style.display]="permissions.can(item[2]) ? '' : 'none'" mat-list-item [routerLink]="item[1]" routerLinkActive="active-link">
+          <i class="bi submenu-icon" [ngClass]="itemIcon(item[1])" aria-hidden="true"></i><span>{{ item[0] }}</span>
+        </a>
       </mat-nav-list>
     </mat-expansion-panel>
   </mat-accordion>

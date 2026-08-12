@@ -28,8 +28,10 @@ export class PermissionService {
     'cable-tv-packages': 'CABLE_TV_PACKAGES', 'cable-tv-stbs': 'CABLE_TV_STBS',
     'cable-tv-account-pending': 'CABLE_TV_ACCOUNTS',
     'cable-tv-subscription-pending': 'CABLE_TV_SUBSCRIPTION_DUES',
+    'net-subscription-pending': 'NET_SUBSCRIPTION',
     'cable-tv-subscription-append': 'CABLE_TV_SUBSCRIPTION_GENERATE',
     'cable-tv-subscription-report': 'CABLE_TV_SUBSCRIPTION_REPORT',
+    'net-subscription-report': 'INTERNET_CUSTOMERS',
     transactions: 'TRANSACTIONS', 'material-sales': 'MATERIAL_SALES'
   };
 
@@ -42,7 +44,7 @@ export class PermissionService {
   employeeCode(): string { return this.payload()?.employee_code || ''; }
 
   can(key: string, action: PermissionAction = 'view'): boolean {
-    if (key === 'TRANSACTIONS' || key === 'MATERIAL_SALES') return true;
+    if (key === 'TRANSACTIONS' || key === 'MATERIAL_SALES' || key === 'NET_SUBSCRIPTION') return true;
     if (this.isAdmin()) return true;
     const permissions = this.livePermissions ?? this.payload()?.permissions ?? [];
     const row = permissions.find((item: RolePermission) => item.permission_key === key);

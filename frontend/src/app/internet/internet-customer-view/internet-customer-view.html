@@ -1,26 +1,699 @@
 <div class="customer-page">
-  <section class="hero">
-    <div class="identity"><div class="name-line"><h1>{{details.customer?.full_name||'Internet Customer'}}</h1><span>Customer No. {{details.customer?.customer_code||'-'}}</span></div><p>⌖ {{address()}}</p></div>
-    <div class="hero-actions"><button *ngIf="reviewMode" class="approve" type="button" [disabled]="approving" (click)="approve()">{{approving?'Approving...':'Approve'}}</button><button type="button" class="back" (click)="back()">← Back</button></div>
+  <section class="customer-summary-card">
+    <div class="summary-top">
+      <div class="summary-identity">
+        <div class="name-line">
+          <h1>{{ details.customer?.full_name || 'Internet Customer' }}</h1>
+          <span class="customer-no">Customer No. {{ details.customer?.customer_code || '-' }}</span>
+        </div>
+        <div class="address-line">
+          <i class="bi bi-geo-alt" aria-hidden="true"></i>{{ address() }}
+        </div>
+      </div>
+      <div class="summary-actions">
+        <label class="customer-jump"
+          >Customer No<span
+            ><input
+              type="search"
+              [(ngModel)]="customerSearchNo"
+              (keyup.enter)="searchCustomerByNumber()"
+              placeholder="Customer No" /><button
+              type="button"
+              class="search-btn"
+              (click)="searchCustomerByNumber()"
+            >
+              <i class="bi bi-search" aria-hidden="true"></i></button></span></label
+        ><button type="button" class="back-btn" (click)="back()">
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>Back
+        </button>
+      </div>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-tile tile-blue">
+        <span class="tile-icon"><i class="bi bi-person" aria-hidden="true"></i></span
+        ><span class="tile-label">Customer Number</span
+        ><strong>{{ details.customer?.customer_code || '-' }}</strong>
+      </div>
+      <div class="summary-tile tile-purple">
+        <span class="tile-icon"><i class="bi bi-diagram-3" aria-hidden="true"></i></span
+        ><span class="tile-label">Network Type</span
+        ><strong>{{ details.customer?.network_type || '-' }}</strong>
+      </div>
+      <div class="summary-tile tile-green">
+        <span class="tile-icon"><i class="bi bi-calendar-event" aria-hidden="true"></i></span
+        ><span class="tile-label">Install Date</span
+        ><strong>{{ details.customer?.installed_date | date: 'dd-MM-yyyy' }}</strong>
+      </div>
+      <div class="summary-tile tile-orange">
+        <span class="tile-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span
+        ><span class="tile-label">Customer Status</span
+        ><strong class="summary-status" [attr.data-status]="headerStatus()">{{ headerStatus() }}</strong>
+      </div>
+    </div>
   </section>
 
-  <section class="widgets">
-    <div class="widget"><i class="blue">♙</i><div><small>Customer Number</small><b>{{details.customer?.customer_code||'-'}}</b></div></div>
-    <div class="widget"><i class="purple">⌁</i><div><small>Router</small><b>{{details.routers?.[0]?.product_name||'Not Assigned'}}</b></div></div>
-    <div class="widget"><i class="green">▣</i><div><small>Install Date</small><b>{{details.customer?.installed_date|date:'dd-MM-yyyy'}}</b></div></div>
-    <div class="widget"><i class="orange">♢</i><div><small>Customer Status</small><b class="status">{{details.customer?.status||'ACTIVE'}}</b></div></div>
+  <div class="review-actions" *ngIf="reviewMode">
+    <button class="approve" type="button" [disabled]="approving" (click)="approve()">
+      {{ approving ? 'Approving...' : 'Approve' }}
+    </button>
+  </div>
+  <nav class="tabs">
+    <button
+      *ngFor="let tab of tabs"
+      type="button"
+      [class.active]="activeTab === tab[0]"
+      (click)="activeTab = tab[0]"
+    >
+      {{ tab[1] }}</button
+    ><button
+      *ngIf="lookups.is_admin"
+      type="button"
+      [class.active]="activeTab === 'customer'"
+      (click)="activeTab = 'customer'"
+    >
+      Customer Information
+    </button>
+  </nav>
+  <div class="add-history-bar" *ngIf="activeTab !== 'customer'">
+    <button type="button" [disabled]="!canUpdate()" (click)="openAdd()">
+      Add
+      {{
+        activeTab === 'subscription'
+          ? 'Subscription'
+          : activeTab === 'router'
+            ? 'Router'
+            : activeTab === 'connection'
+              ? 'Connection'
+              : 'Package'
+      }}
+    </button>
+  </div>
+
+  <section class="panel" *ngIf="activeTab === 'subscription'">
+    <h2>Subscription Details</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Collected Date</th>
+            <th>Collected By</th>
+            <th>No of Period</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Amount</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th *ngIf="lookups.is_admin">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let x of details.subscriptions">
+            <td>{{ monthName(x.subscription_month) }} - {{ x.subscription_year }}</td>
+            <td>{{ x.collect_date | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ x.collected_by_name || '-' }}</td>
+            <td>{{ (x.end_date | date: 'd') || 0 }} Days</td>
+            <td>{{ x.start_date | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ x.end_date | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ x.amount | number: '1.0-0' }}</td>
+            <td>{{ x.balance_amount | number: '1.2-2' }}</td>
+            <td>
+              <span class="pill" [class.unpaid]="x.payment_status !== 'PAID'">{{ x.payment_status === 'PAID' ? 'PAID' : 'UNPAID' }}</span>
+            </td>
+            <td *ngIf="lookups.is_admin" class="row-actions"><button type="button" (click)="editSubscription(x)">Edit</button><button type="button" class="danger" (click)="deleteSubscription(x)">Delete</button></td>
+          </tr>
+          <tr *ngIf="!details.subscriptions?.length">
+            <td [attr.colspan]="lookups.is_admin ? 10 : 9" class="empty">No subscription details</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="overall">
+      Overall Balance <b>{{ details.account?.balance_amount || 0 | number: '1.2-2' }}</b>
+    </div>
   </section>
 
-  <div class="review-actions" *ngIf="reviewMode"><button class="approve" type="button" [disabled]="approving" (click)="approve()">{{approving?'Approving...':'Approve'}}</button></div>
-  <nav class="tabs"><button *ngFor="let tab of tabs" type="button" [class.active]="activeTab===tab[0]" (click)="activeTab=tab[0]">{{tab[1]}}</button></nav>
+  <section class="panel" *ngIf="activeTab === 'router'">
+    <h2>Router Details</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Updated Date</th>
+            <th>Reason Type</th>
+            <th>Update Reason</th>
+            <th>Remarks</th>
+            <th>HSN</th>
+            <th>Updated By</th>
+            <th>Router Amount</th>
+            <th>Discount</th>
+            <th>Labor/Service Charge</th>
+            <th>Payment Status</th>
+            <th>Refund Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let x of details.routers">
+            <td>{{ (x.updated_at || x.created_at) | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ x.router_type }}</td>
+            <td>{{ x.router_type }}</td>
+            <td>{{ x.remarks || '-' }}</td>
+            <td>{{ x.hsn_code || '-' }}</td>
+            <td>{{ x.updated_by_name || details.customer?.installed_by_name || '-' }}</td>
+            <td>{{ x.amount | number: '1.2-2' }}</td>
+            <td>{{ x.discount || 0 | number: '1.2-2' }}</td>
+            <td>{{ details.account?.labor_amount || 0 | number: '1.2-2' }}</td>
+            <td><span class="status-pill" [attr.data-status]="details.account?.account_status || 'PENDING'">{{ details.account?.account_status || 'PENDING' }}</span></td>
+            <td><span class="status-pill" [attr.data-status]="x.refund_status || 'NOT_APPLICABLE'">{{ (x.refund_status || 'NOT_APPLICABLE').replace('_', ' ') }}</span></td>
+            <td>
+              <button
+                class="table-action"
+                type="button"
+                [disabled]="!canUpdate()"
+                (click)="editHistory()"
+              >
+                Update
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!details.routers?.length">
+            <td colspan="12" class="empty">No router details</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <section class="panel" *ngIf="activeTab==='subscription'"><h2>Subscription Details</h2><div class="table-wrap"><table><thead><tr><th>Period</th><th>Collected Date</th><th>Collected By</th><th>No of Period</th><th>Start Date</th><th>End Date</th><th>Amount</th><th>Balance</th><th>Status</th></tr></thead><tbody><tr *ngFor="let x of details.subscriptions"><td>{{monthName(x.subscription_month)}} - {{x.subscription_year}}</td><td>{{details.customer?.installed_date|date:'dd-MM-yyyy'}}</td><td>{{details.customer?.installed_by_name||'-'}}</td><td>{{((x.end_date|date:'d')||0)}} Days</td><td>{{x.start_date|date:'dd-MM-yyyy'}}</td><td>{{x.end_date|date:'dd-MM-yyyy'}}</td><td>{{x.amount|number:'1.2-2'}}</td><td>{{x.balance_amount|number:'1.2-2'}}</td><td><span class="pill">{{x.payment_status}}</span></td></tr><tr *ngIf="!details.subscriptions?.length"><td colspan="9" class="empty">No subscription details</td></tr></tbody></table></div><div class="overall">Overall Balance <b>{{details.account?.balance_amount||0|number:'1.2-2'}}</b></div></section>
+  <section class="panel" *ngIf="activeTab === 'connection'">
+    <h2>Connection Details</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Installed By</th>
+            <th>Old Address</th>
+            <th>New Address</th>
+            <th>Charge</th>
+            <th>Labor</th>
+            <th>Payment Status</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let x of details.connections">
+            <td>{{ x.connection_date | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ x.connection_type }}</td>
+            <td>{{ details.customer?.installed_by_name || '-' }}</td>
+            <td>{{ x.old_address || '-' }}</td>
+            <td>{{ x.new_address || address() }}</td>
+            <td>{{ x.connection_charge | number: '1.2-2' }}</td>
+            <td>{{ x.labour_service_charge | number: '1.2-2' }}</td>
+            <td><span class="status-pill" [attr.data-status]="details.account?.account_status || 'PENDING'">{{ details.account?.account_status || 'PENDING' }}</span></td>
+            <td><span class="status-pill" [attr.data-status]="details.customer?.status || 'ACTIVE'">{{ details.customer?.status || 'ACTIVE' }}</span></td>
+            <td>
+              <button
+                class="table-action"
+                type="button"
+                [disabled]="!canUpdate()"
+                (click)="editHistory()"
+              >
+                Update
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!details.connections?.length">
+            <td colspan="10" class="empty">No connection details</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <section class="panel" *ngIf="activeTab==='router'"><h2>Router Details</h2><div class="table-wrap"><table><thead><tr><th>Type</th><th>Router Name</th><th>HSN</th><th>Quantity</th><th>Unit</th><th>Rate</th><th>Amount</th></tr></thead><tbody><tr *ngFor="let x of details.routers"><td>{{x.router_type}}</td><td>{{x.product_name}}</td><td>{{x.hsn_code||'-'}}</td><td>{{x.qty}}</td><td>{{x.unit}}</td><td>{{x.rate|number:'1.2-2'}}</td><td>{{x.amount|number:'1.2-2'}}</td></tr><tr *ngIf="!details.routers?.length"><td colspan="7" class="empty">No router details</td></tr></tbody></table></div></section>
+  <section class="panel" *ngIf="activeTab === 'package'">
+    <h2>Package Details</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Package Name</th>
+            <th>Price</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Updated By</th>
+            <th>Approval Status</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let x of details.packages">
+            <td>{{ x.package_type }}</td>
+            <td>{{ x.package_name }}</td>
+            <td>{{ x.package_price | number: '1.2-2' }}</td>
+            <td>{{ x.start_date | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ x.end_date | date: 'dd-MM-yyyy' }}</td>
+            <td>{{ x.updated_by_name || '-' }}</td>
+            <td><span class="status-pill" [attr.data-status]="x.approval_status">{{ x.approval_status }}</span></td>
+            <td>
+              <span class="pill" [attr.data-status]="x.approval_status === 'PENDING' ? 'PENDING' : (x.is_active ? 'ACTIVE' : 'REMOVED')">{{
+                x.approval_status === 'APPROVED'
+                  ? x.is_active
+                    ? 'ACTIVE'
+                    : 'REMOVED'
+                  : x.approval_status === 'REJECTED'
+                    ? 'REMOVED'
+                  : 'PENDING'
+              }}</span>
+            </td>
+            <td>
+              <ng-container *ngIf="lookups.is_admin">
+                <button class="table-action" type="button" (click)="editPackage(x)">Edit</button>
+                <button class="table-action danger" type="button" (click)="deletePackage(x)">Delete</button>
+              </ng-container>
+              <span *ngIf="!lookups.is_admin">-</span>
+            </td>
+          </tr>
+          <tr *ngIf="!details.packages?.length">
+            <td colspan="9" class="empty">No package details</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  <section class="panel" *ngIf="activeTab==='connection'"><h2>Connection Details</h2><div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Charge</th><th>Discount</th><th>Labour / Service</th><th>Remarks</th></tr></thead><tbody><tr *ngFor="let x of details.connections"><td>{{x.connection_date|date:'dd-MM-yyyy'}}</td><td>{{x.connection_type}}</td><td>{{x.connection_charge|number:'1.2-2'}}</td><td>{{x.connection_discount|number:'1.2-2'}}</td><td>{{x.labour_service_charge|number:'1.2-2'}}</td><td>{{x.remarks||'-'}}</td></tr><tr *ngIf="!details.connections?.length"><td colspan="6" class="empty">No connection details</td></tr></tbody></table></div></section>
-
-  <section class="panel" *ngIf="activeTab==='package'"><h2>Package Details</h2><div class="table-wrap"><table><thead><tr><th>Package</th><th>Type</th><th>GST</th><th>Price</th><th>Start Date</th><th>End Date</th><th>Status</th></tr></thead><tbody><tr *ngFor="let x of details.packages"><td>{{x.package_name}}</td><td>{{x.package_type}}</td><td>{{x.gst_percent||0}}%</td><td>{{x.package_price|number:'1.2-2'}}</td><td>{{x.start_date|date:'dd-MM-yyyy'}}</td><td>{{x.end_date|date:'dd-MM-yyyy'}}</td><td><span class="pill">{{x.is_active?'ACTIVE':'INACTIVE'}}</span></td></tr><tr *ngIf="!details.packages?.length"><td colspan="7" class="empty">No package details</td></tr></tbody></table></div></section>
-
-  <section class="panel" *ngIf="activeTab==='customer'"><h2>Customer Information</h2><div class="info-grid"><p><small>Network</small><b>{{details.customer?.network_type}}</b></p><p><small>Netid</small><b>{{details.customer?.net_id}}</b></p><p><small>Mobile</small><b>{{details.customer?.mobile_no}}</b></p><p><small>Alternate Mobile</small><b>{{details.customer?.alternate_mobile_no||'-'}}</b></p><p><small>Installed By</small><b>{{details.customer?.installed_by_name}}</b></p><p><small>Approval Status</small><b>{{details.customer?.approval_status}}</b></p><p class="wide"><small>Address</small><b>{{address()}}</b></p></div></section>
+  <section class="panel" *ngIf="activeTab === 'customer' && lookups.is_admin">
+    <h2>Customer Information</h2>
+    <fieldset class="edit-grid" [disabled]="details.customer?.approval_status !== 'APPROVED'">
+      <label
+        >Network<select [(ngModel)]="customerForm.network_type">
+          <option *ngFor="let x of lookups.networks" [value]="x">{{ x }}</option>
+        </select></label
+      ><label>Full Name<input [(ngModel)]="customerForm.full_name" /></label
+      ><label>Mobile No<input maxlength="10" [(ngModel)]="customerForm.mobile_no" /></label
+      ><label
+        >Alternate Mobile<input
+          maxlength="10"
+          [(ngModel)]="customerForm.alternate_mobile_no" /></label
+      ><label>Aadhaar No<input maxlength="12" [(ngModel)]="customerForm.aadhaar_no" /></label
+      ><label
+        >Source<select [(ngModel)]="customerForm.source_name">
+          <option *ngFor="let x of lookups.sources" [value]="x">{{ x }}</option>
+        </select></label
+      ><label
+        >Installed By<select [(ngModel)]="customerForm.installed_by_employee_id">
+          <option [ngValue]="null">Select Employee</option>
+          <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
+            {{ x.employee_code }} - {{ x.employee_name }}
+          </option>
+        </select></label
+      >
+    </fieldset>
+    <div class="form-actions">
+      <button
+        class="approve"
+        type="button"
+        [disabled]="savingCustomer || details.customer?.approval_status !== 'APPROVED'"
+        (click)="saveCustomerInformation()"
+      >
+        {{ savingCustomer ? 'Updating...' : 'Update Customer' }}
+      </button>
+    </div>
+  </section>
+  <div class="modal-backdrop" *ngIf="showHistoryModal">
+    <section class="history-modal">
+      <div class="modal-title">
+        <h2 *ngIf="activeTab !== 'package'">
+          Add
+          {{
+            activeTab === 'subscription'
+              ? 'Subscription'
+              : activeTab === 'router'
+                ? 'Router'
+                : activeTab === 'connection'
+                  ? 'Connection'
+                  : 'Package'
+          }}
+        </h2>
+        <h2 *ngIf="activeTab === 'package'">{{ editingPackageId ? 'Edit Package Details' : 'Add Package Details' }}</h2>
+        <button type="button" (click)="showHistoryModal = false">Close</button>
+      </div>
+      <div class="edit-grid" *ngIf="activeTab === 'subscription'">
+        <label
+          >Package<select [(ngModel)]="historyForm.internet_customer_package_id">
+            <option [ngValue]="null">Select Package</option>
+            <option *ngFor="let x of details.packages" [ngValue]="x.internet_customer_package_id">
+              {{ x.package_name }}
+            </option>
+          </select></label
+        ><label>Start Date<input type="date" [(ngModel)]="historyForm.start_date" /></label
+        ><label>End Date<input type="date" [(ngModel)]="historyForm.end_date" /></label
+        ><label>Amount<input type="number" [(ngModel)]="historyForm.amount" /></label
+        ><label
+          >Customer Paid Amount<input type="number" [(ngModel)]="historyForm.customer_paid_amount"
+        /></label>
+      </div>
+      <div class="edit-grid" *ngIf="activeTab === 'router'">
+        <label
+          >Router Type<select [(ngModel)]="historyForm.router_type" (ngModelChange)="routerTypeChanged()">
+            <option>NEW</option>
+            <option>SERVICED</option>
+            <option>RETURNED</option>
+          </select></label
+        ><label
+          >Category<select [(ngModel)]="historyForm.usage_category">
+            <option value="CUSTOMER_PAID">Customer Paid</option>
+            <option value="FREE_USE">Free Use</option>
+          </select></label
+        ><label
+          >Router<select [(ngModel)]="historyForm.product_id">
+            <option [ngValue]="null">Select Router</option>
+            <option *ngFor="let x of routerOptions()" [ngValue]="x.product_id">
+              {{ x.product_name }}
+            </option>
+          </select></label
+        ><label>Quantity<input type="number" min="1" [(ngModel)]="historyForm.qty" [disabled]="historyForm.router_type === 'RETURNED'" /></label
+        ><label>Rate<input type="number" [value]="selectedRouterRate()" disabled /></label
+        ><label>Discount<input type="number" [value]="routerDiscount()" disabled /></label
+        ><label>Amount<input type="number" [value]="routerAmount()" disabled /></label
+        ><label>Remarks<input [(ngModel)]="historyForm.remarks" /></label>
+        <div class="form-widget" *ngIf="historyForm.router_type === 'RETURNED'">
+          <strong>Returned Accessories</strong>
+          <label><input type="checkbox" [(ngModel)]="historyForm.returned_router" /> Installed Router — 1 Qty</label>
+          <label><input type="checkbox" [(ngModel)]="historyForm.returned_adapter" [disabled]="!returnedAdapter()" /> VK Adaptor 12V 1amp — 1 Qty</label>
+        </div>
+        <div class="form-widget" *ngIf="historyForm.router_type === 'RETURNED'">
+          <strong>Customer Refund</strong>
+          <label>Refund Amount<input type="number" min="0" [(ngModel)]="historyForm.refund_amount" /></label>
+          <label>Payment Mode<select [(ngModel)]="historyForm.refund_payment_mode"><option value="CASH">Cash</option><option value="ONLINE">Online</option><option value="OTHER">Others</option></select></label>
+        </div>
+      </div>
+      <div class="edit-grid" *ngIf="activeTab === 'connection'">
+        <label>Date<input type="date" [(ngModel)]="historyForm.connection_date" /></label
+        ><label
+          >Type<select [(ngModel)]="historyForm.connection_type">
+            <option>NEW</option>
+            <option>RECONNECTION</option>
+            <option>LOCATION_CHANGE</option>
+          </select></label
+        ><label>Charge<input type="number" [(ngModel)]="historyForm.connection_charge" /></label
+        ><label>Discount<input type="number" [(ngModel)]="historyForm.connection_discount" /></label
+        ><label
+          >Labor/Service Charge<input
+            type="number"
+            [(ngModel)]="historyForm.labour_service_charge" /></label
+        ><label
+          >Customer Paid Amount<input
+            type="number"
+            [(ngModel)]="historyForm.customer_paid_amount" /></label
+        ><label>Remarks<input [(ngModel)]="historyForm.remarks" /></label>
+      </div>
+      <div class="edit-grid" *ngIf="activeTab === 'package'">
+        <label
+          >Package Name<select [(ngModel)]="historyForm.package_id">
+            <option [ngValue]="null">Select Package</option>
+            <option *ngFor="let x of lookups.packages" [ngValue]="x.package_id" [disabled]="isPackageUnavailable(x.package_id)">
+              {{ x.package_name }}
+            </option>
+          </select></label
+        ><label>Package Price<input type="number" [value]="selectedPackagePrice()" disabled /></label
+        ><label>Start Date<input type="date" [(ngModel)]="historyForm.start_date" (ngModelChange)="packageStartChanged()" /></label
+        ><label>End Date<input type="date" [(ngModel)]="historyForm.end_date" disabled /></label
+        ><label>Updated By<input [value]="packageUpdatedBy()" disabled /></label
+        ><label>Status<input [value]="lookups.is_admin ? 'Active' : 'Pending'" disabled /></label>
+      </div>
+      <div class="form-actions">
+        <button class="approve" type="button" [disabled]="savingHistory" (click)="saveHistory()">
+          {{ savingHistory ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </section>
+  </div>
+  <div class="modal-backdrop" *ngIf="showSubscriptionModal">
+    <section class="history-modal subscription-modal">
+      <div class="modal-title">
+        <h2>{{ editingSubscriptionId ? 'Edit Subscription Details' : 'Add Subscription Details' }}</h2>
+        <button type="button" (click)="showSubscriptionModal = false">Close</button>
+      </div>
+      <div class="subscription-grid">
+        <label
+          >Package<select
+            [(ngModel)]="historyForm.internet_customer_package_id"
+            (ngModelChange)="calculateSubscription()"
+          >
+            <option [ngValue]="null">Select Package</option>
+            <option *ngFor="let x of details.packages" [ngValue]="x.internet_customer_package_id">
+              {{ x.package_name }}
+            </option>
+          </select></label
+        ><label
+          >Month / Year<span class="inline-fields"
+            ><select
+              [(ngModel)]="historyForm.subscription_month"
+              (ngModelChange)="calculateSubscription()"
+            >
+              <option *ngFor="let name of monthNames; let i = index" [ngValue]="i + 1">
+                {{ name }}
+              </option></select
+            ><select
+              [(ngModel)]="historyForm.subscription_year"
+              (ngModelChange)="calculateSubscription()"
+            >
+              <option *ngFor="let year of years" [ngValue]="year">{{ year }}</option>
+            </select></span
+          ></label
+        ><label
+          >No of Period / Count<span class="inline-fields count"
+            ><select
+              [(ngModel)]="historyForm.period_count"
+              (ngModelChange)="calculateSubscription()"
+            >
+              <option *ngFor="let count of periodCounts" [ngValue]="count">
+                {{ count }}
+              </option></select
+            ><select
+              [(ngModel)]="historyForm.period_unit"
+              (ngModelChange)="calculateSubscription()"
+            >
+              <option value="MONTH">Month</option>
+              <option value="YEAR">Year</option>
+            </select></span
+          ></label
+        ><label
+          >Additional Free Months<input
+            type="number"
+            min="0"
+            [(ngModel)]="historyForm.additional_months"
+            (ngModelChange)="calculateSubscription()" /></label
+        ><label
+          >Additional Free Days<input
+            type="number"
+            min="0"
+            [(ngModel)]="historyForm.additional_days"
+            (ngModelChange)="calculateSubscription()" /></label
+        ><label
+          >Additional Free Years<input
+            type="number"
+            min="0"
+            [(ngModel)]="historyForm.additional_years"
+            (ngModelChange)="calculateSubscription()" /></label
+        ><label>Start Date<input type="date" disabled [(ngModel)]="historyForm.start_date" /></label
+        ><label>End Date<input type="date" disabled [(ngModel)]="historyForm.end_date" /></label
+        ><label
+          >Subscription Amount<input
+            type="number"
+            disabled
+            [(ngModel)]="historyForm.amount" /></label
+        ><label
+          >Paid Amount<input
+            type="number"
+            min="0"
+            [(ngModel)]="historyForm.paid_amount"
+            (ngModelChange)="calculateSubscription()" /></label
+        ><label
+          >Balance<input type="number" disabled [(ngModel)]="historyForm.balance_amount" /></label
+        ><label
+          >Status<select [(ngModel)]="historyForm.payment_status" [disabled]="!lookups.is_admin">
+            <option value="UNPAID">Unpaid</option>
+            <option value="PARTIAL">Partial</option>
+            <option value="PAID">Paid</option>
+          </select></label
+        ><label
+          >Collected Date<input
+            type="date"
+            [(ngModel)]="historyForm.collect_date"
+            [disabled]="!lookups.is_admin" /></label
+        ><label
+          >Collected By<select
+            [(ngModel)]="historyForm.collected_by_employee_id"
+            [disabled]="!lookups.is_admin"
+          >
+            <option [ngValue]="null">Select employee</option>
+            <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
+              {{ x.employee_name }}
+            </option>
+          </select></label
+        ><label
+          >Renewed By<select [(ngModel)]="historyForm.renewed_by_value" [disabled]="!lookups.is_admin">
+            <option *ngFor="let x of lookups.employees" [value]="'EMPLOYEE:'+x.employee_id">{{x.employee_name}}</option>
+            <option value="ADMIN">Admin</option><option value="CUSTOMER">Customer</option>
+          </select></label
+        ><label
+          >Mode of Payment<select [(ngModel)]="historyForm.payment_mode">
+            <option value="CASH">Cash</option>
+            <option value="ONLINE">Online</option>
+            <option value="BANK_PAYMENT">Bank Payment</option>
+          </select></label
+        ><label>Payment Reference<input [(ngModel)]="historyForm.payment_reference" /></label
+        ><label
+          >Payment Mapped Employee<select [(ngModel)]="historyForm.payment_mapped_employee_id">
+            <option [ngValue]="null">Select employee</option>
+            <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
+              {{ x.employee_name }}
+            </option>
+          </select></label
+        >
+      </div>
+      <div class="form-actions">
+        <button type="button" class="back" (click)="showSubscriptionModal = false">Cancel</button
+        ><button class="approve" type="button" [disabled]="savingHistory" (click)="saveHistory()">
+          {{ savingHistory ? 'Saving...' : 'Save' }}
+        </button>
+      </div>
+    </section>
+  </div>
+  <div class="modal-backdrop" *ngIf="showSubscriptionPeriodModal">
+    <section class="history-modal subscription-modal">
+      <div class="modal-title">
+        <h2>{{ editingSubscriptionId ? 'Edit Subscription Details' : 'Add Subscription Details' }}</h2>
+        <button type="button" (click)="showSubscriptionPeriodModal = false">Close</button>
+      </div>
+      <div class="subscription-grid">
+        <label
+          >Month / Year<span class="inline-fields"
+            ><select
+              [(ngModel)]="historyForm.subscription_month"
+              (ngModelChange)="calculateSubscription()"
+            >
+              <option *ngFor="let name of monthNames; let i = index" [ngValue]="i + 1">
+                {{ name }}
+              </option></select
+            ><select
+              [(ngModel)]="historyForm.subscription_year"
+              (ngModelChange)="calculateSubscription()"
+            >
+              <option *ngFor="let year of years" [ngValue]="year">{{ year }}</option>
+            </select></span
+          ></label
+        ><label
+          >No of Period / Count<span class="period-fields"
+            ><select
+              [(ngModel)]="historyForm.period_value"
+              (ngModelChange)="calculateSubscription()"
+            >
+              <option
+                *ngFor="let value of periodValueOptions(historyForm.period_unit)"
+                [ngValue]="value"
+              >
+                {{ value }}
+              </option></select
+            ><select
+              [(ngModel)]="historyForm.period_unit"
+              (ngModelChange)="changePeriodUnit()"
+            >
+              <option value="MONTH">Month</option>
+              <option value="DAYS">Days</option>
+              <option value="YEAR">Year</option></select
+            ><input type="number" disabled [(ngModel)]="historyForm.period_count" /></span></label
+        ><label
+          >Free No of Period<span class="inline-fields"
+            ><select
+              [(ngModel)]="historyForm.free_period_value"
+              (ngModelChange)="calculateSubscription()"
+            >
+              <option
+                *ngFor="let value of periodValueOptions(historyForm.free_period_unit, true)"
+                [ngValue]="value"
+              >
+                {{ value }}
+              </option></select
+            ><select
+              [(ngModel)]="historyForm.free_period_unit"
+              (ngModelChange)="changePeriodUnit(true)"
+            >
+              <option value="MONTH">Month</option>
+              <option value="DAYS">Days</option>
+              <option value="YEAR">Year</option>
+            </select></span
+          ></label
+        ><label>Start Date<input type="date" disabled [(ngModel)]="historyForm.start_date" /></label
+        ><label>End Date<input type="date" disabled [(ngModel)]="historyForm.end_date" /></label
+        ><label
+          >Subscription Amount<input
+            type="number"
+            disabled
+            [(ngModel)]="historyForm.amount" /></label
+        ><label
+          >Paid Amount<input
+            type="number"
+            min="0"
+            [(ngModel)]="historyForm.paid_amount"
+            (ngModelChange)="calculateSubscription()" /></label
+        ><label
+          >Balance<input type="number" disabled [(ngModel)]="historyForm.balance_amount" /></label
+        ><label
+          >Status<select [(ngModel)]="historyForm.payment_status" [disabled]="!lookups.is_admin">
+            <option value="UNPAID">Unpaid</option>
+            <option value="PARTIAL">Partial</option>
+            <option value="PAID">Paid</option>
+          </select></label
+        ><label
+          >Collected Date<input
+            type="date"
+            [(ngModel)]="historyForm.collect_date"
+            [disabled]="!lookups.is_admin" /></label
+        ><label
+          >Collected By<select
+            [(ngModel)]="historyForm.collected_by_employee_id"
+            [disabled]="!lookups.is_admin"
+          >
+            <option [ngValue]="null">Select employee</option>
+            <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
+              {{ x.employee_name }}
+            </option>
+          </select></label
+        ><label
+          >Renewed By<select [(ngModel)]="historyForm.renewed_by_value" (ngModelChange)="changeRenewedBy()">
+            <ng-container *ngFor="let x of lookups.employees"><option *ngIf="lookups.is_admin || x.employee_id===lookups.logged_in_employee_id" [value]="'EMPLOYEE:'+x.employee_id">{{x.employee_name}}</option></ng-container>
+            <option *ngIf="lookups.is_admin" value="ADMIN">Admin</option><option value="CUSTOMER">Customer</option>
+          </select></label
+        ><label
+          >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin || historyForm.renewed_by_value!=='ADMIN'">
+            <option value="DASHBOARD">Dashboard</option>
+            <option value="CASH">Cash</option>
+            <option value="ONLINE">Online</option>
+          </select></label
+        ><label *ngIf="lookups.is_admin">Payment Reference<input [(ngModel)]="historyForm.payment_reference" /></label
+        ><label *ngIf="lookups.is_admin"
+          >Payment Mapped Employee<select [(ngModel)]="historyForm.payment_mapped_employee_id">
+            <option [ngValue]="null">Select employee</option>
+            <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
+              {{ x.employee_name }}
+            </option>
+          </select></label
+        >
+      </div>
+      <div class="form-actions">
+        <button type="button" class="back" (click)="showSubscriptionPeriodModal = false">
+          Cancel</button
+        ><button class="approve" type="button" [disabled]="savingHistory" (click)="saveHistory()">
+          {{ savingHistory ? 'Saving...' : (editingSubscriptionId ? 'Update' : 'Save') }}
+        </button>
+      </div>
+    </section>
+  </div>
 </div>

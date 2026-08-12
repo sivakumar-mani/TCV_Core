@@ -99,10 +99,22 @@ export const routes: Routes = [
             loadComponent: ()=> import('./administration/cable-tv-subscription-append/cable-tv-subscription-append').then(n => n.CableTvSubscriptionAppend),
             canActivate:[RouteGuard],
             data:{ expectedRole:['admin'] }
+         },
+         {
+            path:'net-subscription-pending',
+            loadComponent: ()=> import('./administration/net-subscription-pending/net-subscription-pending').then(n => n.NetSubscriptionPending),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
         },
          {
             path:'cable-tv-subscription-report',
             loadComponent: ()=> import('./administration/cable-tv-subscription-report/cable-tv-subscription-report').then(n => n.CableTvSubscriptionReport),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
+         },
+         {
+            path:'net-subscription-report',
+            loadComponent: ()=> import('./administration/net-subscription-report/net-subscription-report').then(n => n.NetSubscriptionReport),
             canActivate:[RouteGuard],
             data:{ expectedRole:['admin','user'] }
         },
