@@ -20,6 +20,7 @@ export class InternetCustomerView {
   customerSearchNo = '';
   id = 0;
   activeTab = 'subscription';
+  reviewTab = 'subscription';
   reviewMode = false;
   workflowId: string | null = null;
   approving = false;
@@ -30,6 +31,7 @@ export class InternetCustomerView {
   showSubscriptionPeriodModal = false;
   editingSubscriptionId: number | null = null;
   editingPackageId: number | null = null;
+  editingRouterId: number | null = null;
   readonly today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
     .toISOString()
     .slice(0, 10);
@@ -68,6 +70,8 @@ export class InternetCustomerView {
     this.id = Number(route.snapshot.paramMap.get('id'));
     this.reviewMode = route.snapshot.queryParamMap.get('review') === 'true';
     this.workflowId = route.snapshot.queryParamMap.get('workflowId');
+    const requestedTab = route.snapshot.queryParamMap.get('tab');
+    if (requestedTab && this.tabs.some(([tab]) => tab === requestedTab)) this.activeTab = this.reviewTab = requestedTab;
   }
   ngOnInit() {
     this.api.getLookups().subscribe({
@@ -183,20 +187,21 @@ export class InternetCustomerView {
   openAdd() {
     if (!this.canUpdate()) return;
     this.editingPackageId = null;
+    this.editingRouterId = null;
     const end = new Date(`${this.today}T00:00:00Z`);
     end.setUTCDate(end.getUTCDate() + 29);
     this.historyForm =
       this.activeTab === 'router'
-        ? { router_type: 'NEW', usage_category: 'CUSTOMER_PAID', product_id: null, qty: 1, returned_router: false, returned_adapter: false, returned_adapter_product_id: this.returnedAdapter()?.product_id || null, refund_amount: 0, refund_payment_mode: 'CASH', remarks: '' }
+        ? { router_type: this.latestRouter()?.router_type || 'NEW', update_reason: this.latestRouter()?.router_status === 'ACTIVE' ? 'FAULT' : 'REPLACED', usage_category: this.latestRouter()?.usage_category || 'CUSTOMER_PAID', product_id: this.latestRouter()?.router_status === 'ACTIVE' ? this.latestRouter()?.product_id : null, qty: Number(this.latestRouter()?.qty) || 1, returned_router: false, returned_adapter: false, returned_adapter_product_id: this.returnedAdapter()?.product_id || null, refund_amount: 0, refund_payment_mode: 'CASH', reason_remarks: '' }
         : this.activeTab === 'connection'
           ? {
               connection_date: this.today,
-              connection_type: 'RECONNECTION',
+              connection_type: this.latestConnection()?.connection_status === 'DISCONNECTED' ? 'RECONNECTION' : 'DISCONNECT',
               connection_charge: 0,
               connection_discount: 0,
               labour_service_charge: 0,
+              new_door_no: '', new_location_id: null, new_area_id: null, new_street_id: null,
               remarks: '',
-              customer_paid_amount: 0,
             }
           : this.activeTab === 'package'
             ? {
@@ -322,6 +327,13 @@ export class InternetCustomerView {
   }
   saveHistory() {
     if (this.savingHistory) return;
+    if (this.activeTab === 'router' && !String(this.historyForm.reason_remarks || '').trim()) {
+      this.common.handleError({error:{message:'Reason remarks are required'}});return;
+    }
+    if (this.activeTab === 'router' && this.editingRouterId) {
+      this.savingHistory = true;
+      this.api.updateRouter(this.id, this.editingRouterId, this.historyForm).subscribe({next:(r)=>{this.savingHistory=false;this.showHistoryModal=false;this.editingRouterId=null;this.common.handleTokenAndMessage(r);this.load();},error:(e)=>{this.savingHistory=false;this.common.handleError(e);}});return;
+    }
     if (this.activeTab === 'subscription' && this.editingSubscriptionId) {
       this.savingHistory = true;
       this.api.updateSubscription(this.id, this.editingSubscriptionId, this.historyForm).subscribe({
@@ -381,10 +393,18 @@ export class InternetCustomerView {
     });
   }
   packageStartChanged() { this.historyForm.end_date = this.packageEndDate(this.historyForm.start_date); }
+  latestRouter() { return (this.details.routers || []).find((row: any) => row.approval_status !== 'REJECTED'); }
+  routerReasons() { return this.editingRouterId ? ['FAULT','DAMAGED','UPGRADE','RETURNED','REPLACED'] : !this.latestRouter() ? ['REPLACED'] : this.latestRouter()?.router_status === 'ACTIVE' ? ['FAULT','DAMAGED','UPGRADE','RETURNED'] : ['REPLACED']; }
+  routerReasonChanged() {
+    const statusUpdate = ['FAULT', 'DAMAGED', 'UPGRADE', 'RETURNED'].includes(this.historyForm.update_reason);
+    this.historyForm.router_type = this.historyForm.update_reason === 'RETURNED' ? 'RETURNED' : 'NEW';
+    this.historyForm.product_id = statusUpdate ? this.latestRouter()?.product_id : null;
+    this.historyForm.qty = 1;
+  }
   routerOptions() {
-    if (this.historyForm.router_type !== 'RETURNED') return this.lookups.routers || [];
+    if (!['FAULT','DAMAGED','UPGRADE','RETURNED'].includes(this.historyForm.update_reason)) return this.lookups.routers || [];
     const seen = new Set<number>();
-    return (this.details.routers || []).filter((row: any) => row.router_type !== 'RETURNED' && !seen.has(Number(row.product_id)) && !!seen.add(Number(row.product_id)));
+    return (this.details.routers || []).filter((row: any) => Number(row.product_id) === Number(this.latestRouter()?.product_id) && !seen.has(Number(row.product_id)) && !!seen.add(Number(row.product_id)));
   }
   returnedAdapter() {
     return (this.lookups.products || []).find((row: any) => /adapt(?:or|er).*12v.*1amp/i.test(String(row.product_name || '').replace(/\s+/g, '')));
@@ -398,8 +418,22 @@ export class InternetCustomerView {
     const row = this.routerOptions().find((x: any) => Number(x.product_id) === Number(this.historyForm.product_id));
     return Math.round(Number(row?.selling_price ?? row?.rate) || 0);
   }
+  selectedRouter() { return this.routerOptions().find((x:any)=>Number(x.product_id)===Number(this.historyForm.product_id)) || {}; }
   routerDiscount() { const gross = this.selectedRouterRate() * (Number(this.historyForm.qty) || 0); return this.historyForm.usage_category === 'FREE_USE' ? gross : 0; }
   routerAmount() { return Math.max(this.selectedRouterRate() * (Number(this.historyForm.qty) || 0) - this.routerDiscount(), 0); }
+  routerStatusForReason() { return ['INSTALL','REPLACED'].includes(this.historyForm.update_reason) ? 'ACTIVE' : ['DISCONNECT','UPGRADE'].includes(this.historyForm.update_reason) ? 'DISCONNECTED' : this.historyForm.update_reason; }
+  routerPaymentStatus(row: any) { return ['FAULT','DISCONNECT','UPGRADE'].includes(String(row?.update_reason || '').toUpperCase()) ? 'NA' : (this.details.account?.account_status || 'PENDING'); }
+  latestConnection(){return (this.details.connections||[]).find((x:any)=>x.approval_status!=='REJECTED');}
+  connectionTypes(){return this.latestConnection()?.connection_status==='DISCONNECTED'?['RECONNECTION']:['DISCONNECT','LOCATION_CHANGE'];}
+  connectionTypeChanged(){if(this.historyForm.connection_type==='DISCONNECT')Object.assign(this.historyForm,{connection_charge:0,connection_discount:0,labour_service_charge:0});}
+  connectionPaymentStatus(row:any){const total=Number(row?.connection_charge||0)+Number(row?.labour_service_charge||0)-Number(row?.connection_discount||0);return row?.connection_type==='DISCONNECT'||total<=0?'NA':String(this.details.account?.account_status||'PENDING').toUpperCase();}
+  connectionStatus(row:any){return row?.approval_status==='PENDING'?'Waiting Approval':(row?.connection_status||'ACTIVE');}
+  locationAreas(){return (this.lookups.areas||[]).filter((x:any)=>Number(x.location_id)===Number(this.historyForm.new_location_id));}
+  locationStreets(){return (this.lookups.streets||[]).filter((x:any)=>Number(x.area_id)===Number(this.historyForm.new_area_id));}
+  newLocationChanged(){this.historyForm.new_area_id=null;this.historyForm.new_street_id=null;}
+  newAreaChanged(){this.historyForm.new_street_id=null;}
+  editRouter(row: any) { if(!this.lookups.is_admin)return;this.activeTab='router';this.editingRouterId=Number(row.internet_router_id);this.historyForm={...row,reason_remarks:row.reason_remarks||row.remarks||'',update_reason:row.update_reason||'INSTALL'};this.showHistoryModal=true; }
+  deleteRouter(row: any) { if(!this.lookups.is_admin||!window.confirm('Delete this Internet router history entry?'))return;this.api.deleteRouter(this.id,Number(row.internet_router_id)).subscribe({next:(r)=>{this.common.handleTokenAndMessage(r);this.load();},error:(e)=>this.common.handleError(e)}); }
   selectedPackagePrice() {
     const pkg = (this.lookups.packages || []).find((x: any) => Number(x.package_id) === Number(this.historyForm.package_id));
     return Math.round(Number(pkg?.total_price ?? pkg?.price_including_gst ?? pkg?.price) || 0);

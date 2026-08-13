@@ -22,5 +22,9 @@ export class InternetCustomerServices {
   deleteSubscription(customerId: number, subscriptionId: number) { return this.http.delete<any>(`${this.endpoint}/customers/${customerId}/subscriptions/${subscriptionId}`); }
   updatePackage(customerId: number, packageRowId: number, data: any) { return this.http.patch<any>(`${this.endpoint}/customers/${customerId}/packages/${packageRowId}`, data); }
   deletePackage(customerId: number, packageRowId: number) { return this.http.delete<any>(`${this.endpoint}/customers/${customerId}/packages/${packageRowId}`); }
+  updateRouter(customerId: number, routerId: number, data: any) { return this.http.patch<any>(`${this.endpoint}/customers/${customerId}/routers/${routerId}`, data); }
+  deleteRouter(customerId: number, routerId: number) { return this.http.delete<any>(`${this.endpoint}/customers/${customerId}/routers/${routerId}`); }
   getSubscriptionReport(filters: any) { return this.http.get<any>(`${this.endpoint}/subscription-report`, { params: filters }); }
+  previewSubscriptionAppend(month:number,year:number){return this.http.get<any>(`${this.endpoint}/subscriptions/append-preview`,{params:{subscription_month:month,subscription_year:year}});}
+  appendSubscriptions(data:any){return this.http.post<any>(`${this.endpoint}/subscriptions/append`,data);}
 }

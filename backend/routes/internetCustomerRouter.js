@@ -1,11 +1,13 @@
 const express=require('express');
 const auth=require('../services/authendication');
-const {internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,getInternetSubscriptionReport}=require('../controller/internetCustomerController');
+const {internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,updateInternetCustomerRouter,deleteInternetCustomerRouter,previewInternetSubscriptionAppend,appendInternetSubscriptions,getInternetSubscriptionReport}=require('../controller/internetCustomerController');
 const router=express.Router(); router.use(auth.authendicateToken);
 router.get('/subscription-dues/lookups',internetLookups);
 router.get('/subscription-dues',getPendingInternetSubscriptions);
 router.patch('/subscription-dues/:id/receive',receiveInternetSubscriptionPayment);
 router.get('/subscription-report',auth.requirePermission('INTERNET_CUSTOMERS'),getInternetSubscriptionReport);
+router.get('/subscriptions/append-preview',auth.requireAdmin,previewInternetSubscriptionAppend);
+router.post('/subscriptions/append',auth.requireAdmin,appendInternetSubscriptions);
 router.use(auth.requirePermission('INTERNET_CUSTOMERS'));
 router.get('/lookups',internetLookups); router.get('/customers',getInternetCustomers); router.get('/customers/:id',getInternetCustomer);
 router.post('/customers',saveInternetCustomer); router.put('/customers/:id',saveInternetCustomer);
@@ -14,6 +16,8 @@ router.patch('/customers/:id/subscriptions/:subscriptionId',updateInternetSubscr
 router.delete('/customers/:id/subscriptions/:subscriptionId',deleteInternetSubscription);
 router.patch('/customers/:id/packages/:packageRowId',updateInternetCustomerPackage);
 router.delete('/customers/:id/packages/:packageRowId',deleteInternetCustomerPackage);
+router.patch('/customers/:id/routers/:routerId',updateInternetCustomerRouter);
+router.delete('/customers/:id/routers/:routerId',deleteInternetCustomerRouter);
 router.get('/customers/:id/complaints',getInternetComplaints); router.post('/customers/:id/complaints',addInternetComplaint);
 router.post('/customers/:id/:section',addInternetCustomerHistory);
 module.exports=router;

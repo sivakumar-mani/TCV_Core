@@ -1,0 +1,17 @@
+<div class="append-page">
+  <header><div><h1>Append Net Subscriptions</h1><p>The next billing month is selected automatically. Existing and future-dated subscriptions are excluded.</p></div></header>
+  <section class="period-card">
+    <label>Billing Month<select [(ngModel)]="subscriptionMonth"><option *ngFor="let x of months" [ngValue]="x.value">{{x.label}}</option></select></label>
+    <label>Billing Year<select [(ngModel)]="subscriptionYear"><option *ngFor="let x of years" [ngValue]="x">{{x}}</option></select></label>
+    <label>Start Date<span class="display-value">{{displayDate(period.startDate)}}</span></label>
+    <label>End Date<span class="display-value">{{displayDate(period.endDate)}}</span></label>
+    <button type="button" class="preview" [disabled]="loading" (click)="preview()">Preview Active Customers</button>
+  </section>
+  <section class="summary-card">
+    <div><span>Eligible Active Customers</span><strong>{{rows.length}}</strong></div><div><span>Selected Customers</span><strong>{{selectedIds.size}}</strong></div><div><span>Selected Amount</span><strong>{{selectedAmount|number:'1.2-2'}}</strong></div>
+    <button type="button" class="generate" [disabled]="loading||!selectedIds.size" (click)="append()">Append Selected Subscriptions</button>
+  </section>
+  <section class="table-card"><div class="table-scroll"><table><thead><tr><th class="check"><input type="checkbox" [checked]="allSelected" (change)="toggleAll($any($event.target).checked)"></th><th>S.No</th><th>C No</th><th>Customer Name</th><th>Network</th><th>Area / Street</th><th>Package</th><th>Previous End Date</th><th>New Start Date</th><th>New End Date</th><th class="number">Amount</th></tr></thead><tbody>
+    <tr *ngFor="let row of rows;let i=index"><td class="check"><input type="checkbox" [checked]="selectedIds.has(+row.internet_customer_id)" (change)="toggleRow(row.internet_customer_id,$any($event.target).checked)"></td><td>{{i+1}}</td><td>{{row.customer_code}}</td><td>{{row.full_name}}</td><td>{{row.network_type}}</td><td>{{row.area_name||'-'}} / {{row.street_name||'-'}}</td><td>{{row.package_name||'-'}}</td><td>{{displayDate(row.previous_end_date)}}</td><td>{{displayDate(row.start_date)}}</td><td>{{displayDate(row.end_date)}}</td><td class="number">{{row.amount|number:'1.2-2'}}</td></tr>
+    <tr *ngIf="!rows.length"><td colspan="11" class="empty">No eligible active Internet customers.</td></tr></tbody><tfoot *ngIf="rows.length"><tr><td colspan="10">Preview Total</td><td class="number">{{totalAmount|number:'1.2-2'}}</td></tr></tfoot></table></div></section>
+</div>

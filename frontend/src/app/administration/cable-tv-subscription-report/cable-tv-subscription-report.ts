@@ -154,7 +154,7 @@ export class CableTvSubscriptionReport {
     if (!popup) return this.showError('Allow pop-ups to print the report');
     const rows = this.rows.map((row, index) => `<tr>
       <td>${index + 1}</td><td>${this.escapeHtml(this.displayDate(row.collect_date))}</td>
-      <td>${this.escapeHtml(row.customer_code)}</td><td>${this.escapeHtml(row.full_name)}</td>
+      <td>${this.escapeHtml(row.collected_by_name || '-')}</td><td>${this.escapeHtml(row.customer_code)}</td><td>${this.escapeHtml(row.full_name)}</td>
       <td>${this.escapeHtml(row.network_code || row.network_name || '-')}</td>
       <td>${this.escapeHtml(this.monthLabel(row))}</td><td>${Math.round(Number(row.number_of_days) || 0)}</td>
       <td>${this.escapeHtml(this.paymentType(row))}</td><td class="number">${this.count(row.received_count)}</td>
@@ -167,25 +167,25 @@ export class CableTvSubscriptionReport {
       tfoot td{font-weight:700}@media print{button{display:none}}
     </style></head><body><h1>CATV Subscription Report</h1>
       <div class="meta"><span>Collected By: ${this.escapeHtml(this.collectorLabel)}</span><span>Network: ${this.escapeHtml(this.networkLabel)}</span><span>Customer Type: ${this.escapeHtml(this.customerTypeLabel)}</span><span>Period: ${this.escapeHtml(this.displayDate(this.filters.start_date))} to ${this.escapeHtml(this.displayDate(this.filters.end_date))}</span></div>
-      <table><thead><tr><th>S.No</th><th>Collected Date</th><th>C No</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="11">No records found.</td></tr>'}</tbody>
-      <tfoot>${this.paymentModeBreakdown.map(item => `<tr><td colspan="10">${this.escapeHtml(item.label)}</td><td class="number">${this.amount(item.amount)}</td></tr>`).join('')}<tr><td colspan="7">Total Records: ${this.summary.total_records}</td><td>Grand Total</td><td class="number">${this.summary.total_count}</td><td class="number">${this.amount(this.summary.total_balance)}</td><td class="number">${this.amount(this.summary.total_amount)}</td></tr></tfoot></table>
+      <table><thead><tr><th>S.No</th><th>Collected Date</th><th>Collected By</th><th>C No</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="12">No records found.</td></tr>'}</tbody>
+      <tfoot>${this.paymentModeBreakdown.map(item => `<tr><td colspan="11">${this.escapeHtml(item.label)}</td><td class="number">${this.amount(item.amount)}</td></tr>`).join('')}<tr><td colspan="8">Total Records: ${this.summary.total_records}</td><td>Grand Total</td><td class="number">${this.summary.total_count}</td><td class="number">${this.amount(this.summary.total_balance)}</td><td class="number">${this.amount(this.summary.total_amount)}</td></tr></tfoot></table>
       <script>window.onload=()=>window.print();<\/script></body></html>`);
     popup.document.close();
   }
 
   exportExcel() {
-    const headers = ['S.No', 'Collected Date', 'C No', 'Name', 'Network Type', 'Month', 'Period', 'Type', 'Count', 'Balance', 'Amount'];
+    const headers = ['S.No', 'Collected Date', 'Collected By', 'C No', 'Name', 'Network Type', 'Month', 'Period', 'Type', 'Count', 'Balance', 'Amount'];
     const data = this.rows.map((row, index) => [
-      index + 1, this.displayDate(row.collect_date), row.customer_code, row.full_name,
+      index + 1, this.displayDate(row.collect_date), row.collected_by_name || '-', row.customer_code, row.full_name,
       row.network_code || row.network_name || '-', this.monthLabel(row), Math.round(Number(row.number_of_days) || 0),
       this.paymentType(row), Number(row.received_count) || 0,
       Math.round(Number(row.balance_amount) || 0), Math.round(Number(row.paid_amount) || 0)
     ]);
     this.paymentModeBreakdown.forEach(item => {
-      data.push(['', '', '', '', '', '', '', '', '', item.label, item.amount]);
+      data.push(['', '', '', '', '', '', '', '', '', '', item.label, item.amount]);
     });
-    data.push(['', '', '', '', '', '', `Total Records: ${this.summary.total_records}`, 'Grand Total', this.summary.total_count, this.summary.total_balance, this.summary.total_amount]);
+    data.push(['', '', '', '', '', '', '', `Total Records: ${this.summary.total_records}`, 'Grand Total', this.summary.total_count, this.summary.total_balance, this.summary.total_amount]);
     const csv = [headers, ...data].map(columns => columns.map(value => this.csvValue(value)).join(',')).join('\r\n');
     const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' });
     const link = document.createElement('a');

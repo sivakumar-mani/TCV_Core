@@ -1,4 +1,11 @@
 <div class="customer-page">
+  <ng-template #approvalAction>
+    <div class="review-actions" *ngIf="reviewMode && activeTab === reviewTab">
+      <button class="approve" type="button" [disabled]="approving" (click)="approve()">
+        {{ approving ? 'Approving...' : 'Approve' }}
+      </button>
+    </div>
+  </ng-template>
   <section class="customer-summary-card">
     <div class="summary-top">
       <div class="summary-identity">
@@ -52,11 +59,6 @@
     </div>
   </section>
 
-  <div class="review-actions" *ngIf="reviewMode">
-    <button class="approve" type="button" [disabled]="approving" (click)="approve()">
-      {{ approving ? 'Approving...' : 'Approve' }}
-    </button>
-  </div>
   <nav class="tabs">
     <button
       *ngFor="let tab of tabs"
@@ -91,6 +93,7 @@
 
   <section class="panel" *ngIf="activeTab === 'subscription'">
     <h2>Subscription Details</h2>
+    <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <div class="table-wrap">
       <table>
         <thead>
@@ -135,11 +138,13 @@
 
   <section class="panel" *ngIf="activeTab === 'router'">
     <h2>Router Details</h2>
+    <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
             <th>Updated Date</th>
+            <th class="router-name-column">Router Name</th>
             <th>Reason Type</th>
             <th>Update Reason</th>
             <th>Remarks</th>
@@ -150,35 +155,32 @@
             <th>Labor/Service Charge</th>
             <th>Payment Status</th>
             <th>Refund Status</th>
-            <th>Action</th>
+            <th>Router Status</th>
+            <th *ngIf="lookups.is_admin">Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let x of details.routers">
             <td>{{ (x.updated_at || x.created_at) | date: 'dd-MM-yyyy' }}</td>
+            <td class="router-name-column">{{ x.product_name || '-' }}</td>
             <td>{{ x.router_type }}</td>
-            <td>{{ x.router_type }}</td>
-            <td>{{ x.remarks || '-' }}</td>
+            <td>{{ (x.update_reason || 'INSTALL').replace('_', ' ') }}</td>
+            <td>{{ x.reason_remarks || x.remarks || '-' }}</td>
             <td>{{ x.hsn_code || '-' }}</td>
             <td>{{ x.updated_by_name || details.customer?.installed_by_name || '-' }}</td>
             <td>{{ x.amount | number: '1.2-2' }}</td>
             <td>{{ x.discount || 0 | number: '1.2-2' }}</td>
             <td>{{ details.account?.labor_amount || 0 | number: '1.2-2' }}</td>
-            <td><span class="status-pill" [attr.data-status]="details.account?.account_status || 'PENDING'">{{ details.account?.account_status || 'PENDING' }}</span></td>
-            <td><span class="status-pill" [attr.data-status]="x.refund_status || 'NOT_APPLICABLE'">{{ (x.refund_status || 'NOT_APPLICABLE').replace('_', ' ') }}</span></td>
-            <td>
-              <button
-                class="table-action"
-                type="button"
-                [disabled]="!canUpdate()"
-                (click)="editHistory()"
-              >
-                Update
-              </button>
+            <td><span class="status-pill" [attr.data-status]="routerPaymentStatus(x)">{{ routerPaymentStatus(x) }}</span></td>
+            <td><span class="status-pill" [attr.data-status]="x.refund_status || 'NOT_APPLICABLE'">{{ (x.refund_status || 'NOT_APPLICABLE') === 'NOT_APPLICABLE' ? 'NA' : (x.refund_status || '').replace('_', ' ') }}</span></td>
+            <td><span class="status-pill" [attr.data-status]="x.router_status || 'ACTIVE'">{{ x.router_status || 'ACTIVE' }}</span></td>
+            <td *ngIf="lookups.is_admin" class="row-actions">
+              <button class="table-action" type="button" (click)="editRouter(x)">Edit</button>
+              <button class="table-action danger" type="button" (click)="deleteRouter(x)">Delete</button>
             </td>
           </tr>
           <tr *ngIf="!details.routers?.length">
-            <td colspan="12" class="empty">No router details</td>
+            <td [attr.colspan]="lookups.is_admin ? 14 : 13" class="empty">No router details</td>
           </tr>
         </tbody>
       </table>
@@ -187,6 +189,7 @@
 
   <section class="panel" *ngIf="activeTab === 'connection'">
     <h2>Connection Details</h2>
+    <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <div class="table-wrap">
       <table>
         <thead>
@@ -207,13 +210,13 @@
           <tr *ngFor="let x of details.connections">
             <td>{{ x.connection_date | date: 'dd-MM-yyyy' }}</td>
             <td>{{ x.connection_type }}</td>
-            <td>{{ details.customer?.installed_by_name || '-' }}</td>
+            <td>{{ x.installed_by_name || details.customer?.installed_by_name || '-' }}</td>
             <td>{{ x.old_address || '-' }}</td>
             <td>{{ x.new_address || address() }}</td>
             <td>{{ x.connection_charge | number: '1.2-2' }}</td>
             <td>{{ x.labour_service_charge | number: '1.2-2' }}</td>
-            <td><span class="status-pill" [attr.data-status]="details.account?.account_status || 'PENDING'">{{ details.account?.account_status || 'PENDING' }}</span></td>
-            <td><span class="status-pill" [attr.data-status]="details.customer?.status || 'ACTIVE'">{{ details.customer?.status || 'ACTIVE' }}</span></td>
+            <td><span class="status-pill" [attr.data-status]="connectionPaymentStatus(x)">{{ connectionPaymentStatus(x) }}</span></td>
+            <td><span class="status-pill" [attr.data-status]="x.approval_status === 'PENDING' ? 'PENDING' : (x.connection_status || 'ACTIVE')">{{ connectionStatus(x) }}</span></td>
             <td>
               <button
                 class="table-action"
@@ -235,6 +238,7 @@
 
   <section class="panel" *ngIf="activeTab === 'package'">
     <h2>Package Details</h2>
+    <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <div class="table-wrap">
       <table>
         <thead>
@@ -288,6 +292,7 @@
 
   <section class="panel" *ngIf="activeTab === 'customer' && lookups.is_admin">
     <h2>Customer Information</h2>
+    <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <fieldset class="edit-grid" [disabled]="details.customer?.approval_status !== 'APPROVED'">
       <label
         >Network<select [(ngModel)]="customerForm.network_type">
@@ -358,29 +363,33 @@
         /></label>
       </div>
       <div class="edit-grid" *ngIf="activeTab === 'router'">
-        <label
-          >Router Type<select [(ngModel)]="historyForm.router_type" (ngModelChange)="routerTypeChanged()">
+        <label>Reason<select [(ngModel)]="historyForm.update_reason" (ngModelChange)="routerReasonChanged()"><option *ngFor="let reason of routerReasons()" [value]="reason">{{ reason.replace('_', ' ') }}</option></select></label
+        ><label>Router Status<input [value]="routerStatusForReason()" disabled /></label
+        ><label>Reason Remarks<input [(ngModel)]="historyForm.reason_remarks" required /></label
+        ><label *ngIf="historyForm.update_reason === 'REPLACED'"
+          >Router Type<select [(ngModel)]="historyForm.router_type" (ngModelChange)="routerTypeChanged()" [disabled]="!!editingRouterId">
             <option>NEW</option>
             <option>SERVICED</option>
             <option>RETURNED</option>
           </select></label
-        ><label
-          >Category<select [(ngModel)]="historyForm.usage_category">
+        ><label *ngIf="historyForm.update_reason === 'REPLACED'"
+          >Category<select [(ngModel)]="historyForm.usage_category" [disabled]="!!editingRouterId">
             <option value="CUSTOMER_PAID">Customer Paid</option>
             <option value="FREE_USE">Free Use</option>
           </select></label
         ><label
-          >Router<select [(ngModel)]="historyForm.product_id">
+          >Router<select [(ngModel)]="historyForm.product_id" [disabled]="!!editingRouterId || latestRouter()?.router_status === 'ACTIVE'">
             <option [ngValue]="null">Select Router</option>
             <option *ngFor="let x of routerOptions()" [ngValue]="x.product_id">
               {{ x.product_name }}
             </option>
           </select></label
-        ><label>Quantity<input type="number" min="1" [(ngModel)]="historyForm.qty" [disabled]="historyForm.router_type === 'RETURNED'" /></label
-        ><label>Rate<input type="number" [value]="selectedRouterRate()" disabled /></label
-        ><label>Discount<input type="number" [value]="routerDiscount()" disabled /></label
-        ><label>Amount<input type="number" [value]="routerAmount()" disabled /></label
-        ><label>Remarks<input [(ngModel)]="historyForm.remarks" /></label>
+        ><label *ngIf="['RETURNED','REPLACED'].includes(historyForm.update_reason)">Quantity<input type="number" min="1" [(ngModel)]="historyForm.qty" [disabled]="!!editingRouterId || historyForm.update_reason === 'RETURNED'" /></label
+        ><label *ngIf="historyForm.update_reason === 'REPLACED'">HSN<input [value]="selectedRouter().hsn_code || ''" disabled /></label
+        ><label *ngIf="historyForm.update_reason === 'REPLACED'">Unit<input [value]="selectedRouter().unit || 'PCS'" disabled /></label
+        ><label *ngIf="historyForm.update_reason === 'REPLACED'">Rate<input type="number" [value]="selectedRouterRate()" disabled /></label
+        ><label *ngIf="historyForm.update_reason === 'REPLACED'">Discount<input type="number" [value]="routerDiscount()" disabled /></label
+        ><label *ngIf="historyForm.update_reason === 'REPLACED'">Amount<input type="number" [value]="routerAmount()" disabled /></label>
         <div class="form-widget" *ngIf="historyForm.router_type === 'RETURNED'">
           <strong>Returned Accessories</strong>
           <label><input type="checkbox" [(ngModel)]="historyForm.returned_router" /> Installed Router — 1 Qty</label>
@@ -395,21 +404,20 @@
       <div class="edit-grid" *ngIf="activeTab === 'connection'">
         <label>Date<input type="date" [(ngModel)]="historyForm.connection_date" /></label
         ><label
-          >Type<select [(ngModel)]="historyForm.connection_type">
-            <option>NEW</option>
-            <option>RECONNECTION</option>
-            <option>LOCATION_CHANGE</option>
+          >Type<select [(ngModel)]="historyForm.connection_type" (ngModelChange)="connectionTypeChanged()">
+            <option *ngFor="let type of connectionTypes()" [value]="type">{{ type.replace('_',' ') }}</option>
           </select></label
-        ><label>Charge<input type="number" [(ngModel)]="historyForm.connection_charge" /></label
-        ><label>Discount<input type="number" [(ngModel)]="historyForm.connection_discount" /></label
-        ><label
+        ><label>Installed By<input [value]="details.customer?.installed_by_name || '-'" disabled /></label
+        ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'">Charge<input type="number" [(ngModel)]="historyForm.connection_charge" /></label
+        ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'">Discount<input type="number" [(ngModel)]="historyForm.connection_discount" /></label
+        ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'"
           >Labor/Service Charge<input
             type="number"
             [(ngModel)]="historyForm.labour_service_charge" /></label
-        ><label
-          >Customer Paid Amount<input
-            type="number"
-            [(ngModel)]="historyForm.customer_paid_amount" /></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Location<select [(ngModel)]="historyForm.new_location_id" (ngModelChange)="newLocationChanged()"><option [ngValue]="null">Select Location</option><option *ngFor="let x of lookups.locations" [ngValue]="x.location_id">{{x.location_name}}</option></select></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Door No<input [(ngModel)]="historyForm.new_door_no" /></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Area<select [(ngModel)]="historyForm.new_area_id" (ngModelChange)="newAreaChanged()"><option [ngValue]="null">Select Area</option><option *ngFor="let x of locationAreas()" [ngValue]="x.area_id">{{x.area_name}}</option></select></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Street<select [(ngModel)]="historyForm.new_street_id"><option [ngValue]="null">Select Street</option><option *ngFor="let x of locationStreets()" [ngValue]="x.street_id">{{x.street_name}}</option></select></label
         ><label>Remarks<input [(ngModel)]="historyForm.remarks" /></label>
       </div>
       <div class="edit-grid" *ngIf="activeTab === 'package'">

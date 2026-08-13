@@ -29,6 +29,7 @@ export class PermissionService {
     'cable-tv-account-pending': 'CABLE_TV_ACCOUNTS',
     'cable-tv-subscription-pending': 'CABLE_TV_SUBSCRIPTION_DUES',
     'net-subscription-pending': 'NET_SUBSCRIPTION',
+    'net-subscription-append': 'NET_SUBSCRIPTION_APPEND',
     'cable-tv-subscription-append': 'CABLE_TV_SUBSCRIPTION_GENERATE',
     'cable-tv-subscription-report': 'CABLE_TV_SUBSCRIPTION_REPORT',
     'net-subscription-report': 'INTERNET_CUSTOMERS',

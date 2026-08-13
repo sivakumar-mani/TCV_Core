@@ -559,7 +559,10 @@ const approveWorkflow = async (req, res) => {
                 await conn.query("UPDATE internet_customer_packages SET is_active=0,package_price=0,updated_at=NOW() WHERE internet_customer_id=? AND internet_customer_package_id<>? AND is_active=1 AND approval_status='APPROVED'", [workflow.reference_id, currentPackageId]);
                 await conn.query("UPDATE internet_customer_packages SET approval_status='APPROVED',is_active=1,updated_at=NOW() WHERE internet_customer_package_id=?", [currentPackageId]);
             }
-            const [pendingRouters] = await conn.query("SELECT * FROM internet_customer_routers WHERE internet_customer_id=? AND approval_status='PENDING' AND stock_processed=0 FOR UPDATE", [workflow.reference_id]);
+            const routerTarget = String(workflow.remarks || '').match(/^Internet customer router update:(\d+)$/);
+            const [pendingRouters] = routerTarget
+                ? await conn.query("SELECT * FROM internet_customer_routers WHERE internet_customer_id=? AND internet_router_id=? AND approval_status='PENDING' AND stock_processed=0 FOR UPDATE", [workflow.reference_id, Number(routerTarget[1])])
+                : await conn.query("SELECT * FROM internet_customer_routers WHERE internet_customer_id=? AND approval_status='PENDING' AND stock_processed=0 FOR UPDATE", [workflow.reference_id]);
             for (const router of pendingRouters) {
                 const employeeId = Number(router.updated_by_employee_id || workflow.requested_by_employee_id);
                 if (router.router_type === 'RETURNED') {
@@ -567,15 +570,19 @@ const approveWorkflow = async (req, res) => {
                         if (!productId || Number(qty) <= 0) continue;
                         await conn.query('INSERT INTO technician_material_stock(employee_id,product_id,available_qty) VALUES(?,?,?) ON DUPLICATE KEY UPDATE available_qty=available_qty+VALUES(available_qty)', [employeeId, productId, qty]);
                     }
-                } else {
+                } else if (!['DISCONNECT','FAULT','DAMAGED','UPGRADE'].includes(String(router.update_reason || '').toUpperCase())) {
                     const [stockResult] = await conn.query('UPDATE technician_material_stock SET available_qty=available_qty-? WHERE employee_id=? AND product_id=? AND available_qty>=?', [router.qty, employeeId, router.product_id, router.qty]);
                     if (!stockResult.affectedRows) throw new Error('Issued router stock is no longer available with the requesting employee');
                 }
-                await conn.query('UPDATE internet_customer_routers SET stock_processed=1 WHERE internet_router_id=?', [router.internet_router_id]);
+                await conn.query("UPDATE internet_customer_routers SET stock_processed=1,approval_status='APPROVED' WHERE internet_router_id=?", [router.internet_router_id]);
             }
-            for (const table of ['internet_customer_routers','internet_connections','internet_subscriptions']) {
+            for (const table of ['internet_connections','internet_subscriptions']) {
                 await conn.query(`UPDATE ${table} SET approval_status='APPROVED' WHERE internet_customer_id=? AND approval_status='PENDING'`,[workflow.reference_id]);
             }
+            const [[latestConnection]]=await conn.query("SELECT * FROM internet_connections WHERE internet_customer_id=? AND approval_status='APPROVED' ORDER BY internet_connection_id DESC LIMIT 1",[workflow.reference_id]);
+            if(latestConnection?.connection_type==='DISCONNECT')await conn.query("UPDATE internet_customers SET status='INACTIVE',updated_at=NOW() WHERE internet_customer_id=?",[workflow.reference_id]);
+            else if(latestConnection?.connection_type==='RECONNECTION')await conn.query("UPDATE internet_customers SET status='ACTIVE',updated_at=NOW() WHERE internet_customer_id=?",[workflow.reference_id]);
+            else if(latestConnection?.connection_type==='LOCATION_CHANGE')await conn.query("UPDATE internet_customers SET door_no=?,location_id=?,area_id=?,street_id=?,updated_at=NOW() WHERE internet_customer_id=?",[latestConnection.new_door_no,latestConnection.new_location_id,latestConnection.new_area_id,latestConnection.new_street_id,workflow.reference_id]);
             await conn.query("UPDATE internet_customer_accounts SET approval_status='APPROVED',updated_at=NOW() WHERE internet_customer_id=? AND approval_status='PENDING' AND COALESCE(account_source,'LEGACY')<>'PACKAGE'",[workflow.reference_id]);
         } else if (workflow.module_name === 'MATERIAL_ISSUE') {
             const [issues] = await conn.query('SELECT * FROM work_order_material_issues WHERE issue_id = ? FOR UPDATE', [workflow.reference_id]);

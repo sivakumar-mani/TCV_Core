@@ -21,7 +21,7 @@ export class Sidebar {
     { label: 'Sales', icon: 'bi-receipt', items: [['Quotations', '/quotations', 'QUOTATIONS'], ['Sales', '/sales', 'SALES'], ['Material Sales', '/material-sales', 'MATERIAL_SALES'], ['Work Orders', '/work-orders', 'WORK_ORDERS'], ['Customer Payments', '/customer-payments', 'CUSTOMER_PAYMENTS'], ['Supplier Payments', '/supplier-payments', 'SUPPLIER_PAYMENTS']] },
     { label: 'Service', icon: 'bi-headset', items: [['Complaints', '/cable-tv/complaints', 'CABLE_TV_CUSTOMERS'], ['Service Tickets', '/service-tickets', 'SERVICE_TICKETS'], ['Warranty Master', '/warranty-master', 'WARRANTIES']] },
     { label: 'HR Process', icon: 'bi-person-badge', items: [['Employees', '/employees', 'EMPLOYEES'], ['Employee Attendance', '/employee-attendance', 'EMPLOYEE_ATTENDANCE'], ['Employee Salary', '/employee-salary', 'EMPLOYEE_SALARY']] },
-    { label: 'Accounts', icon: 'bi-bank', items: [['Transactions', '/transactions', 'TRANSACTIONS'], ['Pending Accounts', '/cable-tv-account-pending', 'CABLE_TV_ACCOUNTS'], ['CATV Subscription', '/cable-tv-subscription-pending', 'CABLE_TV_SUBSCRIPTION_DUES'], ['Net Subscription', '/net-subscription-pending', 'NET_SUBSCRIPTION'], ['Append Subscriptions', '/cable-tv-subscription-append', 'CABLE_TV_SUBSCRIPTION_GENERATE']] },
+    { label: 'Accounts', icon: 'bi-bank', items: [['Transactions', '/transactions', 'TRANSACTIONS'], ['Pending Accounts', '/cable-tv-account-pending', 'CABLE_TV_ACCOUNTS'], ['CATV Subscription', '/cable-tv-subscription-pending', 'CABLE_TV_SUBSCRIPTION_DUES'], ['Net Subscription', '/net-subscription-pending', 'NET_SUBSCRIPTION'], ['Append CATV Subscriptions', '/cable-tv-subscription-append', 'CABLE_TV_SUBSCRIPTION_GENERATE'], ['Append Net Subscriptions', '/net-subscription-append', 'NET_SUBSCRIPTION_APPEND']] },
     { label: 'Reports', icon: 'bi-bar-chart', items: [['CATV Subscription Report', '/cable-tv-subscription-report', 'CABLE_TV_SUBSCRIPTION_REPORT'], ['Net Subscription Report', '/net-subscription-report', 'INTERNET_CUSTOMERS']] },
     { label: 'Administration', icon: 'bi-shield-lock', items: [['Workflow Approvals', '/workflow-approval', 'WORKFLOW_APPROVAL'], ['Location Info', '/cable-tv-masters', 'CABLE_TV_MASTERS'], ['Package List', '/cable-tv-packages', 'CABLE_TV_PACKAGES'], ['STB Master', '/cable-tv-stbs', 'CABLE_TV_STBS'], ['Users', '/users', 'USERS'], ['Role Permissions', '/role-permissions', 'ROLE_PERMISSIONS'], ['Audit Logs', '/audit-logs', 'AUDIT_LOGS']] }
   ];
@@ -36,7 +36,7 @@ export class Sidebar {
       '/service-tickets': 'bi-ticket-perforated', '/warranty-master': 'bi-shield-check', '/employees': 'bi-people',
       '/employee-attendance': 'bi-calendar-check', '/employee-salary': 'bi-currency-rupee', '/transactions': 'bi-arrow-left-right',
       '/cable-tv-account-pending': 'bi-hourglass-split', '/cable-tv-subscription-pending': 'bi-tv-fill',
-      '/net-subscription-pending': 'bi-wifi', '/cable-tv-subscription-append': 'bi-calendar-plus',
+      '/net-subscription-pending': 'bi-wifi', '/cable-tv-subscription-append': 'bi-calendar-plus', '/net-subscription-append': 'bi-calendar-plus',
       '/cable-tv-subscription-report': 'bi-bar-chart-line', '/workflow-approval': 'bi-check2-square',
       '/net-subscription-report': 'bi-wifi',
       '/cable-tv-masters': 'bi-geo-alt', '/cable-tv-packages': 'bi-box-seam', '/cable-tv-stbs': 'bi-router-fill',

@@ -107,6 +107,12 @@ export const routes: Routes = [
             data:{ expectedRole:['admin','user'] }
         },
          {
+            path:'net-subscription-append',
+            loadComponent: ()=> import('./administration/net-subscription-append/net-subscription-append').then(n => n.NetSubscriptionAppend),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin'] }
+        },
+         {
             path:'cable-tv-subscription-report',
             loadComponent: ()=> import('./administration/cable-tv-subscription-report/cable-tv-subscription-report').then(n => n.CableTvSubscriptionReport),
             canActivate:[RouteGuard],
