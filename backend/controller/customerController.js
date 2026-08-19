@@ -4,6 +4,9 @@ const { ensureCustomerSchema } = require('../utils/customerSchema');
 const phoneRegex = /^[0-9]{10}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const customerTypes = ['RETAIL', 'WHOLESALE', 'DEALER', 'CORPORATE', 'SERVICE'];
+const isAdmin = (req) => String(req.res?.locals?.role || '').toUpperCase() === 'ADMIN';
+const currentUserId = (req) => Number(req.res?.locals?.userId || req.res?.locals?.user_id || req.res?.locals?.id) || null;
+const currentEmployeeId = (req) => Number(req.res?.locals?.employee_id) || null;
 
 const normalizeSalutation = (value) => {
     if (!value) return 'Mr/Mrs/Ms';
@@ -69,7 +72,7 @@ const getCustomers = async (req, res) => {
                     CONCAT_WS(' ', e.first_name, e.last_name) AS marketing_employee_name,
                     c.referral_details, c.address, c.city_district, c.state, c.pincode,
                     c.credit_limit, c.opening_balance, c.outstanding_balance, c.is_active,
-                    c.is_active AS status, c.created_at, c.updated_at
+                    c.is_active AS status, c.approval_status, c.created_at, c.updated_at
              FROM customers c
              LEFT JOIN employees e ON e.employee_id = c.marketing_employee_id
              ORDER BY c.customer_id DESC`
@@ -113,7 +116,7 @@ const getCustomerById = async (req, res) => {
                     email, gst_no, customer_type, marketing_employee_id,
                     referral_details, address, city_district, state, pincode,
                     credit_limit, opening_balance, outstanding_balance, is_active,
-                    is_active AS status, created_at, updated_at
+                    is_active AS status, approval_status, created_at, updated_at
              FROM customers
              WHERE customer_id = ?`,
             [customer_id]
@@ -131,8 +134,9 @@ const getCustomerById = async (req, res) => {
 };
 
 const addCustomer = async (req, res) => {
+    const db = connection.promise();
     try {
-        await ensureCustomerSchema(connection.promise());
+        await ensureCustomerSchema(db);
         const payload = req.body;
         const errors = validateCustomer(payload);
 
@@ -140,6 +144,10 @@ const addCustomer = async (req, res) => {
             return res.status(400).json({ success: false, message: errors[0], errors });
         }
 
+        const adminRequest = isAdmin(req);
+        const approvalStatus = adminRequest ? 'APPROVED' : 'PENDING';
+        const activeStatus = adminRequest ? (typeof payload.status !== 'undefined' ? Number(payload.status) : 1) : 0;
+        await db.beginTransaction();
         const query = `
             INSERT INTO customers (
                 salutation,
@@ -159,8 +167,12 @@ const addCustomer = async (req, res) => {
                 credit_limit,
                 opening_balance,
                 outstanding_balance,
-                is_active
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                is_active,
+                approval_status,
+                created_by_user_id,
+                approved_by_user_id,
+                approved_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const values = [
@@ -181,17 +193,33 @@ const addCustomer = async (req, res) => {
             toNumber(payload.credit_limit),
             toNumber(payload.opening_balance),
             toNumber(payload.outstanding_balance),
-            typeof payload.status !== 'undefined' ? payload.status : 1
+            activeStatus,
+            approvalStatus,
+            currentUserId(req),
+            adminRequest ? currentUserId(req) : null,
+            adminRequest ? new Date() : null
         ];
 
-        const [result] = await connection.promise().query(query, values);
+        const [result] = await db.query(query, values);
+        if (!adminRequest) {
+            await db.query(
+                `INSERT INTO workflow_approvals
+                 (module_name, reference_id, reference_no, workflow_status, requested_by_employee_id, remarks)
+                 VALUES ('CCTV_CUSTOMER', ?, ?, 'PENDING', ?, 'New CCTV customer approval')
+                 ON DUPLICATE KEY UPDATE workflow_status='PENDING', requested_by_employee_id=VALUES(requested_by_employee_id), reviewed_at=NULL, remarks=VALUES(remarks)`,
+                [result.insertId, `CCTV-${result.insertId}`, currentEmployeeId(req)]
+            );
+        }
+        await db.commit();
 
         return res.status(201).json({
             success: true,
-            message: 'Customer added successfully',
-            customer_id: result.insertId
+            message: adminRequest ? 'Customer added successfully' : 'Customer sent for administrator approval',
+            customer_id: result.insertId,
+            approval_status: approvalStatus
         });
     } catch (error) {
+        try { await db.rollback(); } catch (_rollbackError) {}
         console.error(error);
         return res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }

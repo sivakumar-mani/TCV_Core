@@ -97,7 +97,7 @@ export class WorkOrderMaterial {
         this.employees = Array.isArray(response) ? response : response.data ?? [];
         this.employeeOptions = this.employees.map((employee) => ({
           value: employee.employee_id,
-          label: `${employee.employee_code} - ${employee.employee_name}`
+          label: employee.employee_name
         }));
       },
       error: (error: any) => this.commonMethods.handleError(error)

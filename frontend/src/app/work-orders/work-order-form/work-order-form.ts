@@ -154,7 +154,7 @@ export class WorkOrderForm {
       next: (response: any) => {
         this.employees = Array.isArray(response) ? response : response.data ?? [];
         const employeeOptions = this.employees.map((employee) => ({
-          label: `${employee.employee_code} - ${employee.employee_name}`,
+          label: employee.employee_name,
           value: employee.employee_id
         }));
         this.employeeOptionList = [{ label: 'Select employee', value: '' }, ...employeeOptions];

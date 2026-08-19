@@ -4,6 +4,7 @@ import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dial
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ColDef } from 'ag-grid-community';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CustomerServices } from '../services/customer-services';
 import { SalesServices } from '../services/sales-services';
 import { AgGridList } from '../shared/ag-grid-list/ag-grid-list';
@@ -27,6 +28,7 @@ export class Sales {
   customers: any[] = [];
   customerOptionList: { label: string; value: string | number }[] = [{ label: 'Select customer', value: '' }];
   selectedId: number | null = null;
+  customerInvoiceId = 0;
   previewInvoice: any;
   invoiceDialogRef?: MatDialogRef<unknown>;
   paymentModes = ['CASH', 'CARD', 'UPI', 'BANK', 'CHEQUE', 'CREDIT'];
@@ -66,10 +68,13 @@ export class Sales {
     private customerService: CustomerServices,
     private ngxLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit() {
+    this.customerInvoiceId = Number(this.route.snapshot.paramMap.get('customerId') || 0);
     this.form = this.fb.group({
       invoice_no: [''],
       invoice_date: [this.toInputDate(new Date()), Validators.required],
@@ -86,7 +91,7 @@ export class Sales {
       remarks: ['']
     });
     this.loadCustomers();
-    this.loadRows();
+    if (!this.customerInvoiceId) this.loadRows();
   }
 
   loadCustomers() {
@@ -100,6 +105,10 @@ export class Sales {
             value: customer.customer_id
           }))
         ];
+        if (this.customerInvoiceId) {
+          this.form.patchValue({ customer_id: this.customerInvoiceId });
+          this.form.get('customer_id')?.disable();
+        }
       },
       error: (error: any) => this.commonMethods.handleError(error)
     });
@@ -124,11 +133,17 @@ export class Sales {
       this.form.markAllAsTouched();
       return;
     }
-    const payload = { ...this.form.value, sales_id: this.selectedId };
-    const request = this.selectedId ? this.salesService.updateSale(payload) : this.salesService.addSale(payload);
+    const payload = { ...this.form.getRawValue(), sales_id: this.selectedId };
+    const request = this.customerInvoiceId
+      ? this.salesService.addCustomerInvoice(this.customerInvoiceId, payload)
+      : this.selectedId ? this.salesService.updateSale(payload) : this.salesService.addSale(payload);
     request.subscribe({
       next: (response: any) => {
         this.commonMethods.handleTokenAndMessage(response);
+        if (this.customerInvoiceId) {
+          this.router.navigateByUrl('/customers');
+          return;
+        }
         this.reset();
         this.loadRows();
       },

@@ -21,6 +21,12 @@ export class SalesServices {
     });
   }
 
+  addCustomerInvoice(customerId: number, data: any) {
+    return this.http.post(`${appConfig.apiUrl}/customer/${customerId}/invoice`, data, {
+      headers: new HttpHeaders().set('content-type', 'application/json')
+    });
+  }
+
   updateSale(data: any) {
     return this.http.patch(this.endpoint, data, {
       headers: new HttpHeaders().set('content-type', 'application/json')

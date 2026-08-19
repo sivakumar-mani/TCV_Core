@@ -154,7 +154,7 @@ export class QuotationForm implements OnDestroy {
         this.employeeOptionList = [
           { label: 'Select employee', value: '' },
           ...this.employees.map((employee) => ({
-            label: `${employee.employee_code} - ${employee.employee_name}`,
+            label: employee.employee_name,
             value: employee.employee_id
           }))
         ];

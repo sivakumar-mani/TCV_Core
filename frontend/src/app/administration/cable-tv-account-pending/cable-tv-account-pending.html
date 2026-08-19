@@ -30,7 +30,7 @@
 
   <section class="report-filters">
     <label>Customer Name / No
-      <input type="search" [(ngModel)]="nameFilter" (keyup.enter)="loadAccounts()" placeholder="Name, customer no or mobile">
+      <input type="search" [(ngModel)]="nameFilter" (keyup.enter)="loadAccounts()" placeholder="Name, cust no or mobile">
     </label>
     <label>Status
       <select [(ngModel)]="statusFilter">
@@ -44,7 +44,7 @@
       <select [(ngModel)]="installedByFilter">
         <option value="">All employees</option>
         <option *ngFor="let employee of employees" [value]="employee.employee_id">
-          {{ employee.employee_code }} - {{ employee.employee_name }}
+          {{ employee.employee_name }}
         </option>
       </select>
     </label>
@@ -143,7 +143,7 @@
             <tr>
               <th>S.No</th>
               <th>Account Date</th>
-              <th>Customer No</th>
+              <th>Cust No</th>
               <th>Name</th>
               <th>Installed By</th>
               <th>Type</th>
@@ -210,7 +210,7 @@
       </div>
 
       <div class="payment-grid">
-        <div class="display-field"><span>Customer No</span><strong>{{ selectedAccount?.customer_code || '-' }}</strong></div>
+        <div class="display-field"><span>Cust No</span><strong>{{ selectedAccount?.customer_code || '-' }}</strong></div>
         <div class="display-field"><span>Customer Name</span><strong>{{ selectedAccount?.full_name || '-' }}</strong></div>
         <div class="display-field"><span>Installed By</span><strong>{{ selectedAccount?.installed_by_name || '-' }}</strong></div>
         <div class="display-field"><span>Total Payment</span><strong>{{ selectedAccount?.grand_total || 0 | number:'1.2-2' }}</strong></div>
@@ -227,7 +227,7 @@
           <select [(ngModel)]="paymentForm.received_by_employee_id">
             <option [ngValue]="null">{{ loggedInAdminName }} (Logged-in user)</option>
             <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">
-              {{ employee.employee_code }} - {{ employee.employee_name }}
+              {{ employee.employee_name }}
             </option>
           </select>
         </label>

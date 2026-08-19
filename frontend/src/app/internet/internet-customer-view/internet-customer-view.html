@@ -11,7 +11,7 @@
       <div class="summary-identity">
         <div class="name-line">
           <h1>{{ details.customer?.full_name || 'Internet Customer' }}</h1>
-          <span class="customer-no">Customer No. {{ details.customer?.customer_code || '-' }}</span>
+          <span class="customer-no">Customer No. {{ customerNumber() || '-' }}</span>
         </div>
         <div class="address-line">
           <i class="bi bi-geo-alt" aria-hidden="true"></i>{{ address() }}
@@ -39,7 +39,12 @@
       <div class="summary-tile tile-blue">
         <span class="tile-icon"><i class="bi bi-person" aria-hidden="true"></i></span
         ><span class="tile-label">Customer Number</span
-        ><strong>{{ details.customer?.customer_code || '-' }}</strong>
+        ><strong>{{ customerNumber() || '-' }}</strong>
+      </div>
+      <div class="summary-tile tile-purple">
+        <span class="tile-icon"><i class="bi bi-at" aria-hidden="true"></i></span
+        ><span class="tile-label">Net ID</span
+        ><strong class="copyable-value">{{ details.customer?.net_id || '-' }}</strong>
       </div>
       <div class="summary-tile tile-purple">
         <span class="tile-icon"><i class="bi bi-diagram-3" aria-hidden="true"></i></span
@@ -107,7 +112,7 @@
             <th>Amount</th>
             <th>Balance</th>
             <th>Status</th>
-            <th *ngIf="lookups.is_admin">Action</th>
+            <th *ngIf="showSubscriptionActions()">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -121,12 +126,12 @@
             <td>{{ x.amount | number: '1.0-0' }}</td>
             <td>{{ x.balance_amount | number: '1.2-2' }}</td>
             <td>
-              <span class="pill" [class.unpaid]="x.payment_status !== 'PAID'">{{ x.payment_status === 'PAID' ? 'PAID' : 'UNPAID' }}</span>
+              <span class="pill" [class.unpaid]="x.payment_status !== 'PAID'">{{ subscriptionStatusLabel(x) }}</span>
             </td>
-            <td *ngIf="lookups.is_admin" class="row-actions"><button type="button" (click)="editSubscription(x)">Edit</button><button type="button" class="danger" (click)="deleteSubscription(x)">Delete</button></td>
+            <td *ngIf="showSubscriptionActions()" class="row-actions"><button *ngIf="canEditSubscription(x)" type="button" (click)="editSubscription(x)">Edit</button><button *ngIf="lookups.is_admin" type="button" class="danger" (click)="deleteSubscription(x)">Delete</button></td>
           </tr>
           <tr *ngIf="!details.subscriptions?.length">
-            <td [attr.colspan]="lookups.is_admin ? 10 : 9" class="empty">No subscription details</td>
+            <td [attr.colspan]="showSubscriptionActions() ? 10 : 9" class="empty">No subscription details</td>
           </tr>
         </tbody>
       </table>
@@ -299,6 +304,7 @@
           <option *ngFor="let x of lookups.networks" [value]="x">{{ x }}</option>
         </select></label
       ><label>Full Name<input [(ngModel)]="customerForm.full_name" /></label
+      ><label>Net ID<input [(ngModel)]="customerForm.net_id" /></label
       ><label>Mobile No<input maxlength="10" [(ngModel)]="customerForm.mobile_no" /></label
       ><label
         >Alternate Mobile<input
@@ -313,7 +319,7 @@
         >Installed By<select [(ngModel)]="customerForm.installed_by_employee_id">
           <option [ngValue]="null">Select Employee</option>
           <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
-            {{ x.employee_code }} - {{ x.employee_name }}
+            {{ x.employee_name }}
           </option>
         </select></label
       >
@@ -509,8 +515,8 @@
             min="0"
             [(ngModel)]="historyForm.additional_years"
             (ngModelChange)="calculateSubscription()" /></label
-        ><label>Start Date<input type="date" disabled [(ngModel)]="historyForm.start_date" /></label
-        ><label>End Date<input type="date" disabled [(ngModel)]="historyForm.end_date" /></label
+        ><label>Start Date<input type="date" [disabled]="!lookups.is_admin || !editingSubscriptionId" [(ngModel)]="historyForm.start_date" /></label
+        ><label>End Date<input type="date" [disabled]="!lookups.is_admin || !editingSubscriptionId" [(ngModel)]="historyForm.end_date" /></label
         ><label
           >Subscription Amount<input
             type="number"
@@ -521,7 +527,7 @@
             type="number"
             min="0"
             [(ngModel)]="historyForm.paid_amount"
-            (ngModelChange)="calculateSubscription()" /></label
+            (ngModelChange)="calculateSubscription(true)" /></label
         ><label
           >Balance<input type="number" disabled [(ngModel)]="historyForm.balance_amount" /></label
         ><label
@@ -551,7 +557,7 @@
             <option value="ADMIN">Admin</option><option value="CUSTOMER">Customer</option>
           </select></label
         ><label
-          >Mode of Payment<select [(ngModel)]="historyForm.payment_mode">
+          >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin">
             <option value="CASH">Cash</option>
             <option value="ONLINE">Online</option>
             <option value="BANK_PAYMENT">Bank Payment</option>
@@ -638,8 +644,8 @@
               <option value="YEAR">Year</option>
             </select></span
           ></label
-        ><label>Start Date<input type="date" disabled [(ngModel)]="historyForm.start_date" /></label
-        ><label>End Date<input type="date" disabled [(ngModel)]="historyForm.end_date" /></label
+        ><label>Start Date<input type="date" [disabled]="!lookups.is_admin || !editingSubscriptionId" [(ngModel)]="historyForm.start_date" /></label
+        ><label>End Date<input type="date" [disabled]="!lookups.is_admin || !editingSubscriptionId" [(ngModel)]="historyForm.end_date" /></label
         ><label
           >Subscription Amount<input
             type="number"
@@ -650,7 +656,7 @@
             type="number"
             min="0"
             [(ngModel)]="historyForm.paid_amount"
-            (ngModelChange)="calculateSubscription()" /></label
+            (ngModelChange)="calculateSubscription(true)" /></label
         ><label
           >Balance<input type="number" disabled [(ngModel)]="historyForm.balance_amount" /></label
         ><label
@@ -675,9 +681,9 @@
             </option>
           </select></label
         ><label
-          >Renewed By<select [(ngModel)]="historyForm.renewed_by_value" (ngModelChange)="changeRenewedBy()">
+          >Renewed By<select [(ngModel)]="historyForm.renewed_by_value" (ngModelChange)="changeRenewedBy()" [disabled]="!lookups.is_admin && historyForm.cash_admin_locked">
             <ng-container *ngFor="let x of lookups.employees"><option *ngIf="lookups.is_admin || x.employee_id===lookups.logged_in_employee_id" [value]="'EMPLOYEE:'+x.employee_id">{{x.employee_name}}</option></ng-container>
-            <option *ngIf="lookups.is_admin" value="ADMIN">Admin</option><option value="CUSTOMER">Customer</option>
+            <option *ngIf="lookups.is_admin || historyForm.cash_admin_locked" value="ADMIN">Admin</option><option *ngIf="lookups.is_admin || !historyForm.cash_admin_locked" value="CUSTOMER">Customer</option>
           </select></label
         ><label
           >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin || historyForm.renewed_by_value!=='ADMIN'">

@@ -16,6 +16,13 @@ import { ActionMenu } from '../../shared/list-action-menu';
 export class CustomerList {
   customers: any[] = [];
 
+  customerActions = [
+    { label: 'Edit', action: (row: any) => this.editCustomer(row), permission: 'update' },
+    { label: 'Create Quotation', action: (row: any) => this.createQuotation(row), permission: 'create' },
+    { label: 'Create Invoice', action: (row: any) => this.createInvoice(row), permission: 'create' },
+    { label: 'Delete', action: (row: any) => this.deleteCustomer(row), permission: 'delete' }
+  ];
+
   defaultColDef: ColDef = {
     resizable: true,
     minWidth: 120,
@@ -26,7 +33,7 @@ export class CustomerList {
   };
 
   colDefs: ColDef[] = [
-    { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
+    { headerName: 'Serial #', width: 92, minWidth: 92, maxWidth: 92, flex: 0, cellRenderer: ActionMenu, cellRendererParams: { showSerial: true, dropdownMenu: this.customerActions }, filter: false, floatingFilter: false, sortable: false },
     {
       field: 'display_customer_name',
       headerName: 'Customer Name',
@@ -56,21 +63,7 @@ export class CustomerList {
       field: 'status',
       headerName: 'Status',
       maxWidth: 120,
-      valueFormatter: (params) => this.getStatusLabel(params.value),
-    },
-    {
-      headerName: 'Action',
-      maxWidth: 110,
-      cellRenderer: ActionMenu,
-      cellRendererParams: {
-        dropdownMenu: [
-          { label: 'Edit', action: (row: any) => this.editCustomer(row) },
-          { label: 'Create Quotation', action: (row: any) => this.createQuotation(row) },
-          { label: 'Delete', action: (row: any) => this.deleteCustomer(row) }
-        ]
-      },
-      filter: false,
-      sortable: false
+      valueFormatter: (params) => this.getStatusLabel(params.value, params.data?.approval_status),
     }
   ];
 
@@ -111,6 +104,10 @@ export class CustomerList {
     this.router.navigate(['/quotations/add'], { queryParams: { customerId: row.customer_id } });
   }
 
+  createInvoice(row: any) {
+    this.router.navigate(['/customers', row.customer_id, 'invoice']);
+  }
+
   deleteCustomer(row: any) {
     if (!confirm(`Delete customer ${this.getCustomerName(row)}?`)) return;
 
@@ -128,7 +125,9 @@ export class CustomerList {
     });
   }
 
-  getStatusLabel(status: number | string) {
+  getStatusLabel(status: number | string, approvalStatus?: string) {
+    if (String(approvalStatus || '').toUpperCase() === 'PENDING') return 'Waiting Approval';
+    if (String(approvalStatus || '').toUpperCase() === 'REJECTED') return 'Rejected';
     return Number(status) === 1 ? 'Active' : 'Inactive';
   }
 

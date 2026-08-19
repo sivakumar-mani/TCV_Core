@@ -1,5 +1,5 @@
 <div class="form-section">
-  <h2>{{ selectedId ? 'Edit Sale' : 'Sales Invoice' }}</h2>
+  <h2>{{ customerInvoiceId ? 'Create Customer Invoice' : selectedId ? 'Edit Sale' : 'Sales Invoice' }}</h2>
   <form [formGroup]="form" class="module-form" (ngSubmit)="submit()">
     <app-input-form-field [label]="'Invoice No'" [type]="'text'" [formControl]="$any(form.controls['invoice_no'])"></app-input-form-field>
     <app-input-form-field [label]="'Date'" [type]="'date'" [formControl]="$any(form.controls['invoice_date'])"></app-input-form-field>
@@ -21,7 +21,7 @@
   </form>
 </div>
 
-<app-ag-grid-list title="Sales List" [showAddButton]="false" [rowData]="rows" [columnDefs]="colDefs"></app-ag-grid-list>
+<app-ag-grid-list *ngIf="!customerInvoiceId" title="Sales List" [showAddButton]="false" [rowData]="rows" [columnDefs]="colDefs"></app-ag-grid-list>
 
 <ng-template #invoicePreviewDialog>
   <div class="invoice-preview" *ngIf="previewInvoice">

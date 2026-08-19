@@ -84,7 +84,7 @@
               <select *ngIf="!row.get('issue_id')?.value" class="form-control" formControlName="issued_to_employee_id">
                 <option value="">Select employee</option>
                 <option *ngFor="let employee of employees; trackBy: trackById" [value]="employee.employee_id">
-                  {{ employee.employee_code }} - {{ employee.employee_name }}
+                  {{ employee.employee_name }}
                 </option>
               </select>
             </td>

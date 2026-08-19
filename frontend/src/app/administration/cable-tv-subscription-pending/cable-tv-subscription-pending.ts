@@ -95,7 +95,7 @@ export class CableTvSubscriptionPending {
     const employee = this.employees.find((item: any) =>
       Number(item.employee_id) === Number(this.paymentForm.received_by_employee_id)
     );
-    return employee?.employee_name || employee?.employee_code || this.permissions.username() || '-';
+    return employee?.employee_name || this.permissions.username() || '-';
   }
 
   loadLookups() {

@@ -7,8 +7,8 @@
   </div>
 
   <section class="filter-card">
-    <label>Customer No.
-      <input type="search" [(ngModel)]="filters.customer_no" (keyup.enter)="loadPendingSubscriptions()" placeholder="Enter customer number">
+    <label>Cust No
+      <input type="search" [(ngModel)]="filters.customer_no" (keyup.enter)="loadPendingSubscriptions()" placeholder="Enter cust no">
     </label>
     <label>Customer Name
       <input type="search" [(ngModel)]="filters.customer_name" (keyup.enter)="loadPendingSubscriptions()" placeholder="Enter customer name">
@@ -36,7 +36,7 @@
     <div class="table-scroll">
       <table>
         <thead>
-          <tr><th>S No</th><th>Customer No</th><th>Customer Name</th><th>STB No</th><th>Address</th><th>Package Amount</th><th>Balance Month</th></tr>
+          <tr><th>S No</th><th>Cust No</th><th>Customer Name</th><th>STB No</th><th>Address</th><th>Package Amount</th><th>Balance Month</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let customer of customers; let i = index">
@@ -66,7 +66,7 @@
       </div>
 
       <div class="customer-summary">
-        <div><span>Customer Number</span><strong>{{ selectedCustomer?.customer_code }}</strong></div>
+        <div><span>Cust No</span><strong>{{ selectedCustomer?.customer_code }}</strong></div>
         <div><span>STB Number</span><strong>{{ selectedCustomer?.stb_no || '-' }}</strong></div>
         <div><span>Address</span><strong>{{ address(selectedCustomer) }}</strong></div>
         <div><span>Customer Status</span><strong>{{ selectedCustomer?.customer_status || '-' }}</strong></div>
@@ -111,7 +111,7 @@
         <label>Collected By
           <select [(ngModel)]="paymentForm.received_by_employee_id" [disabled]="!permissions.isAdmin()">
             <option [ngValue]="null">Select employee</option>
-            <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option>
+            <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>
         </label>
         <label>Mode of Payment<select [(ngModel)]="paymentForm.payment_mode" [disabled]="!permissions.isAdmin()"><option *ngFor="let mode of paymentModes" [value]="mode">{{ mode }}</option></select></label>

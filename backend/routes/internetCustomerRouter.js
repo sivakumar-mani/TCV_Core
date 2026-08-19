@@ -1,6 +1,6 @@
 const express=require('express');
 const auth=require('../services/authendication');
-const {internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,updateInternetCustomerRouter,deleteInternetCustomerRouter,previewInternetSubscriptionAppend,appendInternetSubscriptions,getInternetSubscriptionReport}=require('../controller/internetCustomerController');
+const {internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,updateInternetCustomerRouter,deleteInternetCustomerRouter,previewInternetSubscriptionAppend,appendInternetSubscriptions,previewCashAdminCorrection,applyCashAdminCorrection,getInternetSubscriptionReport}=require('../controller/internetCustomerController');
 const router=express.Router(); router.use(auth.authendicateToken);
 router.get('/subscription-dues/lookups',internetLookups);
 router.get('/subscription-dues',getPendingInternetSubscriptions);
@@ -8,11 +8,13 @@ router.patch('/subscription-dues/:id/receive',receiveInternetSubscriptionPayment
 router.get('/subscription-report',auth.requirePermission('INTERNET_CUSTOMERS'),getInternetSubscriptionReport);
 router.get('/subscriptions/append-preview',auth.requireAdmin,previewInternetSubscriptionAppend);
 router.post('/subscriptions/append',auth.requireAdmin,appendInternetSubscriptions);
+router.post('/subscriptions/cash-admin-correction/preview',auth.requireAdmin,previewCashAdminCorrection);
+router.post('/subscriptions/cash-admin-correction/apply',auth.requireAdmin,applyCashAdminCorrection);
+router.patch('/customers/:id/subscriptions/:subscriptionId',auth.requirePermissionAction('INTERNET_CUSTOMERS','can_view'),updateInternetSubscription);
 router.use(auth.requirePermission('INTERNET_CUSTOMERS'));
 router.get('/lookups',internetLookups); router.get('/customers',getInternetCustomers); router.get('/customers/:id',getInternetCustomer);
 router.post('/customers',saveInternetCustomer); router.put('/customers/:id',saveInternetCustomer);
 router.patch('/customers/:id/information',updateInternetCustomerInformation);
-router.patch('/customers/:id/subscriptions/:subscriptionId',updateInternetSubscription);
 router.delete('/customers/:id/subscriptions/:subscriptionId',deleteInternetSubscription);
 router.patch('/customers/:id/packages/:packageRowId',updateInternetCustomerPackage);
 router.delete('/customers/:id/packages/:packageRowId',deleteInternetCustomerPackage);

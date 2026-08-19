@@ -7,46 +7,27 @@
 
   <section class="customer-summary-card">
     <div class="summary-top">
-      <div class="summary-identity">
-        <div class="name-line">
-          <h1>{{ customer.full_name || 'Customer' }}</h1>
-          <span class="customer-no">Customer No. {{ customer.customer_code || '-' }}</span>
-        </div>
-        <div class="meta-line">
-          <span class="address-line"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ headerAddress }}</span>
-        </div>
-      </div>
-      <div class="summary-actions">
-        <label class="customer-jump">Customer No
-          <span>
-            <input type="search" [(ngModel)]="customerSearchNo" (keyup.enter)="searchCustomerByNumber()" placeholder="Customer No">
-            <button type="button" class="secondary-btn search-btn" (click)="searchCustomerByNumber()"><i class="bi bi-search" aria-hidden="true"></i></button>
-          </span>
+      <div class="summary-search">
+        <label class="customer-jump">Cust No
+          <input type="search" [(ngModel)]="customerSearchNo" (keyup.enter)="searchCustomerByNumber()" placeholder="Cust No">
         </label>
-        <button type="button" class="secondary-btn back-btn" (click)="goBack()"><i class="bi bi-arrow-left" aria-hidden="true"></i>Back</button>
+        <label class="customer-jump">Old C No
+          <input type="search" [(ngModel)]="oldCustomerSearchNo" (keyup.enter)="searchCustomerByNumber()" placeholder="Old C No">
+        </label>
+        <button type="button" class="secondary-btn search-btn" (click)="searchCustomerByNumber()"><i class="bi bi-search" aria-hidden="true"></i>Search</button>
       </div>
+      <button type="button" class="secondary-btn back-btn" (click)="goBack()"><i class="bi bi-arrow-left" aria-hidden="true"></i>Back</button>
     </div>
-    <div class="summary-grid">
-      <div class="summary-tile tile-blue">
-        <span class="tile-icon"><i class="bi bi-person" aria-hidden="true"></i></span>
-        <span class="tile-label">Customer Number</span>
-        <strong>{{ customer.customer_code || '-' }}</strong>
-      </div>
-      <div class="summary-tile tile-purple">
-        <span class="tile-icon"><i class="bi bi-router" aria-hidden="true"></i></span>
-        <span class="tile-label">STB Number</span>
-        <strong>{{ headerStbNo }}</strong>
-      </div>
-      <div class="summary-tile tile-green">
-        <span class="tile-icon"><i class="bi bi-calendar-event" aria-hidden="true"></i></span>
-        <span class="tile-label">Install Date</span>
-        <strong>{{ headerDate ? (headerDate | date:'dd-MM-yyyy') : '-' }}</strong>
-      </div>
-      <div class="summary-tile tile-orange">
-        <span class="tile-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
-        <span class="tile-label">Customer Status</span>
-        <strong class="summary-status">{{ headerStatus }}</strong>
-      </div>
+    <div class="summary-identity">
+      <h1>{{ customer.full_name || 'Customer' }}</h1>
+      <span><small>Cust No</small><strong>{{ customer.customer_code || '-' }}</strong></span>
+      <span><small>Old C No</small><strong>{{ customer.legacy_customer_no || '-' }}</strong></span>
+      <span><small>Status</small><strong class="summary-status" [class.success]="headerStatus === 'ACTIVE'">{{ headerStatus }}</strong></span>
+    </div>
+    <div class="meta-line">
+      <span><i class="bi bi-router" aria-hidden="true"></i>STB Number: <strong>{{ headerStbNo }}</strong></span>
+      <span><i class="bi bi-calendar-event" aria-hidden="true"></i>Install Date: <strong>{{ headerDate ? (headerDate | date:'dd-MM-yyyy') : '-' }}</strong></span>
+      <span class="address-line"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ headerAddress }}</span>
     </div>
   </section>
 
@@ -65,7 +46,7 @@
 
   <nav class="detail-tabs" aria-label="Cable TV customer detail sections">
     <button
-      *ngFor="let tab of tabs"
+      *ngFor="let tab of visibleTabs"
       type="button"
       [class.active]="section === tab.key"
       (click)="switchSection(tab.key)">
@@ -102,7 +83,7 @@
         <select formControlName="installed_by_employee_id">
           <option [ngValue]="null">Select Employee</option>
           <option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">
-            {{ employee.employee_code }} - {{ employee.employee_name }}
+            {{ employee.employee_name }}
           </option>
         </select>
       </label>
@@ -271,7 +252,7 @@
         <label *ngIf="isLocationChange">Street
           <select formControlName="new_street_id"><option [ngValue]="null">Select street</option><option *ngFor="let street of locationChangeStreets" [ngValue]="street.street_id">{{ street.street_name }}</option></select>
         </label>
-        <label *ngIf="permissions.isAdmin()">Installed By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin()">Installed By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Installed By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label>Connection Charge<input type="number" formControlName="connection_charge"></label>
         <label>Labor Charge<input type="number" formControlName="labour_service_charge"></label>
@@ -318,7 +299,7 @@
             <option *ngFor="let reason of availableStbReasons" [ngValue]="reason">{{ reasonLabel(reason) }}</option>
           </select>
         </label>
-        <label *ngIf="permissions.isAdmin()">Installed/Attended By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin()">Installed/Attended By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Installed/Attended By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label class="wide-field">Remarks<textarea formControlName="remarks" maxlength="500" rows="1"></textarea><small>{{ form.get('remarks')?.value?.length || 0 }}/500</small></label>
       </div>
@@ -409,7 +390,7 @@
         <label>Package Price<input type="number" formControlName="package_price"></label>
         <label>Start Date<input type="date" formControlName="start_date"></label>
         <label>End Date<input type="date" formControlName="end_date"></label>
-        <label *ngIf="permissions.isAdmin()">Updated By<select formControlName="updated_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin()">Updated By<select formControlName="updated_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Updated By<input type="text" [value]="permissions.username()" readonly></label>
         <label>Status<select formControlName="is_active"><option [ngValue]="1">Active</option><option [ngValue]="0">Deactivate</option></select></label>
       </div>
@@ -451,11 +432,11 @@
         </label>
         <label *ngIf="permissions.isAdmin()">Collected Date<input type="date" formControlName="collect_date"></label>
         <label *ngIf="!permissions.isAdmin()">Collected Date<input type="date" formControlName="collect_date" readonly></label>
-        <label *ngIf="permissions.isAdmin()">Collected By<select formControlName="collected_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin()">Collected By<select formControlName="collected_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Collected By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label *ngIf="permissions.isAdmin()">Mode of Payment<select formControlName="payment_mode"><option *ngFor="let mode of paymentModes" [ngValue]="mode">{{ mode }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Mode of Payment<input type="text" formControlName="payment_mode"></label>
-        <label *ngIf="permissions.isAdmin() && (form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE')">Payment Mapped Employee<select formControlName="payment_mapped_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin() && (form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE')">Payment Mapped Employee<select formControlName="payment_mapped_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE'">Payment Reference<input type="text" formControlName="payment_reference"></label>
       </div>
 

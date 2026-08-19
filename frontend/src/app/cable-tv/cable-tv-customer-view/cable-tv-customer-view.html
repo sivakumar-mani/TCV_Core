@@ -21,7 +21,7 @@
   <main class="print-sheet">
     <div class="print-title">
       <h1>{{ isReviewMode ? 'CATV New Customer Review' : 'CATV Customer Information' }}</h1>
-      <span>Customer No: {{ customer.customer_code || '-' }}</span>
+      <span>Cust No: {{ customer.customer_code || '-' }}</span>
     </div>
 
     <section class="accordion" [class.collapsed]="!isOpen('customer')">
@@ -31,8 +31,8 @@
       <div class="accordion-content">
         <div class="customer-overview">
           <div class="customer-primary">
-            <span class="record-label">Customer Number</span>
-            <strong class="customer-name">{{ customer.customer_code || '-' }} · {{ customer.full_name || '-' }}</strong>
+            <span class="record-label">Cust No</span>
+            <strong class="customer-name">{{ customer.customer_code || '-' }} Â· {{ customer.full_name || '-' }}</strong>
             <p>{{ customerAddress }}</p>
             <p><strong>Mobile:</strong> {{ customer.mobile_no || '-' }} <span *ngIf="customer.alternate_mobile_no"> / {{ customer.alternate_mobile_no }}</span></p>
             <p><strong>Aadhaar:</strong> {{ customer.aadhaar_no || '-' }}</p>
@@ -46,7 +46,7 @@
           </div>
         </div>
         <div class="info-grid">
-          <div><span>Legacy Customer No</span><strong>{{ customer.legacy_customer_no || '-' }}</strong></div>
+          <div><span>Old C No</span><strong>{{ customer.legacy_customer_no || '-' }}</strong></div>
           <div><span>Postal Area</span><strong>{{ customer.location_name || '-' }}</strong></div>
           <div><span>Location</span><strong>{{ customer.area_name || '-' }}</strong></div>
           <div><span>Street</span><strong>{{ customer.street_name || '-' }}</strong></div>
@@ -90,7 +90,7 @@
               <td>{{ (row.updated_date || row.installed_date) | date:'dd-MM-yyyy' }}</td><td>{{ row.stb_no || '-' }}</td><td>{{ row.stb_type || '-' }}</td>
               <td>{{ row.installed_mso_name || '-' }}</td><td>{{ row.installed_by_name || row.entered_by_name || '-' }}</td>
               <td>{{ row.stb_amount | number:'1.2-2' }}</td><td>{{ row.stb_discount | number:'1.2-2' }}</td><td>{{ row.labour_service_charge | number:'1.2-2' }}</td>
-              <td>{{ accessoriesFor(row) }}</td><td>{{ row.update_reason || '-' }}<span *ngIf="row.reason_remarks"> — {{ row.reason_remarks }}</span></td><td>{{ row.approval_status === 'PENDING' ? 'Pending' : (row.status || '-') }}</td>
+              <td>{{ accessoriesFor(row) }}</td><td>{{ row.update_reason || '-' }}<span *ngIf="row.reason_remarks"> â€” {{ row.reason_remarks }}</span></td><td>{{ row.approval_status === 'PENDING' ? 'Pending' : (row.status || '-') }}</td>
             </tr>
             <tr *ngIf="!stbs.length"><td colspan="11" class="empty-row">No STB records found.</td></tr>
           </tbody>

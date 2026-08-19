@@ -10,7 +10,7 @@
   </div>
 
   <section class="filters no-print">
-    <label>Technician<select [(ngModel)]="filters.employee_id" [disabled]="!permissions.isAdmin()"><option value="">All technicians</option><option *ngFor="let e of employees" [value]="e.employee_id">{{e.employee_code}} - {{e.employee_name}}</option></select></label>
+    <label>Technician<select [(ngModel)]="filters.employee_id" [disabled]="!permissions.isAdmin()"><option value="">All technicians</option><option *ngFor="let e of employees" [value]="e.employee_id">{{e.employee_name}}</option></select></label>
     <label>Movement<select [(ngModel)]="filters.movement_type"><option value="">All movements</option><option *ngFor="let type of movementTypes" [value]="type">{{label(type)}}</option></select></label>
     <label>Start Date<input type="date" [(ngModel)]="filters.start_date"></label>
     <label>End Date<input type="date" [(ngModel)]="filters.end_date"></label>
@@ -57,7 +57,7 @@
           <thead><tr><th>Technician</th><th>Material</th><th>Quantity</th><th>Movement Date</th><th>Remarks</th><th>Action</th></tr></thead>
           <tbody>
             <tr *ngFor="let row of issueRows; let index = index">
-              <td><select [(ngModel)]="row.employee_id"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_code}} - {{e.employee_name}}</option></select></td>
+              <td><select [(ngModel)]="row.employee_id"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></td>
               <td>
                 <input type="search" [(ngModel)]="row.material_search" (change)="selectIssueProduct(row)" (input)="selectIssueProduct(row)" list="issue-material-options" placeholder="Search material">
               </td>
@@ -73,7 +73,7 @@
     </section>
     <section class="issue-entry" *ngIf="movement.movement_type === 'SALE'">
       <div class="form-grid sale-customer">
-        <label>Technician *<select [(ngModel)]="movement.employee_id" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_code}} - {{e.employee_name}}</option></select></label>
+        <label>Technician *<select [(ngModel)]="movement.employee_id" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></label>
         <label>Customer Type<select [(ngModel)]="movement.customer_type" (ngModelChange)="onCustomerTypeChange()"><option value="CATV">CATV</option><option value="NET">Net</option><option value="CCTV">CCTV</option><option value="ANONYMOUS">Anonymous</option></select></label>
         <ng-container *ngIf="movement.customer_type !== 'ANONYMOUS'">
           <label>Customer
@@ -112,7 +112,7 @@
       <div class="sale-total"><span>Gross: {{saleGrossTotal | number:'1.2-2'}}</span><span>Commission: {{saleCommissionTotal | number:'1.2-2'}}</span><strong>Total Pending Account Amount: {{salePendingTotal | number:'1.2-2'}}</strong></div>
     </section>
     <div class="form-grid" *ngIf="movement.movement_type !== 'ISSUE' && movement.movement_type !== 'SALE'">
-      <label>Technician *<select [(ngModel)]="movement.employee_id" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_code}} - {{e.employee_name}}</option></select></label>
+      <label>Technician *<select [(ngModel)]="movement.employee_id" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></label>
       <label>Material *<select [(ngModel)]="movement.product_id" (ngModelChange)="onProductChange()"><option [ngValue]="null">Select material</option><option *ngFor="let p of availableProducts" [ngValue]="p.product_id">{{p.product_code}} - {{p.product_name}} ({{permissions.isAdmin() && movement.movement_type === 'ISSUE' ? 'Office' : 'Issued'}}: {{permissions.isAdmin() && movement.movement_type === 'ISSUE' ? p.office_qty : technicianProductQty(p.product_id)}})</option></select></label>
       <label>Quantity *<input type="number" min="0.01" step="0.01" [(ngModel)]="movement.qty"></label>
       <label *ngIf="movement.movement_type === 'SALE'">Unit Price<input type="number" min="0" [(ngModel)]="movement.unit_price"></label>

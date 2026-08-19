@@ -8,12 +8,17 @@ const {
   getCustomers,
   getMarketingEmployees
 } = require('../controller/customerController');
+const { addSale } = require('../controller/salesController');
 
 router.post('/', addCustomer);
 router.post('/add', addCustomer);
 router.get('/', getCustomers);
 router.get('/get', getCustomers);
 router.get('/marketing-employees', getMarketingEmployees);
+router.post('/:customer_id/invoice', (req, res) => {
+  req.body.customer_id = req.params.customer_id;
+  return addSale(req, res);
+});
 router.get('/get/:customer_id', getCustomerById);
 router.get('/:customer_id', getCustomerById);
 router.patch('/', updateCustomer);

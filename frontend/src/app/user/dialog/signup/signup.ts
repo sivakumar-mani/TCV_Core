@@ -84,7 +84,7 @@ export class Signup {
         this.employees = (Array.isArray(response) ? response : []).filter((employee: any) => Number(employee.is_active) === 1);
         this.employeeOptions = this.employees.map((employee: any) => ({
           value: employee.employee_id,
-          label: `${employee.employee_code || ''} ${employee.employee_name || `${employee.first_name || ''} ${employee.last_name || ''}`}`.trim()
+          label: employee.employee_name || `${employee.first_name || ''} ${employee.last_name || ''}`.trim()
         }));
         const employeeId = this.signupForm.get('employee_id')?.value;
         if (employeeId) this.applyEmployeeDetails(employeeId);

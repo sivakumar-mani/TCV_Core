@@ -89,6 +89,12 @@ export const routes: Routes = [
             data:{ expectedRole:['admin'] }
         },
          {
+            path:'lo-accounts',
+            loadComponent: ()=> import('./administration/lo-accounts/lo-accounts').then(n => n.LoAccounts),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin'] }
+        },
+         {
             path:'cable-tv-subscription-pending',
             loadComponent: ()=> import('./administration/cable-tv-subscription-pending/cable-tv-subscription-pending').then(n => n.CableTvSubscriptionPending),
             canActivate:[RouteGuard],
@@ -113,6 +119,12 @@ export const routes: Routes = [
             data:{ expectedRole:['admin'] }
         },
          {
+            path:'net-cash-admin-correction',
+            loadComponent: ()=> import('./administration/net-cash-admin-correction/net-cash-admin-correction').then(n => n.NetCashAdminCorrection),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin'] }
+        },
+         {
             path:'cable-tv-subscription-report',
             loadComponent: ()=> import('./administration/cable-tv-subscription-report/cable-tv-subscription-report').then(n => n.CableTvSubscriptionReport),
             canActivate:[RouteGuard],
@@ -121,6 +133,12 @@ export const routes: Routes = [
          {
             path:'net-subscription-report',
             loadComponent: ()=> import('./administration/net-subscription-report/net-subscription-report').then(n => n.NetSubscriptionReport),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
+        },
+         {
+            path:'stb-payment-report',
+            loadComponent: ()=> import('./administration/stb-payment-report/stb-payment-report').then(n => n.StbPaymentReport),
             canActivate:[RouteGuard],
             data:{ expectedRole:['admin','user'] }
         },
@@ -448,6 +466,12 @@ export const routes: Routes = [
             data:{
                 expectedRole:['admin','user']
             }
+        },
+         {
+            path:'customers/:customerId/invoice',
+            loadComponent: ()=> import('./sales/sales').then(n => n.Sales),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
         },
          {
             path:'customers/add',

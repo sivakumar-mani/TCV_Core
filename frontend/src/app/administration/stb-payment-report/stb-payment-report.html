@@ -1,0 +1,96 @@
+<div class="report-page">
+  <header><h1>STB Payment Report</h1></header>
+  <section class="filter-card">
+    <label
+      >Collector Name<select [(ngModel)]="filters.collected_by_employee_id">
+        <option value="">All Collectors</option>
+        <option *ngFor="let e of employees" [value]="e.employee_id">
+            {{ e.employee_name }}
+        </option>
+      </select></label
+    ><label
+      >Network Type<select [(ngModel)]="filters.network_id">
+        <option value="">All</option>
+        <option *ngFor="let n of networks" [value]="n.network_id">
+          {{ n.network_code || n.network_name }}
+        </option>
+      </select></label
+    ><label
+      >Collection Start Date *<input type="date" [(ngModel)]="filters.start_date" required /></label
+    ><label
+      >Collection End Date *<input
+        type="date"
+        [(ngModel)]="filters.end_date"
+        [min]="filters.start_date"
+        required
+    /></label>
+    <div class="filter-actions">
+      <button class="primary" (click)="load()">Search</button
+      ><button class="secondary" (click)="clear()">Clear</button>
+    </div>
+  </section>
+  <section class="report-card">
+    <div class="report-toolbar">
+      <div>
+        <strong>TIME CABLE VISION</strong><span>Collector: {{ collectorLabel }}</span
+        ><span>Network: {{ networkLabel }}</span
+        ><span
+          >Collection Period: {{ date(filters.start_date) }} To {{ date(filters.end_date) }}</span
+        >
+      </div>
+      <div class="export-actions">
+        <button class="icon-action" (click)="print()">Print</button
+        ><button class="icon-action excel" (click)="excel()">Excel</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>C No</th>
+            <th>Collected Date</th>
+            <th>Cust No</th>
+            <th>Name</th>
+            <th>Month</th>
+            <th>Payment Details</th>
+            <th>STB Number</th>
+            <th>Package</th>
+            <th>Balance</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of rows; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ date(r.collect_date) }}</td>
+            <td>{{ r.customer_code }}</td>
+            <td>{{ r.full_name }}</td>
+            <td>{{ r.payment_month }}</td>
+            <td>{{ payment(r) }}</td>
+            <td>{{ r.stb_no || '-' }}</td>
+            <td class="number">{{ r.package_amount | number: '1.0-2' }}</td>
+            <td class="number">{{ r.balance_amount | number: '1.0-2' }}</td>
+            <td class="number">
+              <strong>{{ r.received_amount | number: '1.0-2' }}</strong>
+            </td>
+          </tr>
+          <tr *ngIf="!rows.length">
+            <td colspan="10" class="empty">No STB payments found.</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="7">
+              Total Records: <strong>{{ summary.total_records }}</strong>
+            </td>
+            <td class="grand-total">Total</td>
+            <td class="number">{{ summary.total_balance | number: '1.0-2' }}</td>
+            <td class="number">
+              <strong>{{ summary.total_amount | number: '1.0-2' }}</strong>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>
+</div>

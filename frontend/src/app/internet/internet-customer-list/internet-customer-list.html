@@ -1,2 +1,11 @@
-<section class="filter"><label>Search<input type="search" [(ngModel)]="search" (ngModelChange)="filter()" placeholder="Customer no, name, Netid or mobile"></label></section>
+<section class="filter">
+  <div class="filter-grid">
+    <label>Cust No<input type="search" [(ngModel)]="filters.customerNo" (ngModelChange)="filter()" placeholder="Cust No"></label>
+    <label>Network<select [(ngModel)]="filters.network" (ngModelChange)="filter()"><option value="">All Networks</option><option *ngFor="let network of networkOptions" [value]="network">{{network}}</option></select></label>
+    <label>Name<input type="search" [(ngModel)]="filters.name" (ngModelChange)="filter()" placeholder="Customer name"></label>
+    <label>Mobile<input type="search" [(ngModel)]="filters.mobile" (ngModelChange)="filter()" placeholder="Mobile number"></label>
+    <label>Status<select [(ngModel)]="filters.status" (ngModelChange)="filter()"><option value="">All Statuses</option><option *ngFor="let status of statusOptions" [value]="status">{{status}}</option></select></label>
+    <button type="button" class="reset-btn" (click)="resetFilters()">Clear</button>
+  </div>
+</section>
 <app-ag-grid-list title="Internet Customers" addButtonLabel="Add Internet Customer" [rowData]="rows" [columnDefs]="colDefs" [defaultColDef]="defaultColDef" (add)="add()"></app-ag-grid-list>

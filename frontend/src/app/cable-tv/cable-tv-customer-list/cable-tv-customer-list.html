@@ -1,7 +1,22 @@
 <section class="customer-filter-panel">
   <div class="filter-grid">
-    <label>Customer No
-      <input type="search" [(ngModel)]="filters.customerNo" (ngModelChange)="applyFilters()" placeholder="Customer No">
+    <label>Cust No
+      <input type="search" [(ngModel)]="filters.customerNo" (ngModelChange)="applyFilters()" placeholder="Cust No">
+    </label>
+    <label>Old C No
+      <input type="search" [(ngModel)]="filters.oldCustomerNo" (ngModelChange)="applyFilters()" placeholder="Old C No">
+    </label>
+    <label>Network
+      <select [(ngModel)]="filters.networkId" (ngModelChange)="onNetworkChange()">
+        <option value="">All Networks</option>
+        <option *ngFor="let network of lookups.networks || []" [value]="network.network_id">{{ network.network_code || network.network_name }}</option>
+      </select>
+    </label>
+    <label>Status
+      <select [(ngModel)]="filters.status" (ngModelChange)="applyFilters()">
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of statusOptions" [value]="status">{{ status === 'LEASE_LINE' ? 'Lease Line' : status }}</option>
+      </select>
     </label>
     <button type="button" class="reset-btn" (click)="resetFilters()">Clear</button>
   </div>

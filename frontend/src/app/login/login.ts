@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, OnDestroy, signal } from '@angular/core';
 import { MatCard, MatCardModule } from '@angular/material/card';
 import { InputFormField } from '../shared/input-form-field/input-form-field';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -19,13 +19,15 @@ import { ForgotPassword } from '../user/dialog/forgot-password/forgot-password';
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login {
+export class Login implements OnDestroy {
 
   loginForm: any = FormGroup;
   responseMessage: string = '';
   captchaQuestion = '';
   captchaToken = '';
   captchaLoading = false;
+  private captchaExpiresAt = 0;
+  private captchaRefreshTimer?: ReturnType<typeof setTimeout>;
   private captchaRequestId = 0;
   router = inject(Router)
   dialog = inject(MatDialog);
@@ -60,6 +62,11 @@ export class Login {
       this.loginForm.markAllAsTouched();
       return;
     }
+    if (Date.now() >= this.captchaExpiresAt - 10000) {
+      this.snackbarService.openSnackbar('The security code expired and has been refreshed. Please enter the new code.', globalConstants.errorRegex);
+      this.refreshCaptcha();
+      return;
+    }
     this.ngxLoader.start();
     var formData = this.loginForm.value,
       data = {
@@ -89,6 +96,7 @@ export class Login {
   }
 
   refreshCaptcha() {
+    clearTimeout(this.captchaRefreshTimer);
     const requestId = ++this.captchaRequestId;
     this.captchaLoading = true;
     this.captchaQuestion = 'Loading CAPTCHA...';
@@ -100,14 +108,38 @@ export class Login {
         this.captchaLoading = false;
         this.captchaQuestion = captcha.question;
         this.captchaToken = captcha.token;
+        this.captchaExpiresAt = Number(captcha.expiresAt) || 0;
+        const refreshDelay = Math.max(this.captchaExpiresAt - Date.now() - 10000, 1000);
+        this.captchaRefreshTimer = setTimeout(() => this.refreshCaptcha(), refreshDelay);
       },
       error: () => {
         if (requestId !== this.captchaRequestId) return;
         this.captchaLoading = false;
         this.captchaQuestion = 'Unable to load CAPTCHA';
         this.captchaToken = '';
+        this.captchaExpiresAt = 0;
       }
     });
+  }
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange() {
+    if (!document.hidden) this.refreshExpiredCaptcha();
+  }
+
+  @HostListener('window:focus')
+  onWindowFocus() {
+    this.refreshExpiredCaptcha();
+  }
+
+  private refreshExpiredCaptcha() {
+    if (!this.captchaLoading && (!this.captchaToken || Date.now() >= this.captchaExpiresAt - 10000)) {
+      this.refreshCaptcha();
+    }
+  }
+
+  ngOnDestroy() {
+    clearTimeout(this.captchaRefreshTimer);
   }
 
   forgotPassword() {

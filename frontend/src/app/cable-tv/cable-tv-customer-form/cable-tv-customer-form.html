@@ -70,7 +70,7 @@
         <label *ngIf="permissions.isAdmin()">Installed By
           <select formControlName="installed_by_employee_id">
             <option [ngValue]="null">Select employee</option>
-            <option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option>
+            <option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>
         </label>
         <label *ngIf="!permissions.isAdmin()">Installed By
@@ -82,8 +82,20 @@
             <option *ngFor="let type of customerTypes" [value]="type.value">{{ type.label }}</option>
           </select>
         </label>
-        <label>Customer No
+        <label>Cust No
           <input type="text" formControlName="customer_code" placeholder="Auto generated">
+        </label>
+        <label>Old C No
+          <input type="text" formControlName="legacy_customer_no" placeholder="Existing customer number">
+        </label>
+        <label *ngIf="form.get('customer_type')?.value === 'LEASE_LINE'">Top-up Base Amount
+          <input type="number" min="0" formControlName="topup_base_amount">
+        </label>
+        <label *ngIf="form.get('customer_type')?.value === 'LEASE_LINE'">GST %
+          <input type="number" formControlName="topup_gst_percent" readonly>
+        </label>
+        <label *ngIf="form.get('customer_type')?.value === 'LEASE_LINE'">Recharge Amount
+          <input type="number" formControlName="recharge_amount" readonly>
         </label>
       </div>
     </section>

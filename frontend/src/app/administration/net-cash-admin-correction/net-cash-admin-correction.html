@@ -1,0 +1,53 @@
+<section class="page-card">
+  <header>
+    <div><h1>Net Cash/Admin Correction</h1><p>Bulk-correct existing subscriptions without changing the staff member who collects the amount.</p></div>
+  </header>
+
+  <div class="alert"><strong>Correction:</strong> Only subscriptions in the selected month and year will be locked with Mode of Payment as <b>Cash</b> and Renewed By as <b>Admin</b>. Collected By and other months remain unchanged.</div>
+
+  <div class="period-selector">
+    <label>Subscription Month
+      <select [(ngModel)]="subscriptionMonth" (ngModelChange)="periodChanged()">
+        <option *ngFor="let month of monthNames; let index = index" [ngValue]="index + 1">{{ month }}</option>
+      </select>
+    </label>
+    <label>Subscription Year
+      <select [(ngModel)]="subscriptionYear" (ngModelChange)="periodChanged()">
+        <option *ngFor="let year of years" [ngValue]="year">{{ year }}</option>
+      </select>
+    </label>
+  </div>
+
+  <label class="net-ids">Customer Net IDs
+    <textarea [(ngModel)]="netIds" rows="8" placeholder="Paste Net IDs separated by commas, spaces, or new lines"></textarea>
+  </label>
+  <div class="actions">
+    <button type="button" class="secondary" (click)="clear()">Clear</button>
+    <button type="button" class="primary" [disabled]="loading || !netIds.trim()" (click)="previewChanges()">{{ loading ? 'Checking...' : 'Preview' }}</button>
+  </div>
+
+  <ng-container *ngIf="preview">
+    <div class="summary">
+      <span>Selected Period <b>{{ monthNames[(preview.month || subscriptionMonth) - 1] }} {{ preview.year || subscriptionYear }}</b></span>
+      <span>Matched Customers <b>{{ preview.customers?.length || 0 }}</b></span>
+      <span>Subscriptions in Period <b>{{ preview.subscription_count || 0 }}</b></span>
+      <span>Unmatched Net IDs <b>{{ preview.unmatched_net_ids?.length || 0 }}</b></span>
+    </div>
+
+    <div class="unmatched" *ngIf="preview.unmatched_net_ids?.length"><strong>Not Found:</strong> {{ preview.unmatched_net_ids.join(', ') }}</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Net ID</th><th>Customer Name</th><th>Network</th><th>Subscriptions in Period</th><th>Subscription Amount</th><th>Already Locked</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let row of preview.customers">
+            <td>{{ row.net_id }}</td><td class="title-case">{{ row.full_name }}</td><td>{{ row.network_type }}</td>
+            <td>{{ row.subscription_count }}</td><td>{{ row.subscription_amount | number:'1.2-2' }}</td><td>{{ row.locked_count }}</td>
+          </tr>
+          <tr *ngIf="!preview.customers?.length"><td colspan="6" class="empty">No matching customers found.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="apply"><button type="button" class="danger" [disabled]="applying || !preview.subscription_count" (click)="applyChanges()">{{ applying ? 'Applying...' : 'Apply and Lock' }}</button></div>
+  </ng-container>
+</section>

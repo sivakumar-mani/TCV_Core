@@ -120,10 +120,11 @@ export class InternetCustomerView {
           return value;
         };
         this.details = rounded(r);
-        this.customerSearchNo = String(r.customer?.customer_code || '');
+        this.customerSearchNo = this.customerNumber(r.customer);
         this.customerForm = {
           network_type: r.customer?.network_type,
           full_name: r.customer?.full_name,
+          net_id: r.customer?.net_id,
           mobile_no: r.customer?.mobile_no,
           alternate_mobile_no: r.customer?.alternate_mobile_no || '',
           aadhaar_no: r.customer?.aadhaar_no || '',
@@ -138,7 +139,7 @@ export class InternetCustomerView {
     if (
       !this.workflowId ||
       this.approving ||
-      !confirm(`Approve Internet customer ${this.details.customer?.customer_code}?`)
+      !confirm(`Approve Internet customer ${this.customerNumber()}?`)
     )
       return;
     this.approving = true;
@@ -160,6 +161,7 @@ export class InternetCustomerView {
     this.router.navigateByUrl(this.reviewMode ? '/workflow-approval' : '/internet/customers');
   }
   canUpdate() {
+    if (this.isLegacyCustomer()) return true;
     return (
       this.details.customer?.approval_status === 'APPROVED' &&
       this.details.account?.account_status === 'PAID'
@@ -170,7 +172,7 @@ export class InternetCustomerView {
     if (!value) return;
     this.api.getCustomers().subscribe({
       next: (rows) => {
-        const match = (rows || []).find((x) => String(x.customer_code) === value);
+        const match = (rows || []).find((x) => this.customerNumber(x) === value);
         if (!match)
           return this.common.handleError({
             error: { message: 'Internet customer number was not found' },
@@ -228,6 +230,7 @@ export class InternetCustomerView {
                 collected_by_employee_id: this.lookups.logged_in_employee_id,
                 renewed_by_value: `EMPLOYEE:${this.lookups.logged_in_employee_id || ''}`,
                 payment_mode: 'DASHBOARD',
+                cash_admin_locked: false,
                 payment_reference: '',
                 payment_mapped_employee_id: null,
                 customer_paid_amount: 0,
@@ -238,7 +241,7 @@ export class InternetCustomerView {
       this.showSubscriptionPeriodModal = true;
     } else this.showHistoryModal = true;
   }
-  calculateSubscription() {
+  calculateSubscription(preserveEditedDates = false) {
     if (this.activeTab !== 'subscription') return;
     const f = this.historyForm,
       pkg = [...(this.details.packages || [])]
@@ -302,7 +305,7 @@ export class InternetCustomerView {
       internet_customer_package_id: pkg?.internet_customer_package_id || null,
       period_count: Number(count.toFixed(4)),
       start_date: start.toISOString().slice(0, 10),
-      end_date: end.toISOString().slice(0, 10),
+      end_date: preserveEditedDates && this.editingSubscriptionId && this.lookups.is_admin && /^\d{4}-\d{2}-\d{2}$/.test(String(f.end_date || '')) ? f.end_date : end.toISOString().slice(0, 10),
       amount,
       customer_paid_amount: paid,
       balance_amount: balance,
@@ -319,6 +322,11 @@ export class InternetCustomerView {
     this.calculateSubscription();
   }
   changeRenewedBy() {
+    if (this.historyForm.cash_admin_locked) {
+      this.historyForm.renewed_by_value = 'ADMIN';
+      this.historyForm.payment_mode = 'CASH';
+      return;
+    }
     if (!this.lookups.is_admin || this.historyForm.renewed_by_value !== 'ADMIN') {
       this.historyForm.payment_mode = 'DASHBOARD';
       this.historyForm.payment_reference = '';
@@ -368,7 +376,7 @@ export class InternetCustomerView {
     });
   }
   editSubscription(row: any) {
-    if (!this.lookups.is_admin) return;
+    if (!this.canEditSubscription(row)) return;
     this.activeTab = 'subscription';
     this.editingSubscriptionId = Number(row.internet_subscription_id);
     const renewed = row.renewed_by === 'ADMIN' || row.renewed_by === 'CUSTOMER'
@@ -380,11 +388,22 @@ export class InternetCustomerView {
       free_period_unit: row.free_period_unit || 'MONTH', start_date: this.inputDate(row.start_date),
       end_date: this.inputDate(row.end_date), amount: Math.round(Number(row.amount) || 0), paid_amount: Math.round(Number(row.paid_amount) || 0),
       balance_amount: Math.round(Number(row.balance_amount) || 0), payment_status: row.payment_status || 'PENDING',
-      collect_date: this.inputDate(row.collect_date) || this.today, collected_by_employee_id: row.collected_by_employee_id,
-      renewed_by_value: renewed, payment_mode: row.payment_mode || 'DASHBOARD', payment_reference: row.payment_reference || '',
+      collect_date: this.inputDate(row.collect_date) || this.today, collected_by_employee_id: this.lookups.is_admin ? row.collected_by_employee_id : this.lookups.logged_in_employee_id,
+      renewed_by_value: Number(row.cash_admin_locked) === 1 ? 'ADMIN' : renewed, payment_mode: Number(row.cash_admin_locked) === 1 ? 'CASH' : (row.payment_mode || 'DASHBOARD'), payment_reference: row.payment_reference || '',
+      cash_admin_locked: Number(row.cash_admin_locked) === 1,
       payment_mapped_employee_id: row.payment_mapped_employee_id
     };
     this.showSubscriptionPeriodModal = true;
+  }
+  canEditSubscription(row: any) {
+    return Boolean(this.lookups.is_admin) || String(row?.payment_status || '').toUpperCase() !== 'PAID';
+  }
+  showSubscriptionActions() {
+    return Boolean(this.lookups.is_admin) || (this.details.subscriptions || []).some((row: any) => this.canEditSubscription(row));
+  }
+  subscriptionStatusLabel(row: any) {
+    const status = String(row?.payment_status || 'PENDING').toUpperCase();
+    return status === 'PAID' ? 'Paid' : status === 'PARTIAL' ? 'Partial' : 'Unpaid';
   }
   deleteSubscription(row: any) {
     if (!this.lookups.is_admin || !window.confirm('Delete this Internet subscription entry?')) return;
@@ -489,9 +508,17 @@ export class InternetCustomerView {
       .filter(Boolean)
       .join(', ');
   }
+  isLegacyCustomer(customer = this.details.customer) {
+    return Boolean(String(customer?.legacy_customer_no || '').trim());
+  }
+  customerNumber(customer = this.details.customer) {
+    return String(customer?.legacy_customer_no || customer?.customer_code || '');
+  }
   headerStatus() {
     const customer = this.details.customer || {},
       account = this.details.account || {};
+    if (this.isLegacyCustomer(customer))
+      return String(customer.status || '').toUpperCase() === 'ACTIVE' ? 'Active' : 'Disconnected';
     if (customer.approval_status === 'REJECTED' || account.approval_status === 'REJECTED')
       return 'Rejected';
     if (customer.approval_status !== 'APPROVED' || account.approval_status !== 'APPROVED')

@@ -23,7 +23,7 @@ export class CableTvCustomerList {
   lookups: any = {};
   selectedPackageInfo: any = null;
   filters = {
-    customerNo: '',
+    customerNo: '', oldCustomerNo: '',
     networkId: '',
     name: '',
     mobile: '',
@@ -31,28 +31,40 @@ export class CableTvCustomerList {
     streetId: '',
     status: ''
   };
-  readonly statusOptions = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED'];
+  readonly statusOptions = ['ACTIVE', 'DISCONNECTED', 'FREE', 'LEASE_LINE', 'RETRIEVED', 'INACTIVE', 'SHIFTED', 'TRANSFERRED'];
+  readonly customerActions = [
+    { label: 'View', action: (row: any) => this.viewCustomer(row) },
+    { label: 'Complaint', action: (row: any) => this.registerComplaint(row) },
+    { label: 'Update', action: (row: any) => this.editCustomer(row), visible: (row: any) => this.canUpdateCustomer(row) }
+  ];
 
   defaultColDef: ColDef = {
     resizable: true,
     minWidth: 120,
     flex: 1,
-    filter: false,
-    floatingFilter: false,
+    filter: 'agTextColumnFilter',
+    floatingFilter: true,
+    filterParams: { buttons: ['reset'], maxNumConditions: 1 },
     headerClass: 'ag-header-style'
   };
 
   colDefs: ColDef[] = [
-    { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
-    { field: 'customer_code', headerName: 'Customer No', maxWidth: 140 },
-    { field: 'network_display', headerName: 'Network', maxWidth: 140 },
-    { field: 'full_name', headerName: 'Full Name', minWidth: 180 },
-    { field: 'address_display', headerName: 'Address', minWidth: 240 },
+    { headerName: 'Serial #', width: 92, minWidth: 92, maxWidth: 92, flex: 0, cellRenderer: ActionMenu, cellRendererParams: { showSerial: true, dropdownMenu: this.customerActions }, filter: false, floatingFilter: false, sortable: false },
+    { field: 'customer_code', headerName: 'Cust No', width: 92, minWidth: 92, maxWidth: 92, flex: 0 },
+    { field: 'legacy_customer_no', headerName: 'Old C No', width: 100, minWidth: 100, maxWidth: 100, flex: 0 },
+    { field: 'network_display', headerName: 'Network', width: 100, minWidth: 100, maxWidth: 100, flex: 0, valueFormatter: (params: any) => this.titleCaseText(params.value), filter: 'agTextColumnFilter', filterParams: { filterOptions: ['equals'], defaultOption: 'equals', buttons: ['reset'], maxNumConditions: 1 } },
+    { field: 'customer_type', headerName: 'CType', width: 92, minWidth: 92, maxWidth: 92, flex: 0, valueFormatter: (params: any) => this.titleCaseText(params.value) },
+    { field: 'full_name', headerName: 'Full Name', minWidth: 180, valueFormatter: (params: any) => this.titleCaseText(params.value) },
+    { field: 'address_display', headerName: 'Address', minWidth: 240, valueFormatter: (params: any) => this.titleCaseText(params.value) },
     { field: 'mobile_display', headerName: 'Mobile No', minWidth: 180 },
-    { field: 'stb_display', headerName: 'STB', minWidth: 260 },
+    { field: 'stb_no', headerName: 'STB Number', width: 150, minWidth: 150, maxWidth: 150, flex: 0, valueFormatter: (params: any) => params.value || '-' },
+    { field: 'installed_date', headerName: 'Installed Date', width: 120, minWidth: 120, maxWidth: 120, flex: 0, valueFormatter: (params: any) => this.formatDate(params.value) || '-' },
     {
-      headerName: 'Package Amount',
-      minWidth: 170,
+      headerName: 'Package',
+      width: 120,
+      minWidth: 120,
+      maxWidth: 120,
+      flex: 0,
       cellRenderer: (params: any) => {
         const wrapper = document.createElement('span');
         wrapper.className = 'package-cell';
@@ -72,24 +84,22 @@ export class CableTvCustomerList {
         return wrapper;
       }
     },
-    { field: 'status', headerName: 'Status', maxWidth: 130 },
     {
-      headerName: 'Action',
-      maxWidth: 120,
-      cellRenderer: ActionMenu,
-      cellRendererParams: {
-        dropdownMenu: [
-          { label: 'View', action: (row: any) => this.viewCustomer(row) },
-          { label: 'Complaint', action: (row: any) => this.registerComplaint(row) },
-          {
-            label: 'Update',
-            action: (row: any) => this.editCustomer(row),
-            visible: (row: any) => this.canUpdateCustomer(row)
-          }
-        ]
+      field: 'status',
+      headerName: 'Status',
+      maxWidth: 150,
+      cellRenderer: (params: any) => {
+        const status = String(params.value || '-').trim().toUpperCase().replaceAll('_', ' ');
+        const pill = document.createElement('span');
+        pill.className = 'status-pill';
+        if (status === 'ACTIVE') pill.classList.add('success');
+        if (['DISCONNECT', 'DISCONNECTED'].includes(status)) pill.classList.add('danger');
+        pill.dataset['status'] = status;
+        pill.textContent = this.titleCaseText(status);
+        return pill;
       },
-      filter: false,
-      sortable: false
+      filter: 'agTextColumnFilter',
+      filterParams: { filterOptions: ['equals'], defaultOption: 'equals', buttons: ['reset'], maxNumConditions: 1 }
     }
   ];
 
@@ -159,12 +169,15 @@ export class CableTvCustomerList {
     this.customers = this.allCustomers.filter((customer: any) => {
       if (this.selectedCustomerId && Number(customer.cable_customer_id) !== this.selectedCustomerId) return false;
       if (this.filters.customerNo && !text(customer.customer_code).includes(text(this.filters.customerNo))) return false;
+      if (this.filters.oldCustomerNo && !text(customer.legacy_customer_no).includes(text(this.filters.oldCustomerNo))) return false;
+      if (this.filters.networkId && Number(customer.network_id) !== Number(this.filters.networkId)) return false;
+      if (this.filters.status && text(customer.status) !== text(this.filters.status).replace('_', ' ')) return false;
       return true;
     });
   }
 
   resetFilters() {
-    this.filters = { customerNo: '', networkId: '', name: '', mobile: '', areaId: '', streetId: '', status: '' };
+    this.filters = { customerNo: '', oldCustomerNo: '', networkId: '', name: '', mobile: '', areaId: '', streetId: '', status: '' };
     this.applyFilters();
   }
 
@@ -198,20 +211,12 @@ export class CableTvCustomerList {
   }
 
   decorateCustomer(customer: any) {
-    const stbParts = customer.stb_no
-      ? [
-          customer.stb_no,
-          this.formatDate(customer.installed_date),
-          customer.stb_installed_by_name || customer.installed_by_name
-        ].filter(Boolean)
-      : [];
     const amountValue = customer.package_amount ?? customer.package_price ?? customer.master_package_price ?? customer.subscription_amount;
     return {
       ...customer,
       network_display: customer.network_type || customer.network_name || '-',
       address_display: [customer.door_no, customer.street_name, customer.area_name].filter(Boolean).join(' / ') || '-',
       mobile_display: [customer.mobile_no, customer.alternate_mobile_no].filter(Boolean).join(' / ') || '-',
-      stb_display: stbParts.length ? stbParts.join(' / ') : '-',
       package_amount_display: amountValue === null || amountValue === undefined ? '-' : this.formatMoney(amountValue)
     };
   }
@@ -250,6 +255,13 @@ export class CableTvCustomerList {
       .toLowerCase()
       .replaceAll('_', ' ')
       .replace(/\b\w/g, (character) => character.toUpperCase());
+  }
+
+  titleCaseText(value: any) {
+    return String(value ?? '-')
+      .replaceAll('_', ' ')
+      .toLowerCase()
+      .replace(/\b\w+/g, (word) => ['tcv', 'svn', 'lo', 'stb', 'hd'].includes(word) ? word.toUpperCase() : `${word[0].toUpperCase()}${word.slice(1)}`);
   }
 
 }

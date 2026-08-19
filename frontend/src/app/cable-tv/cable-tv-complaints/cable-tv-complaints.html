@@ -20,7 +20,7 @@
     <label>Assigned To
       <select [(ngModel)]="filters.assigned_employee_id">
         <option value="">All technicians</option>
-        <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
+        <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
       </select>
     </label>
     <button type="button" (click)="search()">Search</button>
@@ -68,7 +68,7 @@
   <section class="modal-panel">
     <div class="modal-header">
       <h2>Register Complaint</h2>
-      <button type="button" class="close" (click)="closeRegister()">×</button>
+      <button type="button" class="close" (click)="closeRegister()">Ã—</button>
     </div>
     <div class="caller-types">
       <label><input type="radio" name="callerType" [(ngModel)]="callerType" value="CATV" (ngModelChange)="onCallerTypeChange()"> CATV</label>
@@ -79,7 +79,7 @@
     <div class="form-grid">
       <ng-container *ngIf="callerType !== 'ANONYMOUS'">
         <label class="wide">Search Customer
-          <input type="search" [(ngModel)]="customerSearch" placeholder="Search customer no, name, mobile or address">
+          <input type="search" [(ngModel)]="customerSearch" placeholder="Search cust no, name, mobile or address">
         </label>
         <label class="wide">Select Customer *
           <select [(ngModel)]="complaint.customer_id" size="5" class="search-select">
@@ -116,8 +116,8 @@
 <div class="modal-backdrop" *ngIf="showAttemptModal && selectedComplaint">
   <section class="modal-panel complaint-modal">
     <div class="modal-header">
-      <div><h2>{{ selectedComplaint.complaint_no }}</h2><p>{{ displayCustomer(selectedComplaint) }} · {{ selectedComplaint.nature_of_complaint }}</p></div>
-      <button type="button" class="close" (click)="closeAttempt()">×</button>
+      <div><h2>{{ selectedComplaint.complaint_no }}</h2><p>{{ displayCustomer(selectedComplaint) }} Â· {{ selectedComplaint.nature_of_complaint }}</p></div>
+      <button type="button" class="close" (click)="closeAttempt()">Ã—</button>
     </div>
 
     <section class="update-panel" *ngIf="selectedComplaint.status !== 'COMPLETED'">
@@ -132,7 +132,7 @@
             </select>
           </label>
           <label class="wide">Search Customer to Map
-            <input type="search" [(ngModel)]="mapCustomerSearch" placeholder="Search customer no, name, mobile or address">
+            <input type="search" [(ngModel)]="mapCustomerSearch" placeholder="Search cust no, name, mobile or address">
           </label>
           <label class="wide">Map Customer
             <select [ngModel]="mappedCustomerId()" (ngModelChange)="selectMappedCustomer($event)" size="5" class="search-select">
@@ -146,7 +146,7 @@
         <label>Assigned Technician *
           <select [(ngModel)]="attempt.assigned_employee_id">
             <option [ngValue]="null">Select technician</option>
-            <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
+            <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>
         </label>
         <label>Status *
@@ -167,7 +167,7 @@
       <h3>Complaint History</h3>
       <article *ngFor="let item of selectedComplaint.attempts">
         <div class="history-heading">
-          <strong>Attempt {{ item.attempt_no }} · {{ statusLabel(item.status) }}</strong>
+          <strong>Attempt {{ item.attempt_no }} Â· {{ statusLabel(item.status) }}</strong>
           <span>{{ item.entered_at | date:'dd-MM-yyyy, h:mm a' }}</span>
         </div>
         <div class="history-grid">
@@ -188,10 +188,10 @@
   <section class="modal-panel complaint-modal">
     <div class="modal-header">
       <div>
-        <h2>{{ viewedComplaint.complaint_no }} · {{ viewedComplaint.complainant_type }}</h2>
+        <h2>{{ viewedComplaint.complaint_no }} Â· {{ viewedComplaint.complainant_type }}</h2>
         <p>Registered {{ viewedComplaint.registered_at | date:'dd-MM-yyyy, h:mm a' }}</p>
       </div>
-      <button type="button" class="close" (click)="closeView()">×</button>
+      <button type="button" class="close" (click)="closeView()">Ã—</button>
     </div>
     <section class="complaint-view">
       <div><span>Customer Name</span><strong>{{ viewedComplaint.customer_name || viewedComplaint.anonymous_name || 'Anonymous' }}</strong></div>
@@ -208,7 +208,7 @@
       <h3>Complaint History</h3>
       <article *ngFor="let item of viewedComplaint.attempts">
         <div class="history-heading">
-          <strong>Attempt {{ item.attempt_no }} · {{ statusLabel(item.status) }}</strong>
+          <strong>Attempt {{ item.attempt_no }} Â· {{ statusLabel(item.status) }}</strong>
           <span>{{ item.entered_at | date:'dd-MM-yyyy, h:mm a' }}</span>
         </div>
         <div class="history-grid">

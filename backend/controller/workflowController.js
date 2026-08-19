@@ -229,6 +229,16 @@ const getWorkflowApprovals = async (req, res) => {
              UNION ALL
              SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
                     wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
+                    'CCTV Customer' AS subject,
+                    NULL, NULL, c.created_at, NULL, NULL,
+                    NULL, TRIM(CONCAT(COALESCE(c.salutation, ''), ' ', c.customer_name)), NULL,
+                    NULL, NULL, NULL, c.approval_status, NULL
+             FROM workflow_approvals wa
+             JOIN customers c ON wa.module_name='CCTV_CUSTOMER' AND c.customer_id=wa.reference_id
+             WHERE wa.workflow_status='PENDING'
+             UNION ALL
+             SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
+                    wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
                     CASE WHEN wa.module_name='INTERNET_CUSTOMER_UPDATE' THEN 'Internet Customer Update' ELSE 'Internet Customer' END AS subject,
                     NULL, NULL, ic.installed_date, NULL, ia.grand_total,
                     NULL, ic.full_name, NULL, NULL, ia.balance_amount,
@@ -454,7 +464,7 @@ const approveWorkflow = async (req, res) => {
                     );
                 }
                 await conn.query(
-                    'UPDATE cable_tv_customers SET status = ?, updated_at = NOW() WHERE cable_customer_id = ?',
+                    "UPDATE cable_tv_customers SET status = CASE WHEN customer_type IN ('FREE','LEASE_LINE') THEN customer_type ELSE ? END, updated_at = NOW() WHERE cable_customer_id = ?",
                     [customerStatusForStbStatus(desiredStatus), stb.cable_customer_id]
                 );
             }
@@ -549,6 +559,8 @@ const approveWorkflow = async (req, res) => {
 
         if (workflow.module_name === 'WORK_ORDER') {
             await conn.query("UPDATE work_orders SET approval_status = 'APPROVED', updated_at = NOW() WHERE work_order_id = ?", [workflow.reference_id]);
+        } else if (workflow.module_name === 'CCTV_CUSTOMER') {
+            await conn.query("UPDATE customers SET approval_status='APPROVED', is_active=1, approved_by_user_id=?, approved_at=NOW(), updated_at=NOW() WHERE customer_id=?", [req.res?.locals?.userId || req.res?.locals?.user_id || null, workflow.reference_id]);
         } else if (workflow.module_name === 'INTERNET_CUSTOMER') {
             await conn.query("UPDATE internet_customers SET approval_status='APPROVED', updated_at=NOW() WHERE internet_customer_id=?", [workflow.reference_id]);
             await conn.query("UPDATE internet_customer_accounts SET approval_status='APPROVED', updated_at=NOW() WHERE internet_customer_id=?", [workflow.reference_id]);

@@ -45,7 +45,7 @@ const ensureInternetSchema = async (db) => {
   }
   await db.query(`CREATE TABLE IF NOT EXISTS internet_customers (
     internet_customer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    customer_code INT NOT NULL, network_type ENUM('KRISHI','RAILWIRE','DMNET') NOT NULL,
+    customer_code INT NOT NULL, legacy_customer_no VARCHAR(100) NULL, network_type ENUM('KRISHI','RAILWIRE','DMNET') NOT NULL,
     full_name VARCHAR(200) NOT NULL, net_id VARCHAR(150) NOT NULL, network_password VARCHAR(255) NULL,
     door_no VARCHAR(50) NOT NULL, location_id INT NOT NULL, area_id INT NOT NULL, street_id INT NOT NULL,
     state VARCHAR(100) NOT NULL DEFAULT 'Tamil Nadu', city VARCHAR(100) NOT NULL, pincode VARCHAR(10) NULL,
@@ -58,6 +58,11 @@ const ensureInternetSchema = async (db) => {
     UNIQUE KEY uk_internet_customer_code (customer_code), UNIQUE KEY uk_internet_net_id (net_id),
     INDEX idx_internet_customer_name (full_name), INDEX idx_internet_customer_mobile (mobile_no)
   ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
+  const [[legacyCustomerColumn]] = await db.query(`SELECT COUNT(*) count FROM information_schema.columns
+    WHERE table_schema=DATABASE() AND table_name='internet_customers' AND column_name='legacy_customer_no'`);
+  if (!legacyCustomerColumn.count) {
+    await db.query('ALTER TABLE internet_customers ADD COLUMN legacy_customer_no VARCHAR(100) NULL AFTER customer_code, ADD INDEX idx_internet_legacy_customer_no (legacy_customer_no)');
+  }
   await db.query(`CREATE TABLE IF NOT EXISTS internet_customer_packages (
     internet_customer_package_id BIGINT AUTO_INCREMENT PRIMARY KEY, internet_customer_id BIGINT NOT NULL,
     package_id INT NOT NULL, package_price DECIMAL(12,2) NOT NULL DEFAULT 0, start_date DATE NOT NULL,
@@ -173,6 +178,7 @@ const ensureInternetSchema = async (db) => {
     ,['internet_subscriptions', 'payment_mode', "ENUM('CASH','ONLINE','BANK_PAYMENT') NOT NULL DEFAULT 'CASH' AFTER renewed_by"]
     ,['internet_subscriptions', 'payment_reference', 'VARCHAR(150) NULL AFTER payment_mode']
     ,['internet_subscriptions', 'payment_mapped_employee_id', 'INT NULL AFTER payment_reference']
+    ,['internet_subscriptions', 'cash_admin_locked', 'TINYINT(1) NOT NULL DEFAULT 0 AFTER payment_mapped_employee_id']
     ,['internet_subscriptions', 'period_value', 'DECIMAL(10,2) NOT NULL DEFAULT 1 AFTER billing_basis']
     ,['internet_subscriptions', 'free_period_value', 'DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER additional_years']
     ,['internet_subscriptions', 'free_period_unit', "ENUM('MONTH','DAYS','YEAR') NOT NULL DEFAULT 'MONTH' AFTER free_period_value"]
@@ -246,6 +252,8 @@ const getInternetCustomers = async (_req, res) => {
     const [rows] = await db.query(`SELECT c.*, l.location_name, a.area_name, s.street_name,
       CONCAT_WS(' ', e.first_name, e.last_name) installed_by_name,
       CASE
+        WHEN NULLIF(TRIM(c.legacy_customer_no), '') IS NOT NULL THEN
+          CASE WHEN UPPER(COALESCE(c.status, 'INACTIVE')) = 'ACTIVE' THEN 'Active' ELSE 'Disconnected' END
         WHEN c.approval_status = 'REJECTED' OR acc.approval_status = 'REJECTED' THEN 'Rejected'
         WHEN EXISTS(SELECT 1 FROM workflow_approvals wa WHERE wa.module_name='INTERNET_CUSTOMER_UPDATE' AND wa.reference_id=c.internet_customer_id AND wa.workflow_status='PENDING') THEN 'Waiting Approval'
         WHEN COALESCE(c.approval_status, 'PENDING') <> 'APPROVED'
@@ -350,11 +358,11 @@ const updateInternetCustomerInformation = async (req,res) => {
   try {
     if(!isAdmin(req)) return res.status(403).json({message:'Administrator permission is required'});
     const db=connection.promise(); await ensureInternetSchema(db); const id=Number(req.params.id); const payload=req.body||{};
-    const network=String(payload.network_type||'').toUpperCase(), fullName=String(payload.full_name||'').trim();
+    const network=String(payload.network_type||'').toUpperCase(), fullName=String(payload.full_name||'').trim(), netId=String(payload.net_id||'').trim();
     const mobile=String(payload.mobile_no||'').trim(), alternate=String(payload.alternate_mobile_no||'').trim();
     const aadhaar=String(payload.aadhaar_no||'').trim(), source=String(payload.source_name||'').trim();
     const installedBy=intOrNull(payload.installed_by_employee_id);
-    if(!id||!['KRISHI','RAILWIRE','DMNET'].includes(network)||!fullName||!/^\d{10}$/.test(mobile)||
+    if(!id||!['KRISHI','RAILWIRE','DMNET'].includes(network)||!fullName||!netId||!/^\d{10}$/.test(mobile)||
       (alternate&&!/^\d{10}$/.test(alternate))||(aadhaar&&!/^\d{12}$/.test(aadhaar))||
       !['Customer Approach Office','Direct','Customer Approach Engineer'].includes(source)||!installedBy) {
       return res.status(400).json({message:'Enter valid required customer information'});
@@ -362,9 +370,11 @@ const updateInternetCustomerInformation = async (req,res) => {
     const [[customer]]=await db.query('SELECT approval_status FROM internet_customers WHERE internet_customer_id=?',[id]);
     if(!customer) return res.status(404).json({message:'Internet customer not found'});
     if(customer.approval_status!=='APPROVED') return res.status(409).json({message:'Approve the Internet customer workflow before updating customer information'});
+    const [[duplicateNetId]]=await db.query('SELECT internet_customer_id FROM internet_customers WHERE net_id=? AND internet_customer_id<>? LIMIT 1',[netId,id]);
+    if(duplicateNetId) return res.status(409).json({message:'Net ID is already assigned to another Internet customer'});
     const [[employee]]=await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1',[installedBy]);
     if(!employee) return res.status(400).json({message:'Select an active Installed By employee'});
-    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,id]);
+    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,id]);
     if(!result.affectedRows) return res.status(404).json({message:'Internet customer not found'});
     return res.json({message:'Internet customer information updated successfully'});
   } catch(error){return res.status(500).json({message:'Internet customer information update failed',error:error.message});}
@@ -445,11 +455,11 @@ const getPendingInternetSubscriptions = async (req,res) => {
   try {
     const db=connection.promise(); await ensureInternetSchema(db);
     const values=[]; const conditions=["s.approval_status<>'REJECTED'","s.balance_amount>0","s.payment_status<>'PAID'","c.approval_status='APPROVED'"];
-    if(req.query.customer_no){conditions.push('CAST(c.customer_code AS CHAR) LIKE ?');values.push(`%${String(req.query.customer_no).trim()}%`);}
+    if(req.query.customer_no){conditions.push("COALESCE(NULLIF(TRIM(c.legacy_customer_no),''),CAST(c.customer_code AS CHAR)) LIKE ?");values.push(`%${String(req.query.customer_no).trim()}%`);}
     if(req.query.customer_name){conditions.push('c.full_name LIKE ?');values.push(`%${String(req.query.customer_name).trim()}%`);}
     if(req.query.area_id){conditions.push('c.area_id=?');values.push(Number(req.query.area_id));}
     if(req.query.street_id){conditions.push('c.street_id=?');values.push(Number(req.query.street_id));}
-    const [rows]=await db.query(`SELECT s.*,c.internet_customer_id,c.customer_code,c.full_name,c.net_id,c.network_type,c.door_no,c.city,c.pincode,c.status customer_status,a.area_name,st.street_name,pm.package_name,cp.package_price FROM internet_subscriptions s JOIN internet_customers c ON c.internet_customer_id=s.internet_customer_id LEFT JOIN cable_areas a ON a.area_id=c.area_id LEFT JOIN cable_streets st ON st.street_id=c.street_id LEFT JOIN internet_customer_packages cp ON cp.internet_customer_package_id=s.internet_customer_package_id LEFT JOIN cable_package_master pm ON pm.package_id=cp.package_id WHERE ${conditions.join(' AND ')} ORDER BY c.customer_code,s.start_date`,values);
+    const [rows]=await db.query(`SELECT s.*,c.internet_customer_id,c.customer_code,c.legacy_customer_no,COALESCE(NULLIF(TRIM(c.legacy_customer_no),''),CAST(c.customer_code AS CHAR)) display_customer_no,c.full_name,c.net_id,c.network_type,c.door_no,c.city,c.pincode,c.status customer_status,a.area_name,st.street_name,pm.package_name,cp.package_price FROM internet_subscriptions s JOIN internet_customers c ON c.internet_customer_id=s.internet_customer_id LEFT JOIN cable_areas a ON a.area_id=c.area_id LEFT JOIN cable_streets st ON st.street_id=c.street_id LEFT JOIN internet_customer_packages cp ON cp.internet_customer_package_id=s.internet_customer_package_id LEFT JOIN cable_package_master pm ON pm.package_id=cp.package_id WHERE ${conditions.join(' AND ')} ORDER BY CAST(COALESCE(NULLIF(TRIM(c.legacy_customer_no),''),CAST(c.customer_code AS CHAR)) AS UNSIGNED),s.start_date`,values);
     const map=new Map();for(const row of rows){let customer=map.get(row.internet_customer_id);if(!customer){customer={...row,pending_subscriptions:[]};delete customer.internet_subscription_id;map.set(row.internet_customer_id,customer);}customer.pending_subscriptions.push({...row});}
     return res.json({customers:[...map.values()],total_customers:map.size});
   } catch(error){return res.status(500).json({message:'Internet subscription dues failed',error:error.message});}
@@ -458,8 +468,8 @@ const getPendingInternetSubscriptions = async (req,res) => {
 const receiveInternetSubscriptionPayment = async (req,res) => {
   const db=connection.promise();try{await ensureInternetSchema(db);await db.beginTransaction();const id=Number(req.params.id);const [[row]]=await db.query(`SELECT s.* FROM internet_subscriptions s JOIN internet_customers c ON c.internet_customer_id=s.internet_customer_id WHERE s.internet_subscription_id=? AND s.approval_status<>'REJECTED' AND c.approval_status='APPROVED' FOR UPDATE`,[id]);if(!row)throw Object.assign(new Error('Internet subscription not found'),{status:404});
     const employeeId=await resolveLoggedInEmployeeId(db,req);const received=money(req.body.received_amount),amount=money(req.body.amount||row.amount),available=money(Math.max(amount-Number(row.paid_amount),0));if(received<=0||received>available)throw Object.assign(new Error(`Received amount must be between 1 and ${available}`),{status:400});
-    const paid=money(Number(row.paid_amount)+received),remaining=money(Math.max(amount-paid,0)),status=remaining===0?'PAID':'PARTIAL';const collectedBy=isAdmin(req)?intOrNull(req.body.collected_by_employee_id)||employeeId:employeeId;const collectDate=isAdmin(req)?dateOnly(req.body.collect_date||new Date()):dateOnly(new Date());const mode=isAdmin(req)&&['DASHBOARD','CASH','ONLINE'].includes(String(req.body.payment_mode||'').toUpperCase())?String(req.body.payment_mode).toUpperCase():'DASHBOARD';
-    const renewedValue=String(req.body.renewed_by_value||'');const renewedBy=['ADMIN','CUSTOMER'].includes(renewedValue)?renewedValue:'EMPLOYEE';const renewedEmployee=renewedBy==='EMPLOYEE'?intOrNull(renewedValue.split(':')[1])||employeeId:null;
+    const paid=money(Number(row.paid_amount)+received),remaining=money(Math.max(amount-paid,0)),status=remaining===0?'PAID':'PARTIAL';const collectedBy=isAdmin(req)?intOrNull(req.body.collected_by_employee_id)||employeeId:employeeId;const collectDate=isAdmin(req)?dateOnly(req.body.collect_date||new Date()):dateOnly(new Date());const mode=row.cash_admin_locked?'CASH':isAdmin(req)&&['DASHBOARD','CASH','ONLINE'].includes(String(req.body.payment_mode||'').toUpperCase())?String(req.body.payment_mode).toUpperCase():'DASHBOARD';
+    const renewedValue=String(req.body.renewed_by_value||'');const renewedBy=row.cash_admin_locked?'ADMIN':renewedValue==='CUSTOMER'?'CUSTOMER':'EMPLOYEE';const renewedEmployee=renewedBy==='EMPLOYEE'?(isAdmin(req)?intOrNull(renewedValue.split(':')[1])||employeeId:employeeId):null;
     const basis=['MONTH','DAYS','YEAR'].includes(String(req.body.period_unit||'').toUpperCase())?String(req.body.period_unit).toUpperCase():row.billing_basis,freeUnit=['MONTH','DAYS','YEAR'].includes(String(req.body.free_period_unit||'').toUpperCase())?String(req.body.free_period_unit).toUpperCase():row.free_period_unit;
     await db.query('UPDATE internet_subscriptions SET subscription_month=?,subscription_year=?,billing_basis=?,period_value=?,period_count=?,free_period_value=?,free_period_unit=?,start_date=?,end_date=?,amount=?,paid_amount=?,balance_amount=?,payment_status=?,collect_date=?,collected_by_employee_id=?,renewed_by=?,renewed_by_employee_id=?,payment_mode=?,payment_reference=?,payment_mapped_employee_id=? WHERE internet_subscription_id=?',[Number(req.body.subscription_month)||row.subscription_month,Number(req.body.subscription_year)||row.subscription_year,basis,Number(req.body.period_value)||1,Number(req.body.period_count)||1,Number(req.body.free_period_value)||0,freeUnit,dateOnly(req.body.start_date)||row.start_date,dateOnly(req.body.end_date)||row.end_date,amount,paid,remaining,status,collectDate,collectedBy,renewedBy,renewedEmployee,mode,isAdmin(req)?textOrNull(req.body.payment_reference):null,isAdmin(req)?intOrNull(req.body.payment_mapped_employee_id):null,id]);await db.commit();return res.json({message:'Internet subscription updated successfully',payment_status:status,balance_amount:remaining});
   }catch(error){try{await db.rollback();}catch(_e){}return res.status(error.status||500).json({message:error.message||'Internet subscription payment failed'});}
@@ -467,15 +477,16 @@ const receiveInternetSubscriptionPayment = async (req,res) => {
 
 const updateInternetSubscription = async (req,res) => {
   try {
-    if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});
     const db=connection.promise();await ensureInternetSchema(db);const customerId=Number(req.params.id),subscriptionId=Number(req.params.subscriptionId),p=req.body||{};
-    const [[row]]=await db.query('SELECT internet_subscription_id FROM internet_subscriptions WHERE internet_subscription_id=? AND internet_customer_id=?',[subscriptionId,customerId]);if(!row)return res.status(404).json({message:'Internet subscription not found'});
+    const [[row]]=await db.query('SELECT internet_subscription_id,payment_status,cash_admin_locked FROM internet_subscriptions WHERE internet_subscription_id=? AND internet_customer_id=?',[subscriptionId,customerId]);if(!row)return res.status(404).json({message:'Internet subscription not found'});
+    if(!isAdmin(req)&&String(row.payment_status).toUpperCase()==='PAID')return res.status(409).json({message:'Paid subscriptions can only be edited by an administrator'});
+    const employeeId=await resolveLoggedInEmployeeId(db,req);if(!isAdmin(req)&&!employeeId)return res.status(400).json({message:'Logged-in user is not mapped to an employee'});
     const start=dateOnly(p.start_date),end=dateOnly(p.end_date),amount=money(p.amount),paid=Math.min(Math.max(money(p.paid_amount),0),amount);if(!start||!end||end<start||amount<0)return res.status(400).json({message:'Enter valid subscription dates and amount'});
     const balance=money(Math.max(amount-paid,0)),status=balance===0?'PAID':paid>0?'PARTIAL':'PENDING',basis=['MONTH','DAYS','YEAR'].includes(String(p.period_unit||'').toUpperCase())?String(p.period_unit).toUpperCase():'MONTH',freeUnit=['MONTH','DAYS','YEAR'].includes(String(p.free_period_unit||'').toUpperCase())?String(p.free_period_unit).toUpperCase():'MONTH';
-    const renewedValue=String(p.renewed_by_value||''),renewedBy=['ADMIN','CUSTOMER'].includes(renewedValue)?renewedValue:'EMPLOYEE',renewedEmployee=renewedBy==='EMPLOYEE'?intOrNull(renewedValue.split(':')[1]):null;
-    await db.query(`UPDATE internet_subscriptions SET subscription_month=?,subscription_year=?,billing_basis=?,period_value=?,period_count=?,free_period_value=?,free_period_unit=?,start_date=?,end_date=?,collect_date=?,collected_by_employee_id=?,renewed_by=?,renewed_by_employee_id=?,payment_mode=?,payment_reference=?,payment_mapped_employee_id=?,amount=?,paid_amount=?,balance_amount=?,payment_status=? WHERE internet_subscription_id=? AND internet_customer_id=?`,[Number(p.subscription_month),Number(p.subscription_year),basis,Number(p.period_value)||1,Number(p.period_count)||1,Number(p.free_period_value)||0,freeUnit,start,end,dateOnly(p.collect_date),intOrNull(p.collected_by_employee_id),renewedBy,renewedEmployee,['DASHBOARD','CASH','ONLINE'].includes(String(p.payment_mode||'').toUpperCase())?String(p.payment_mode).toUpperCase():'DASHBOARD',textOrNull(p.payment_reference),intOrNull(p.payment_mapped_employee_id),amount,paid,balance,status,subscriptionId,customerId]);
+    const renewedValue=String(p.renewed_by_value||''),renewedBy=row.cash_admin_locked?'ADMIN':renewedValue==='CUSTOMER'?'CUSTOMER':isAdmin(req)&&renewedValue==='ADMIN'?'ADMIN':'EMPLOYEE',renewedEmployee=renewedBy==='EMPLOYEE'?(isAdmin(req)?intOrNull(renewedValue.split(':')[1]):employeeId):null,paymentMode=row.cash_admin_locked?'CASH':isAdmin(req)&&['DASHBOARD','CASH','ONLINE'].includes(String(p.payment_mode||'').toUpperCase())?String(p.payment_mode).toUpperCase():'DASHBOARD',collectDate=isAdmin(req)?dateOnly(p.collect_date):dateOnly(new Date()),collectedBy=isAdmin(req)?intOrNull(p.collected_by_employee_id):employeeId;
+    await db.query(`UPDATE internet_subscriptions SET subscription_month=?,subscription_year=?,billing_basis=?,period_value=?,period_count=?,free_period_value=?,free_period_unit=?,start_date=?,end_date=?,collect_date=?,collected_by_employee_id=?,renewed_by=?,renewed_by_employee_id=?,payment_mode=?,payment_reference=?,payment_mapped_employee_id=?,amount=?,paid_amount=?,balance_amount=?,payment_status=? WHERE internet_subscription_id=? AND internet_customer_id=?`,[Number(p.subscription_month),Number(p.subscription_year),basis,Number(p.period_value)||1,Number(p.period_count)||1,Number(p.free_period_value)||0,freeUnit,start,end,collectDate,collectedBy,renewedBy,renewedEmployee,paymentMode,isAdmin(req)?textOrNull(p.payment_reference):null,isAdmin(req)?intOrNull(p.payment_mapped_employee_id):null,amount,paid,balance,status,subscriptionId,customerId]);
     return res.json({message:'Internet subscription updated successfully'});
-  }catch(error){return res.status(500).json({message:'Internet subscription update failed',error:error.message});}
+  }catch(error){return res.status(error.status||500).json({message:error.message||'Internet subscription update failed'});}
 };
 
 const deleteInternetSubscription = async (req,res) => {
@@ -520,6 +531,28 @@ const internetAppendRows=async(db,period,customerIds=[])=>{
 const previewInternetSubscriptionAppend=async(req,res)=>{try{if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});const db=connection.promise();await ensureInternetSchema(db);const period=internetAppendPeriod(req.query.subscription_month,req.query.subscription_year);if(!period)return res.status(400).json({message:'Valid subscription month and year are required'});const rows=await internetAppendRows(db,period);return res.json({period,total_customers:rows.length,total_amount:rows.reduce((sum,row)=>sum+money(row.amount),0),rows});}catch(error){return res.status(500).json({message:'Net subscription append preview failed',error:error.message});}};
 const appendInternetSubscriptions=async(req,res)=>{const db=connection.promise();try{if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});await ensureInternetSchema(db);const period=internetAppendPeriod(req.body.subscription_month,req.body.subscription_year),customerIds=[...new Set((req.body.customer_ids||[]).map(intOrNull).filter(Boolean))];if(!period)return res.status(400).json({message:'Valid subscription month and year are required'});if(!customerIds.length)return res.status(400).json({message:'Select at least one active Internet customer'});await db.beginTransaction();const rows=await internetAppendRows(db,period,customerIds);if(!rows.length)throw Object.assign(new Error('Selected customers already have this subscription or are no longer eligible'),{status:409});for(const row of rows)await db.query(`INSERT INTO internet_subscriptions(internet_customer_id,internet_customer_package_id,subscription_month,subscription_year,billing_basis,period_value,period_count,additional_months,additional_days,additional_years,free_period_value,free_period_unit,start_date,end_date,amount,paid_amount,balance_amount,payment_status,approval_status,payment_mode) VALUES(?,?,?,?, 'MONTH',1,1,0,0,0,0,'MONTH',?,?,?,?,?,'PENDING','APPROVED','DASHBOARD')`,[row.internet_customer_id,row.internet_customer_package_id,period.month,period.year,period.startDate,period.endDate,money(row.amount),0,money(row.amount)]);await db.commit();return res.status(201).json({message:`${rows.length} Net subscription(s) appended successfully`,created_count:rows.length});}catch(error){try{await db.rollback();}catch(_e){}return res.status(error.status||500).json({message:error.message||'Net subscription append failed'});}};
 
+const parseNetIds=value=>[...new Set(String(value||'').split(/[\s,]+/).map(item=>item.trim()).filter(Boolean))];
+const cashAdminCorrectionRows=async(db,netIds,monthValue,yearValue)=>{
+  if(!netIds.length)throw Object.assign(new Error('Enter at least one Net ID'),{status:400});
+  if(netIds.length>500)throw Object.assign(new Error('A maximum of 500 Net IDs can be processed at one time'),{status:400});
+  const month=Number(monthValue),year=Number(yearValue);
+  if(!Number.isInteger(month)||month<1||month>12||!Number.isInteger(year)||year<2000||year>2200)throw Object.assign(new Error('Select a valid subscription month and year'),{status:400});
+  const placeholders=netIds.map(()=>'?').join(',');
+  const [customers]=await db.query(`SELECT c.internet_customer_id,c.net_id,c.full_name,c.network_type,
+    COUNT(s.internet_subscription_id) subscription_count,
+    COALESCE(SUM(s.amount),0) subscription_amount,
+    SUM(CASE WHEN s.cash_admin_locked=1 THEN 1 ELSE 0 END) locked_count
+    FROM internet_customers c
+    LEFT JOIN internet_subscriptions s ON s.internet_customer_id=c.internet_customer_id
+      AND s.approval_status<>'REJECTED' AND s.subscription_month=? AND s.subscription_year=?
+    WHERE c.net_id IN (${placeholders})
+    GROUP BY c.internet_customer_id,c.net_id,c.full_name,c.network_type ORDER BY c.net_id`,[month,year,...netIds]);
+  const found=new Set(customers.map(row=>String(row.net_id).toLowerCase()));
+  return {net_ids:netIds,month,year,customers,unmatched_net_ids:netIds.filter(id=>!found.has(id.toLowerCase())),subscription_count:customers.reduce((sum,row)=>sum+Number(row.subscription_count||0),0)};
+};
+const previewCashAdminCorrection=async(req,res)=>{try{if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});const db=connection.promise();await ensureInternetSchema(db);return res.json(await cashAdminCorrectionRows(db,parseNetIds(req.body.net_ids),req.body.subscription_month,req.body.subscription_year));}catch(error){return res.status(error.status||500).json({message:error.message||'Cash/Admin correction preview failed'});}};
+const applyCashAdminCorrection=async(req,res)=>{const db=connection.promise();try{if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});await ensureInternetSchema(db);await db.beginTransaction();const preview=await cashAdminCorrectionRows(db,parseNetIds(req.body.net_ids),req.body.subscription_month,req.body.subscription_year),customerIds=preview.customers.filter(row=>Number(row.subscription_count)>0).map(row=>Number(row.internet_customer_id));if(!customerIds.length)throw Object.assign(new Error(`No subscriptions were found for ${preview.month}/${preview.year} and the supplied Net IDs`),{status:400});const placeholders=customerIds.map(()=>'?').join(',');const [result]=await db.query(`UPDATE internet_subscriptions SET payment_mode='CASH',renewed_by='ADMIN',renewed_by_employee_id=NULL,cash_admin_locked=1 WHERE internet_customer_id IN (${placeholders}) AND subscription_month=? AND subscription_year=? AND approval_status<>'REJECTED'`,[...customerIds,preview.month,preview.year]);await db.commit();return res.json({message:`${result.affectedRows} subscription(s) updated and locked successfully for ${preview.month}/${preview.year}`,updated_subscriptions:result.affectedRows,matched_customers:customerIds.length,month:preview.month,year:preview.year,unmatched_net_ids:preview.unmatched_net_ids});}catch(error){try{await db.rollback();}catch(_e){}return res.status(error.status||500).json({message:error.message||'Cash/Admin correction failed'});}};
+
 const getInternetSubscriptionReport = async (req,res) => {
   try{const db=connection.promise();await ensureInternetSchema(db);const employeeId=await resolveLoggedInEmployeeId(db,req),values=[],where=["s.approval_status<>'REJECTED'","s.payment_status='PAID'","s.balance_amount=0"],collector="CASE WHEN s.payment_mode='ONLINE' THEN COALESCE(s.payment_mapped_employee_id,s.collected_by_employee_id,ip.received_by_employee_id,pu.employee_id) ELSE COALESCE(s.collected_by_employee_id,ip.received_by_employee_id,pu.employee_id) END",renewer="COALESCE(s.renewed_by_employee_id,s.collected_by_employee_id)",collectedDate="COALESCE(s.collect_date,ip.received_date,DATE(s.created_at))";
     if(!isAdmin(req)){if(!employeeId)return res.status(400).json({message:'Logged-in user is not mapped to an employee'});where.push(`${collector}=?`);values.push(employeeId);}else if(req.query.collected_by_employee_id){where.push(`${collector}=?`);values.push(Number(req.query.collected_by_employee_id));}
@@ -529,4 +562,4 @@ const getInternetSubscriptionReport = async (req,res) => {
   }catch(error){return res.status(500).json({message:'Net subscription report failed',error:error.message});}
 };
 
-module.exports={ensureInternetSchema,internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,updateInternetCustomerRouter,deleteInternetCustomerRouter,previewInternetSubscriptionAppend,appendInternetSubscriptions,getInternetSubscriptionReport};
+module.exports={ensureInternetSchema,internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,updateInternetCustomerRouter,deleteInternetCustomerRouter,previewInternetSubscriptionAppend,appendInternetSubscriptions,previewCashAdminCorrection,applyCashAdminCorrection,getInternetSubscriptionReport};

@@ -3,15 +3,18 @@
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="#"><i class="bi bi-house" aria-hidden="true"></i></a></li>
       <li class="breadcrumb-item"><a routerLink="/customers">Customers</a></li>
-      <li class="breadcrumb-item active" aria-current="page">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</li>
+      <li class="breadcrumb-item active" aria-current="page">{{ isReviewMode ? 'Review Customer' : isEditMode ? 'Edit Customer' : 'Add Customer' }}</li>
     </ol>
   </nav>
 </mat-toolbar>
 
 <div class="content-container">
   <div class="page-header">
-    <h1 class="page-title">{{ isEditMode ? 'Edit Customer' : 'Add Customer' }}</h1>
-    <button class="btn-no" mat-raised-button (click)="cancel()">Cancel</button>
+    <h1 class="page-title">{{ isReviewMode ? 'Review CCTV Customer' : isEditMode ? 'Edit Customer' : 'Add Customer' }}</h1>
+    <div>
+      <button *ngIf="isReviewMode" class="btn-yes me-2" mat-raised-button type="button" (click)="approveCustomer()">Approve &amp; Activate</button>
+      <button class="btn-no" mat-raised-button type="button" (click)="cancel()">{{ isReviewMode ? 'Back' : 'Cancel' }}</button>
+    </div>
   </div>
 
   <form [formGroup]="customerForm">
@@ -34,17 +37,6 @@
 
         <app-select-form-field [label]="'Status'" [labelClass]="'form-label'" [selectClass]="'form-control'"
           [options]="statusList" [formControl]="$any(customerForm.controls['status'])"></app-select-form-field>
-      </div>
-    </div>
-
-    <div class="form-section">
-      <h2>Reference</h2>
-      <div class="grid-2-col mt-4">
-        <app-select-form-field [label]="'Marketing Person'" [labelClass]="'form-label'" [selectClass]="'form-control'"
-          [options]="marketingEmployeeOptions" [formControl]="$any(customerForm.controls['marketing_employee_id'])"></app-select-form-field>
-
-        <app-input-form-field [label]="'Referral Person / Contact No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
-          [type]="'text'" [formControl]="$any(customerForm.controls['referral_details'])"></app-input-form-field>
       </div>
     </div>
 
@@ -88,6 +80,17 @@
     </div>
 
     <div class="form-section">
+      <h2>Reference</h2>
+      <div class="grid-2-col mt-4">
+        <app-select-form-field [label]="'Marketing Person'" [labelClass]="'form-label'" [selectClass]="'form-control'"
+          [options]="marketingEmployeeOptions" [formControl]="$any(customerForm.controls['marketing_employee_id'])"></app-select-form-field>
+
+        <app-input-form-field [label]="'Referral Person / Contact No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'text'" [formControl]="$any(customerForm.controls['referral_details'])"></app-input-form-field>
+      </div>
+    </div>
+
+    <div class="form-section">
       <h2>Credit</h2>
       <div class="grid-2-col mt-4">
         <app-input-form-field [label]="'Credit Limit'" [classLabel]="'form-label'" [inputClass]="'form-control'"
@@ -103,9 +106,9 @@
 
     <div class="form-actions">
       <button class="btn-no" mat-raised-button type="button" (click)="cancel()">Cancel</button>
-      <button *ngIf="!isEditMode" mat-raised-button type="button" (click)="addSubmit()"
+      <button *ngIf="!isEditMode && !isReviewMode" mat-raised-button type="button" (click)="addSubmit()"
         [class]="customerForm.valid ? 'btn-yes' : 'btn-no btn-disabled'" [disabled]="!customerForm.valid">Save</button>
-      <button *ngIf="isEditMode" mat-raised-button type="button" (click)="editSubmit()"
+      <button *ngIf="isEditMode && !isReviewMode" mat-raised-button type="button" (click)="editSubmit()"
         [class]="customerForm.valid ? 'btn-yes' : 'btn-no btn-disabled'" [disabled]="!customerForm.valid">Update</button>
     </div>
   </form>

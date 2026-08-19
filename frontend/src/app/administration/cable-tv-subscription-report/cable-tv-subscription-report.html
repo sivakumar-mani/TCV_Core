@@ -5,7 +5,7 @@
     <label>Collected By
       <select *ngIf="permissions.isAdmin()" [(ngModel)]="filters.collected_by_employee_id">
         <option value="">All Employees</option>
-        <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_code }} {{ employee.employee_name }}</option>
+        <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
       </select>
       <input *ngIf="!permissions.isAdmin()" type="text" [value]="loggedInEmployeeName" disabled>
     </label>

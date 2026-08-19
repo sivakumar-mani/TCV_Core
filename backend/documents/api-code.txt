@@ -255,3 +255,18 @@ Rare
 Network Auth Required
 Must authenticate to use this network (captive portals)
 Auth
+
+
+Created the consolidated production schema:
+[production_schema.sql](/C:/Users/smani/OneDrive - KRYA SOLUTIONS PRIVATE LIMITED/01Aws_workspace/TCV_Core/backend/migrations/production_schema.sql)
+It contains:
+67 tables
+153 foreign keys
+All indexes, enums, defaults, and constraints
+No customer/transaction data
+No database credentials
+The schema was successfully imported and verified in a temporary local database.
+Future changes can refresh the same file using:
+cd backend
+npm run export:production-schema
+You can now import production_schema.sql into the empty time_tcvcore database through phpMyAdmin. Direct MilesWeb import remains blocked until remote MySQL port 3306 is accessible.

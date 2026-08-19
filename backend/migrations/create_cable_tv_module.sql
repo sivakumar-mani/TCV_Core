@@ -275,7 +275,7 @@ CREATE TABLE IF NOT EXISTS cable_stb_master (
     stb_master_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     stb_number VARCHAR(100) NOT NULL,
     box_type ENUM('HD','SD') NOT NULL DEFAULT 'HD',
-    stock_type ENUM('NEW','SERVICED','RETURNED','FAULT') NOT NULL DEFAULT 'NEW',
+    stock_type ENUM('NEW','SERVICED','RETURNED','FAULT','DAMAGED','BURNT','NOT_SERVICEABLE') NOT NULL DEFAULT 'NEW',
     mso_id INT NULL,
     stb_amount DECIMAL(12,2) NOT NULL DEFAULT 0 CHECK (stb_amount >= 0),
     full_set_amount DECIMAL(12,2) NOT NULL DEFAULT 800 CHECK (full_set_amount >= 0),

@@ -95,13 +95,35 @@ const ensureCustomerReferenceColumns = async (conn) => {
     }
 };
 
+const ensureCustomerApprovalColumns = async (conn) => {
+    if (!await columnExists(conn, 'approval_status')) {
+        await conn.query(
+            "ALTER TABLE customers ADD COLUMN approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'APPROVED' AFTER is_active"
+        );
+    }
+    if (!await columnExists(conn, 'created_by_user_id')) {
+        await conn.query('ALTER TABLE customers ADD COLUMN created_by_user_id INT NULL AFTER approval_status');
+    }
+    if (!await columnExists(conn, 'approved_by_user_id')) {
+        await conn.query('ALTER TABLE customers ADD COLUMN approved_by_user_id INT NULL AFTER created_by_user_id');
+    }
+    if (!await columnExists(conn, 'approved_at')) {
+        await conn.query('ALTER TABLE customers ADD COLUMN approved_at TIMESTAMP NULL AFTER approved_by_user_id');
+    }
+    if (!await indexExists(conn, 'idx_customers_approval_status')) {
+        await conn.query('ALTER TABLE customers ADD INDEX idx_customers_approval_status (approval_status)');
+    }
+};
+
 const ensureCustomerSchema = async (conn) => {
     await ensureCustomerSalutationColumn(conn);
     await ensureCustomerReferenceColumns(conn);
+    await ensureCustomerApprovalColumns(conn);
 };
 
 module.exports = {
     ensureCustomerSalutationColumn,
     ensureCustomerReferenceColumns,
+    ensureCustomerApprovalColumns,
     ensureCustomerSchema
 };

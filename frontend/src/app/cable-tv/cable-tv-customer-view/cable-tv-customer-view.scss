@@ -130,7 +130,7 @@ td { color: #344054; }
 tbody tr:nth-child(even) { background: #f8fafb; }
 .empty-row { color: #667085; padding: 14px; text-align: center; }
 .status-cell { background: #fff1e7; border-radius: 3px; color: #9a3412; display: inline-block; font-weight: 700; padding: 3px 6px; }
-.status-cell.paid { background: #d8f3df; color: #166534; }
+.status-cell.paid { background: #d8f3df !important; color: #166534; }
 .print-footer { display: flex; justify-content: center; padding: 6px 0 2px; }
 .print-link { background: transparent; color: #1f2937; text-decoration: underline; }
 

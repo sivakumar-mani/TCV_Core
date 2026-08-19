@@ -7,6 +7,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CustomerServices } from '../../services/customer-services';
+import { WorkflowServices } from '../../services/workflow-services';
 import { CommonMethods } from '../../shared/common-methods';
 import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { SelectFormField } from '../../shared/select-form-field/select-form-field';
@@ -32,6 +33,8 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
 export class CustomerForm {
   customerForm!: FormGroup;
   isEditMode = false;
+  isReviewMode = false;
+  workflowId = '';
   customerId!: number;
   stateOptions: any[] = [];
   districtOptions: any[] = [];
@@ -62,6 +65,7 @@ export class CustomerForm {
   constructor(
     private fb: FormBuilder,
     private customerService: CustomerServices,
+    private workflowService: WorkflowServices,
     private ngxUiLoader: NgxUiLoaderService,
     private commonMethods: CommonMethods,
     private router: Router,
@@ -69,6 +73,8 @@ export class CustomerForm {
   ) {}
 
   ngOnInit() {
+    this.isReviewMode = this.route.snapshot.queryParamMap.get('review') === 'true';
+    this.workflowId = this.route.snapshot.queryParamMap.get('workflowId') || '';
     this.buildForm();
     this.setupLocationDependency();
     this.loadMarketingEmployees();
@@ -108,7 +114,7 @@ export class CustomerForm {
             .filter((employee: any) => Number(employee.is_active) === 1)
             .map((employee: any) => ({
               value: employee.employee_id,
-              label: `${employee.employee_code ? employee.employee_code + ' - ' : ''}${employee.employee_name || ''}`.trim()
+              label: String(employee.employee_name || '').trim()
             }))
         ];
       },
@@ -185,6 +191,7 @@ export class CustomerForm {
           ...customerData,
           status: customerData.status ?? customerData.is_active
         });
+        if (this.isReviewMode) this.customerForm.disable();
       },
       error: (error: any) => {
         this.ngxUiLoader.stop();
@@ -241,6 +248,18 @@ export class CustomerForm {
   }
 
   cancel() {
-    this.router.navigateByUrl('/customers');
+    this.router.navigateByUrl(this.isReviewMode ? '/workflow-approval' : '/customers');
+  }
+
+  approveCustomer() {
+    if (!this.isReviewMode || !this.workflowId) return;
+    if (!confirm('Approve this CCTV customer and change the status to Active?')) return;
+    this.workflowService.approveWorkflow(this.workflowId, { remarks: 'CCTV customer approved from review' }).subscribe({
+      next: (response: any) => {
+        this.commonMethods.handleTokenAndMessage(response);
+        this.router.navigateByUrl('/workflow-approval');
+      },
+      error: (error: any) => this.commonMethods.handleError(error)
+    });
   }
 }

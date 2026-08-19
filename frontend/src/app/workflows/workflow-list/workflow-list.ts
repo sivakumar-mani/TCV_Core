@@ -99,6 +99,10 @@ export class WorkflowList {
       this.router.navigate(['/cable-tv/customers', row.reference_id], {
         queryParams: { review: true, workflowId: row.workflow_id }
       });
+    } else if (row.module_name === 'CCTV_CUSTOMER') {
+      this.router.navigate(['/customers/edit', row.reference_id], {
+        queryParams: { review: true, workflowId: row.workflow_id }
+      });
     } else if (['INTERNET_CUSTOMER','INTERNET_CUSTOMER_UPDATE'].includes(row.module_name)) {
       const updateTab = String(row.remarks || '').match(/^Internet customer (subscription|router|connection|package) update/iu)?.[1];
       this.router.navigate(['/internet/customers/view', row.reference_id], {

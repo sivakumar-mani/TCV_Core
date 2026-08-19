@@ -14,7 +14,7 @@ const getCaptcha = (_req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');
-  return res.json({ question: String(code), token: `${payload}.${signCaptcha(payload)}` });
+  return res.json({ question: String(code), token: `${payload}.${signCaptcha(payload)}`, expiresAt });
 };
 
 const validateCaptcha = (token, answer) => {

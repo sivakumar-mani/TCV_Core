@@ -66,12 +66,12 @@ export class CableTvSubscriptionReport {
   }
   get loggedInEmployeeName() {
     const employee = this.loggedInEmployee;
-    return employee ? `${employee.employee_code || ''} ${employee.employee_name || ''}`.trim() : this.permissions.username() || '-';
+    return employee?.employee_name || this.permissions.username() || '-';
   }
   get collectorLabel() {
     if (!this.permissions.isAdmin()) return this.loggedInEmployeeName;
     const employee = this.employees.find((item: any) => Number(item.employee_id) === Number(this.filters.collected_by_employee_id));
-    return employee ? `${employee.employee_code || ''} ${employee.employee_name || ''}`.trim() : 'ALL';
+    return employee?.employee_name || 'ALL';
   }
   get networkLabel() {
     const network = this.networks.find((item: any) => Number(item.network_id) === Number(this.filters.network_id));

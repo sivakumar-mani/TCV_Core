@@ -13,7 +13,8 @@ export interface ActionItem {
 @Component({
   selector: 'app-action-menu',
    imports: [MatMenuModule, MatButtonModule, NgFor, NgClass],
-  template: `<button mat-icon-button [matMenuTriggerFor]="menu">
+  template: `<span class="serial-number" [class.hidden]="!showSerial">{{ serialNumber }}</span>
+<button mat-icon-button [matMenuTriggerFor]="menu">
   <i class="bi bi-three-dots-vertical" aria-hidden="true"></i>
 </button>
 
@@ -28,6 +29,19 @@ export interface ActionItem {
   </button>
 </mat-menu>`,
   styles: [`
+    :host {
+      align-items: center;
+      display: inline-flex;
+      gap: .15rem;
+    }
+    .serial-number {
+      font-weight: 600;
+      min-width: 1.4rem;
+      text-align: right;
+    }
+    .serial-number.hidden {
+      display: none;
+    }
     .action-menu-icon {
       display: inline-block;
       font-size: 1rem;
@@ -42,9 +56,13 @@ export class ActionMenu {
   private permissions = inject(PermissionService);
   private router = inject(Router);
   visibleActions: any[] = [];
+  showSerial = false;
+  serialNumber = 0;
 
   agInit(params: any): void {
     this.params = params;
+    this.showSerial = Boolean(params.showSerial);
+    this.serialNumber = Number(params.node?.rowIndex ?? 0) + 1;
     const key = params.permissionKey || this.permissions.keyForRoute(this.router.url);
     this.visibleActions = (params.dropdownMenu || []).filter((item: any) => {
       const inferredAction = /^delete$/i.test(item.label) ? 'delete' : /^(edit|approve|review)/i.test(item.label) ? 'update' : 'view';

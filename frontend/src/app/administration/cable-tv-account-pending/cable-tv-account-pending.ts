@@ -193,7 +193,7 @@ export class CableTvAccountPending {
 
   get loggedInAdminName() {
     const employee = this.loggedInEmployee;
-    return employee?.employee_name || employee?.employee_code || this.permissions.username();
+    return employee?.employee_name || this.permissions.username();
   }
 
   get loggedInEmployee() {
@@ -215,9 +215,7 @@ export class CableTvAccountPending {
     const employee = this.employees.find(
       (item: any) => Number(item.employee_id) === Number(this.installedByFilter)
     );
-    return employee
-      ? `${employee.employee_code || ''} - ${employee.employee_name || ''}`.replace(/^\s*-\s*|\s*-\s*$/g, '')
-      : 'All employees';
+    return employee?.employee_name || 'All employees';
   }
 
   get reportStartDateLabel() {
@@ -338,7 +336,7 @@ export class CableTvAccountPending {
   exportExcel() {
     if (!this.accounts.length) return;
     const headers = [
-      'S.No', 'Customer No', 'Customer Name', 'Mobile', 'Installed By', 'Connection Type',
+      'S.No', 'Cust No', 'Customer Name', 'Mobile', 'Installed By', 'Connection Type',
       'STB', 'STB Discount', 'Connection', 'Labor', 'Subscription', 'Customer Paid', 'Materials', 'Balance',
       'Total', 'Due Date', 'Account Date', 'Status'
     ];
@@ -436,7 +434,7 @@ export class CableTvAccountPending {
         <span>Status: ${this.escapeHtml(this.statusFilter || 'ALL')}</span>
         <span>Printed: ${this.displayDate(new Date())}</span>
       </div>
-      <table><thead><tr><th>S.No</th><th>Account Date</th><th>Customer No</th><th>Name</th><th>Installed By</th><th>Type</th>
+      <table><thead><tr><th>S.No</th><th>Account Date</th><th>Cust No</th><th>Name</th><th>Installed By</th><th>Type</th>
       <th>STB</th><th>STB Discount</th><th>Connection</th><th>Labor</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th>
       <th>Balance</th><th>Total</th><th>Status</th></tr></thead><tbody>${rows}${totalRow}</tbody></table>
       <script>window.onload=()=>window.print();<\/script></body></html>`);
@@ -469,7 +467,7 @@ export class CableTvAccountPending {
       .grand td{font-weight:700;background:#f3f4f6}.note{font-size:11px;margin-top:18px;color:#4b5563}
       @media print{body{margin:12mm}.no-print{display:none}}
     </style></head><body><h1>Payment Invoice</h1><div class="meta"><strong>Installed by: ${this.escapeHtml(installedNames)}</strong><span>Printed: ${new Date().toLocaleDateString('en-GB').replaceAll('/', '-')}</span></div>
-    <table><thead><tr><th>Date</th><th>Customer No</th><th>Type</th><th>STB</th><th>Connection</th><th>Labor</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
+    <table><thead><tr><th>Date</th><th>Cust No</th><th>Type</th><th>STB</th><th>Connection</th><th>Labor</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
     ${invoiceRows}<tr class="grand"><td colspan="10">Grand Total</td><td>${amount(grandTotal)}</td></tr>
     </tbody></table><p class="note">Selected customers: ${this.escapeHtml(customerNos)}</p>
     <script>window.onload=()=>{window.print();}</script></body></html>`);

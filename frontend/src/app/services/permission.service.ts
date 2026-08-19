@@ -27,12 +27,15 @@ export class PermissionService {
     'audit-logs': 'AUDIT_LOGS', 'role-permissions': 'ROLE_PERMISSIONS', 'cable-tv-masters': 'CABLE_TV_MASTERS',
     'cable-tv-packages': 'CABLE_TV_PACKAGES', 'cable-tv-stbs': 'CABLE_TV_STBS',
     'cable-tv-account-pending': 'CABLE_TV_ACCOUNTS',
+    'lo-accounts': 'CABLE_TV_ACCOUNTS',
     'cable-tv-subscription-pending': 'CABLE_TV_SUBSCRIPTION_DUES',
     'net-subscription-pending': 'NET_SUBSCRIPTION',
     'net-subscription-append': 'NET_SUBSCRIPTION_APPEND',
     'cable-tv-subscription-append': 'CABLE_TV_SUBSCRIPTION_GENERATE',
     'cable-tv-subscription-report': 'CABLE_TV_SUBSCRIPTION_REPORT',
+    'stb-payment-report': 'CABLE_TV_SUBSCRIPTION_REPORT',
     'net-subscription-report': 'INTERNET_CUSTOMERS',
+    'net-cash-admin-correction': 'INTERNET_CUSTOMERS',
     transactions: 'TRANSACTIONS', 'material-sales': 'MATERIAL_SALES'
   };
 

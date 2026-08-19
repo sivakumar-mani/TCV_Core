@@ -141,8 +141,7 @@ export class QuotationList {
 
   createdByLabel(row: any) {
     const name = row?.prepared_by_employee_name || '';
-    const code = row?.prepared_by_employee_code || '';
-    return [code, name].filter(Boolean).join(' - ') || 'Not assigned';
+    return name || 'Not assigned';
   }
 
   displayDate(value: string | Date) {

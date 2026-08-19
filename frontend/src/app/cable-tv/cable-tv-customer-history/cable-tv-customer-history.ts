@@ -28,6 +28,7 @@ export class CableTvCustomerHistory {
   showModal = false;
   editId = 0;
   customerSearchNo = '';
+  oldCustomerSearchNo = '';
   isReviewMode = false;
   workflowId = '';
   approvalInProgress = false;
@@ -47,6 +48,16 @@ export class CableTvCustomerHistory {
     { key: 'connections', label: 'Connection' },
     { key: 'packages', label: 'Package' }
   ];
+  get isLoCustomer() {
+    const network = (this.lookups.networks || []).find(
+      (item: any) => Number(item.network_id) === Number(this.customer.network_id)
+    );
+    return String(network?.network_code || this.customer.network_code || this.customer.network_name || '')
+      .trim().toUpperCase() === 'LO';
+  }
+  get visibleTabs() {
+    return this.isLoCustomer ? this.tabs.filter(tab => tab.key !== 'subscriptions') : this.tabs;
+  }
   readonly sectionPermissionKeys: Record<Section, string> = {
     customer: 'CABLE_TV_CUSTOMERS',
     connections: 'CABLE_TV_CONNECTIONS',
@@ -226,7 +237,6 @@ export class CableTvCustomerHistory {
 
   get loggedInEmployeeName() {
     return this.loggedInEmployee?.employee_name
-      || this.loggedInEmployee?.employee_code
       || this.permissions.username();
   }
 
@@ -515,7 +525,12 @@ export class CableTvCustomerHistory {
             this.ngxLoader.stop();
             this.details = response || {};
             this.customer = response.customer || {};
-            this.customerSearchNo = this.customer.customer_code || this.customerSearchNo;
+            this.customerSearchNo = '';
+            this.oldCustomerSearchNo = '';
+            if (this.isLoCustomer && this.section === 'subscriptions') {
+              this.section = 'stbs';
+              this.buildForm();
+            }
             const reviewSection = this.reviewWorkflowSection;
             if (this.isReviewMode && reviewSection && this.section !== reviewSection) {
               this.section = reviewSection;
@@ -534,8 +549,9 @@ export class CableTvCustomerHistory {
 
   searchCustomerByNumber() {
     const customerNo = String(this.customerSearchNo || '').trim().toLowerCase();
-    if (!customerNo) {
-      this.commonMethods.handleError({ error: { message: 'Enter customer number' } });
+    const oldCustomerNo = String(this.oldCustomerSearchNo || '').trim().toLowerCase();
+    if (!customerNo && !oldCustomerNo) {
+      this.commonMethods.handleError({ error: { message: 'Enter Cust No or Old C No' } });
       return;
     }
     this.ngxLoader.start();
@@ -543,9 +559,11 @@ export class CableTvCustomerHistory {
       next: (response: any) => {
         this.ngxLoader.stop();
         const customers = Array.isArray(response) ? response : response.data ?? [];
-        const match = customers.find((customer: any) => String(customer.customer_code || '').trim().toLowerCase() === customerNo);
+        const match = customers.find((customer: any) =>
+          (customerNo && String(customer.customer_code || '').trim().toLowerCase() === customerNo)
+          || (oldCustomerNo && String(customer.legacy_customer_no || '').trim().toLowerCase() === oldCustomerNo));
         if (!match) {
-          this.commonMethods.handleError({ error: { message: 'Customer number not found' } });
+          this.commonMethods.handleError({ error: { message: 'Cust No or Old C No not found' } });
           return;
         }
         this.router.navigate(['/cable-tv/customers', match.cable_customer_id]).then(() => {
@@ -590,6 +608,7 @@ export class CableTvCustomerHistory {
   }
 
   switchSection(section: Section) {
+    if (this.isLoCustomer && section === 'subscriptions') return;
     if (this.section === section) return;
     this.section = section;
     this.showModal = false;
@@ -680,7 +699,7 @@ export class CableTvCustomerHistory {
         received_count: billingBasis === 'DAY' ? Number(row.received_count) || 1 : Number(row.received_count) || 1,
         start_date: this.dateInputValue(row.start_date),
         expiry_date: this.dateInputValue(row.expiry_date),
-        collect_date: this.dateInputValue(row.collect_date),
+        collect_date: this.today(),
         collected_by_employee_id: row.collected_by_employee_id || null,
         package_amount: Number(row.package_price || row.amount) || 0,
         amount: Number(row.amount) || 0,
@@ -1011,7 +1030,8 @@ export class CableTvCustomerHistory {
   }
 
   today() {
-    return new Date().toISOString().slice(0, 10);
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   }
 
   hasDuplicateSubscriptionPeriod() {
@@ -1133,7 +1153,7 @@ export class CableTvCustomerHistory {
     const employee = (this.lookups.employees || []).find((item: any) =>
       Number(item.employee_id) === Number(row?.collected_by_employee_id)
     );
-    return employee?.employee_name || employee?.employee_code || '-';
+    return employee?.employee_name || '-';
   }
 
   subscriptionOverallBalance() {

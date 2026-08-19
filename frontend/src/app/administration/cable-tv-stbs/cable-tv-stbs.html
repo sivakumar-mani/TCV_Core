@@ -31,7 +31,7 @@
       <label>Assigned Employee
         <select [(ngModel)]="filters.employeeId">
           <option value="">All employees</option>
-          <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
+          <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
         </select>
       </label>
       <label>Status
@@ -66,10 +66,10 @@
           <strong>{{ item.assigned_employee_name || 'Unassigned' }}</strong>
           <select [value]="item.assigned_employee_id || ''" (change)="assignStb(item, $any($event.target).value)" [disabled]="!canAssign(item)">
             <option value="">Select employee</option>
-            <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
+            <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>
         </td>
-        <td><span class="status-pill" [class.not-available]="item.status !== 'AVAILABLE'">{{ statusLabel(item.status) }}</span></td>
+        <td><span class="status-pill" [class.available]="item.status === 'AVAILABLE'" [class.not-available]="item.status !== 'AVAILABLE'">{{ statusLabel(item.status) }}</span></td>
         <td class="action-cell">
           <button type="button" class="table-icon-btn" title="Edit" aria-label="Edit STB" (click)="editStb(item)">
             <i class="bi bi-pencil-square" aria-hidden="true"></i>
@@ -92,6 +92,10 @@
         <h2>{{ editingStbId ? 'Edit STB' : 'Add STB' }}</h2>
         <button type="button" class="icon-btn" (click)="closeStbModal()">x</button>
       </div>
+      <div class="alert alert-warning stb-transition-warning" role="alert">
+        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+        <span>Fault, Damaged or Burnt STBs can be changed to Serviced or Not Serviceable.</span>
+      </div>
       <form [formGroup]="stbForm" class="entry-form">
         <label>STB Number
           <input type="text" formControlName="stb_number">
@@ -105,7 +109,6 @@
           <select formControlName="stock_type">
             <option *ngFor="let type of availableStockTypes" [ngValue]="type">{{ type }}</option>
           </select>
-          <small>Fault, Damaged or Burnt STBs can be added again only as Serviced.</small>
         </label>
         <label>Box Only Amount
           <input type="number" formControlName="stb_amount">
@@ -116,7 +119,7 @@
         <label>Assigned Employee
           <select formControlName="assigned_employee_id">
             <option [ngValue]="null">Unassigned</option>
-            <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_code }} - {{ employee.employee_name }}</option>
+            <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>
           <small>Only Available, non-fault STBs can be assigned.</small>
         </label>

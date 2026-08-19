@@ -45,7 +45,7 @@
         <tbody>
           <tr *ngFor="let c of customers; let i = index">
             <td>{{ i + 1 }}</td>
-            <td>{{ c.customer_code }}</td>
+            <td>{{ c.display_customer_no }}</td>
             <td>{{ c.full_name }}</td>
             <td>{{ c.network_type }}</td>
             <td>{{ c.net_id }}</td>
@@ -74,13 +74,13 @@
       <div class="modal-head">
         <div>
           <p class="eyebrow">Enter Net Subscription</p>
-          <h2>{{ customer?.customer_code }} - {{ customer?.full_name }}</h2>
+          <h2>{{ customer?.display_customer_no }} - {{ customer?.full_name }}</h2>
         </div>
         <button (click)="close()">Close</button>
       </div>
       <div class="customer-summary">
         <div>
-          <span>Customer Number</span><strong>{{ customer?.customer_code }}</strong>
+          <span>Customer Number</span><strong>{{ customer?.display_customer_no }}</strong>
         </div>
         <div>
           <span>Net ID</span><strong>{{ customer?.net_id }}</strong>
@@ -163,7 +163,7 @@
             </option>
           </select></label
         ><label
-          >Renewed By<select [(ngModel)]="form.renewed_by_value" (ngModelChange)="renewedChanged()">
+          >Renewed By<select [(ngModel)]="form.renewed_by_value" (ngModelChange)="renewedChanged()" [disabled]="!permissions.isAdmin() && form.cash_admin_locked">
             <ng-container *ngFor="let e of employees"
               ><option
                 *ngIf="permissions.isAdmin() || e.employee_id === lookups.logged_in_employee_id"
@@ -172,8 +172,8 @@
                 {{ e.employee_name }}
               </option></ng-container
             >
-            <option *ngIf="permissions.isAdmin()" value="ADMIN">Admin</option>
-            <option value="CUSTOMER">Customer</option>
+            <option *ngIf="permissions.isAdmin() || form.cash_admin_locked" value="ADMIN">Admin</option>
+            <option *ngIf="permissions.isAdmin() || !form.cash_admin_locked" value="CUSTOMER">Customer</option>
           </select></label
         ><label
           >Mode of Payment<select

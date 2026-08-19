@@ -26,7 +26,9 @@ export class CableTvCustomerForm {
   readonly statusTypes = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED', 'RETRIEVED', 'FAULT', 'UPGRADE'];
   readonly customerTypes = [
     { value: 'REGULAR', label: 'Regular Customer' },
-    { value: 'BUSINESS', label: 'Business Customer' }
+    { value: 'BUSINESS', label: 'Business Customer' },
+    { value: 'FREE', label: 'Free Customer' },
+    { value: 'LEASE_LINE', label: 'LO Lease Line' }
   ];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
@@ -85,6 +87,9 @@ export class CableTvCustomerForm {
     this.form = this.fb.group({
       network_id: [null, Validators.required],
       customer_type: ['REGULAR'],
+      topup_base_amount: [0],
+      topup_gst_percent: [18],
+      recharge_amount: [{ value: 0, disabled: true }],
       legacy_customer_no: [''],
       customer_code: [''],
       full_name: ['', Validators.required],
@@ -171,13 +176,14 @@ export class CableTvCustomerForm {
       this.filteredStreets = [];
       this.form.patchValue({ location_id: null, area_id: null, street_id: null, city: 'Chennai', pincode: '' }, { emitEvent: false });
     });
+    this.form.get('topup_base_amount')?.valueChanges.subscribe(value=>this.form.get('recharge_amount')?.setValue(Number(((Number(value)||0)*1.18).toFixed(2)),{emitEvent:false}));
 
     this.form.get('location_id')?.valueChanges.subscribe((locationId: number) => {
       this.refreshAreaOptions(locationId);
       this.filteredStreets = [];
       this.form.patchValue({ area_id: null, street_id: null }, { emitEvent: false });
       const location = (this.lookups.locations || []).find((item: any) => Number(item.location_id) === Number(locationId));
-      this.form.patchValue({ city: 'Chennai', pincode: location?.pincode || '' }, { emitEvent: false });
+      this.form.patchValue({ city: location?.city || 'Chennai', pincode: location?.pincode || '' }, { emitEvent: false });
     });
 
     this.form.get('area_id')?.valueChanges.subscribe((areaId: number) => {
@@ -313,12 +319,12 @@ export class CableTvCustomerForm {
 
   get loggedInEmployeeName() {
     const employee = this.loggedInEmployee;
-    return employee?.employee_name || employee?.employee_code || '';
+    return employee?.employee_name || '';
   }
 
   refreshPostalAreaOptions(_networkId = this.form.get('network_id')?.value) {
     this.filteredPostalAreas = (this.lookups.locations || []).filter((location: any) =>
-      ['Chromepet', 'Pammal'].includes(String(location.location_name))
+      ['CHROMEPET', 'PAMMAL'].includes(String(location.location_name || '').trim().toUpperCase())
     );
   }
 

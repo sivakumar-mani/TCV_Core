@@ -1,11 +1,31 @@
-// STB condition/history is independent from the customer-level status.
-const customerStatusForStbStatus = () => 'ACTIVE';
+const customerStatusForStbStatus = (value) => {
+  const status = String(value || '').trim().toUpperCase();
+  if (['FAULT', 'FAULTY', 'DAMAGED', 'BROKEN', 'BURNT'].includes(status)) return 'FAULT';
+  if (['RETRIEVED', 'RETURNED'].includes(status)) return 'RETRIEVED';
+  if (['DISCONNECTED', 'VACATED', 'STB_LOST', 'OUTSTATION'].includes(status)) return 'DISCONNECTED';
+  if (status === 'UPGRADE') return 'UPGRADE';
+  return 'ACTIVE';
+};
 
 const synchronizeLatestCustomerStbStatus = async (db, customerIds = []) => {
   const ids = [...new Set((customerIds || []).map(Number).filter(Boolean))];
-  const where = ids.length ? 'WHERE c.cable_customer_id IN (?)' : '';
+  const where = ids.length ? 'AND c.cable_customer_id IN (?)' : '';
   await db.query(
-    `UPDATE cable_tv_customers c SET c.status = 'ACTIVE' ${where}`,
+    `UPDATE cable_tv_customers c
+     INNER JOIN cable_customer_stbs stb ON stb.customer_stb_id = (
+       SELECT MAX(latest.customer_stb_id) FROM cable_customer_stbs latest
+       WHERE latest.cable_customer_id = c.cable_customer_id AND latest.approval_status = 'APPROVED'
+     )
+     SET c.status = CASE
+       WHEN UPPER(COALESCE(c.customer_type, 'REGULAR')) = 'FREE' THEN 'FREE'
+       WHEN UPPER(COALESCE(c.customer_type, 'REGULAR')) = 'LEASE_LINE' THEN 'LEASE_LINE'
+       WHEN UPPER(stb.status) IN ('FAULT','FAULTY','DAMAGED','BROKEN','BURNT') THEN 'FAULT'
+       WHEN UPPER(stb.status) IN ('RETRIEVED','RETURNED') THEN 'RETRIEVED'
+       WHEN UPPER(stb.status) IN ('DISCONNECTED','VACATED','STB_LOST','OUTSTATION') THEN 'DISCONNECTED'
+       WHEN UPPER(stb.status) = 'UPGRADE' THEN 'UPGRADE'
+       ELSE 'ACTIVE'
+     END
+     WHERE 1 = 1 ${where}`,
     ids.length ? [ids] : []
   );
 };

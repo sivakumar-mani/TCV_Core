@@ -22,8 +22,8 @@ export class CableTvStbs {
   showStbModal = false;
   editingStbId: number | null = null;
   boxTypes = ['HD', 'SD'];
-  stockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT', 'DAMAGED', 'BURNT'];
-  statuses = ['AVAILABLE', 'IN_SERVICE', 'NOT_SERVICEABLE', 'NOT_AVAILABLE'];
+  stockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT', 'DAMAGED', 'BURNT', 'NOT_SERVICEABLE'];
+  statuses = ['AVAILABLE', 'IN_SERVICE', 'NOT_AVAILABLE'];
   filters = { stbNumber: '', stockType: '', employeeId: '', status: '' };
 
   get countWidgets() {
@@ -61,7 +61,13 @@ export class CableTvStbs {
   }
 
   get availableStockTypes() {
-    if (this.editingStbId) return this.stockTypes;
+    if (this.editingStbId) {
+      const editing = this.stbs.find((item) => Number(item.stb_master_id) === Number(this.editingStbId));
+      const currentType = String(editing?.stock_type || '').toUpperCase();
+      if (currentType === 'NOT_SERVICEABLE') return ['NOT_SERVICEABLE'];
+      if (this.isFaultType(currentType)) return [currentType, 'SERVICED', 'NOT_SERVICEABLE'];
+      return this.stockTypes;
+    }
     const stbNumber = String(this.stbForm?.get('stb_number')?.value || '').trim().toLowerCase();
     if (!stbNumber) return this.stockTypes;
     const matches = this.stbs.filter(
@@ -74,9 +80,11 @@ export class CableTvStbs {
       return dateDifference || Number(b.stb_master_id || 0) - Number(a.stb_master_id || 0);
     })[0];
     return this.isFaultType(latest.stock_type)
-      ? ['SERVICED']
+      ? ['SERVICED', 'NOT_SERVICEABLE']
       : String(latest.stock_type || '').toUpperCase() === 'SERVICED'
         ? ['FAULT', 'DAMAGED', 'BURNT']
+        : String(latest.stock_type || '').toUpperCase() === 'NOT_SERVICEABLE'
+          ? []
         : [];
   }
 
@@ -111,20 +119,21 @@ export class CableTvStbs {
           status: 'IN_SERVICE',
           assigned_employee_id: null
         }, { emitEvent: false });
+      } else if (String(stockType || '').toUpperCase() === 'SERVICED') {
+        this.stbForm.patchValue({ status: 'AVAILABLE' }, { emitEvent: false });
+      } else if (String(stockType || '').toUpperCase() === 'NOT_SERVICEABLE') {
+        this.stbForm.patchValue({ status: 'NOT_AVAILABLE', assigned_employee_id: null }, { emitEvent: false });
       }
     });
     this.stbForm.get('status')?.valueChanges.subscribe((status) => {
-      if (['IN_SERVICE', 'NOT_SERVICEABLE'].includes(status)) {
-        this.stbForm.patchValue({ stock_type: 'FAULT' }, { emitEvent: false });
+      if (status === 'NOT_SERVICEABLE') {
+        this.stbForm.patchValue({ status: 'NOT_AVAILABLE', assigned_employee_id: null }, { emitEvent: false });
       }
       if (
-        ['IN_SERVICE', 'NOT_SERVICEABLE'].includes(status)
+        ['NOT_SERVICEABLE', 'NOT_AVAILABLE'].includes(status)
         || this.isFaultType(this.stbForm.get('stock_type')?.value)
       ) {
         this.stbForm.patchValue({ assigned_employee_id: null }, { emitEvent: false });
-      }
-      if (status === 'AVAILABLE' && this.isFaultType(this.stbForm.get('stock_type')?.value)) {
-        this.stbForm.patchValue({ stock_type: 'SERVICED' }, { emitEvent: false });
       }
     });
     this.loadStbs();
@@ -167,8 +176,8 @@ export class CableTvStbs {
       box_type: item.box_type,
       stock_type: item.stock_type,
       mso_id: item.mso_id ? Number(item.mso_id) : null,
-      stb_amount: Number(item.stb_amount),
-      full_set_amount: Number(item.full_set_amount),
+      stb_amount: Number(item.stb_amount) > 0 ? Number(item.stb_amount) : 500,
+      full_set_amount: Number(item.full_set_amount) > 0 ? Number(item.full_set_amount) : 800,
       assigned_employee_id: item.assigned_employee_id ? Number(item.assigned_employee_id) : null,
       status: item.status,
       updated_date: this.dateInputValue(item.updated_date || item.updated_at)
@@ -235,7 +244,8 @@ export class CableTvStbs {
   }
 
   canAssign(item: any) {
-    return item.status === 'AVAILABLE' && !this.isFaultType(item.stock_type);
+    return item.status === 'AVAILABLE' && !this.isFaultType(item.stock_type)
+      && String(item.stock_type || '').toUpperCase() !== 'NOT_SERVICEABLE';
   }
 
   statusLabel(status: any) {
