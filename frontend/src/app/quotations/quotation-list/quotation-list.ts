@@ -100,6 +100,10 @@ export class QuotationList {
   }
 
   deleteQuotation(row: any) {
+    if (row.workflow_status === 'PENDING') {
+      alert('Quotation cannot be deleted while workflow approval is pending.');
+      return;
+    }
     if (!confirm(`Delete quotation ${row.quotation_no}?`)) return;
 
     this.ngxLoader.start();

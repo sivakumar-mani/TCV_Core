@@ -149,6 +149,7 @@ export class ProductList {
   productTypeLabel(value: string) {
     const labels: Record<string, string> = {
       MATERIAL: 'Material',
+      CONSUMABLE_SPARE_PARTS: 'Consumables spare parts',
       SERVICE: 'Service',
       LABOR: 'Labor'
     };

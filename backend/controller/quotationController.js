@@ -486,12 +486,47 @@ const updateCustomerResponse = async (req, res) => {
 };
 
 const deleteQuotation = async (req, res) => {
+    const conn = connection.promise();
     try {
-        await ensureQuotationSupport(connection.promise());
+        await ensureQuotationSupport(conn);
         const quotationId = req.body.quotation_id || req.params.quotation_id;
-        await connection.promise().query('DELETE FROM quotation_master WHERE quotation_id = ?', [quotationId]);
+        await conn.beginTransaction();
+
+        const [quotations] = await conn.query(
+            'SELECT quotation_id FROM quotation_master WHERE quotation_id = ? FOR UPDATE',
+            [quotationId]
+        );
+        if (quotations.length === 0) {
+            await conn.rollback();
+            return res.status(404).json({ success: false, message: 'Quotation not found' });
+        }
+
+        const [pendingWorkflows] = await conn.query(
+            `SELECT workflow_id
+             FROM workflow_approvals
+             WHERE module_name = 'QUOTATION'
+               AND reference_id = ?
+               AND workflow_status = 'PENDING'
+             FOR UPDATE`,
+            [quotationId]
+        );
+        if (pendingWorkflows.length > 0) {
+            await conn.rollback();
+            return res.status(409).json({
+                success: false,
+                message: 'Quotation cannot be deleted while workflow approval is pending'
+            });
+        }
+
+        await conn.query(
+            "DELETE FROM workflow_approvals WHERE module_name = 'QUOTATION' AND reference_id = ?",
+            [quotationId]
+        );
+        await conn.query('DELETE FROM quotation_master WHERE quotation_id = ?', [quotationId]);
+        await conn.commit();
         return res.json({ success: true, message: 'Quotation deleted successfully' });
     } catch (error) {
+        await conn.rollback();
         console.error(error);
         return res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }

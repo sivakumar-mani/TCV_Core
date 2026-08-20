@@ -239,6 +239,7 @@ export class Product {
 
   productTypeList = [
     { label: 'Material / Stock', value: 'MATERIAL' },
+    { label: 'Consumables spare parts', value: 'CONSUMABLE_SPARE_PARTS' },
     { label: 'Service Charge', value: 'SERVICE' },
     { label: 'Labor Charge', value: 'LABOR' }
   ];

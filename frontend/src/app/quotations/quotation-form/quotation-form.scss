@@ -327,11 +327,11 @@
 }
 
 .quote-qty-col {
-  width: 56px;
+  width: 96px;
 }
 
 .quote-rate-col {
-  width: 86px;
+  width: 96px;
 }
 
 .quote-amount-col {
@@ -349,6 +349,11 @@
 
 .quote-number-cell {
   white-space: nowrap;
+}
+
+.quote-preview-table th:nth-child(3),
+.quote-preview-table td:nth-child(3) {
+  text-align: right;
 }
 
 .quote-money-cell {

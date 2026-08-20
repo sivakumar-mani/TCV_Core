@@ -3,7 +3,7 @@ require('dotenv').config();
 
 const ensureProductTypeColumn = async () => {
     const [columns] = await connection.promise().query(
-        `SELECT COLUMN_NAME
+        `SELECT COLUMN_NAME, COLUMN_TYPE
          FROM INFORMATION_SCHEMA.COLUMNS
          WHERE TABLE_SCHEMA = DATABASE()
            AND TABLE_NAME = 'products'
@@ -13,8 +13,13 @@ const ensureProductTypeColumn = async () => {
     if (columns.length === 0) {
         await connection.promise().query(
             `ALTER TABLE products
-             ADD COLUMN product_type ENUM('MATERIAL','SERVICE','LABOR') NOT NULL DEFAULT 'MATERIAL'
+             ADD COLUMN product_type ENUM('MATERIAL','CONSUMABLE_SPARE_PARTS','SERVICE','LABOR') NOT NULL DEFAULT 'MATERIAL'
              AFTER description`
+        );
+    } else if (!columns[0].COLUMN_TYPE.includes("'CONSUMABLE_SPARE_PARTS'")) {
+        await connection.promise().query(
+            `ALTER TABLE products
+             MODIFY COLUMN product_type ENUM('MATERIAL','CONSUMABLE_SPARE_PARTS','SERVICE','LABOR') NOT NULL DEFAULT 'MATERIAL'`
         );
     }
 };

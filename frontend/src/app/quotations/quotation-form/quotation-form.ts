@@ -538,10 +538,11 @@ export class QuotationForm implements OnDestroy {
     this.pdfText(commands, pageLeft, 765, 9, 'No:2/3, Second Street, Arkeeswarar Colony');
     this.pdfText(commands, pageLeft, 751, 9, 'Chrompet, Chennai - 600044');
     this.pdfText(commands, pageLeft, 737, 9, 'Contact # : 9962543540');
+    this.pdfText(commands, pageLeft, 723, 9, 'GSTIN: 33AYUPM7228A1ZD');
 
-    this.pdfLine(commands, pageLeft, 718, pageRight, 718);
-    this.pdfText(commands, 267, 704, 15, 'Quotation');
-    this.pdfLine(commands, pageLeft, 694, pageRight, 694);
+    this.pdfLine(commands, pageLeft, 712, pageRight, 712);
+    this.pdfText(commands, 267, 698, 15, 'Quotation');
+    this.pdfLine(commands, pageLeft, 688, pageRight, 688);
 
     this.pdfFillStrokeRect(commands, pageLeft, 630, 248, 54, 241, 241, 241);
     this.pdfFillStrokeRect(commands, 307, 630, 248, 54, 241, 241, 241);
@@ -573,8 +574,8 @@ export class QuotationForm implements OnDestroy {
       const y = tableTop - headerHeight - rowHeight * index - 16;
       this.pdfText(commands, pageLeft + 8, y, 9, `${index + 1}.`);
       this.pdfText(commands, pageLeft + 38, y, 9, String(item.item_name || '').slice(0, 38));
-      this.pdfRightText(commands, qtyRight - 8, y, 9, this.decimal(item.qty));
-      this.pdfRightText(commands, rateRight - 8, y, 9, this.quoteNumber(item.selling_price, 0));
+      this.pdfRightText(commands, qtyRight - 8, y, 9, `${this.decimal(item.qty)} ${item.unit || 'PCS'}`);
+      this.pdfRightText(commands, rateRight - 8, y, 9, this.quoteNumber(item.selling_price, 2));
       this.pdfRightMoney(commands, amountRight - 8, y, 9, item.amount);
     });
 
@@ -653,7 +654,7 @@ export class QuotationForm implements OnDestroy {
   }
 
   pdfRightMoney(commands: string[], rightX: number, y: number, size: number, value: number | string, negative = false) {
-    const numberText = this.quoteNumber(value, 0);
+    const numberText = this.quoteNumber(value, 2);
     const numberWidth = numberText.length * size * 0.52;
     const symbolSize = size * 0.78;
     const symbolText = `${negative ? '- ' : ''}₹`;
