@@ -510,6 +510,9 @@ export class WorkOrderForm {
         ['Site', order.site_address]
       ],
       columns: ['S.No', 'Item', 'Description', 'Qty', 'Rate', 'Amount'],
+      columnWidths: [30, 105, 220, 48, 55, 57],
+      rightAlignedColumns: [0, 3, 4, 5],
+      wrappedColumns: [1, 2],
       rows: (order.items || []).map((item: any, index: number) => [
         index + 1, item.item_name, item.description, item.qty,
         Number(item.selling_price || 0).toFixed(2), Number(item.amount || 0).toFixed(2)

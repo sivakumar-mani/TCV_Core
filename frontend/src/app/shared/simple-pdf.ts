@@ -4,6 +4,9 @@ export interface SimplePdfOptions {
   details: Array<[string, unknown]>;
   columns: string[];
   rows: unknown[][];
+  columnWidths?: number[];
+  rightAlignedColumns?: number[];
+  wrappedColumns?: number[];
 }
 
 const clean = (value: unknown, length = 45) => String(value ?? '-')
@@ -13,10 +16,28 @@ const clean = (value: unknown, length = 45) => String(value ?? '-')
 
 const byteLength = (value: string) => new TextEncoder().encode(value).length;
 
+const wrapText = (value: unknown, maxCharacters: number) => {
+  const words = String(value ?? '-').trim().split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = '';
+  words.forEach(word => {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length <= maxCharacters) current = candidate;
+    else {
+      if (current) lines.push(current);
+      current = word;
+    }
+  });
+  if (current) lines.push(current);
+  return lines.length ? lines : ['-'];
+};
+
 export function downloadSimplePdf(options: SimplePdfOptions) {
   const commands: string[] = [];
-  const text = (x: number, y: number, size: number, value: unknown) => {
-    commands.push(`BT /F1 ${size} Tf ${x} ${y} Td (${clean(value, 70)}) Tj ET`);
+  const text = (x: number, y: number, size: number, value: unknown, rightX?: number) => {
+    const content = clean(value, 70);
+    const drawX = rightX === undefined ? x : rightX - content.length * size * .52;
+    commands.push(`BT /F1 ${size} Tf ${drawX.toFixed(2)} ${y} Td (${content}) Tj ET`);
   };
   const line = (x1: number, y1: number, x2: number, y2: number) => commands.push(`${x1} ${y1} m ${x2} ${y2} l S`);
 
@@ -30,16 +51,32 @@ export function downloadSimplePdf(options: SimplePdfOptions) {
   y -= 30;
 
   const pageWidth = 515;
-  const columnWidth = pageWidth / Math.max(options.columns.length, 1);
+  const defaultColumnWidth = pageWidth / Math.max(options.columns.length, 1);
+  const suppliedWidths = options.columnWidths?.length === options.columns.length ? options.columnWidths : null;
+  const columnWidths = suppliedWidths || options.columns.map(() => defaultColumnWidth);
+  const columnStarts = columnWidths.map((_width, index) => 40 + columnWidths.slice(0, index).reduce((sum, width) => sum + width, 0));
+  const rightAligned = new Set(options.rightAlignedColumns || []);
+  const wrapped = new Set(options.wrappedColumns || []);
   line(40, y + 8, 555, y + 8);
-  options.columns.forEach((column, index) => text(44 + index * columnWidth, y - 5, 8, clean(column, 18)));
+  options.columns.forEach((column, index) => text(
+    columnStarts[index] + 4, y - 5, 8, clean(column, 18),
+    rightAligned.has(index) ? columnStarts[index] + columnWidths[index] - 4 : undefined
+  ));
   line(40, y - 12, 555, y - 12);
   y -= 28;
-  options.rows.slice(0, 32).forEach((row) => {
-    row.forEach((value, index) => text(44 + index * columnWidth, y, 8, clean(value, 20)));
-    y -= 18;
+  for (const row of options.rows.slice(0, 32)) {
+    const cellLines = row.map((value, index) => wrapped.has(index)
+      ? wrapText(value, Math.max(Math.floor((columnWidths[index] - 8) / 4.16), 1))
+      : [clean(value, Math.max(Math.floor((columnWidths[index] - 8) / 4.16), 1))]);
+    const rowHeight = Math.max(18, Math.max(...cellLines.map(lines => lines.length)) * 10 + 6);
+    if (y - rowHeight < 45) break;
+    cellLines.forEach((lines, index) => lines.forEach((value, lineIndex) => text(
+      columnStarts[index] + 4, y - lineIndex * 10, 8, value,
+      rightAligned.has(index) ? columnStarts[index] + columnWidths[index] - 4 : undefined
+    )));
+    y -= rowHeight;
     line(40, y + 7, 555, y + 7);
-  });
+  }
 
   const content = commands.join('\n') + '\n';
   const objects = [

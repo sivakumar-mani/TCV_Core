@@ -70,7 +70,7 @@
       <h2>Register Complaint</h2>
       <button type="button" class="close" (click)="closeRegister()">Ã—</button>
     </div>
-    <div class="caller-types">
+    <div class="caller-types" *ngIf="!customerContextLocked">
       <label><input type="radio" name="callerType" [(ngModel)]="callerType" value="CATV" (ngModelChange)="onCallerTypeChange()"> CATV</label>
       <label><input type="radio" name="callerType" [(ngModel)]="callerType" value="NET" (ngModelChange)="onCallerTypeChange()"> Net</label>
       <label><input type="radio" name="callerType" [(ngModel)]="callerType" value="CCTV" (ngModelChange)="onCallerTypeChange()"> CCTV</label>
@@ -78,17 +78,19 @@
     </div>
     <div class="form-grid">
       <ng-container *ngIf="callerType !== 'ANONYMOUS'">
-        <label class="wide">Search Customer
-          <input type="search" [(ngModel)]="customerSearch" placeholder="Search cust no, name, mobile or address">
-        </label>
-        <label class="wide">Select Customer *
-          <select [(ngModel)]="complaint.customer_id" size="5" class="search-select">
-            <option [ngValue]="null">Select customer</option>
-            <option *ngFor="let customer of registrationCustomers" [ngValue]="customer.customer_id">
-              {{ customer.customer_code }} - {{ customer.customer_name }} - {{ customer.phone }} - {{ customerAddress(customer) }}
-            </option>
-          </select>
-        </label>
+        <ng-container *ngIf="!customerContextLocked">
+          <label class="wide">Search Customer
+            <input type="search" [(ngModel)]="customerSearch" placeholder="Search cust no, name, mobile or address">
+          </label>
+          <label class="wide">Select Customer *
+            <select [(ngModel)]="complaint.customer_id" size="5" class="search-select">
+              <option [ngValue]="null">Select customer</option>
+              <option *ngFor="let customer of registrationCustomers" [ngValue]="customer.customer_id">
+                {{ customer.customer_code }} - {{ customer.customer_name }} - {{ customer.phone }} - {{ customerAddress(customer) }}
+              </option>
+            </select>
+          </label>
+        </ng-container>
         <div class="customer-information wide" *ngIf="selectedRegistrationCustomer as customer">
           <div><span>Full Name</span><strong>{{ customer.customer_name }}</strong></div>
           <div><span>Registered Mobile</span><strong>{{ customer.phone || '-' }}</strong></div>

@@ -1,0 +1,35 @@
+.dashboard-page { color: #253047; padding: 1.5rem; }
+.dashboard-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 1.4rem; }
+.dashboard-header h1 { font-size: 1.8rem; margin: 0; }
+.dashboard-header p { color: #667085; margin: .3rem 0 0; }
+.dashboard-header button { background: #3346c8; border: 0; border-radius: 8px; color: #fff; cursor: pointer; padding: .65rem 1rem; }
+.dashboard-header button:disabled { cursor: wait; opacity: .6; }
+.dashboard-message { background: #eef2ff; border-radius: 8px; padding: 1rem; }
+.dashboard-message.error { background: #fff0f0; color: #b42318; }
+.summary-grid, .customer-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 1rem; }
+.summary-card, .count-panel, .complaint-panel { background: #fff; border: 1px solid #e4e8f0; border-radius: 12px; box-shadow: 0 3px 12px rgba(31, 42, 68, .06); }
+.summary-card { align-items: center; display: flex; gap: 1rem; padding: 1.25rem; }
+.card-icon { align-items: center; border-radius: 10px; display: flex; font-size: 1.35rem; height: 48px; justify-content: center; width: 48px; }
+.summary-card.workflow .card-icon { background: #fff4d6; color: #a15c00; }
+.summary-card.fault .card-icon { background: #ffe8e6; color: #c4322b; }
+.summary-card p { color: #667085; margin: 0 0 .25rem; }
+.summary-card strong { font-size: 1.8rem; }
+.count-panel, .complaint-panel { padding: 1.25rem; }
+.panel-heading { align-items: center; display: flex; gap: .6rem; margin-bottom: 1rem; }
+.panel-heading i { color: #3346c8; font-size: 1.15rem; }
+.panel-heading h2 { font-size: 1.05rem; margin: 0; }
+.paired-counts { display: grid; gap: .75rem; grid-template-columns: 1fr 1fr; }
+.paired-counts div { border-radius: 9px; display: flex; flex-direction: column; padding: .9rem; }
+.paired-counts .active { background: #eaf8f0; color: #18794e; }
+.paired-counts .deactive { background: #f2f4f7; color: #596275; }
+.paired-counts strong { font-size: 1.5rem; margin-top: .25rem; }
+.complaint-grid { display: grid; gap: .75rem; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.complaint-card { border-left: 4px solid; border-radius: 8px; display: flex; flex-direction: column; padding: .9rem; }
+.complaint-card strong { font-size: 1.45rem; margin-top: .25rem; }
+.complaint-card.open { background: #eef4ff; border-color: #4674d9; }
+.complaint-card.progress { background: #f1edff; border-color: #7357d4; }
+.complaint-card.hold { background: #fff4df; border-color: #d88a18; }
+.complaint-card.pending { background: #fff0e9; border-color: #d85b25; }
+.complaint-card.completed { background: #eaf8f0; border-color: #279568; }
+@media (max-width: 850px) { .complaint-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .summary-grid, .customer-grid { grid-template-columns: 1fr; } .dashboard-page { padding: 1rem; } }

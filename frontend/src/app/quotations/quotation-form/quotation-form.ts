@@ -525,13 +525,14 @@ export class QuotationForm implements OnDestroy {
     const pageWidth = pageRight - pageLeft;
     const tableTop = 614;
     const headerHeight = 24;
-    const rowHeight = 24;
+    const rowHeight = 30;
     const visibleItems = (quotation.items || []).slice(0, 10);
     const itemRows = Math.max(visibleItems.length, 1);
     const tableBottom = tableTop - headerHeight - rowHeight * itemRows;
-    const descriptionRight = 311;
-    const qtyRight = 367;
-    const rateRight = 453;
+    const serialRight = 70;
+    const descriptionRight = 355;
+    const qtyRight = 405;
+    const rateRight = 475;
     const amountRight = pageRight;
 
     this.pdfText(commands, pageLeft, 785, 22, 'TCV');
@@ -559,24 +560,28 @@ export class QuotationForm implements OnDestroy {
 
     this.pdfFillStrokeRect(commands, pageLeft, tableTop - headerHeight, pageWidth, headerHeight, 212, 212, 212);
     this.pdfRect(commands, pageLeft, tableBottom, pageWidth, tableTop - tableBottom);
-    [descriptionRight, qtyRight, rateRight].forEach((x) => this.pdfLine(commands, x, tableBottom, x, tableTop));
+    [serialRight, descriptionRight, qtyRight, rateRight].forEach((x) => this.pdfLine(commands, x, tableBottom, x, tableTop));
     this.pdfLine(commands, pageLeft, tableTop - headerHeight, pageRight, tableTop - headerHeight);
     for (let y = tableTop - headerHeight - rowHeight; y >= tableBottom; y -= rowHeight) {
       this.pdfLine(commands, pageLeft, y, pageRight, y);
     }
 
-    this.pdfText(commands, pageLeft + 8, tableTop - 16, 9, 'Item #  Description');
-    this.pdfRightText(commands, qtyRight - 8, tableTop - 16, 9, 'Qty');
-    this.pdfRightText(commands, rateRight - 8, tableTop - 16, 9, 'Rate');
-    this.pdfRightText(commands, amountRight - 8, tableTop - 16, 9, 'Amount');
+    this.pdfText(commands, pageLeft + 7, tableTop - 16, 8, 'S.No');
+    this.pdfText(commands, serialRight + 8, tableTop - 16, 8, 'Description');
+    this.pdfRightText(commands, qtyRight - 6, tableTop - 16, 8, 'Qty');
+    this.pdfRightText(commands, rateRight - 6, tableTop - 16, 8, 'Rate');
+    this.pdfRightText(commands, amountRight - 6, tableTop - 16, 8, 'Amount');
 
     visibleItems.forEach((item: any, index: number) => {
       const y = tableTop - headerHeight - rowHeight * index - 16;
-      this.pdfText(commands, pageLeft + 8, y, 9, `${index + 1}.`);
-      this.pdfText(commands, pageLeft + 38, y, 9, String(item.item_name || '').slice(0, 38));
-      this.pdfRightText(commands, qtyRight - 8, y, 9, `${this.decimal(item.qty)} ${item.unit || 'PCS'}`);
-      this.pdfRightText(commands, rateRight - 8, y, 9, this.quoteNumber(item.selling_price, 2));
-      this.pdfRightMoney(commands, amountRight - 8, y, 9, item.amount);
+      this.pdfText(commands, pageLeft + 10, y, 8, `${index + 1}`);
+      const itemText = [item.item_name, item.description].filter(Boolean).join(' - ');
+      this.pdfWrapText(itemText, 54, 2).forEach((line, lineIndex) => {
+        this.pdfText(commands, serialRight + 8, y - lineIndex * 10, 8, line);
+      });
+      this.pdfRightText(commands, qtyRight - 6, y, 8, `${this.decimal(item.qty)} ${item.unit || 'PCS'}`);
+      this.pdfRightText(commands, rateRight - 6, y, 8, this.quoteNumber(item.selling_price, 2));
+      this.pdfRightMoney(commands, amountRight - 6, y, 8, item.amount);
     });
 
     const summaryTop = tableBottom;
@@ -651,6 +656,28 @@ export class QuotationForm implements OnDestroy {
     const text = String(value);
     const approximateWidth = text.length * size * 0.52;
     this.pdfText(commands, Number((rightX - approximateWidth).toFixed(2)), y, size, text);
+  }
+
+  pdfWrapText(value: string, maxCharacters: number, maxLines: number) {
+    const words = String(value || '').trim().split(/\s+/).filter(Boolean);
+    const lines: string[] = [];
+    let currentLine = '';
+
+    words.forEach(word => {
+      const candidate = currentLine ? `${currentLine} ${word}` : word;
+      if (candidate.length <= maxCharacters) {
+        currentLine = candidate;
+      } else {
+        if (currentLine) lines.push(currentLine);
+        currentLine = word;
+      }
+    });
+    if (currentLine) lines.push(currentLine);
+
+    if (lines.length > maxLines) {
+      lines[maxLines - 1] = `${lines.slice(maxLines - 1).join(' ')}`.slice(0, maxCharacters - 3).trimEnd() + '...';
+    }
+    return lines.slice(0, maxLines);
   }
 
   pdfRightMoney(commands: string[], rightX: number, y: number, size: number, value: number | string, negative = false) {

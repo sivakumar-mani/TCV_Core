@@ -49,6 +49,7 @@ permissionCatalog.forEach((item) => {
 });
 
 const apiModules = {
+  dashboard: 'DASHBOARD',
   brand: 'BRANDS', category: 'CATEGORIES', product: 'PRODUCTS', supplier: 'SUPPLIERS',
   customer: 'CUSTOMERS', purchase: 'PURCHASES', stock: 'STOCK', quotation: 'QUOTATIONS',
   workflow: 'WORKFLOW_APPROVAL', 'work-order': 'WORK_ORDERS', employee: 'EMPLOYEES',

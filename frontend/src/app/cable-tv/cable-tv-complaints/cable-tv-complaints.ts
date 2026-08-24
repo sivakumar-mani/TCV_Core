@@ -23,6 +23,7 @@ export class CableTvComplaints {
   selectedComplaint: any = null;
   viewedComplaint: any = null;
   showRegisterModal = false;
+  customerContextLocked = false;
   showAttemptModal = false;
   showViewModal = false;
   callerType: 'CATV' | 'NET' | 'CCTV' | 'ANONYMOUS' = 'CATV';
@@ -129,6 +130,7 @@ export class CableTvComplaints {
   openRegister(customerId?: number) {
     this.complaint = this.emptyComplaint();
     this.customerSearch = '';
+    this.customerContextLocked = Boolean(customerId);
     this.callerType = 'CATV';
     this.complaint.complainant_type = 'CATV';
     this.complaint.customer_id = customerId || null;
