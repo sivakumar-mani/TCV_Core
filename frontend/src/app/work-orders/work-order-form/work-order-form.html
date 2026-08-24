@@ -12,9 +12,10 @@
     <div class="header-actions">
       <button type="button" class="btn btn-outline-secondary" (click)="cancel()">Back</button>
       <button *ngIf="isPreviewMode" type="button" class="btn btn-dark" (click)="downloadPdf()">Download PDF</button>
-      <button *ngIf="isPreviewMode && currentWorkOrder?.approval_status === 'PENDING'" type="button" class="btn btn-success" (click)="reviewWorkOrder('IN_PROGRESS')">Move to In Progress</button>
-      <button *ngIf="isPreviewMode && currentWorkOrder?.approval_status === 'PENDING'" type="button" class="btn btn-danger" (click)="reviewWorkOrder('REJECTED')">Reject</button>
-      <button *ngIf="isEditMode" type="button" class="btn btn-outline-primary" (click)="createInvoice()">Create Invoice</button>
+      <button *ngIf="isPreviewMode && currentWorkOrder?.approval_status === 'PENDING' && currentWorkOrder?.work_status !== 'COMPLETED'" type="button" class="btn btn-success" (click)="reviewWorkOrder('IN_PROGRESS')">Move to In Progress</button>
+      <button *ngIf="isPreviewMode && currentWorkOrder?.approval_status === 'PENDING' && currentWorkOrder?.work_status !== 'COMPLETED'" type="button" class="btn btn-danger" (click)="reviewWorkOrder('REJECTED')">Reject</button>
+      <button *ngIf="isPreviewMode && currentWorkOrder?.approval_status === 'PENDING' && currentWorkOrder?.work_status === 'COMPLETED'" type="button" class="btn btn-success" (click)="reviewWorkOrder('COMPLETED')">Approve</button>
+      <button *ngIf="isEditMode && currentWorkOrder?.work_status === 'COMPLETED' && currentWorkOrder?.approval_status === 'APPROVED' && !currentWorkOrder?.invoice_no" type="button" class="btn btn-outline-primary" (click)="createInvoice()">Create Invoice</button>
     </div>
   </div>
 

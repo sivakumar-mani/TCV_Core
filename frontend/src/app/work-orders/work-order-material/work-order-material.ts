@@ -190,12 +190,14 @@ export class WorkOrderMaterial {
       return;
     }
     selectedItems.forEach((item) => {
+      const requestedQty = Number(item.qty) || 0;
+      const issuedQty = Math.min(requestedQty, Number(item.available_qty));
       this.issueRows.push(this.createIssueRow({
         material_id: item.material_id,
         material_code: item.material_code,
         material_name: item.material_name,
         product_id: item.product_id,
-        issued_qty: Number(item.qty),
+        issued_qty: issuedQty,
         issued_to_employee_id: this.workOrder.assigned_to_employee_id,
         available_qty: item.available_qty
       }));
@@ -281,9 +283,18 @@ export class WorkOrderMaterial {
     }
     for (const row of newRows) {
       const available = this.materialStock(row.get('material_id')?.value);
-      if (row.invalid || available <= 0 || Number(row.get('issued_qty')?.value) > available) {
+      const issuedQty = Number(row.get('issued_qty')?.value);
+      const materialName = row.get('material_name')?.value || 'Selected material';
+      if (row.invalid || !Number.isFinite(issuedQty) || issuedQty <= 0) {
         row.markAllAsTouched();
-        alert(available <= 0 ? 'A selected material has stock 0.' : 'Check selected material quantities.');
+        alert(`Complete the required details and enter a valid quantity for ${materialName}.`);
+        return;
+      }
+      if (available <= 0 || issuedQty > available) {
+        row.markAllAsTouched();
+        alert(available <= 0
+          ? `${materialName} has stock 0.`
+          : `${materialName}: entered quantity ${issuedQty} exceeds available stock ${available}.`);
         return;
       }
     }

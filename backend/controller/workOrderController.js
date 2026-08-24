@@ -681,15 +681,23 @@ const reviewWorkOrder = async (req, res) => {
         await ensureWorkOrderSupport(conn);
         const workOrderId = req.params.work_order_id || req.body.work_order_id;
         const action = String(req.body.action || '').toUpperCase();
-        if (!['IN_PROGRESS', 'REJECTED'].includes(action)) {
-            return res.status(400).json({ success: false, message: 'Action must be IN_PROGRESS or REJECTED' });
+        if (!['IN_PROGRESS', 'COMPLETED', 'REJECTED'].includes(action)) {
+            return res.status(400).json({ success: false, message: 'Select a valid work order review action' });
         }
         await conn.beginTransaction();
         const [orders] = await conn.query('SELECT * FROM work_orders WHERE work_order_id = ? FOR UPDATE', [workOrderId]);
         if (!orders.length) throw new Error('Work order not found');
         if (orders[0].approval_status !== 'PENDING') throw new Error('Only pending work orders can be reviewed');
 
-        if (action === 'IN_PROGRESS') {
+        if (action === 'COMPLETED') {
+            if (orders[0].work_status !== 'COMPLETED') {
+                throw new Error('Only a completed work order can receive completion approval');
+            }
+            await conn.query(
+                "UPDATE work_orders SET approval_status = 'APPROVED', updated_at = NOW() WHERE work_order_id = ?",
+                [workOrderId]
+            );
+        } else if (action === 'IN_PROGRESS') {
             await conn.query(
                 "UPDATE work_orders SET approval_status = 'APPROVED', work_status = 'IN_PROGRESS', updated_at = NOW() WHERE work_order_id = ?",
                 [workOrderId]
@@ -704,9 +712,11 @@ const reviewWorkOrder = async (req, res) => {
         await conn.commit();
         return res.json({
             success: true,
-            message: action === 'IN_PROGRESS'
-                ? 'Work order moved to in progress. Material issue is now enabled.'
-                : 'Work order rejected and returned for update.'
+            message: action === 'COMPLETED'
+                ? 'Completed work order approved successfully.'
+                : action === 'IN_PROGRESS'
+                    ? 'Work order moved to in progress. Material issue is now enabled.'
+                    : 'Work order rejected and returned for update.'
         });
     } catch (error) {
         await conn.rollback();
@@ -967,7 +977,9 @@ const createInvoiceFromWorkOrder = async (req, res) => {
 
         const [orders] = await conn.query('SELECT * FROM work_orders WHERE work_order_id = ? FOR UPDATE', [workOrderId]);
         if (orders.length === 0) throw new Error('Work order not found');
-        if (orders[0].work_status !== 'COMPLETED') throw new Error('Complete the work order before creating invoice');
+        if (orders[0].work_status !== 'COMPLETED' || orders[0].approval_status !== 'APPROVED') {
+            throw new Error('Invoice can be created only after the completed work order is approved');
+        }
 
         const [existingInvoice] = await conn.query('SELECT sales_id, invoice_no FROM sales_master WHERE work_order_id = ? LIMIT 1', [workOrderId]);
         if (existingInvoice.length > 0) {

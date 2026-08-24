@@ -39,7 +39,7 @@ export class WorkOrderServices {
     return this.http.delete(`${this.endpoint}/${workOrderId}`, { headers: this.headers });
   }
 
-  reviewWorkOrder(workOrderId: number, action: 'IN_PROGRESS' | 'REJECTED') {
+  reviewWorkOrder(workOrderId: number, action: 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED') {
     return this.http.post(`${this.endpoint}/${workOrderId}/review`, { action }, { headers: this.headers });
   }
 

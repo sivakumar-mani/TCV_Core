@@ -13,7 +13,7 @@ import { InputFormField } from '../shared/input-form-field/input-form-field';
 import { ActionMenu } from '../shared/list-action-menu';
 import { SelectFormField } from '../shared/select-form-field/select-form-field';
 import { TextareaFormField } from '../shared/textarea-form-field/textarea-form-field';
-import { downloadSimplePdf } from '../shared/simple-pdf';
+import { downloadInvoicePdf } from '../shared/invoice-pdf';
 
 @Component({
   selector: 'app-sales',
@@ -167,8 +167,8 @@ export class Sales {
         this.ngxLoader.stop();
         this.previewInvoice = response?.data ?? response;
         this.invoiceDialogRef = this.dialog.open(this.invoicePreviewDialog, {
-          width: 'min(1000px, 94vw)',
-          maxWidth: '94vw',
+          width: '90vw',
+          maxWidth: '90vw',
           maxHeight: '90vh',
           panelClass: 'invoice-preview-dialog-panel'
         });
@@ -188,23 +188,7 @@ export class Sales {
   downloadInvoicePdf() {
     const invoice = this.previewInvoice;
     if (!invoice) return;
-    downloadSimplePdf({
-      filename: `invoice-${invoice.invoice_no}.pdf`,
-      title: 'Sales Invoice',
-      details: [
-        ['Invoice No', invoice.invoice_no],
-        ['Invoice Date', this.displayDate(invoice.invoice_date)],
-        ['Customer', invoice.customer_name],
-        ['Phone', invoice.phone],
-        ['Work Order', invoice.work_order_no],
-        ['Payment', invoice.payment_status]
-      ],
-      columns: ['S.No', 'Item', 'Description', 'Qty', 'Rate', 'Amount'],
-      rows: (invoice.items || []).map((item: any, index: number) => [
-        index + 1, item.item_name, item.description, item.qty,
-        Number(item.selling_price || 0).toFixed(2), Number(item.amount || 0).toFixed(2)
-      ])
-    });
+    downloadInvoicePdf(invoice, (value) => this.displayDate(value));
   }
 
   delete(row: any) {

@@ -129,6 +129,11 @@ export class WorkOrderList {
       return;
     }
 
+    if (row.work_status !== 'COMPLETED' || row.approval_status !== 'APPROVED') {
+      alert('Invoice can be created only after the completed work order is approved.');
+      return;
+    }
+
     if (!confirm(`Create invoice for ${row.work_order_no}?`)) return;
 
     this.ngxLoader.start();

@@ -60,7 +60,11 @@ const getSaleById = async (req, res) => {
         );
         if (!sales.length) return res.status(404).json({ success: false, message: 'Invoice not found' });
         const [items] = await conn.query(
-            `SELECT * FROM sales_items WHERE sales_id = ? ORDER BY line_no, sales_item_id`,
+            `SELECT si.*, COALESCE(p.unit, 'PCS') AS unit
+             FROM sales_items si
+             LEFT JOIN products p ON p.product_id = si.product_id
+             WHERE si.sales_id = ?
+             ORDER BY si.line_no, si.sales_item_id`,
             [req.params.sales_id]
         );
         return res.json({ success: true, data: { ...sales[0], items } });

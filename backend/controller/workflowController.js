@@ -118,6 +118,7 @@ const getWorkflowApprovals = async (req, res) => {
                 ON wa.module_name = 'QUOTATION' AND qm.quotation_id = wa.reference_id
              LEFT JOIN customers c ON c.customer_id = qm.customer_id
              WHERE wa.module_name = 'QUOTATION'
+               AND wa.workflow_status = 'PENDING'
              UNION ALL
              SELECT NULL AS workflow_id, 'SUPPLIER_PAYMENT' AS module_name, pm.purchase_id AS reference_id,
                     pm.purchase_no AS reference_no, pm.payment_status AS workflow_status,

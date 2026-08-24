@@ -405,10 +405,22 @@ const approveQuotation = async (req, res) => {
         const approvedBy = req.body.approved_by_employee_id || null;
 
         await conn.beginTransaction();
-        const [existing] = await conn.query('SELECT quotation_id FROM quotation_master WHERE quotation_id = ? FOR UPDATE', [quotationId]);
+        const [existing] = await conn.query(
+            `SELECT qm.quotation_id, wa.workflow_status
+             FROM quotation_master qm
+             LEFT JOIN workflow_approvals wa
+               ON wa.module_name = 'QUOTATION' AND wa.reference_id = qm.quotation_id
+             WHERE qm.quotation_id = ?
+             FOR UPDATE`,
+            [quotationId]
+        );
         if (existing.length === 0) {
             await conn.rollback();
             return res.status(404).json({ success: false, message: 'Quotation not found' });
+        }
+        if (existing[0].workflow_status !== 'PENDING') {
+            await conn.rollback();
+            return res.status(409).json({ success: false, message: 'Only a pending quotation workflow can be approved' });
         }
 
         await conn.query(

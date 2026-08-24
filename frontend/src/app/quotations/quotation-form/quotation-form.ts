@@ -69,7 +69,7 @@ export class QuotationForm implements OnDestroy {
   }
 
   get canApprove() {
-    return this.isPreviewMode && this.quotation?.quotation_status === 'DRAFT';
+    return this.isPreviewMode && this.quotation?.workflow_status === 'PENDING';
   }
 
   get canSubmit() {

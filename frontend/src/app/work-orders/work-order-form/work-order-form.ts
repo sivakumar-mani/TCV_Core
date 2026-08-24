@@ -485,6 +485,10 @@ export class WorkOrderForm {
 
   createInvoice() {
     if (!this.isEditMode) return;
+    if (this.currentWorkOrder?.work_status !== 'COMPLETED' || this.currentWorkOrder?.approval_status !== 'APPROVED') {
+      alert('Invoice can be created only after the completed work order is approved.');
+      return;
+    }
     this.workOrderService.createInvoice(this.workOrderId).subscribe({
       next: (response: any) => this.commonMethods.handleTokenAndMessage(response),
       error: (error: any) => this.commonMethods.handleError(error)
@@ -520,9 +524,11 @@ export class WorkOrderForm {
     });
   }
 
-  reviewWorkOrder(action: 'IN_PROGRESS' | 'REJECTED') {
+  reviewWorkOrder(action: 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED') {
     if (!this.workOrderId || this.currentWorkOrder?.approval_status !== 'PENDING') return;
-    const label = action === 'IN_PROGRESS' ? 'move this work order to in progress' : 'reject this work order';
+    const label = action === 'COMPLETED'
+      ? 'approve this completed work order'
+      : action === 'IN_PROGRESS' ? 'move this work order to in progress' : 'reject this work order';
     if (!confirm(`Are you sure you want to ${label}?`)) return;
     this.ngxLoader.start();
     this.workOrderService.reviewWorkOrder(this.workOrderId, action).subscribe({

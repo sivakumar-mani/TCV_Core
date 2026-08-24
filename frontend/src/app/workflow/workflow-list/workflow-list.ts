@@ -89,7 +89,9 @@ export class WorkflowList {
       });
       return;
     }
-    this.router.navigate(['/quotations/review', row.reference_id]);
+    this.router.navigate(['/quotations/review', row.reference_id], {
+      queryParams: { review: true, workflowId: row.workflow_id }
+    });
   }
 
   money(value: number | string) {
