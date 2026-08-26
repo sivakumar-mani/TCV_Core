@@ -797,7 +797,7 @@ const saveStbAccessories = async (db, req, {
     );
     // Pending requests reserve the accessory record only. Stock is deducted
     // atomically when an administrator approves the workflow request.
-    if (approvalStatus === 'APPROVED' && packageType === 'ADDON') {
+    if (approvalStatus === 'APPROVED') {
       const returnedProduct = stockMovement === 'RETURN' ? await ensureUsedAccessoryProduct(db, productId) : null;
       await postStockMovement(db, {
         productId: returnedProduct?.used_product_id || productId,
