@@ -108,7 +108,10 @@ export class Login implements OnDestroy {
         this.captchaLoading = false;
         this.captchaQuestion = captcha.question;
         this.captchaToken = captcha.token;
-        this.captchaExpiresAt = Number(captcha.expiresAt) || 0;
+        const apiExpiresAt = Number(captcha.expiresAt);
+        this.captchaExpiresAt = Number.isFinite(apiExpiresAt) && apiExpiresAt > Date.now()
+          ? apiExpiresAt
+          : Date.now() + 5 * 60 * 1000;
         const refreshDelay = Math.max(this.captchaExpiresAt - Date.now() - 10000, 1000);
         this.captchaRefreshTimer = setTimeout(() => this.refreshCaptcha(), refreshDelay);
       },

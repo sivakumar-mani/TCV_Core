@@ -1,0 +1,10 @@
+in cmd
+login vps, enable ssh 
+ssh timec5417@103.160.106.75
+Pm0J6WcqQY8KH43X
+To Start
+npx pm2 restart tcv-api
+npx pm2 logs tcv-api --lines 30 --nostream
+
+to stop
+npx pm2 stop tcv-api
