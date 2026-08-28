@@ -1681,15 +1681,19 @@ const getPendingAccounts = async (req, res) => {
         WHERE reactivate_stb.approval_group_id = ca.approval_group_id
            AND UPPER(reactivate_stb.update_reason) = 'REACTIVATE'
        ))`;
-    const effectiveInstalledBySql = `CASE
-      WHEN approval_group.group_type = 'STB_UPDATE' THEN COALESCE((
+    const effectiveInstalledBySql = `COALESCE((
         SELECT stb.installed_by_employee_id
         FROM cable_customer_stbs stb
         WHERE stb.approval_group_id = ca.approval_group_id
+          AND stb.installed_by_employee_id IS NOT NULL
         ORDER BY stb.customer_stb_id DESC LIMIT 1
-      ), c.installed_by_employee_id)
-      ELSE c.installed_by_employee_id
-    END`;
+      ), (
+        SELECT conn.connected_by_employee_id
+        FROM cable_connections conn
+        WHERE conn.approval_group_id = ca.approval_group_id
+          AND conn.connected_by_employee_id IS NOT NULL
+        ORDER BY conn.connection_id DESC LIMIT 1
+      ), c.installed_by_employee_id)`;
     if (status === 'PENDING') {
       filters.push(`((${outstandingSql} > 0 AND ${receivedSql} <= 0) OR ${zeroReactivatePendingSql})`);
     } else if (status === 'PARTIAL') {
@@ -1748,10 +1752,8 @@ const getPendingAccounts = async (req, res) => {
                 ), approval_group.group_type)
               END AS connection_type,
               COALESCE(
-                NULLIF(TRIM(CONCAT_WS(' ', update_installed.first_name, update_installed.last_name)), ''),
-                update_installed.employee_code,
-                NULLIF(TRIM(CONCAT_WS(' ', installed.first_name, installed.last_name)), ''),
-                installed.employee_code
+                NULLIF(TRIM(CONCAT_WS(' ', effective_installed.first_name, effective_installed.last_name)), ''),
+                effective_installed.employee_code
               ) AS installed_by_name,
               COALESCE(NULLIF(TRIM(CONCAT_WS(' ', receiver.first_name, receiver.last_name)), ''), received_user.username) AS received_by_name,
               COALESCE(payment_totals.cash_amount, 0) AS cash_received,
@@ -1763,16 +1765,7 @@ const getPendingAccounts = async (req, res) => {
        LEFT JOIN cable_locations l ON l.location_id = c.location_id
        LEFT JOIN cable_areas a ON a.area_id = c.area_id
        LEFT JOIN cable_streets s ON s.street_id = c.street_id
-       LEFT JOIN employees installed ON installed.employee_id = c.installed_by_employee_id
-       LEFT JOIN employees update_installed ON update_installed.employee_id = CASE
-         WHEN approval_group.group_type = 'STB_UPDATE' THEN (
-           SELECT stb.installed_by_employee_id
-           FROM cable_customer_stbs stb
-           WHERE stb.approval_group_id = ca.approval_group_id
-           ORDER BY stb.customer_stb_id DESC LIMIT 1
-         )
-         ELSE NULL
-       END
+       LEFT JOIN employees effective_installed ON effective_installed.employee_id = ${effectiveInstalledBySql}
        LEFT JOIN users received_user ON received_user.user_id = ca.received_by_user_id
        LEFT JOIN employees receiver ON receiver.employee_id = COALESCE(ca.received_by_employee_id, received_user.employee_id)
        LEFT JOIN (
