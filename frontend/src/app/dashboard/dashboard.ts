@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy } from '@angular/core';
 import { appConfig } from '../app-config';
 
 interface DashboardSummary {
@@ -17,8 +17,9 @@ interface DashboardSummary {
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class Dashboard {
+export class Dashboard implements OnDestroy {
   private http = inject(HttpClient);
+  private refreshTimer?: ReturnType<typeof setInterval>;
   loading = true;
   errorMessage = '';
   summary: DashboardSummary = {
@@ -39,10 +40,15 @@ export class Dashboard {
 
   ngOnInit() {
     this.loadSummary();
+    this.refreshTimer = setInterval(() => this.loadSummary(false), 15 * 60 * 1000);
   }
 
-  loadSummary() {
-    this.loading = true;
+  ngOnDestroy() {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+  }
+
+  loadSummary(showLoading = true) {
+    if (showLoading) this.loading = true;
     this.errorMessage = '';
     this.http.get<DashboardSummary>(`${appConfig.apiUrl}/v1/dashboard/summary`).subscribe({
       next: response => {

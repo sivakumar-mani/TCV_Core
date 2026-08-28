@@ -95,7 +95,7 @@
         <td>{{ reportBalance(item) | number:'1.2-2' }}</td>
         <td>{{ item.due_date ? (item.due_date | date:'dd-MM-yyyy') : '-' }}</td>
         <td>{{ item.account_date | date:'dd-MM-yyyy' }}</td>
-        <td><span class="status-badge" [class.paid]="reportPaymentStatus(item) === 'PAID'">{{ reportPaymentStatus(item) }}</span></td>
+        <td><span class="status-badge" [attr.data-status]="reportPaymentStatus(item)" [class.paid]="reportPaymentStatus(item) === 'PAID'">{{ reportPaymentStatus(item) }}</span></td>
         <td *ngIf="permissions.isAdmin()" class="action-cell">
           <button *ngIf="item.account_status === 'PENDING' || item.account_status === 'PARTIAL'" type="button"
             (click)="openPayment(item)">Payment</button>

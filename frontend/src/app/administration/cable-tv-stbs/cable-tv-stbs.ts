@@ -25,6 +25,9 @@ export class CableTvStbs {
   stockTypes = ['NEW', 'SERVICED', 'RETURNED', 'FAULT', 'DAMAGED', 'BURNT', 'NOT_SERVICEABLE'];
   statuses = ['AVAILABLE', 'IN_SERVICE', 'NOT_AVAILABLE'];
   filters = { stbNumber: '', stockType: '', employeeId: '', status: '' };
+  currentPage = 1;
+  pageSize = 25;
+  readonly pageSizeOptions = [10, 25, 50, 100];
 
   get countWidgets() {
     const definitions = [
@@ -58,6 +61,24 @@ export class CableTvStbs {
         String(left.status || '').localeCompare(String(right.status || ''))
         || String(left.stb_number || '').localeCompare(String(right.stb_number || ''))
       );
+  }
+
+  get totalPages() {
+    return Math.max(Math.ceil(this.filteredStbs.length / this.pageSize), 1);
+  }
+
+  get pagedStbs() {
+    const page = Math.min(Math.max(this.currentPage, 1), this.totalPages);
+    const start = (page - 1) * this.pageSize;
+    return this.filteredStbs.slice(start, start + this.pageSize);
+  }
+
+  get pageStart() {
+    return this.filteredStbs.length ? (Math.min(this.currentPage, this.totalPages) - 1) * this.pageSize + 1 : 0;
+  }
+
+  get pageEnd() {
+    return Math.min(Math.min(this.currentPage, this.totalPages) * this.pageSize, this.filteredStbs.length);
   }
 
   get availableStockTypes() {
@@ -150,6 +171,7 @@ export class CableTvStbs {
         this.msos = lookups?.installedMsos || [];
         this.employees = lookups?.employees || [];
         this.stbs = masters?.stbMasters || [];
+        this.currentPage = Math.min(this.currentPage, this.totalPages);
       },
       error: (error: any) => this.handleError(error)
     });
@@ -192,6 +214,19 @@ export class CableTvStbs {
 
   resetFilters() {
     this.filters = { stbNumber: '', stockType: '', employeeId: '', status: '' };
+    this.currentPage = 1;
+  }
+
+  resetPage() {
+    this.currentPage = 1;
+  }
+
+  changePageSize() {
+    this.currentPage = 1;
+  }
+
+  goToPage(page: number) {
+    this.currentPage = Math.min(Math.max(page, 1), this.totalPages);
   }
 
   saveStb() {

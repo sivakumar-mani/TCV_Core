@@ -18,16 +18,20 @@
       </div>
       <button type="button" class="secondary-btn back-btn" (click)="goBack()"><i class="bi bi-arrow-left" aria-hidden="true"></i>Back</button>
     </div>
-    <div class="summary-identity">
-      <h1>{{ customer.full_name || 'Customer' }}</h1>
-      <span><small>Cust No</small><strong>{{ customer.customer_code || '-' }}</strong></span>
-      <span><small>Old C No</small><strong>{{ customer.legacy_customer_no || '-' }}</strong></span>
-      <span><small>Status</small><strong class="summary-status" [class.success]="headerStatus === 'ACTIVE'">{{ headerStatus }}</strong></span>
-    </div>
-    <div class="meta-line">
-      <span><i class="bi bi-router" aria-hidden="true"></i>STB Number: <strong>{{ headerStbNo }}</strong></span>
-      <span><i class="bi bi-calendar-event" aria-hidden="true"></i>Install Date: <strong>{{ headerDate ? (headerDate | date:'dd-MM-yyyy') : '-' }}</strong></span>
-      <span class="address-line"><i class="bi bi-geo-alt" aria-hidden="true"></i>{{ headerAddress }}</span>
+    <div class="summary-details">
+      <div class="summary-customer-details">
+        <div class="customer-number-line">
+          <span>Cust No : <strong>{{ customer.customer_code || '-' }}</strong></span>
+          <span class="old-customer-number">Old C No : <strong>{{ customer.legacy_customer_no || '-' }}</strong></span>
+        </div>
+        <h1>{{ customer.full_name || 'Customer' }}</h1>
+        <span>STB Number: <strong>{{ headerStbNo }}</strong></span>
+        <span class="address-line">{{ headerAddress }}</span>
+      </div>
+      <div class="summary-service-details">
+        <span><strong>Status:</strong><b class="summary-status" [class.success]="headerStatus === 'ACTIVE'">{{ headerStatus }}</b></span>
+        <span><strong>Install Date:</strong><b>{{ headerDate ? (headerDate | date:'dd-MM-yyyy') : '-' }}</b></span>
+      </div>
     </div>
   </section>
 

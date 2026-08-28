@@ -701,7 +701,7 @@ export class CableTvCustomerHistory {
         expiry_date: this.dateInputValue(row.expiry_date),
         collect_date: this.today(),
         collected_by_employee_id: row.collected_by_employee_id || null,
-        package_amount: Number(row.package_price || row.amount) || 0,
+        package_amount: Number(row.master_package_price ?? row.package_price ?? row.amount) || 0,
         amount: Number(row.amount) || 0,
         paid_amount: Number(row.paid_amount) || 0,
         balance_amount: Number(row.balance_amount) || 0,
@@ -968,7 +968,12 @@ export class CableTvCustomerHistory {
   applySubscriptionPackage() {
     if (this.section !== 'subscriptions' || !this.form) return;
     const selected = this.selectedCustomerPackage();
-    const packageAmount = Number(selected?.package_price || selected?.amount || selected?.price) || Number(this.form.get('package_amount')?.value) || 0;
+    const masterPackage = (this.lookups.packages || []).find(
+      (item: any) => Number(item.package_id) === Number(selected?.package_id)
+    );
+    const packageAmount = Number(masterPackage?.price ?? selected?.master_package_price ?? selected?.package_price ?? selected?.amount ?? selected?.price)
+      || Number(this.form.get('package_amount')?.value)
+      || 0;
     this.form.patchValue({ package_amount: packageAmount }, { emitEvent: false });
     this.calculateSubscription();
   }

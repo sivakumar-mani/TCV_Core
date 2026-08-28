@@ -49,7 +49,7 @@ export class CableTvCustomerList {
   };
 
   colDefs: ColDef[] = [
-    { headerName: 'Serial #', width: 92, minWidth: 92, maxWidth: 92, flex: 0, cellRenderer: ActionMenu, cellRendererParams: { showSerial: true, dropdownMenu: this.customerActions }, filter: false, floatingFilter: false, sortable: false },
+    { headerName: 'Serial #', width: 92, minWidth: 92, maxWidth: 92, flex: 0, cellRenderer: ActionMenu, cellRendererParams: { showSerial: true, statusAware: true, dropdownMenu: this.customerActions }, filter: false, floatingFilter: false, sortable: false },
     { field: 'customer_code', headerName: 'Cust No', width: 92, minWidth: 92, maxWidth: 92, flex: 0 },
     { field: 'legacy_customer_no', headerName: 'Old C No', width: 100, minWidth: 100, maxWidth: 100, flex: 0 },
     { field: 'network_display', headerName: 'Network', width: 100, minWidth: 100, maxWidth: 100, flex: 0, valueFormatter: (params: any) => this.titleCaseText(params.value), filter: 'agTextColumnFilter', filterParams: { filterOptions: ['equals'], defaultOption: 'equals', buttons: ['reset'], maxNumConditions: 1 } },

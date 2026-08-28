@@ -66,3 +66,23 @@
   min-height: calc(100vh - 90px);
   overflow: visible !important;
 }
+
+@media (min-width: 992px) {
+  .desktop-shell .main-content {
+    padding-top: 20px !important;
+  }
+
+  .desktop-shell .mat-drawer-side {
+    align-self: flex-start;
+    height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
+    position: fixed !important;
+    top: 60px;
+  }
+
+  :host ::ng-deep .desktop-shell .mat-drawer-inner-container {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}

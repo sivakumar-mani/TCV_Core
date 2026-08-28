@@ -21,7 +21,7 @@ export class InternetCustomerList {
     {label:'Update',permission:'view',visible:(r:any)=>Boolean(String(r.legacy_customer_no||'').trim())||(r.approval_status==='APPROVED'&&r.account_status==='PAID'),action:(r:any)=>this.router.navigate(['/internet/customers/view',r.internet_customer_id])}
   ];
   colDefs:ColDef[]=[
-    {headerName:'Serial #',width:92,minWidth:92,maxWidth:92,flex:0,cellRenderer:ActionMenu,cellRendererParams:{showSerial:true,dropdownMenu:this.customerActions},sortable:false,filter:false,floatingFilter:false},
+    {headerName:'Serial #',width:92,minWidth:92,maxWidth:92,flex:0,cellRenderer:ActionMenu,cellRendererParams:{showSerial:true,statusAware:true,dropdownMenu:this.customerActions},sortable:false,filter:false,floatingFilter:false},
     {field:'legacy_customer_no',headerName:'Cust No',width:88,minWidth:88,maxWidth:88,flex:0},
     {field:'network_type',headerName:'Network',width:100,minWidth:100,maxWidth:100,flex:0},
     {field:'full_name',headerName:'Full Name',minWidth:180,valueFormatter:(p:any)=>this.titleCaseText(p.value)},

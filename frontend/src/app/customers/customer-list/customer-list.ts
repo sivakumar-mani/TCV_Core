@@ -33,7 +33,7 @@ export class CustomerList {
   };
 
   colDefs: ColDef[] = [
-    { headerName: 'Serial #', width: 92, minWidth: 92, maxWidth: 92, flex: 0, cellRenderer: ActionMenu, cellRendererParams: { showSerial: true, dropdownMenu: this.customerActions }, filter: false, floatingFilter: false, sortable: false },
+    { headerName: 'Serial #', width: 92, minWidth: 92, maxWidth: 92, flex: 0, cellRenderer: ActionMenu, cellRendererParams: { showSerial: true, statusAware: true, dropdownMenu: this.customerActions }, filter: false, floatingFilter: false, sortable: false },
     {
       field: 'display_customer_name',
       headerName: 'Customer Name',

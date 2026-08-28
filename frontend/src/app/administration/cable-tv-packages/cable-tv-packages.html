@@ -5,17 +5,20 @@
   </div>
 
   <section class="package-panel">
+    <label class="search-field">Package Name Search
+      <input type="search" [value]="packageSearch" (input)="updatePackageSearch($event)" placeholder="Search by package name">
+    </label>
     <table>
       <tr><th>Package</th><th>Category</th><th>Type</th><th>Price</th><th>Description</th></tr>
-      <tr *ngFor="let item of packages">
+      <tr *ngFor="let item of filteredPackages">
         <td>{{ item.package_name }}</td>
         <td>{{ item.service_category || 'CATV' }}</td>
         <td>{{ item.service_category === 'INTERNET' ? (item.internet_network_type === 'KRISHI' ? 'Krishi Package' : item.internet_network_type || 'Internet') : item.package_type }}</td>
         <td>{{ item.price }}</td>
         <td>{{ item.description }}</td>
       </tr>
-      <tr *ngIf="!packages.length">
-        <td colspan="5" class="empty-row">No packages added yet.</td>
+      <tr *ngIf="!filteredPackages.length">
+        <td colspan="5" class="empty-row">{{ packages.length ? 'No matching packages found.' : 'No packages added yet.' }}</td>
       </tr>
     </table>
   </section>

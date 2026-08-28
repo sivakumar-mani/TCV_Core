@@ -20,22 +20,22 @@
   <section class="stb-panel">
     <div class="filter-bar">
       <label>STB Number
-        <input type="search" [(ngModel)]="filters.stbNumber" placeholder="Search STB number">
+        <input type="search" [(ngModel)]="filters.stbNumber" (ngModelChange)="resetPage()" placeholder="Search STB number">
       </label>
       <label>Type
-        <select [(ngModel)]="filters.stockType">
+        <select [(ngModel)]="filters.stockType" (ngModelChange)="resetPage()">
           <option value="">All types</option>
           <option *ngFor="let type of stockTypes" [value]="type">{{ type }}</option>
         </select>
       </label>
       <label>Assigned Employee
-        <select [(ngModel)]="filters.employeeId">
+        <select [(ngModel)]="filters.employeeId" (ngModelChange)="resetPage()">
           <option value="">All employees</option>
           <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
         </select>
       </label>
       <label>Status
-        <select [(ngModel)]="filters.status">
+        <select [(ngModel)]="filters.status" (ngModelChange)="resetPage()">
           <option value="">All statuses</option>
           <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
         </select>
@@ -55,7 +55,7 @@
         <th>Status</th>
         <th>Actions</th>
       </tr>
-      <tr *ngFor="let item of filteredStbs">
+      <tr *ngFor="let item of pagedStbs">
         <td>{{ (item.updated_date || item.updated_at) | date:'dd-MM-yyyy' }}</td>
         <td>{{ item.stb_number }}</td>
         <td>{{ item.box_type }}</td>
@@ -63,11 +63,13 @@
         <td>{{ item.stb_amount }}</td>
         <td>{{ item.full_set_amount }}</td>
         <td class="assignment-cell">
-          <strong>{{ item.assigned_employee_name || 'Unassigned' }}</strong>
-          <select [value]="item.assigned_employee_id || ''" (change)="assignStb(item, $any($event.target).value)" [disabled]="!canAssign(item)">
-            <option value="">Select employee</option>
-            <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
-          </select>
+          <div class="assignment-control">
+            <strong>{{ item.assigned_employee_name || 'Unassigned' }}</strong>
+            <select [value]="item.assigned_employee_id || ''" (change)="assignStb(item, $any($event.target).value)" [disabled]="!canAssign(item)">
+              <option value="">Select employee</option>
+              <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
+            </select>
+          </div>
         </td>
         <td><span class="status-pill" [class.available]="item.status === 'AVAILABLE'" [class.not-available]="item.status !== 'AVAILABLE'">{{ statusLabel(item.status) }}</span></td>
         <td class="action-cell">
@@ -84,6 +86,19 @@
       </tr>
     </table>
     </div>
+    <nav class="pagination-bar" *ngIf="filteredStbs.length" aria-label="STB Master pagination">
+      <span>Showing {{ pageStart }}–{{ pageEnd }} of {{ filteredStbs.length }}</span>
+      <div class="pagination-controls">
+        <label>Rows
+          <select [(ngModel)]="pageSize" (ngModelChange)="changePageSize()">
+            <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+          </select>
+        </label>
+        <button type="button" class="secondary-btn page-button" (click)="goToPage(currentPage - 1)" [disabled]="currentPage <= 1" aria-label="Previous page">Previous</button>
+        <strong>Page {{ currentPage }} of {{ totalPages }}</strong>
+        <button type="button" class="secondary-btn page-button" (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages" aria-label="Next page">Next</button>
+      </div>
+    </nav>
   </section>
 
   <div class="modal-backdrop" *ngIf="showStbModal">

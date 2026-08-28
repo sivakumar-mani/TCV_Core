@@ -174,3 +174,19 @@ mat-nav-list {
   cursor: pointer;
   width: 100%;
 }
+
+@media (min-width: 992px) {
+  :host,
+  mat-nav-list {
+    min-height: 100%;
+  }
+
+  mat-nav-list {
+    height: auto;
+  }
+
+  mat-nav-list[aria-label='Main navigation']:not(.is-collapsed) {
+    box-sizing: border-box;
+    padding: 0 0 20px !important;
+  }
+}

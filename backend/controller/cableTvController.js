@@ -1679,8 +1679,17 @@ const getPendingAccounts = async (req, res) => {
       AND EXISTS (
         SELECT 1 FROM cable_customer_stbs reactivate_stb
         WHERE reactivate_stb.approval_group_id = ca.approval_group_id
-          AND UPPER(reactivate_stb.update_reason) = 'REACTIVATE'
-      ))`;
+           AND UPPER(reactivate_stb.update_reason) = 'REACTIVATE'
+       ))`;
+    const effectiveInstalledBySql = `CASE
+      WHEN approval_group.group_type = 'STB_UPDATE' THEN COALESCE((
+        SELECT stb.installed_by_employee_id
+        FROM cable_customer_stbs stb
+        WHERE stb.approval_group_id = ca.approval_group_id
+        ORDER BY stb.customer_stb_id DESC LIMIT 1
+      ), c.installed_by_employee_id)
+      ELSE c.installed_by_employee_id
+    END`;
     if (status === 'PENDING') {
       filters.push(`((${outstandingSql} > 0 AND ${receivedSql} <= 0) OR ${zeroReactivatePendingSql})`);
     } else if (status === 'PARTIAL') {
@@ -1689,16 +1698,16 @@ const getPendingAccounts = async (req, res) => {
       filters.push(`${outstandingSql} <= 0`);
     }
     if (name) {
-      filters.push('(c.full_name LIKE ? OR c.customer_code LIKE ? OR c.mobile_no LIKE ?)');
+      filters.push('(c.full_name LIKE ? OR c.customer_code LIKE ? OR c.legacy_customer_no LIKE ? OR c.mobile_no LIKE ?)');
       const search = `%${name}%`;
-      values.push(search, search, search);
+      values.push(search, search, search, search);
     }
     if (installedByEmployeeId) {
       if (isAdmin(req)) {
-        filters.push('c.installed_by_employee_id = ?');
+        filters.push(`${effectiveInstalledBySql} = ?`);
         values.push(installedByEmployeeId);
       } else {
-        filters.push('(c.installed_by_employee_id = ? OR ca.created_by_user_id = ?)');
+        filters.push(`(${effectiveInstalledBySql} = ? OR ca.created_by_user_id = ?)`);
         values.push(installedByEmployeeId, currentUserId(req) || 0);
       }
     } else if (!isAdmin(req)) {
@@ -1720,7 +1729,11 @@ const getPendingAccounts = async (req, res) => {
                 WHERE stb.approval_group_id = ca.approval_group_id
               ), 0) AS stb_discount,
               ${outstandingSql} AS calculated_balance_amount,
-              CASE WHEN ${outstandingSql} <= 0 THEN 'PAID' ELSE 'UNPAID' END AS calculated_account_status,
+              CASE
+                WHEN ${outstandingSql} <= 0 THEN 'PAID'
+                WHEN ${receivedSql} > 0 THEN 'PARTIAL'
+                ELSE 'PENDING'
+              END AS calculated_account_status,
               c.customer_code, c.full_name, c.mobile_no, n.network_name,
               l.location_name, a.area_name, s.street_name,
               DATE(ca.created_at) AS account_date,
@@ -1781,9 +1794,11 @@ const getPendingAccounts = async (req, res) => {
     }
     if (name) {
       const search = `%${name}%`;
-      materialFilters.push(`(m.movement_no LIKE ? OR catv.full_name LIKE ? OR service.customer_name LIKE ?
-        OR m.anonymous_name LIKE ? OR catv.mobile_no LIKE ? OR service.phone LIKE ? OR m.anonymous_mobile LIKE ?)`);
-      materialValues.push(search, search, search, search, search, search, search);
+      materialFilters.push(`(m.movement_no LIKE ? OR CAST(catv.customer_code AS CHAR) LIKE ?
+        OR CAST(service.customer_id AS CHAR) LIKE ? OR catv.legacy_customer_no LIKE ?
+        OR catv.full_name LIKE ? OR service.customer_name LIKE ? OR m.anonymous_name LIKE ?
+        OR catv.mobile_no LIKE ? OR service.phone LIKE ? OR m.anonymous_mobile LIKE ?)`);
+      materialValues.push(search, search, search, search, search, search, search, search, search, search);
     }
     if (installedByEmployeeId) {
       materialFilters.push('m.employee_id = ?');
@@ -1832,7 +1847,7 @@ const getPendingAccounts = async (req, res) => {
     if(status==='PENDING')internetFilters.push(`${internetOutstandingSql}>0 AND ${internetReceivedSql}<=0`);
     else if(status==='PARTIAL')internetFilters.push(`${internetOutstandingSql}>0 AND ${internetReceivedSql}>0`);
     else if(['PAID','RECEIVED'].includes(status))internetFilters.push(`${internetOutstandingSql}<=0`);
-    if(name){const search=`%${name}%`;internetFilters.push('(ic.full_name LIKE ? OR CAST(ic.customer_code AS CHAR) LIKE ? OR ic.mobile_no LIKE ?)');internetValues.push(search,search,search);}
+    if(name){const search=`%${name}%`;internetFilters.push('(ic.full_name LIKE ? OR CAST(ic.customer_code AS CHAR) LIKE ? OR ic.legacy_customer_no LIKE ? OR ic.mobile_no LIKE ?)');internetValues.push(search,search,search,search);}
     if(startDate){internetFilters.push('DATE(ia.created_at)>=?');internetValues.push(startDate);}
     if(endDate){internetFilters.push('DATE(ia.created_at)<=?');internetValues.push(endDate);}
     const [internetSourceRows] = await db.query(
@@ -3048,6 +3063,7 @@ const getCableCustomerById = async (req, res) => {
       `SELECT cp.*, sub.subscription_month, sub.subscription_year, sub.days_in_month,
               sub.billing_basis, sub.number_of_days_or_months, sub.amount, sub.paid_amount,
               sub.balance_amount, sub.payment_status, pkg.package_name,
+              pkg.price AS master_package_price,
               pkg.package_type AS master_package_type,
               CONCAT_WS(' ', updated.first_name, updated.last_name) AS updated_by_name
        FROM cable_customer_packages cp
@@ -3064,6 +3080,7 @@ const getCableCustomerById = async (req, res) => {
     );
     const [subscriptions] = await db.query(
       `SELECT sub.*, cp.package_price, pkg.package_name, pkg.package_type,
+              pkg.price AS master_package_price,
               NULLIF(TRIM(CONCAT_WS(' ', collected.first_name, collected.last_name)), '') AS collected_by_name,
               collected.employee_code AS collected_by_code,
               COALESCE(

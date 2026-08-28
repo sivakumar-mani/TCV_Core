@@ -263,7 +263,10 @@ export class CableTvAccountPending {
   }
 
   reportPaymentStatus(item: any) {
-    return this.reportBalance(item) <= 0 ? 'PAID' : 'UNPAID';
+    const status = String(item?.calculated_account_status || item?.account_status || '').trim().toUpperCase();
+    if (status === 'RECEIVED') return 'PAID';
+    if (['PAID', 'PARTIAL', 'PENDING'].includes(status)) return status;
+    return this.reportBalance(item) <= 0 ? 'PAID' : 'PENDING';
   }
 
   get calculatedPaymentStatus() {

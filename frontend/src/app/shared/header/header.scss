@@ -1,7 +1,13 @@
-.header {
+:host {
+  display: block;
   position: sticky;
   top: 0;
-  z-index: 120;
+  z-index: 1400;
+}
+
+.header {
+  position: relative;
+  z-index: auto;
 }
 
 .mat-toolbar {

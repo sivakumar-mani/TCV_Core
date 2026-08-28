@@ -14,6 +14,7 @@ import { globalConstants } from '../../services/global-constants';
 })
 export class CableTvPackages {
   packages: any[] = [];
+  packageSearch = '';
   packageForm!: FormGroup;
   showPackageModal = false;
   packageTypes = ['MSO_PACKAGE', 'ADDON', 'ALACARTE', 'BROADCAST'];
@@ -43,6 +44,16 @@ export class CableTvPackages {
       this.calculateInternetPackagePrice();
     });
     this.loadPackages();
+  }
+
+  get filteredPackages() {
+    const search = this.packageSearch.trim().toLocaleLowerCase();
+    if (!search) return this.packages;
+    return this.packages.filter(item => String(item?.package_name || '').toLocaleLowerCase().includes(search));
+  }
+
+  updatePackageSearch(event: Event) {
+    this.packageSearch = (event.target as HTMLInputElement).value;
   }
 
   loadPackages() {
