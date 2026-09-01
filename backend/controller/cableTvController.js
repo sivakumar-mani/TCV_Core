@@ -844,7 +844,7 @@ const addPendingAccount = async (db, req, data) => {
   const subscriptionAmount = money(data.subscription_amount);
   const discount = money(data.discount) + materialDiscount;
   const overallDiscount = money(data.overall_discount);
-  const subTotal = money(data.sub_total || (stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount));
+  const subTotal = money(data.sub_total || (stbAmount + connectionAmount + materialCost + subscriptionAmount));
   const grandTotal = Math.max(money(data.grand_total || (subTotal - discount - overallDiscount)), 0);
   const paidAmount = money(data.customer_paid_amount);
   const balanceAmount = Math.max(grandTotal - paidAmount, 0);
@@ -900,7 +900,7 @@ const recalculateLinkedPendingAccount = async (db, approvalGroupId) => {
   const subscriptionAmount = money(account.subscription_amount);
   const discount = money(account.stb_discount) + money(account.connection_discount)
     + money(account.material_discount) + money(account.overall_discount);
-  const subTotal = money(stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount);
+  const subTotal = money(stbAmount + connectionAmount + materialCost + subscriptionAmount);
   const grandTotal = Math.max(money(subTotal - discount), 0);
   const customerPaid = money(account.customer_paid_amount);
   const officeReceived = money(account.office_received_amount);
@@ -921,6 +921,40 @@ const recalculateLinkedPendingAccount = async (db, approvalGroupId) => {
       Math.max(grandTotal - officeReceived, 0), accountStatus, account.account_id
     ]
   );
+};
+
+const reconcileReplacementStbAccounts = async (db, cableCustomerId) => {
+  const customerId = Number(cableCustomerId);
+  const customerFilter = customerId ? 'AND stb.cable_customer_id = ?' : '';
+  const [rows] = await db.query(
+    `SELECT stb.customer_stb_id, stb.cable_customer_id, stb.approval_group_id, stb.issue_mode,
+            sm.stb_amount AS master_stb_amount, sm.full_set_amount AS master_full_set_amount
+     FROM cable_customer_stbs stb
+     LEFT JOIN cable_stb_master sm ON sm.stb_master_id = stb.stb_master_id
+     WHERE 1 = 1 ${customerFilter}
+       AND UPPER(COALESCE(stb.update_reason, '')) = 'REPLACED'
+       AND stb.approval_status = 'APPROVED'
+       AND COALESCE(stb.stb_amount, 0) <= 0
+       AND stb.approval_group_id IS NOT NULL
+       AND EXISTS (
+         SELECT 1 FROM cable_customer_accounts ca
+         WHERE ca.approval_group_id = stb.approval_group_id
+       )`,
+    customerId ? [customerId] : []
+  );
+  for (const row of rows) {
+    const fullSet = String(row.issue_mode || 'BOX_ONLY').toUpperCase() === 'FULL_SET';
+    const restoredAmount = money(
+      (fullSet ? row.master_full_set_amount : row.master_stb_amount) || (fullSet ? 800 : 500)
+    );
+    await db.query(
+      `UPDATE cable_customer_stbs
+       SET stb_amount = ?, updated_at = NOW()
+       WHERE customer_stb_id = ? AND cable_customer_id = ? AND COALESCE(stb_amount, 0) <= 0`,
+      [restoredAmount, row.customer_stb_id, row.cable_customer_id]
+    );
+    await recalculateLinkedPendingAccount(db, row.approval_group_id);
+  }
 };
 
 const upsertFaultStbMaster = async (db, data = {}) => {
@@ -1706,6 +1740,7 @@ const getPendingAccounts = async (req, res) => {
   try {
     const db = connection.promise();
     await ensureCableTvExtendedTables(db);
+    await reconcileReplacementStbAccounts(db);
     const status = String(req.query.status || 'PENDING').toUpperCase();
     const name = String(req.query.name || '').trim();
     const installedByEmployeeId = isAdmin(req)
@@ -3045,6 +3080,7 @@ const getCableCustomerById = async (req, res) => {
     await ensureCableTvExtendedTables(db);
     const { id } = req.params;
     await reconcileApprovedLocationChanges(db, id);
+    await reconcileReplacementStbAccounts(db, id);
     await synchronizeLatestCustomerStbStatus(db, [id]);
     const [[customer]] = await db.query(
       `SELECT c.*, n.network_name, l.location_name, a.area_name, s.street_name,
@@ -4225,17 +4261,27 @@ const updateCustomerStb = async (req, res) => {
       ? money((issueMode === 'FULL_SET' ? stbMaster.full_set_amount : stbMaster.stb_amount)
         || (issueMode === 'FULL_SET' ? 800 : 500))
       : money(req.body.stb_amount);
+    const laborAmount = money(req.body.labour_service_charge);
+    const stbDiscount = money(req.body.stb_discount);
+    const overallDiscount = money(req.body.overall_discount);
+    const customerPaidAmount = money(req.body.customer_paid_amount);
+    const payableTotal = Math.max(stbAmount - stbDiscount - overallDiscount, 0);
+    let approvalGroupId = existingStb.approval_group_id;
+    if (!approvalGroupId && payableTotal > 0) {
+      const createdApproval = await createApprovalGroup(db, req, 'STB_UPDATE');
+      approvalGroupId = createdApproval.approvalGroupId;
+    }
     const stbStatus = String(req.body.status || 'ACTIVE').toUpperCase();
     const [updateResult] = await db.query(
       `UPDATE cable_customer_stbs
-       SET stb_master_id = ?, stb_type = ?, issue_mode = ?, stb_no = ?, stb_amount = ?, stb_discount = ?, labour_service_charge = ?,
+       SET approval_group_id = ?, stb_master_id = ?, stb_type = ?, issue_mode = ?, stb_no = ?, stb_amount = ?, stb_discount = ?, labour_service_charge = ?,
            installed_date = ?, updated_date = ?, update_reason = ?, reason_remarks = ?,
            installed_by_employee_id = ?, status = ?, updated_at = NOW()
        WHERE customer_stb_id = ? AND cable_customer_id = ?`,
       [
-        stbMasterId, stbType, issueMode, existingStb.stb_no || stbMaster?.stb_number,
-        stbAmount, money(req.body.stb_discount),
-        money(req.body.labour_service_charge), req.body.installed_date || req.body.updated_date || new Date(),
+        approvalGroupId, stbMasterId, stbType, issueMode, existingStb.stb_no || stbMaster?.stb_number,
+        stbAmount, stbDiscount,
+        laborAmount, req.body.installed_date || req.body.updated_date || new Date(),
         req.body.updated_date || req.body.installed_date || new Date(), updateReason,
         nullable(req.body.remarks || req.body.reason_remarks), intOrNull(req.body.installed_by_employee_id), stbStatus,
         customerStbId, cableCustomerId
@@ -4262,7 +4308,34 @@ const updateCustomerStb = async (req, res) => {
       "UPDATE cable_tv_customers SET status = CASE WHEN customer_type IN ('FREE','LEASE_LINE') THEN customer_type ELSE ? END WHERE cable_customer_id = ?",
       [customerStatusForStbStatus(stbStatus), cableCustomerId]
     );
-    await recalculateLinkedPendingAccount(db, existingStb.approval_group_id);
+    if (approvalGroupId) {
+      const [[linkedAccount]] = await db.query(
+        `SELECT account_id FROM cable_customer_accounts
+         WHERE approval_group_id = ? ORDER BY account_id DESC LIMIT 1`,
+        [approvalGroupId]
+      );
+      if (linkedAccount) {
+        await db.query(
+          `UPDATE cable_customer_accounts
+           SET overall_discount = ?, customer_paid_amount = ?, updated_at = NOW()
+           WHERE account_id = ?`,
+          [overallDiscount, customerPaidAmount, linkedAccount.account_id]
+        );
+        await recalculateLinkedPendingAccount(db, approvalGroupId);
+      } else if (payableTotal > 0) {
+        await addPendingAccount(db, req, {
+          approval_group_id: approvalGroupId,
+          cable_customer_id: cableCustomerId,
+          stb_amount: stbAmount,
+          labor_amount: laborAmount,
+          discount: stbDiscount,
+          overall_discount: overallDiscount,
+          customer_paid_amount: customerPaidAmount,
+          approval_status: 'APPROVED',
+          created_by_user_id: currentUserId(req)
+        });
+      }
+    }
     return res.json({ message: 'STB details updated successfully' });
   } catch (error) {
     return res.status(500).json({ message: 'STB update failed', error: error.message });
@@ -4270,25 +4343,49 @@ const updateCustomerStb = async (req, res) => {
 };
 
 const deleteCustomerStb = async (req, res) => {
+  const db = connection.promise();
   try {
-    const db = connection.promise();
+    await db.beginTransaction();
     const cableCustomerId = Number(req.params.id);
     const customerStbId = Number(req.params.stbId);
     const [[stbRecord]] = await db.query(
-      `SELECT customer_stb_id
+      `SELECT customer_stb_id, stb_master_id, approval_group_id
        FROM cable_customer_stbs
        WHERE customer_stb_id = ? AND cable_customer_id = ?
-       LIMIT 1`,
+       LIMIT 1 FOR UPDATE`,
       [customerStbId, cableCustomerId]
     );
-    if (!stbRecord) return res.status(404).json({ message: 'STB record not found' });
+    if (!stbRecord) {
+      await db.rollback();
+      return res.status(404).json({ message: 'STB record not found' });
+    }
+    await db.query(
+      'DELETE FROM cable_stb_issue_master WHERE customer_stb_id = ? AND cable_customer_id = ?',
+      [customerStbId, cableCustomerId]
+    );
     await db.query(
       'DELETE FROM cable_customer_stbs WHERE customer_stb_id = ? AND cable_customer_id = ?',
       [customerStbId, cableCustomerId]
     );
+    if (stbRecord.stb_master_id) {
+      await db.query(
+        `UPDATE cable_stb_master
+         SET status = 'AVAILABLE', assigned_employee_id = NULL, updated_at = NOW()
+         WHERE stb_master_id = ?
+           AND NOT EXISTS (
+             SELECT 1 FROM cable_stb_issue_master issued_stb
+             WHERE issued_stb.stb_master_id = cable_stb_master.stb_master_id
+               AND issued_stb.issue_status = 'ISSUED'
+           )`,
+        [stbRecord.stb_master_id]
+      );
+    }
+    await recalculateLinkedPendingAccount(db, stbRecord.approval_group_id);
     await synchronizeLatestCustomerStbStatus(db, [cableCustomerId]);
+    await db.commit();
     return res.json({ message: 'STB details deleted successfully' });
   } catch (error) {
+    await db.rollback();
     return res.status(500).json({ message: 'STB delete failed', error: error.message });
   }
 };

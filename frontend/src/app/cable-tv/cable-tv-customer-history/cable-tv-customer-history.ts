@@ -957,7 +957,6 @@ export class CableTvCustomerHistory {
     if (this.section === 'stbs') {
       if (!this.showStbIssueDetails) return;
       const total = (Number(this.form.get('stb_amount')?.value) || 0)
-        + (Number(this.form.get('labour_service_charge')?.value) || 0)
         - (Number(this.form.get('stb_discount')?.value) || 0)
         - (Number(this.form.get('overall_discount')?.value) || 0);
       this.patchBalance(total);
@@ -1446,7 +1445,6 @@ export class CableTvCustomerHistory {
 
   stbTotal() {
     const total = (Number(this.form.get('stb_amount')?.value) || 0)
-      + (Number(this.form.get('labour_service_charge')?.value) || 0)
       - (Number(this.form.get('stb_discount')?.value) || 0)
       - (Number(this.form.get('overall_discount')?.value) || 0);
     return Math.max(Number(total.toFixed(2)), 0);
