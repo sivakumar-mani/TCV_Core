@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnDestroy } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { appConfig } from '../app-config';
+import { PermissionService } from '../services/permission.service';
 
 interface DashboardSummary {
   workflow_waiting_count: number;
@@ -13,12 +15,13 @@ interface DashboardSummary {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class Dashboard implements OnDestroy {
   private http = inject(HttpClient);
+  readonly permissions = inject(PermissionService);
   private refreshTimer?: ReturnType<typeof setInterval>;
   loading = true;
   errorMessage = '';

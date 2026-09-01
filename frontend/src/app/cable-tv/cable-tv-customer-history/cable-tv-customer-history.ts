@@ -70,7 +70,7 @@ export class CableTvCustomerHistory {
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE', 'RETURNED', 'FAULTY', 'REPLACED'];
   readonly activeStbReasons = ['FAULT', 'DAMAGED', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
-  readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED'];
+  readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED', 'RETURNED'];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
     label: new Date(2026, index, 1).toLocaleString('en-US', { month: 'long' })
@@ -169,7 +169,11 @@ export class CableTvCustomerHistory {
   }
   get availableStbReasons() {
     const currentStatus = String(this.latestStb.status || this.customer.status || '').toUpperCase();
-    return currentStatus === 'ACTIVE' ? this.activeStbReasons : this.disconnectedStbReasons;
+    const reasons = currentStatus === 'ACTIVE' ? this.activeStbReasons : this.disconnectedStbReasons;
+    const savedReason = String(this.form?.get('reason')?.value || '').toUpperCase();
+    return savedReason && !reasons.includes(savedReason)
+      ? [savedReason, ...reasons]
+      : reasons;
   }
   get headerStatus() {
     return String(this.latestStb.approval_status || '').toUpperCase() === 'PENDING'
@@ -353,6 +357,9 @@ export class CableTvCustomerHistory {
         status: [this.statusForStbReason(defaultReason), Validators.required],
         accessories: this.fb.array([])
       });
+      if (!this.permissions.isAdmin()) {
+        this.form.get('updated_date')?.disable({ emitEvent: false });
+      }
       this.buildStbAccessoryRows();
       this.form.get('reason')?.valueChanges.subscribe(() => this.applyStbReasonState());
       this.form.get('stb_type')?.valueChanges.subscribe(() => this.resetSelectedStbIfTypeMismatch());
@@ -1394,9 +1401,9 @@ export class CableTvCustomerHistory {
 
   statusForStbReason(reason: any) {
     const value = String(reason || '').toUpperCase();
+    if (value === 'RETURNED') return 'RETRIEVED';
     if (this.disconnectedStbReasons.includes(value)) return 'ACTIVE';
     if (['FAULT', 'DAMAGED', 'BROKEN', 'BURNT'].includes(value)) return 'FAULT';
-    if (value === 'RETURNED') return 'RETRIEVED';
     return 'DISCONNECTED';
   }
 

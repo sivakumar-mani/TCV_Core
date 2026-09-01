@@ -22,6 +22,7 @@ export class CableTvCustomerForm {
   filteredAreas: any[] = [];
   filteredStreets: any[] = [];
   showStbSearchOptions = false;
+  packageDatesManuallyEdited = false;
 
   readonly statusTypes = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED', 'RETRIEVED', 'FAULT', 'UPGRADE'];
   readonly customerTypes = [
@@ -80,6 +81,10 @@ export class CableTvCustomerForm {
 
   get packages(): FormArray {
     return this.form.get('packages') as FormArray;
+  }
+
+  get isNewConnection() {
+    return String(this.form?.get('connection.connection_type')?.value || '').toUpperCase() === 'NEW';
   }
 
   buildForm() {
@@ -218,8 +223,11 @@ export class CableTvCustomerForm {
     });
     this.form.get('stb.installed_date')?.valueChanges.subscribe((value: string) => {
       this.form.get('connection.connection_date')?.setValue(value || this.today(), { emitEvent: false });
+      if (this.isNewConnection && this.packageDatesManuallyEdited) return;
+      const startDate = value || this.today();
+      const endDate = this.subscriptionExpiryDate(startDate);
       this.packages.controls.forEach((row) => {
-        row.get('start_date')?.setValue(value || this.today(), { emitEvent: false });
+        row.patchValue({ start_date: startDate, end_date: endDate }, { emitEvent: false });
         this.calculatePackageRow(this.packages.controls.indexOf(row));
       });
     });
@@ -255,9 +263,11 @@ export class CableTvCustomerForm {
       'subscription.no_of_months',
       'subscription.no_of_years',
       'subscription.subscription_year',
-      'subscription.start_date',
       'subscription.payment_status'
     ].forEach((path) => this.form.get(path)?.valueChanges.subscribe(() => this.applySubscriptionPeriod()));
+    ['subscription.start_date', 'subscription.expiry_date'].forEach((path) =>
+      this.form.get(path)?.valueChanges.subscribe(() => this.applyManualSubscriptionDates())
+    );
   }
 
   get account(): FormGroup {
@@ -590,8 +600,26 @@ export class CableTvCustomerForm {
       subscription_year: Number(startDate.slice(0, 4))
     }, { emitEvent: false });
     this.packages.controls.forEach((row) => {
-      row.patchValue({ start_date: startDate, end_date: expiryDate, billing_basis: type }, { emitEvent: false });
+      const dates = this.isNewConnection && this.packageDatesManuallyEdited
+        ? {}
+        : { start_date: startDate, end_date: expiryDate };
+      row.patchValue({ ...dates, billing_basis: type }, { emitEvent: false });
       this.calculatePackageRow(this.packages.controls.indexOf(row));
+    });
+  }
+
+  packageDateChanged(index: number) {
+    if (this.isNewConnection) this.packageDatesManuallyEdited = true;
+    this.calculatePackageRow(index);
+  }
+
+  applyManualSubscriptionDates() {
+    const startDate = this.form.get('subscription.start_date')?.value;
+    const endDate = this.form.get('subscription.expiry_date')?.value;
+    if (!startDate || !endDate) return;
+    this.packages.controls.forEach((row, index) => {
+      row.patchValue({ start_date: startDate, end_date: endDate }, { emitEvent: false });
+      this.calculatePackageRow(index);
     });
   }
 
@@ -692,17 +720,17 @@ export class CableTvCustomerForm {
     if (!row) return;
 
     const type = this.form.get('subscription.payment_type')?.value || row.get('billing_basis')?.value || 'DAY';
-    const startDate = this.normalizedSubscriptionStartDate(row.get('start_date')?.value || this.subscriptionStartDate(), type);
+    const startDate = row.get('start_date')?.value || this.subscriptionStartDate();
     const start = new Date(startDate);
     const month = start.getMonth() + 1;
     const year = start.getFullYear();
     const daysInMonth = this.daysInMonth(month, year);
-    const endDate = this.subscriptionExpiryDate(startDate);
+    const endDate = row.get('end_date')?.value || this.subscriptionExpiryDate(startDate);
     const periodCount = type === 'MONTH'
       ? Number(this.form.get('subscription.no_of_months')?.value) || 1
       : type === 'YEAR'
         ? Number(this.form.get('subscription.no_of_years')?.value) || 1
-        : this.subscriptionBillingDays(startDate);
+        : this.inclusiveDays(startDate, endDate);
     const packagePrice = Number(row.get('package_price')?.value) || 0;
     const amount = type === 'MONTH'
       ? Number((packagePrice * periodCount).toFixed(2))

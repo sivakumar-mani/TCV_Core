@@ -68,7 +68,7 @@
   <section class="modal-panel">
     <div class="modal-header">
       <h2>Register Complaint</h2>
-      <button type="button" class="close" (click)="closeRegister()">Ã—</button>
+      <button type="button" class="close" (click)="closeRegister()">Close</button>
     </div>
     <div class="caller-types" *ngIf="!customerContextLocked">
       <label><input type="radio" name="callerType" [(ngModel)]="callerType" value="CATV" (ngModelChange)="onCallerTypeChange()"> CATV</label>
@@ -119,21 +119,21 @@
   <section class="modal-panel complaint-modal">
     <div class="modal-header">
       <div><h2>{{ selectedComplaint.complaint_no }}</h2><p>{{ displayCustomer(selectedComplaint) }} Â· {{ selectedComplaint.nature_of_complaint }}</p></div>
-      <button type="button" class="close" (click)="closeAttempt()">Ã—</button>
+      <button type="button" class="close" (click)="closeAttempt()">Close</button>
     </div>
 
     <section class="update-panel" *ngIf="selectedComplaint.status !== 'COMPLETED'">
       <h3>Assign / Add Attempt</h3>
-      <div class="form-grid">
+      <div class="form-grid attempt-form-grid">
         <ng-container *ngIf="!selectedComplaint.cable_customer_id && !selectedComplaint.service_customer_id">
-          <label>Customer Type
+          <label class="mapping-type">Customer Type
             <select [(ngModel)]="attempt.mapping_type" (ngModelChange)="onMappingTypeChange()">
               <option value="CATV">CATV</option>
               <option value="NET">Net</option>
               <option value="CCTV">CCTV</option>
             </select>
           </label>
-          <label class="wide">Search Customer to Map
+          <label class="mapping-search">Search Customer to Map
             <input type="search" [(ngModel)]="mapCustomerSearch" placeholder="Search cust no, name, mobile or address">
           </label>
           <label class="wide">Map Customer
@@ -158,30 +158,29 @@
         </label>
         <label>Start Time <input type="datetime-local" [(ngModel)]="attempt.start_time"></label>
         <label>End Time <input type="datetime-local" [(ngModel)]="attempt.end_time"></label>
-        <label class="wide">Reason<textarea [(ngModel)]="attempt.reason" rows="2"></textarea></label>
-        <label class="wide">Remedy<textarea [(ngModel)]="attempt.remedy" rows="2"></textarea></label>
-        <label class="wide">Notes<textarea [(ngModel)]="attempt.notes" rows="2"></textarea></label>
+        <label class="attempt-note">Reason<textarea [(ngModel)]="attempt.reason" rows="2"></textarea></label>
+        <label class="attempt-note">Remedy<textarea [(ngModel)]="attempt.remedy" rows="2"></textarea></label>
+        <label class="attempt-note">Notes<textarea [(ngModel)]="attempt.notes" rows="2"></textarea></label>
       </div>
       <div class="modal-actions"><button type="button" (click)="saveAttempt()">Save Attempt</button></div>
     </section>
 
     <section class="history">
       <h3>Complaint History</h3>
-      <article *ngFor="let item of selectedComplaint.attempts">
-        <div class="history-heading">
-          <strong>Attempt {{ item.attempt_no }} Â· {{ statusLabel(item.status) }}</strong>
-          <span>{{ item.entered_at | date:'dd-MM-yyyy, h:mm a' }}</span>
-        </div>
-        <div class="history-grid">
-          <span><b>Assigned:</b> {{ item.assigned_employee_name || '-' }}</span>
-          <span><b>Entered By:</b> {{ item.entered_by_name || '-' }}</span>
-          <span><b>Start:</b> {{ item.start_time ? (item.start_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</span>
-          <span><b>End:</b> {{ item.end_time ? (item.end_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</span>
-        </div>
-        <p *ngIf="item.reason"><b>Reason:</b> {{ item.reason }}</p>
-        <p *ngIf="item.remedy"><b>Remedy:</b> {{ item.remedy }}</p>
-        <p *ngIf="item.notes"><b>Notes:</b> {{ item.notes }}</p>
-      </article>
+      <div class="history-table-scroll">
+        <table class="history-table">
+          <thead><tr><th>Attempt</th><th>Status</th><th>Entered Date</th><th>Assigned</th><th>Entered By</th><th>Start</th><th>End</th><th>Reason</th><th>Remedy</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of selectedComplaint.attempts">
+              <td>{{ item.attempt_no }}</td><td>{{ statusLabel(item.status) }}</td><td>{{ item.entered_at | date:'dd-MM-yyyy, h:mm a' }}</td>
+              <td>{{ item.assigned_employee_name || '-' }}</td><td>{{ item.entered_by_name || '-' }}</td>
+              <td>{{ item.start_time ? (item.start_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</td><td>{{ item.end_time ? (item.end_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</td>
+              <td>{{ item.reason || '-' }}</td><td>{{ item.remedy || '-' }}</td><td>{{ item.notes || '-' }}</td>
+            </tr>
+            <tr *ngIf="!selectedComplaint.attempts?.length"><td colspan="10" class="empty">No complaint history.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </section>
 </div>
@@ -193,7 +192,7 @@
         <h2>{{ viewedComplaint.complaint_no }} Â· {{ viewedComplaint.complainant_type }}</h2>
         <p>Registered {{ viewedComplaint.registered_at | date:'dd-MM-yyyy, h:mm a' }}</p>
       </div>
-      <button type="button" class="close" (click)="closeView()">Ã—</button>
+      <button type="button" class="close" (click)="closeView()">Close</button>
     </div>
     <section class="complaint-view">
       <div><span>Customer Name</span><strong>{{ viewedComplaint.customer_name || viewedComplaint.anonymous_name || 'Anonymous' }}</strong></div>
@@ -208,21 +207,20 @@
     </section>
     <section class="history">
       <h3>Complaint History</h3>
-      <article *ngFor="let item of viewedComplaint.attempts">
-        <div class="history-heading">
-          <strong>Attempt {{ item.attempt_no }} Â· {{ statusLabel(item.status) }}</strong>
-          <span>{{ item.entered_at | date:'dd-MM-yyyy, h:mm a' }}</span>
-        </div>
-        <div class="history-grid">
-          <span><b>Assigned:</b> {{ item.assigned_employee_name || '-' }}</span>
-          <span><b>Entered By:</b> {{ item.entered_by_name || '-' }}</span>
-          <span><b>Start:</b> {{ item.start_time ? (item.start_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</span>
-          <span><b>End:</b> {{ item.end_time ? (item.end_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</span>
-        </div>
-        <p *ngIf="item.reason"><b>Reason:</b> {{ item.reason }}</p>
-        <p *ngIf="item.remedy"><b>Remedy:</b> {{ item.remedy }}</p>
-        <p *ngIf="item.notes"><b>Notes:</b> {{ item.notes }}</p>
-      </article>
+      <div class="history-table-scroll">
+        <table class="history-table">
+          <thead><tr><th>Attempt</th><th>Status</th><th>Entered Date</th><th>Assigned</th><th>Entered By</th><th>Start</th><th>End</th><th>Reason</th><th>Remedy</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let item of viewedComplaint.attempts">
+              <td>{{ item.attempt_no }}</td><td>{{ statusLabel(item.status) }}</td><td>{{ item.entered_at | date:'dd-MM-yyyy, h:mm a' }}</td>
+              <td>{{ item.assigned_employee_name || '-' }}</td><td>{{ item.entered_by_name || '-' }}</td>
+              <td>{{ item.start_time ? (item.start_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</td><td>{{ item.end_time ? (item.end_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</td>
+              <td>{{ item.reason || '-' }}</td><td>{{ item.remedy || '-' }}</td><td>{{ item.notes || '-' }}</td>
+            </tr>
+            <tr *ngIf="!viewedComplaint.attempts?.length"><td colspan="10" class="empty">No complaint history.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
   </section>
 </div>

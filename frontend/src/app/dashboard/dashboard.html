@@ -7,13 +7,24 @@
   <p class="dashboard-message" *ngIf="loading">Loading dashboard counts...</p>
   <p class="dashboard-message error" *ngIf="errorMessage">{{ errorMessage }}</p>
 
+  <section class="complaint-panel" *ngIf="!loading">
+    <div class="panel-heading"><i class="bi bi-megaphone"></i><h2>Complaints by Status</h2></div>
+    <div class="complaint-grid">
+      <a *ngFor="let status of complaintStatuses" [class]="'complaint-card ' + status.tone"
+        routerLink="/cable-tv/complaints" [queryParams]="{ status: status.key }"
+        [attr.aria-label]="'View ' + status.label + ' complaints'">
+        <span>{{ status.label }}</span><strong>{{ (summary.complaints[status.key] || 0) | number }}</strong>
+      </a>
+    </div>
+  </section>
+
   <div class="summary-grid" *ngIf="!loading">
     <article class="summary-card workflow"><span class="card-icon"><i class="bi bi-hourglass-split"></i></span><div><p>Workflow Approvals Waiting</p><strong>{{ summary.workflow_waiting_count | number }}</strong></div></article>
     <article class="summary-card fault"><span class="card-icon"><i class="bi bi-tools"></i></span><div><p>Fault Boxes in Service</p><strong>{{ summary.fault_boxes_in_service | number }}</strong></div></article>
   </div>
 
   <div class="customer-grid" *ngIf="!loading">
-    <section class="count-panel">
+    <section class="count-panel" *ngIf="permissions.isAdmin()">
       <div class="panel-heading"><i class="bi bi-tv"></i><h2>CATV Customers</h2></div>
       <div class="paired-counts"><div class="active"><span>Active</span><strong>{{ summary.catv.active | number }}</strong></div><div class="deactive"><span>Deactive</span><strong>{{ summary.catv.deactive | number }}</strong></div></div>
     </section>
@@ -23,10 +34,4 @@
     </section>
   </div>
 
-  <section class="complaint-panel" *ngIf="!loading">
-    <div class="panel-heading"><i class="bi bi-megaphone"></i><h2>Complaints by Status</h2></div>
-    <div class="complaint-grid">
-      <article *ngFor="let status of complaintStatuses" [class]="'complaint-card ' + status.tone"><span>{{ status.label }}</span><strong>{{ (summary.complaints[status.key] || 0) | number }}</strong></article>
-    </div>
-  </section>
 </section>

@@ -44,6 +44,8 @@ export class CableTvComplaints {
   ) {}
 
   ngOnInit() {
+    const requestedStatus = String(this.route.snapshot.queryParamMap.get('status') || '').toUpperCase();
+    if (this.statuses.includes(requestedStatus)) this.filters.status = requestedStatus;
     this.loadReferenceData();
     this.route.queryParamMap.subscribe(params => {
       const customerId = Number(params.get('customerId') || 0);

@@ -41,7 +41,7 @@
       </select>
     </label>
     <label>Installed By
-      <select [(ngModel)]="installedByFilter">
+      <select [(ngModel)]="installedByFilter" [disabled]="!permissions.isAdmin()">
         <option value="">All employees</option>
         <option *ngFor="let employee of employees" [value]="employee.employee_id">
           {{ employee.employee_name }}

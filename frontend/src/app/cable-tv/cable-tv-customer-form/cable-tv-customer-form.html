@@ -241,8 +241,8 @@
             <option *ngFor="let item of lookups.packages || []" [ngValue]="item.package_id" [disabled]="isPackageSelected(item.package_id, i)">{{ item.package_name }} - {{ item.package_type }}</option>
           </select>
           <input type="number" formControlName="package_price" (input)="calculatePackageRow(i)">
-          <input type="date" formControlName="start_date" (change)="calculatePackageRow(i)">
-          <input type="date" formControlName="end_date" (change)="calculatePackageRow(i)">
+          <input type="date" formControlName="start_date" (change)="packageDateChanged(i)">
+          <input type="date" formControlName="end_date" (change)="packageDateChanged(i)">
           <input type="number" formControlName="number_of_days_or_months" readonly>
           <input type="number" formControlName="amount" readonly>
           <button type="button" class="icon-btn" (click)="removePackageRow(i)">x</button>
@@ -289,7 +289,7 @@
         <label>Start Date
           <input type="date" formControlName="start_date">
         </label>
-        <label>Expiry Date
+        <label>End Date
           <input type="date" formControlName="expiry_date">
         </label>
         <label>Subscription Amount

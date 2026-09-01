@@ -7,6 +7,7 @@
 .dashboard-message { background: #eef2ff; border-radius: 8px; padding: 1rem; }
 .dashboard-message.error { background: #fff0f0; color: #b42318; }
 .summary-grid, .customer-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 1rem; }
+.customer-grid .count-panel:only-child { grid-column: 1 / -1; }
 .summary-card, .count-panel, .complaint-panel { background: #fff; border: 1px solid #e4e8f0; border-radius: 12px; box-shadow: 0 3px 12px rgba(31, 42, 68, .06); }
 .summary-card { align-items: center; display: flex; gap: 1rem; padding: 1.25rem; }
 .card-icon { align-items: center; border-radius: 10px; display: flex; font-size: 1.35rem; height: 48px; justify-content: center; width: 48px; }
@@ -14,7 +15,8 @@
 .summary-card.fault .card-icon { background: #ffe8e6; color: #c4322b; }
 .summary-card p { color: #667085; margin: 0 0 .25rem; }
 .summary-card strong { font-size: 1.8rem; }
-.count-panel, .complaint-panel { padding: 1.25rem; }
+.count-panel { padding: 1.25rem; }
+.complaint-panel { margin-bottom: 1rem; padding: .8rem 1rem; }
 .panel-heading { align-items: center; display: flex; gap: .6rem; margin-bottom: 1rem; }
 .panel-heading i { color: #3346c8; font-size: 1.15rem; }
 .panel-heading h2 { font-size: 1.05rem; margin: 0; }
@@ -23,9 +25,11 @@
 .paired-counts .active { background: #eaf8f0; color: #18794e; }
 .paired-counts .deactive { background: #f2f4f7; color: #596275; }
 .paired-counts strong { font-size: 1.5rem; margin-top: .25rem; }
-.complaint-grid { display: grid; gap: .75rem; grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.complaint-card { border-left: 4px solid; border-radius: 8px; display: flex; flex-direction: column; padding: .9rem; }
-.complaint-card strong { font-size: 1.45rem; margin-top: .25rem; }
+.complaint-panel .panel-heading { margin-bottom: .6rem; }
+.complaint-grid { display: grid; gap: .6rem; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.complaint-card { align-items: center; border-left: 4px solid; border-radius: 8px; color: inherit; display: flex; justify-content: space-between; min-height: 42px; padding: .5rem .7rem; text-decoration: none; }
+.complaint-card:hover, .complaint-card:focus-visible { box-shadow: 0 0 0 2px rgba(51, 70, 200, .2); transform: translateY(-1px); }
+.complaint-card strong { font-size: 1.25rem; margin-left: .5rem; }
 .complaint-card.open { background: #eef4ff; border-color: #4674d9; }
 .complaint-card.progress { background: #f1edff; border-color: #7357d4; }
 .complaint-card.hold { background: #fff4df; border-color: #d88a18; }

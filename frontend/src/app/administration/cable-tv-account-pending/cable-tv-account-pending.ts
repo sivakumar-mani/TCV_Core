@@ -53,13 +53,21 @@ export class CableTvAccountPending {
   ngOnInit() {
     this.nameFilter = this.route.snapshot.queryParamMap.get('name') || '';
     this.statusFilter = String(this.route.snapshot.queryParamMap.get('status') || 'PENDING').toUpperCase();
+    if (!this.permissions.isAdmin() && this.permissions.employeeId()) {
+      this.installedByFilter = String(this.permissions.employeeId());
+    }
     this.loadEmployees();
     this.loadAccounts();
   }
 
   loadEmployees() {
     this.cableTvService.getLookups().subscribe({
-      next: (response: any) => this.employees = response?.employees || [],
+      next: (response: any) => {
+        this.employees = response?.employees || [];
+        if (!this.permissions.isAdmin() && this.loggedInEmployeeId) {
+          this.installedByFilter = String(this.loggedInEmployeeId);
+        }
+      },
       error: (error: any) => this.handleError(error)
     });
   }
@@ -159,7 +167,9 @@ export class CableTvAccountPending {
   resetFilters() {
     this.nameFilter = '';
     this.statusFilter = 'PENDING';
-    this.installedByFilter = '';
+    this.installedByFilter = this.permissions.isAdmin()
+      ? ''
+      : String(this.loggedInEmployeeId || '');
     this.startDate = '';
     this.endDate = '';
     this.loadAccounts();
@@ -264,6 +274,7 @@ export class CableTvAccountPending {
 
   reportPaymentStatus(item: any) {
     const status = String(item?.calculated_account_status || item?.account_status || '').trim().toUpperCase();
+    if (status === 'NA') return 'NA';
     if (status === 'RECEIVED') return 'PAID';
     if (['PAID', 'PARTIAL', 'PENDING'].includes(status)) return status;
     return this.reportBalance(item) <= 0 ? 'PAID' : 'PENDING';

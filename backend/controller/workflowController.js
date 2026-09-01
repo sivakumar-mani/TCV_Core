@@ -356,6 +356,40 @@ const approveWorkflow = async (req, res) => {
             for (const stb of pendingStbs) {
                 const desiredStatus = String(stb.status || 'DISCONNECTED').toUpperCase();
                 const reason = String(stb.update_reason || '').toUpperCase();
+                if (reason === 'RETURNED' && !stb.stb_master_id && stb.stb_no) {
+                    const [matchingMasters] = await conn.query(
+                        `SELECT stb_master_id FROM cable_stb_master
+                         WHERE LOWER(TRIM(stb_number)) = LOWER(TRIM(?)) AND is_active = 1
+                         ORDER BY stb_master_id DESC LIMIT 1 FOR UPDATE`,
+                        [stb.stb_no]
+                    );
+                    let returnedMasterId = Number(matchingMasters[0]?.stb_master_id) || null;
+                    if (!returnedMasterId) {
+                        const [createdMaster] = await conn.query(
+                            `INSERT INTO cable_stb_master (
+                                stb_number, box_type, stock_type, mso_id, stb_amount, full_set_amount,
+                                assigned_employee_id, status, updated_date
+                             ) VALUES (?, 'HD', 'RETURNED', ?, ?, 800, NULL, 'AVAILABLE', ?)`,
+                            [
+                                stb.stb_no, stb.installed_mso_id || null,
+                                Number(stb.stb_amount || 500), stb.updated_date || new Date()
+                            ]
+                        );
+                        returnedMasterId = createdMaster.insertId;
+                    }
+                    await conn.query(
+                        `UPDATE cable_stb_master
+                         SET stock_type = 'RETURNED', status = 'AVAILABLE', assigned_employee_id = NULL,
+                             mso_id = COALESCE(mso_id, ?), updated_date = ?, updated_at = NOW()
+                         WHERE stb_master_id = ?`,
+                        [stb.installed_mso_id || null, stb.updated_date || new Date(), returnedMasterId]
+                    );
+                    await conn.query(
+                        'UPDATE cable_customer_stbs SET stb_master_id = ? WHERE customer_stb_id = ?',
+                        [returnedMasterId, stb.customer_stb_id]
+                    );
+                    stb.stb_master_id = returnedMasterId;
+                }
                 if (['FAULT', 'DAMAGED', 'BROKEN', 'BURNT'].includes(reason)) {
                     const faultStockType = reason === 'BROKEN' ? 'DAMAGED' : reason;
                     let faultMasterId = Number(stb.stb_master_id) || null;
