@@ -83,7 +83,7 @@ router.get('/complaints', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComp
 router.get('/complaints/customers/lookup', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintCustomers);
 router.get('/complaints/:complaintId', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintById);
 router.post('/complaints', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_create'), addComplaint);
-router.post('/complaints/:complaintId/attempts', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), addComplaintAttempt);
+router.post('/complaints/:complaintId/attempts', auth.requirePermission('CABLE_TV_COMPLAINTS'), addComplaintAttempt);
 router.get('/masters', auth.requireAnyPermission(['CABLE_TV_MASTERS', 'CABLE_TV_PACKAGES', 'CABLE_TV_STBS']), getMasters);
 router.post('/masters/locations', auth.requirePermission('CABLE_TV_MASTERS'), addLocation);
 router.post('/masters/areas', auth.requirePermission('CABLE_TV_MASTERS'), addArea);

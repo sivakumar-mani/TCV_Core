@@ -67,7 +67,7 @@ export class CableTvComplaints {
     return {
       status: 'IN_PROGRESS', assigned_employee_id: null, mapping_type: 'CATV',
       cable_customer_id: null, service_customer_id: null,
-      start_time: '', end_time: '', reason: '', remedy: '', notes: ''
+      start_time: '', end_time: '', description: ''
     };
   }
 
@@ -205,6 +205,7 @@ export class CableTvComplaints {
           : null;
         this.attempt.mapping_type = response.complainant_type === 'ANONYMOUS' ? 'CATV' : response.complainant_type;
         this.attempt.start_time = this.localDateTime();
+        this.attempt.end_time = this.localDateTime();
         this.showAttemptModal = true;
       },
       error: error => this.handleError(error)

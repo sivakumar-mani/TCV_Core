@@ -346,7 +346,7 @@ const addComplaintAttempt = async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         complaintId, nextAttempt.attempt_no, status, assignedEmployeeId, startTime, endTime,
-        textOrNull(payload.reason), textOrNull(payload.remedy), textOrNull(payload.notes),
+        null, null, textOrNull(payload.description) || textOrNull(payload.notes),
         userId(req), enteredEmployeeId
       ]
     );
