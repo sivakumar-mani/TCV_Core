@@ -2365,10 +2365,24 @@ const getStbPaymentReport = async (req,res) => {
     if(!/^\d{4}-\d{2}-\d{2}$/.test(startDate)||!/^\d{4}-\d{2}-\d{2}$/.test(endDate))return res.status(400).json({message:'Collection Start Date and Collection End Date are required'});
     if(endDate<startDate)return res.status(400).json({message:'End Date cannot be before Start Date'});
     const paymentFilters=['sp.collected_date BETWEEN ? AND ?','COALESCE(sp.received_amount,0)>0'];
-    const subscriptionFilters=['sub.collect_date BETWEEN ? AND ?','COALESCE(sub.paid_amount,0)>0'];
+    const subscriptionFilters=[
+      'DATE(COALESCE(sub.collect_date, sub.created_at)) BETWEEN ? AND ?',
+      "(COALESCE(sub.paid_amount,0)>0 OR UPPER(COALESCE(sub.payment_status,''))='PAID')"
+    ];
     const paymentValues=[startDate,endDate],subscriptionValues=[startDate,endDate];
     if(networkId){paymentFilters.push('c.network_id=?');paymentValues.push(networkId);subscriptionFilters.push('c.network_id=?');subscriptionValues.push(networkId);}
-    if(collectorId){paymentFilters.push('sp.received_by_employee_id=?');paymentValues.push(collectorId);subscriptionFilters.push('sub.collected_by_employee_id=?');subscriptionValues.push(collectorId);}
+    if(collectorId){
+      paymentFilters.push(`(sp.received_by_employee_id=? OR (
+        UPPER(COALESCE(sub.payment_mode,'CASH')) IN ('ONLINE','OFFICE')
+        AND sub.payment_mapped_employee_id=?
+      ))`);
+      paymentValues.push(collectorId,collectorId);
+      subscriptionFilters.push(`(sub.collected_by_employee_id=? OR (
+        UPPER(COALESCE(sub.payment_mode,'CASH')) IN ('ONLINE','OFFICE')
+        AND sub.payment_mapped_employee_id=?
+      ))`);
+      subscriptionValues.push(collectorId,collectorId);
+    }
     const [rows]=await db.query(`SELECT report.* FROM (SELECT CONCAT('SUBSCRIPTION-PAYMENT-',sp.subscription_payment_id) payment_id,sp.collected_date collect_date,c.customer_code,c.full_name,
       CONCAT(MONTHNAME(STR_TO_DATE(CONCAT(sub.subscription_year,'-',sub.subscription_month,'-01'),'%Y-%c-%d')),' ',sub.subscription_year) payment_month,
       CASE UPPER(COALESCE(sp.payment_mode,'CASH')) WHEN 'ONLINE' THEN 'Online' WHEN 'OFFICE' THEN 'Office' ELSE 'Cash' END payment_mode,
@@ -2381,11 +2395,14 @@ const getStbPaymentReport = async (req,res) => {
       LEFT JOIN cable_customer_packages cp ON cp.customer_package_id=sub.customer_package_id LEFT JOIN cable_package_master pkg ON pkg.package_id=cp.package_id
       WHERE ${paymentFilters.join(' AND ')}
       UNION ALL
-      SELECT CONCAT('SUBSCRIPTION-',sub.subscription_id),sub.collect_date,c.customer_code,c.full_name,
+      SELECT CONCAT('SUBSCRIPTION-',sub.subscription_id),DATE(COALESCE(sub.collect_date,sub.created_at)),c.customer_code,c.full_name,
       CONCAT(MONTHNAME(STR_TO_DATE(CONCAT(sub.subscription_year,'-',sub.subscription_month,'-01'),'%Y-%c-%d')),' ',sub.subscription_year),
       CASE UPPER(COALESCE(sub.payment_mode,'CASH')) WHEN 'ONLINE' THEN 'Online' WHEN 'OFFICE' THEN 'Office' ELSE 'Cash' END,
       COALESCE(NULLIF(TRIM(CONCAT_WS(' ',e.first_name,e.last_name)),''),'-'),stb.stb_no,
-      COALESCE(NULLIF(cp.package_price,0),pkg.price,sub.amount,0),COALESCE(sub.balance_amount,0),sub.paid_amount,n.network_code,n.network_name
+      COALESCE(NULLIF(cp.package_price,0),pkg.price,sub.amount,0),
+      CASE WHEN UPPER(COALESCE(sub.payment_status,''))='PAID' THEN 0 ELSE COALESCE(sub.balance_amount,0) END,
+      CASE WHEN UPPER(COALESCE(sub.payment_status,''))='PAID' AND COALESCE(sub.paid_amount,0)<=0 THEN sub.amount ELSE sub.paid_amount END,
+      n.network_code,n.network_name
       FROM cable_subscriptions sub JOIN cable_tv_customers c ON c.cable_customer_id=sub.cable_customer_id
       JOIN cable_network_master n ON n.network_id=c.network_id LEFT JOIN employees e ON e.employee_id=sub.collected_by_employee_id
       LEFT JOIN cable_customer_stbs stb ON stb.customer_stb_id=(SELECT MAX(s2.customer_stb_id) FROM cable_customer_stbs s2 WHERE s2.cable_customer_id=c.cable_customer_id)
