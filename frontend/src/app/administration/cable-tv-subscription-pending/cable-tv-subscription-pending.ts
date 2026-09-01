@@ -17,7 +17,7 @@ export class CableTvSubscriptionPending {
   customers: any[] = [];
   totalCustomers = 0;
   lookups: any = {};
-  filters = { customer_no: '', customer_name: '', area_id: '', street_id: '' };
+  filters = { customer_no: '', old_customer_no: '', customer_name: '', area_id: '', street_id: '' };
   selectedCustomer: any = null;
   selectedSubscription: any = null;
   showPaymentModal = false;
@@ -127,7 +127,7 @@ export class CableTvSubscriptionPending {
   }
 
   resetFilters() {
-    this.filters = { customer_no: '', customer_name: '', area_id: '', street_id: '' };
+    this.filters = { customer_no: '', old_customer_no: '', customer_name: '', area_id: '', street_id: '' };
     this.loadPendingSubscriptions();
   }
 
@@ -198,8 +198,16 @@ export class CableTvSubscriptionPending {
   }
 
   monthLabel(month: any, year: any) {
-    const name = new Date(2000, Number(month) - 1, 1).toLocaleString('en-US', { month: 'long' });
-    return `${name} ${year}`;
+    const name = new Date(2000, Number(month) - 1, 1).toLocaleString('en-US', { month: 'short' });
+    return `${name}${year}`;
+  }
+
+  get selectedAreaName() {
+    return this.areas.find((item: any) => Number(item.area_id) === Number(this.filters.area_id))?.area_name || '';
+  }
+
+  get selectedStreetName() {
+    return (this.lookups.streets || []).find((item: any) => Number(item.street_id) === Number(this.filters.street_id))?.street_name || '';
   }
 
   address(customer: any) {

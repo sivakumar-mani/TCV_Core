@@ -10,6 +10,9 @@
     <label>Cust No
       <input type="search" [(ngModel)]="filters.customer_no" (keyup.enter)="loadPendingSubscriptions()" placeholder="Enter cust no">
     </label>
+    <label>Old Cust No
+      <input type="search" [(ngModel)]="filters.old_customer_no" (keyup.enter)="loadPendingSubscriptions()" placeholder="Enter old cust no">
+    </label>
     <label>Customer Name
       <input type="search" [(ngModel)]="filters.customer_name" (keyup.enter)="loadPendingSubscriptions()" placeholder="Enter customer name">
     </label>
@@ -32,19 +35,24 @@
   </section>
 
   <section class="list-card">
-    <div class="list-summary">Total CATV Subscription Customers: <strong>{{ totalCustomers }}</strong></div>
+    <div class="list-summary">
+      <div class="applied-location" *ngIf="selectedAreaName || selectedStreetName">
+        <span *ngIf="selectedAreaName">Area: <strong>{{ selectedAreaName }}</strong></span>
+        <span *ngIf="selectedStreetName">Street: <strong>{{ selectedStreetName }}</strong></span>
+      </div>
+      <div>Total CATV Subscription Customers: <strong>{{ totalCustomers }}</strong></div>
+    </div>
     <div class="table-scroll">
       <table>
         <thead>
-          <tr><th>S No</th><th>Cust No</th><th>Customer Name</th><th>STB No</th><th>Address</th><th>Package Amount</th><th>Balance Month</th></tr>
+          <tr><th>S No</th><th>C No</th><th>Old C No</th><th>Customer Name</th><th>Package Amount</th><th>Balance Month</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let customer of customers; let i = index">
             <td>{{ i + 1 }}</td>
             <td>{{ customer.customer_code }}</td>
+            <td>{{ customer.legacy_customer_no || '-' }}</td>
             <td><strong>{{ customer.full_name }}</strong></td>
-            <td>{{ customer.stb_no || '-' }}</td>
-            <td>{{ address(customer) }}</td>
             <td>{{ customer.package_amount | number:'1.0-0' }}</td>
             <td class="month-cell">
               <button *ngFor="let month of customer.pending_months" type="button" class="month-link" (click)="openPayment(customer, month)">
@@ -52,7 +60,7 @@
               </button>
             </td>
           </tr>
-          <tr *ngIf="!customers.length"><td colspan="7" class="empty-row">No unpaid subscription months found.</td></tr>
+          <tr *ngIf="!customers.length"><td colspan="6" class="empty-row">No unpaid subscription months found.</td></tr>
         </tbody>
       </table>
     </div>

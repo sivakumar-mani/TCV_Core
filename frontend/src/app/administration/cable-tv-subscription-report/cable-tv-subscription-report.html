@@ -21,6 +21,14 @@
         <option *ngFor="let type of customerTypes" [value]="type.value">{{ type.label }}</option>
       </select>
     </label>
+    <label>Type
+      <select [(ngModel)]="filters.payment_type">
+        <option value="">All Types</option>
+        <option value="CASH">Cash</option>
+        <option value="ONLINE">Online</option>
+        <option value="OFFICE">Office</option>
+      </select>
+    </label>
     <label>From Date<input type="date" [(ngModel)]="filters.start_date"></label>
     <label>To Date<input type="date" [(ngModel)]="filters.end_date" [min]="filters.start_date"></label>
     <div class="filter-actions">
@@ -40,30 +48,31 @@
 
     <div class="table-scroll">
       <table>
-        <thead><tr><th class="serial">S.No</th><th>Collected Date</th><th>Collected By</th><th>C No</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
+        <thead><tr><th class="serial">S.No</th><th>Collected Date</th><th>C No/Old C No</th><th>Collected By</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Mapped</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
         <tbody>
           <tr *ngFor="let row of pageRows; let i = index">
             <td>{{ (page - 1) * pageSize + i + 1 }}</td>
             <td>{{ displayDate(row.collect_date) }}</td>
+            <td>{{ customerNumber(row) }}</td>
             <td>{{ row.collected_by_name || '-' }}</td>
-            <td>{{ row.customer_code }}</td>
             <td>{{ row.full_name }}</td>
             <td>{{ row.network_code || row.network_name || '-' }}</td>
             <td>{{ monthLabel(row) }}</td>
             <td>{{ row.number_of_days | number:'1.0-0' }}</td>
             <td>{{ paymentType(row) }}</td>
+            <td>{{ row.mapped_employee_name || '-' }}</td>
             <td class="number">{{ row.received_count | number:'1.0-2' }}</td>
             <td class="number">{{ row.balance_amount | number:'1.0-0' }}</td>
             <td class="number"><strong>{{ row.paid_amount | number:'1.0-0' }}</strong></td>
           </tr>
-          <tr *ngIf="!pageRows.length"><td colspan="12" class="empty">No subscription collection records found.</td></tr>
+          <tr *ngIf="!pageRows.length"><td colspan="13" class="empty">No subscription collection records found.</td></tr>
         </tbody>
         <tfoot>
           <tr class="payment-mode-total" *ngFor="let item of paymentModeBreakdown">
-            <td colspan="11">{{ item.label }}</td>
+            <td colspan="12">{{ item.label }}</td>
             <td class="number"><strong>{{ item.amount | number:'1.0-0' }}</strong></td>
           </tr>
-          <tr><td colspan="8">Total Records: <strong>{{ summary.total_records }}</strong></td><td class="grand-total">Grand Total</td><td class="number"><strong>{{ summary.total_count | number:'1.0-2' }}</strong></td><td class="number">{{ summary.total_balance | number:'1.0-0' }}</td><td class="number"><strong>{{ summary.total_amount | number:'1.0-0' }}</strong></td></tr>
+          <tr><td colspan="9">Total Records: <strong>{{ summary.total_records }}</strong></td><td class="grand-total">Grand Total</td><td class="number"><strong>{{ summary.total_count | number:'1.0-2' }}</strong></td><td class="number">{{ summary.total_balance | number:'1.0-0' }}</td><td class="number"><strong>{{ summary.total_amount | number:'1.0-0' }}</strong></td></tr>
         </tfoot>
       </table>
     </div>

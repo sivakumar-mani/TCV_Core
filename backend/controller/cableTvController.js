@@ -1986,6 +1986,7 @@ const getPendingSubscriptions = async (req, res) => {
     const db = connection.promise();
     await ensureCableTvExtendedTables(db);
     const customerNo = String(req.query.customer_no || '').trim();
+    const oldCustomerNo = String(req.query.old_customer_no || '').trim();
     const customerName = String(req.query.customer_name || '').trim();
     const areaId = intOrNull(req.query.area_id);
     const streetId = intOrNull(req.query.street_id);
@@ -1999,6 +2000,10 @@ const getPendingSubscriptions = async (req, res) => {
     if (customerNo) {
       filters.push('CAST(c.customer_code AS CHAR) LIKE ?');
       values.push(`%${customerNo}%`);
+    }
+    if (oldCustomerNo) {
+      filters.push("COALESCE(c.legacy_customer_no, '') LIKE ?");
+      values.push(`%${oldCustomerNo}%`);
     }
     if (customerName) {
       filters.push('c.full_name LIKE ?');
@@ -2018,9 +2023,14 @@ const getPendingSubscriptions = async (req, res) => {
               sub.days_in_month, sub.billing_basis, sub.number_of_days_or_months, sub.amount,
               sub.paid_amount, sub.balance_amount, sub.start_date, sub.expiry_date,
               sub.collect_date, sub.payment_mode, sub.payment_status, sub.remarks,
-              c.customer_code, c.full_name, c.door_no, c.city, c.pincode, c.status AS customer_status,
+              c.customer_code, c.legacy_customer_no, c.full_name, c.door_no, c.city, c.pincode, c.status AS customer_status,
               c.area_id, c.street_id, a.area_name, s.street_name,
               cp.package_price, pkg.package_name,
+              (SELECT COALESCE(SUM(COALESCE(NULLIF(active_cp.package_price, 0), active_pkg.price, 0)), 0)
+               FROM cable_customer_packages active_cp
+               LEFT JOIN cable_package_master active_pkg ON active_pkg.package_id = active_cp.package_id
+               WHERE active_cp.cable_customer_id = c.cable_customer_id
+                 AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED') AS current_package_amount,
               COALESCE(NULLIF(latest_stb.stb_no, ''), sm.stb_number) AS stb_no,
               latest_stb.installed_date,
               COALESCE(NULLIF(TRIM(CONCAT_WS(' ', collector.first_name, collector.last_name)), ''), collector.employee_code) AS collected_by_name
@@ -2052,6 +2062,7 @@ const getPendingSubscriptions = async (req, res) => {
         customer = {
           cable_customer_id: customerId,
           customer_code: row.customer_code,
+          legacy_customer_no: row.legacy_customer_no,
           full_name: row.full_name,
           stb_no: row.stb_no,
           door_no: row.door_no,
@@ -2063,7 +2074,7 @@ const getPendingSubscriptions = async (req, res) => {
           pincode: row.pincode,
           customer_status: row.customer_status,
           installed_date: row.installed_date,
-          package_amount: row.package_price || row.amount,
+          package_amount: row.current_package_amount || row.package_price || row.amount,
           pending_months: []
         };
         byCustomer.set(customerId, customer);
@@ -2249,7 +2260,7 @@ const getCableSubscriptionReport = async (req, res) => {
     const filters = [
       "sub.approval_status IN ('PENDING','APPROVED')",
       'DATE(COALESCE(sub.collect_date, sub.created_at)) BETWEEN ? AND ?',
-      'COALESCE(sub.paid_amount, 0) > 0'
+      "(COALESCE(sub.paid_amount, 0) > 0 OR UPPER(COALESCE(sub.payment_status, '')) = 'PAID')"
     ];
     const values = [startDate, endDate];
     const networkId = intOrNull(req.query.network_id);
@@ -2265,6 +2276,14 @@ const getCableSubscriptionReport = async (req, res) => {
       filters.push("UPPER(COALESCE(c.customer_type, 'REGULAR')) = ?");
       values.push(customerType);
     }
+    const paymentType = String(req.query.payment_type || '').trim().toUpperCase();
+    if (paymentType && !['CASH', 'ONLINE', 'OFFICE'].includes(paymentType)) {
+      return res.status(400).json({ message: 'Valid payment type is required' });
+    }
+    if (paymentType) {
+      filters.push("UPPER(COALESCE(sub.payment_mode, 'CASH')) = ?");
+      values.push(paymentType);
+    }
 
     let collectedByEmployeeId;
     if (isAdmin(req)) {
@@ -2275,14 +2294,12 @@ const getCableSubscriptionReport = async (req, res) => {
         return res.status(403).json({ message: 'Logged-in user is not mapped to an employee' });
       }
     }
-    const reportEmployeeExpression = `CASE
-      WHEN UPPER(COALESCE(sub.payment_mode, 'CASH')) IN ('ONLINE', 'OFFICE')
-        THEN COALESCE(sub.payment_mapped_employee_id, sub.collected_by_employee_id)
-      ELSE sub.collected_by_employee_id
-    END`;
     if (collectedByEmployeeId) {
-      filters.push(`${reportEmployeeExpression} = ?`);
-      values.push(collectedByEmployeeId);
+      filters.push(`(sub.collected_by_employee_id = ? OR (
+        UPPER(COALESCE(sub.payment_mode, 'CASH')) IN ('ONLINE', 'OFFICE')
+        AND sub.payment_mapped_employee_id = ?
+      ))`);
+      values.push(collectedByEmployeeId, collectedByEmployeeId);
     }
 
     const [rows] = await db.query(
@@ -2291,13 +2308,18 @@ const getCableSubscriptionReport = async (req, res) => {
               sub.start_date, sub.expiry_date, sub.days_in_month, sub.billing_basis,
               sub.number_of_days_or_months, sub.payment_mode, sub.payment_status,
               COALESCE(NULLIF(sub.received_count, 0), 1) AS received_count,
-              ROUND(COALESCE(sub.paid_amount, 0)) AS paid_amount,
-              ROUND(COALESCE(sub.balance_amount, 0)) AS balance_amount,
-              c.customer_code, c.full_name, c.network_id, COALESCE(c.customer_type, 'REGULAR') AS customer_type,
-              n.network_code, n.network_name,
-              ${reportEmployeeExpression} AS collected_by_employee_id,
-              sub.payment_mapped_employee_id,
-              COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), e.employee_code, '-') AS collected_by_name,
+               ROUND(CASE WHEN UPPER(COALESCE(sub.payment_status, '')) = 'PAID' AND COALESCE(sub.paid_amount, 0) <= 0
+                 THEN sub.amount ELSE COALESCE(sub.paid_amount, 0) END) AS paid_amount,
+               ROUND(CASE WHEN UPPER(COALESCE(sub.payment_status, '')) = 'PAID'
+                 THEN 0 ELSE COALESCE(sub.balance_amount, 0) END) AS balance_amount,
+               c.customer_code, c.legacy_customer_no, c.full_name, c.network_id, COALESCE(c.customer_type, 'REGULAR') AS customer_type,
+               n.network_code, n.network_name,
+               sub.collected_by_employee_id,
+               sub.payment_mapped_employee_id,
+               COALESCE(NULLIF(TRIM(CONCAT_WS(' ', collector.first_name, collector.last_name)), ''), collector.employee_code, '-') AS collected_by_name,
+               CASE WHEN UPPER(COALESCE(sub.payment_mode, 'CASH')) IN ('ONLINE', 'OFFICE')
+                 THEN COALESCE(NULLIF(TRIM(CONCAT_WS(' ', mapped.first_name, mapped.last_name)), ''), mapped.employee_code, '-')
+                 ELSE '-' END AS mapped_employee_name,
               CASE
                 WHEN sub.start_date IS NOT NULL AND sub.expiry_date IS NOT NULL
                   THEN DATEDIFF(sub.expiry_date, sub.start_date) + 1
@@ -2306,7 +2328,8 @@ const getCableSubscriptionReport = async (req, res) => {
        FROM cable_subscriptions sub
        INNER JOIN cable_tv_customers c ON c.cable_customer_id = sub.cable_customer_id
        LEFT JOIN cable_network_master n ON n.network_id = c.network_id
-       LEFT JOIN employees e ON e.employee_id = ${reportEmployeeExpression}
+       LEFT JOIN employees collector ON collector.employee_id = sub.collected_by_employee_id
+       LEFT JOIN employees mapped ON mapped.employee_id = sub.payment_mapped_employee_id
        WHERE ${filters.join(' AND ')}
        ORDER BY sub.collect_date, c.customer_code, sub.subscription_year, sub.subscription_month, sub.subscription_id`,
       values
@@ -2319,7 +2342,8 @@ const getCableSubscriptionReport = async (req, res) => {
         start_date: startDate,
         end_date: endDate,
         network_id: networkId,
-        customer_type: customerType || null,
+         customer_type: customerType || null,
+         payment_type: paymentType || null,
         collected_by_employee_id: collectedByEmployeeId || null
       },
       total_records: rows.length,
@@ -2384,7 +2408,14 @@ const receiveSubscriptionPayment = async (req, res) => {
               sub.subscription_month, sub.subscription_year, sub.days_in_month,
               sub.billing_basis, sub.number_of_days_or_months, sub.start_date, sub.expiry_date,
               sub.amount, sub.paid_amount, sub.balance_amount, sub.payment_status, sub.approval_status,
-              COALESCE(NULLIF(cp.package_price, 0), pkg.price, sub.amount) AS monthly_package_amount
+              COALESCE(
+                NULLIF((SELECT SUM(COALESCE(NULLIF(active_cp.package_price, 0), active_pkg.price, 0))
+                        FROM cable_customer_packages active_cp
+                        LEFT JOIN cable_package_master active_pkg ON active_pkg.package_id = active_cp.package_id
+                        WHERE active_cp.cable_customer_id = sub.cable_customer_id
+                          AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0),
+                NULLIF(cp.package_price, 0), pkg.price, sub.amount
+              ) AS monthly_package_amount
        FROM cable_subscriptions sub
        LEFT JOIN cable_customer_packages cp ON cp.customer_package_id = sub.customer_package_id
        LEFT JOIN cable_package_master pkg ON pkg.package_id = cp.package_id
@@ -3107,7 +3138,27 @@ const getCableCustomerById = async (req, res) => {
       [id]
     );
     const [subscriptions] = await db.query(
-      `SELECT sub.*, cp.package_price, pkg.package_name, pkg.package_type,
+      `SELECT sub.*,
+              CASE WHEN sub.payment_status = 'PENDING' THEN
+                ROUND(COALESCE(NULLIF((SELECT SUM(COALESCE(NULLIF(active_cp.package_price, 0), active_pkg.price, 0))
+                  FROM cable_customer_packages active_cp
+                  LEFT JOIN cable_package_master active_pkg ON active_pkg.package_id = active_cp.package_id
+                  WHERE active_cp.cable_customer_id = sub.cable_customer_id
+                    AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0), sub.amount)
+                  * COALESCE(NULLIF(sub.received_count, 0), 1), 0)
+                ELSE sub.amount END AS amount,
+              CASE WHEN sub.payment_status = 'PENDING' THEN
+                GREATEST(ROUND(COALESCE(NULLIF((SELECT SUM(COALESCE(NULLIF(active_cp.package_price, 0), active_pkg.price, 0))
+                  FROM cable_customer_packages active_cp
+                  LEFT JOIN cable_package_master active_pkg ON active_pkg.package_id = active_cp.package_id
+                  WHERE active_cp.cable_customer_id = sub.cable_customer_id
+                    AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0), sub.amount)
+                  * COALESCE(NULLIF(sub.received_count, 0), 1), 0) - COALESCE(sub.paid_amount, 0), 0)
+                WHEN sub.payment_status = 'PAID' THEN 0
+                ELSE sub.balance_amount END AS balance_amount,
+              CASE WHEN sub.payment_status = 'PAID' AND COALESCE(sub.paid_amount, 0) <= 0
+                THEN sub.amount ELSE sub.paid_amount END AS paid_amount,
+              cp.package_price, pkg.package_name, pkg.package_type,
               pkg.price AS master_package_price,
               NULLIF(TRIM(CONCAT_WS(' ', collected.first_name, collected.last_name)), '') AS collected_by_name,
               collected.employee_code AS collected_by_code,
@@ -4601,20 +4652,17 @@ const updateCustomerSubscription = async (req, res) => {
       return res.status(400).json({ message: 'Subscription already exists for selected month and year' });
     }
     const amount = isAdmin(req) ? money(req.body.amount) : money(existingSubscription.amount);
-    const paidAmount = money(req.body.paid_amount);
+    const requestedStatus = String(req.body.payment_status || 'PENDING').toUpperCase();
+    let paidAmount = money(req.body.paid_amount);
+    if (isAdmin(req) && requestedStatus === 'PAID') paidAmount = amount;
     if (!isAdmin(req) && paidAmount < money(existingSubscription.paid_amount)) {
       return res.status(400).json({ message: 'Paid Amount cannot be less than the amount already collected' });
     }
     if (paidAmount > amount) {
       return res.status(400).json({ message: 'Paid Amount cannot exceed Subscription Amount' });
     }
-    const balanceAmount = isAdmin(req)
-      ? money(req.body.balance_amount ?? amount - paidAmount)
-      : Math.max(money(amount - paidAmount), 0);
-    const requestedStatus = String(req.body.payment_status || 'PENDING').toUpperCase();
-    const paymentStatus = isAdmin(req)
-      ? (['PENDING', 'PARTIAL', 'PAID'].includes(requestedStatus) ? requestedStatus : 'PENDING')
-      : balanceAmount <= 0 ? 'PAID' : paidAmount > 0 ? 'PARTIAL' : 'PENDING';
+    const balanceAmount = Math.max(money(amount - paidAmount), 0);
+    const paymentStatus = balanceAmount <= 0 ? 'PAID' : paidAmount > 0 ? 'PARTIAL' : 'PENDING';
     const receivedCount = money(req.body.received_count || 1);
     const employeeId = await resolveEmployeeId(db, req, req.body.collected_by_employee_id);
     if (!employeeId) {

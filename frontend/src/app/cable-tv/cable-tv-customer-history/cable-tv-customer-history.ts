@@ -436,6 +436,10 @@ export class CableTvCustomerHistory {
     ['subscription_month', 'subscription_year', 'number_of_days_or_months', 'start_date', 'expiry_date', 'paid_amount'].forEach((path) => {
       this.form.get(path)?.valueChanges.subscribe(() => this.calculateSubscription());
     });
+    this.form.get('payment_status')?.valueChanges.subscribe((status) => {
+      if (!this.permissions.isAdmin() || String(status || '').toUpperCase() !== 'PAID') return;
+      this.form.patchValue({ paid_amount: Number(this.form.get('amount')?.value) || 0 });
+    });
     this.applySubscriptionPackage();
   }
 
@@ -696,6 +700,11 @@ export class CableTvCustomerHistory {
     }
     if (this.section === 'subscriptions') {
       const billingBasis = String(row.billing_basis || 'MONTH').toUpperCase();
+      const paymentStatus = String(row.payment_status || 'PENDING').toUpperCase();
+      const receivedCount = Number(row.received_count) || 1;
+      const packageAmount = paymentStatus === 'PENDING'
+        ? (Number(row.amount) || 0) / receivedCount
+        : Number(row.master_package_price ?? row.package_price ?? row.amount) || 0;
       this.form.patchValue({
         customer_package_id: Number(row.customer_package_id) || this.defaultCustomerPackageId(),
         subscription_month: Number(row.subscription_month) || Number(new Date().toISOString().slice(5, 7)),
@@ -708,7 +717,7 @@ export class CableTvCustomerHistory {
         expiry_date: this.dateInputValue(row.expiry_date),
         collect_date: this.today(),
         collected_by_employee_id: row.collected_by_employee_id || null,
-        package_amount: Number(row.master_package_price ?? row.package_price ?? row.amount) || 0,
+        package_amount: packageAmount,
         amount: Number(row.amount) || 0,
         paid_amount: Number(row.paid_amount) || 0,
         balance_amount: Number(row.balance_amount) || 0,

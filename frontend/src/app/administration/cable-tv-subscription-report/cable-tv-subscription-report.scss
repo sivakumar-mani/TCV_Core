@@ -1,7 +1,7 @@
 :host { display: block; }
 .report-page { background: #f3f7fd; min-height: 100%; padding: 18px; }
 header h1 { color: #0878ee; font-size: 28px; font-weight: 500; margin: 0 0 16px; }
-.filter-card { align-items: end; background: #fff; border: 1px solid #e3e8ef; border-radius: 10px; display: grid; gap: 16px; grid-template-columns: 1.1fr 1fr .8fr 1fr 1fr auto; padding: 18px 22px; }
+.filter-card { align-items: end; background: #fff; border: 1px solid #e3e8ef; border-radius: 10px; display: grid; gap: 16px; grid-template-columns: 1.1fr 1fr .8fr .8fr 1fr 1fr auto; padding: 18px 22px; }
 label { color: #344054; display: flex; flex-direction: column; font-size: 13px; font-weight: 650; gap: 7px; }
 input, select { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; color: #172033; font: inherit; min-height: 44px; padding: 8px 11px; width: 100%; }
 input:disabled { background: #eef2f6; color: #344054; opacity: 1; }
@@ -17,7 +17,7 @@ button:disabled { cursor: not-allowed; opacity: .45; }
 .icon-action { background: #eef2f6; color: #1d2939; }
 .icon-action.excel { background: #e7f7ed; color: #08783e; }
 .table-scroll { overflow-x: auto; }
-table { border-collapse: collapse; min-width: 1120px; width: 100%; }
+table { border-collapse: collapse; min-width: 1320px; width: 100%; }
 th { background: #0878ee; color: #fff; font-size: 13px; padding: 12px 10px; text-align: left; }
 .serial { white-space: nowrap; width: 1%; }
 td { border: 1px solid #d5dae1; color: #344054; padding: 11px 10px; }

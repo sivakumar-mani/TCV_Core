@@ -5,7 +5,7 @@ import { Snackbar } from './snackbar';
 
 @Injectable({ providedIn: 'root' })
 export class IdleLogoutService {
-  private readonly timeoutMs = 15 * 60 * 1000;
+  private readonly timeoutMs = 30 * 60 * 1000;
   private readonly activityEvents = ['click', 'keydown', 'mousemove', 'scroll', 'touchstart'];
   private timeoutId?: ReturnType<typeof setTimeout>;
   private started = false;
@@ -49,7 +49,7 @@ export class IdleLogoutService {
       this.zone.run(() => {
         this.stop();
         this.authService.logout();
-        this.snackbar.openSnackbar('You were logged out after 15 minutes of inactivity.', 'error');
+        this.snackbar.openSnackbar('You were logged out after 30 minutes of inactivity.', 'error');
       });
     }, this.timeoutMs);
   }

@@ -160,7 +160,7 @@ export class CableTvServices {
     return this.http.patch(`${this.endpoint}/accounts/${accountId}/revert-pending`, {}, { headers: this.jsonHeaders });
   }
 
-  getPendingSubscriptions(filters: { customer_no?: string; customer_name?: string; area_id?: string; street_id?: string } = {}) {
+  getPendingSubscriptions(filters: { customer_no?: string; old_customer_no?: string; customer_name?: string; area_id?: string; street_id?: string } = {}) {
     const params: Record<string, string> = {};
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params[key] = value;
@@ -172,7 +172,7 @@ export class CableTvServices {
     return this.http.patch(`${this.endpoint}/subscriptions/${subscriptionId}/receive`, data, { headers: this.jsonHeaders });
   }
 
-  getCableSubscriptionReport(filters: { network_id?: string; collected_by_employee_id?: string; customer_type?: string; start_date?: string; end_date?: string }) {
+  getCableSubscriptionReport(filters: { network_id?: string; collected_by_employee_id?: string; customer_type?: string; payment_type?: string; start_date?: string; end_date?: string }) {
     const params: Record<string, string> = {};
     Object.entries(filters || {}).forEach(([key, value]) => {
       if (value) params[key] = value;
