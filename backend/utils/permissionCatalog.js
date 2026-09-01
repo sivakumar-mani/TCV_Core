@@ -4,6 +4,7 @@ const permissionCatalog = [
   ['Business Partners', 'CUSTOMERS', 'Customers', '/customers'],
   ['Business Partners', 'CABLE_TV_CUSTOMERS', 'Cable TV Customers', '/cable-tv/customers'],
   ['Business Partners', 'INTERNET_CUSTOMERS', 'Internet Customers', '/internet/customers'],
+  ['Service', 'CABLE_TV_COMPLAINTS', 'Complaints', '/cable-tv/complaints'],
   ['Cable TV Customer Actions', 'CABLE_TV_CONNECTIONS', 'Connection Actions', '/cable-tv/customers/:id/connections'],
   ['Cable TV Customer Actions', 'CABLE_TV_CUSTOMER_STBS', 'STB Actions', '/cable-tv/customers/:id/stbs'],
   ['Cable TV Customer Actions', 'CABLE_TV_CUSTOMER_PACKAGES', 'Package Actions', '/cable-tv/customers/:id/packages'],
@@ -16,6 +17,7 @@ const permissionCatalog = [
   ['Inventory', 'PURCHASES', 'Purchases', '/purchases'],
   ['Sales', 'QUOTATIONS', 'Quotations', '/quotations'],
   ['Sales', 'SALES', 'Sales', '/sales'],
+  ['Sales', 'MATERIAL_SALES', 'Material Sales', '/material-sales'],
   ['Sales', 'WORK_ORDERS', 'Work Orders', '/work-orders'],
   ['Sales', 'CUSTOMER_PAYMENTS', 'Customer Payments', '/customer-payments'],
   ['Sales', 'SUPPLIER_PAYMENTS', 'Supplier Payments', '/supplier-payments'],
@@ -32,21 +34,16 @@ const permissionCatalog = [
   ['Administration', 'AUDIT_LOGS', 'Audit Logs', '/audit-logs'],
   ['Administration', 'ROLE_PERMISSIONS', 'Role Permissions', '/role-permissions'],
   ['Accounts', 'CABLE_TV_ACCOUNTS', 'Pending Accounts', '/cable-tv-account-pending'],
+  ['Accounts', 'LO_ACCOUNTS', 'LO Accounts', '/lo-accounts'],
   ['Accounts', 'CABLE_TV_SUBSCRIPTION_DUES', 'CATV Subscription', '/cable-tv-subscription-pending'],
   ['Accounts', 'CABLE_TV_SUBSCRIPTION_GENERATE', 'Append CATV Subscriptions', '/cable-tv-subscription-append'],
+  ['Accounts', 'NET_SUBSCRIPTION', 'Net Subscription', '/net-subscription-pending'],
+  ['Accounts', 'NET_SUBSCRIPTION_APPEND', 'Append Net Subscriptions', '/net-subscription-append'],
   ['Accounts', 'TRANSACTIONS', 'Transactions', '/transactions'],
   ['Reports', 'CABLE_TV_SUBSCRIPTION_REPORT', 'CATV Subscription Report', '/cable-tv-subscription-report'],
+  ['Reports', 'STB_PAYMENT_REPORT', 'STB Payment Report', '/stb-payment-report'],
+  ['Reports', 'NET_SUBSCRIPTION_REPORT', 'Net Subscription Report', '/net-subscription-report'],
 ].map(([group, key, label, route]) => ({ group, key, label, route }));
-
-const createOnlyPermissionKeys = new Set([
-  'CABLE_TV_CONNECTIONS',
-  'CABLE_TV_CUSTOMER_STBS',
-  'CABLE_TV_CUSTOMER_PACKAGES',
-  'CABLE_TV_SUBSCRIPTIONS'
-]);
-permissionCatalog.forEach((item) => {
-  if (createOnlyPermissionKeys.has(item.key)) item.createOnly = true;
-});
 
 const apiModules = {
   dashboard: 'DASHBOARD',

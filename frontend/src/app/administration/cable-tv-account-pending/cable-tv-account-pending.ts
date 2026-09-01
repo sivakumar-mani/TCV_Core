@@ -350,15 +350,15 @@ export class CableTvAccountPending {
   exportExcel() {
     if (!this.accounts.length) return;
     const headers = [
-      'S.No', 'Cust No', 'Customer Name', 'Mobile', 'Installed By', 'Connection Type',
+      'S.No', 'Install/Update Date', 'Cust No', 'Customer Name', 'Installed By', 'Connection Type',
       'STB', 'STB Discount', 'Connection', 'Labor', 'Subscription', 'Customer Paid', 'Materials', 'Balance',
-      'Total', 'Due Date', 'Account Date', 'Status'
+      'Total', 'Due Date', 'Status'
     ];
     const rows = this.accounts.map((item: any, index: number) => [
       index + 1,
-      item.customer_code || '',
+      this.displayDate(this.installUpdateDate(item)),
+      this.customerNumber(item),
       item.full_name || '',
-      item.mobile_no || '',
       item.installed_by_name || '',
       this.connectionTypeLabel(item.connection_type),
       this.amountValue(item.stb_amount),
@@ -371,7 +371,6 @@ export class CableTvAccountPending {
       this.amountValue(this.reportBalance(item)),
       this.amountValue(item.grand_total),
       this.displayDate(item.due_date),
-      this.displayDate(item.account_date),
       this.reportPaymentStatus(item)
     ]);
     const totals = this.reportTotals;
@@ -408,8 +407,8 @@ export class CableTvAccountPending {
     }
     const rows = this.accounts.map((item: any, index: number) => `<tr>
       <td>${index + 1}</td>
-      <td>${this.escapeHtml(this.displayDate(item.account_date))}</td>
-      <td>${this.escapeHtml(item.customer_code || '-')}</td>
+      <td>${this.escapeHtml(this.displayDate(this.installUpdateDate(item)))}</td>
+      <td>${this.escapeHtml(this.customerNumber(item))}</td>
       <td>${this.escapeHtml(item.full_name || '-')}</td>
       <td>${this.escapeHtml(item.installed_by_name || '-')}</td>
       <td>${this.escapeHtml(this.connectionTypeLabel(item.connection_type))}</td>
@@ -448,7 +447,7 @@ export class CableTvAccountPending {
         <span>Status: ${this.escapeHtml(this.statusFilter || 'ALL')}</span>
         <span>Printed: ${this.displayDate(new Date())}</span>
       </div>
-      <table><thead><tr><th>S.No</th><th>Account Date</th><th>Cust No</th><th>Name</th><th>Installed By</th><th>Type</th>
+      <table><thead><tr><th>S.No</th><th>Install/Update Date</th><th>Cust No</th><th>Customer Name</th><th>Installed By</th><th>Type</th>
       <th>STB</th><th>STB Discount</th><th>Connection</th><th>Labor</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th>
       <th>Balance</th><th>Total</th><th>Status</th></tr></thead><tbody>${rows}${totalRow}</tbody></table>
       <script>window.onload=()=>window.print();<\/script></body></html>`);
@@ -466,13 +465,14 @@ export class CableTvAccountPending {
     const amount = (value: any) => Number(value || 0).toFixed(2);
     const installedNames = [...new Set(items.map((item: any) => item.installed_by_name || '-'))].join(', ');
     const invoiceRows = items.map((item: any) => {
-      const date = item.account_date ? new Date(item.account_date).toLocaleDateString('en-GB').replaceAll('/', '-') : '-';
+      const installUpdateDate = this.installUpdateDate(item);
+      const date = installUpdateDate ? new Date(installUpdateDate).toLocaleDateString('en-GB').replaceAll('/', '-') : '-';
       const type = this.escapeHtml(this.connectionTypeLabel(item.connection_type));
-      const customerNo = this.escapeHtml(item.customer_code || '-');
+      const customerNo = this.escapeHtml(this.customerNumber(item));
       return `<tr><td>${date}</td><td>${customerNo}</td><td>${type}</td><td>${amount(item.stb_amount)}</td><td>${amount(item.connection_amount)}</td><td>${amount(item.labor_amount)}</td><td>${amount(item.subscription_amount)}</td><td>${amount(item.customer_paid_amount)}</td><td>${this.materialAmountValue(item)}</td><td>${amount(this.reportBalance(item))}</td><td>${amount(item.grand_total)}</td></tr>`;
     }).join('');
     const grandTotal = items.reduce((sum: number, item: any) => sum + Number(item.grand_total || 0), 0);
-    const customerNos = items.map((item: any) => item.customer_code).join(', ');
+    const customerNos = items.map((item: any) => this.customerNumber(item)).join(', ');
     popup.document.write(`<!doctype html><html><head><title>Payment Invoice</title><style>
       body{font-family:Arial,sans-serif;color:#111827;margin:32px}h1{text-align:center;font-size:22px;margin:0 0 24px}
       .meta{display:flex;justify-content:space-between;margin-bottom:14px;font-size:14px}table{border-collapse:collapse;width:100%}
@@ -513,6 +513,17 @@ export class CableTvAccountPending {
     return labels[type] || (type
       ? type.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, character => character.toUpperCase())
       : '-');
+  }
+
+  installUpdateDate(item: any) {
+    return item?.install_update_date || item?.account_date || item?.updated_date || item?.installed_date || null;
+  }
+
+  customerNumber(item: any) {
+    const customerNo = String(item?.customer_code || '').trim();
+    const oldCustomerNo = String(item?.legacy_customer_no || '').trim();
+    if (customerNo && oldCustomerNo) return `${customerNo}/${oldCustomerNo}`;
+    return customerNo || oldCustomerNo || '-';
   }
 
   private displayDate(value: any) {

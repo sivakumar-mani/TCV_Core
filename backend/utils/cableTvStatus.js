@@ -55,4 +55,41 @@ const applyApprovedLocationChange = async (db, approvalGroupId) => {
   );
 };
 
-module.exports = { customerStatusForStbStatus, synchronizeLatestCustomerStbStatus, applyApprovedLocationChange };
+// Repairs location changes approved before connection approval was separated
+// from account receipt. The operation is intentionally customer-scoped and idempotent.
+const reconcileApprovedLocationChanges = async (db, customerId) => {
+  const cableCustomerId = Number(customerId);
+  if (!cableCustomerId) return;
+
+  const [rows] = await db.query(
+    `SELECT DISTINCT conn.approval_group_id
+     FROM cable_connections conn
+     INNER JOIN cable_approval_groups approval
+       ON approval.approval_group_id = conn.approval_group_id
+     WHERE conn.cable_customer_id = ?
+       AND conn.connection_type = 'SHIFTED'
+       AND conn.approval_status = 'PENDING'
+       AND approval.approval_status = 'APPROVED'`,
+    [cableCustomerId]
+  );
+
+  for (const row of rows) {
+    await db.query(
+      `UPDATE cable_connections
+       SET approval_status = 'APPROVED', updated_at = NOW()
+       WHERE approval_group_id = ?
+         AND cable_customer_id = ?
+         AND connection_type = 'SHIFTED'
+         AND approval_status = 'PENDING'`,
+      [row.approval_group_id, cableCustomerId]
+    );
+    await applyApprovedLocationChange(db, row.approval_group_id);
+  }
+};
+
+module.exports = {
+  customerStatusForStbStatus,
+  synchronizeLatestCustomerStbStatus,
+  applyApprovedLocationChange,
+  reconcileApprovedLocationChanges
+};

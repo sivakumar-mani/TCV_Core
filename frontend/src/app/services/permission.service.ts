@@ -27,16 +27,17 @@ export class PermissionService {
     'audit-logs': 'AUDIT_LOGS', 'role-permissions': 'ROLE_PERMISSIONS', 'cable-tv-masters': 'CABLE_TV_MASTERS',
     'cable-tv-packages': 'CABLE_TV_PACKAGES', 'cable-tv-stbs': 'CABLE_TV_STBS',
     'cable-tv-account-pending': 'CABLE_TV_ACCOUNTS',
-    'lo-accounts': 'CABLE_TV_ACCOUNTS',
+    'lo-accounts': 'LO_ACCOUNTS',
     'cable-tv-subscription-pending': 'CABLE_TV_SUBSCRIPTION_DUES',
     'net-subscription-pending': 'NET_SUBSCRIPTION',
     'net-subscription-append': 'NET_SUBSCRIPTION_APPEND',
     'cable-tv-subscription-append': 'CABLE_TV_SUBSCRIPTION_GENERATE',
     'cable-tv-subscription-report': 'CABLE_TV_SUBSCRIPTION_REPORT',
-    'stb-payment-report': 'CABLE_TV_SUBSCRIPTION_REPORT',
-    'net-subscription-report': 'INTERNET_CUSTOMERS',
+    'stb-payment-report': 'STB_PAYMENT_REPORT',
+    'net-subscription-report': 'NET_SUBSCRIPTION_REPORT',
     'net-cash-admin-correction': 'INTERNET_CUSTOMERS',
-    transactions: 'TRANSACTIONS', 'material-sales': 'MATERIAL_SALES'
+    transactions: 'TRANSACTIONS', 'material-sales': 'MATERIAL_SALES',
+    complaints: 'CABLE_TV_COMPLAINTS'
   };
 
   constructor(private http: HttpClient) {}
@@ -48,7 +49,7 @@ export class PermissionService {
   employeeCode(): string { return this.payload()?.employee_code || ''; }
 
   can(key: string, action: PermissionAction = 'view'): boolean {
-    if (key === 'TRANSACTIONS' || key === 'MATERIAL_SALES' || key === 'NET_SUBSCRIPTION') return true;
+    if (key === 'TRANSACTIONS') return true;
     if (this.isAdmin()) return true;
     const permissions = this.livePermissions ?? this.payload()?.permissions ?? [];
     const row = permissions.find((item: RolePermission) => item.permission_key === key);
@@ -62,7 +63,9 @@ export class PermissionService {
   }
 
   keyForRoute(path: string): string {
-    const segment = path.replace(/^\//, '').split(/[/?]/)[0];
+    const normalizedPath = path.replace(/^\//, '').split(/[?]/)[0];
+    if (normalizedPath.startsWith('cable-tv/complaints')) return 'CABLE_TV_COMPLAINTS';
+    const segment = normalizedPath.split('/')[0];
     return this.routePermissions[segment] || '';
   }
 

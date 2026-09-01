@@ -67,22 +67,23 @@ router.use('/lookups', auth.requireAnyPermission([
   'CABLE_TV_CUSTOMERS', 'CABLE_TV_CONNECTIONS', 'CABLE_TV_CUSTOMER_STBS',
   'CABLE_TV_CUSTOMER_PACKAGES', 'CABLE_TV_SUBSCRIPTIONS', 'CABLE_TV_MASTERS',
   'CABLE_TV_PACKAGES', 'CABLE_TV_STBS', 'CABLE_TV_ACCOUNTS',
-  'CABLE_TV_SUBSCRIPTION_DUES', 'CABLE_TV_SUBSCRIPTION_REPORT'
+  'CABLE_TV_SUBSCRIPTION_DUES', 'CABLE_TV_SUBSCRIPTION_REPORT', 'CABLE_TV_COMPLAINTS',
+  'MATERIAL_SALES', 'LO_ACCOUNTS', 'STB_PAYMENT_REPORT'
 ]));
 
 router.get('/lookups', getLookups);
-router.get('/material-sales/lookups', getMaterialSalesLookups);
-router.get('/material-sales/stock', getTechnicianStock);
-router.get('/material-sales/movements', getMaterialMovements);
-router.post('/material-sales/movements', addMaterialMovement);
-router.post('/material-sales/issues/batch', addMaterialIssueBatch);
-router.post('/material-sales/sales/batch', addMaterialSaleBatch);
-router.patch('/material-sales/movements/:movementId/customer', mapMaterialSaleCustomer);
-router.get('/complaints', getComplaints);
-router.get('/complaints/customers/lookup', getComplaintCustomers);
-router.get('/complaints/:complaintId', getComplaintById);
-router.post('/complaints', addComplaint);
-router.post('/complaints/:complaintId/attempts', addComplaintAttempt);
+router.get('/material-sales/lookups', auth.requirePermission('MATERIAL_SALES'), getMaterialSalesLookups);
+router.get('/material-sales/stock', auth.requirePermission('MATERIAL_SALES'), getTechnicianStock);
+router.get('/material-sales/movements', auth.requirePermission('MATERIAL_SALES'), getMaterialMovements);
+router.post('/material-sales/movements', auth.requirePermissionAction('MATERIAL_SALES', 'can_create'), addMaterialMovement);
+router.post('/material-sales/issues/batch', auth.requirePermissionAction('MATERIAL_SALES', 'can_create'), addMaterialIssueBatch);
+router.post('/material-sales/sales/batch', auth.requirePermissionAction('MATERIAL_SALES', 'can_create'), addMaterialSaleBatch);
+router.patch('/material-sales/movements/:movementId/customer', auth.requirePermissionAction('MATERIAL_SALES', 'can_update'), mapMaterialSaleCustomer);
+router.get('/complaints', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaints);
+router.get('/complaints/customers/lookup', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintCustomers);
+router.get('/complaints/:complaintId', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintById);
+router.post('/complaints', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_create'), addComplaint);
+router.post('/complaints/:complaintId/attempts', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), addComplaintAttempt);
 router.get('/masters', auth.requireAnyPermission(['CABLE_TV_MASTERS', 'CABLE_TV_PACKAGES', 'CABLE_TV_STBS']), getMasters);
 router.post('/masters/locations', auth.requirePermission('CABLE_TV_MASTERS'), addLocation);
 router.post('/masters/areas', auth.requirePermission('CABLE_TV_MASTERS'), addArea);
@@ -96,7 +97,7 @@ router.patch('/masters/stbs/:stbMasterId', auth.requirePermission('CABLE_TV_STBS
 router.delete('/masters/stbs/:stbMasterId', auth.requirePermission('CABLE_TV_STBS'), deleteStbMaster);
 router.patch('/masters/stbs/:stbMasterId/assign', auth.requirePermission('CABLE_TV_STBS'), assignStbMaster);
 router.get('/accounts/pending', auth.requirePermission('CABLE_TV_ACCOUNTS'), getPendingAccounts);
-router.get('/accounts/lo-customers', auth.requirePermission('CABLE_TV_ACCOUNTS'), getLoAccounts);
+router.get('/accounts/lo-customers', auth.requirePermission('LO_ACCOUNTS'), getLoAccounts);
 router.get('/accounts/:accountId/payments', auth.requirePermission('CABLE_TV_ACCOUNTS'), getAccountPayments);
 router.patch('/accounts/:accountId/receive', auth.requirePermission('CABLE_TV_ACCOUNTS'), receiveAccount);
 router.patch('/accounts/:accountId/revert-pending', auth.requireAdmin, revertAccountToPending);
@@ -105,7 +106,7 @@ router.get('/subscriptions/generation-preview', auth.requireAdmin, previewSubscr
 router.post('/subscriptions/generate', auth.requireAdmin, generateMonthlySubscriptions);
 router.patch('/subscriptions/:subscriptionId/receive', auth.requirePermissionAction('CABLE_TV_SUBSCRIPTION_DUES', 'can_view'), receiveSubscriptionPayment);
 router.get('/reports/subscriptions', auth.requirePermission('CABLE_TV_SUBSCRIPTION_REPORT'), getCableSubscriptionReport);
-router.get('/reports/stb-payments', auth.requirePermission('CABLE_TV_SUBSCRIPTION_REPORT'), getStbPaymentReport);
+router.get('/reports/stb-payments', auth.requirePermission('STB_PAYMENT_REPORT'), getStbPaymentReport);
 router.get('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomers);
 router.get('/customers/:id', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomerById);
 router.post('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), addCableCustomer);

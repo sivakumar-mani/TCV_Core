@@ -543,8 +543,8 @@ const approveWorkflow = async (req, res) => {
             const approvalTables = [
                 'cable_tv_customers',
                 'cable_customer_accounts',
+                'cable_connections',
                 ...(!waitForAccountReceipt ? [
-                    'cable_connections',
                     'cable_connection_materials',
                     'cable_customer_stbs',
                     'cable_customer_packages',
@@ -560,7 +560,7 @@ const approveWorkflow = async (req, res) => {
                     [approvalGroupId]
                 );
             }
-            if (!waitForAccountReceipt) await applyApprovedLocationChange(conn, approvalGroupId);
+            await applyApprovedLocationChange(conn, approvalGroupId);
             const affectedCustomerIds = [...new Set(pendingStbs.map((item) => Number(item.cable_customer_id)).filter(Boolean))];
             if (affectedCustomerIds.length) {
                 await synchronizeLatestCustomerStbStatus(conn, affectedCustomerIds);

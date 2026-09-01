@@ -1,6 +1,10 @@
 const connection = require('../connection');
 const { ensureTransactionTable } = require('./transactionController');
-const { synchronizeLatestCustomerStbStatus, applyApprovedLocationChange } = require('../utils/cableTvStatus');
+const {
+  synchronizeLatestCustomerStbStatus,
+  applyApprovedLocationChange,
+  reconcileApprovedLocationChanges
+} = require('../utils/cableTvStatus');
 const {
   ensureMaterialSalesTables,
   getMaterialSalePayments,
@@ -840,7 +844,7 @@ const addPendingAccount = async (db, req, data) => {
   const subscriptionAmount = money(data.subscription_amount);
   const discount = money(data.discount) + materialDiscount;
   const overallDiscount = money(data.overall_discount);
-  const subTotal = money(data.sub_total || (stbAmount + connectionAmount + materialCost + subscriptionAmount));
+  const subTotal = money(data.sub_total || (stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount));
   const grandTotal = Math.max(money(data.grand_total || (subTotal - discount - overallDiscount)), 0);
   const paidAmount = money(data.customer_paid_amount);
   const balanceAmount = Math.max(grandTotal - paidAmount, 0);
@@ -896,7 +900,7 @@ const recalculateLinkedPendingAccount = async (db, approvalGroupId) => {
   const subscriptionAmount = money(account.subscription_amount);
   const discount = money(account.stb_discount) + money(account.connection_discount)
     + money(account.material_discount) + money(account.overall_discount);
-  const subTotal = money(stbAmount + connectionAmount + materialCost + subscriptionAmount);
+  const subTotal = money(stbAmount + connectionAmount + laborAmount + materialCost + subscriptionAmount);
   const grandTotal = Math.max(money(subTotal - discount), 0);
   const customerPaid = money(account.customer_paid_amount);
   const officeReceived = money(account.office_received_amount);
@@ -1726,6 +1730,17 @@ const getPendingAccounts = async (req, res) => {
           AND conn.connected_by_employee_id IS NOT NULL
         ORDER BY conn.connection_id DESC LIMIT 1
       ), c.installed_by_employee_id)`;
+    const installUpdateDateSql = `COALESCE((
+        SELECT COALESCE(stb.updated_date, stb.installed_date)
+        FROM cable_customer_stbs stb
+        WHERE stb.approval_group_id = ca.approval_group_id
+        ORDER BY stb.customer_stb_id DESC LIMIT 1
+      ), (
+        SELECT conn.connection_date
+        FROM cable_connections conn
+        WHERE conn.approval_group_id = ca.approval_group_id
+        ORDER BY conn.connection_id DESC LIMIT 1
+      ), DATE(ca.created_at))`;
     if (status === 'PENDING') {
       filters.push(`${outstandingSql} > 0 AND ${receivedSql} <= 0 AND ca.account_status <> 'NA'`);
     } else if (status === 'PARTIAL') {
@@ -1750,11 +1765,11 @@ const getPendingAccounts = async (req, res) => {
       filters.push('1 = 0');
     }
     if (startDate) {
-      filters.push('DATE(ca.created_at) >= ?');
+      filters.push(`${installUpdateDateSql} >= ?`);
       values.push(startDate);
     }
     if (endDate) {
-      filters.push('DATE(ca.created_at) <= ?');
+      filters.push(`${installUpdateDateSql} <= ?`);
       values.push(endDate);
     }
     const [rows] = await db.query(
@@ -1771,9 +1786,10 @@ const getPendingAccounts = async (req, res) => {
                 WHEN ${receivedSql} > 0 THEN 'PARTIAL'
                 ELSE 'PENDING'
               END AS calculated_account_status,
-              c.customer_code, c.full_name, c.mobile_no, n.network_name,
+              c.customer_code, c.legacy_customer_no, c.full_name, c.mobile_no, n.network_name,
               l.location_name, a.area_name, s.street_name,
-              DATE(ca.created_at) AS account_date,
+              ${installUpdateDateSql} AS install_update_date,
+              ${installUpdateDateSql} AS account_date,
               CASE
                 WHEN approval_group.group_type = 'STB_UPDATE' THEN 'STB_UPDATE'
                 WHEN approval_group.group_type = 'NEW_CUSTOMER_ONBOARDING' THEN 'NEW'
@@ -1837,10 +1853,12 @@ const getPendingAccounts = async (req, res) => {
     const [materialRows] = await db.query(
       `SELECT -m.material_movement_id AS account_id, NULL AS approval_group_id, m.cable_customer_id,
               COALESCE(CAST(catv.customer_code AS CHAR), CAST(service.customer_id AS CHAR), m.movement_no) AS customer_code,
+              catv.legacy_customer_no AS legacy_customer_no,
               COALESCE(catv.full_name, service.customer_name, m.anonymous_name, 'Anonymous Customer') AS full_name,
               COALESCE(catv.mobile_no, service.phone, m.anonymous_mobile) AS mobile_no,
               m.customer_type AS network_name, NULL AS location_name, NULL AS area_name, NULL AS street_name,
-              DATE(m.movement_date) AS account_date, 'MATERIAL SALE' AS connection_type,
+              DATE(m.movement_date) AS install_update_date, DATE(m.movement_date) AS account_date,
+              'MATERIAL SALE' AS connection_type,
               COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), e.employee_code) AS installed_by_name,
               NULL AS received_by_name, 0 AS stb_amount, 0 AS stb_discount, 0 AS connection_amount, 0 AS labor_amount,
               m.total_amount AS material_cost, 0 AS material_discount, 0 AS subscription_amount,
@@ -1874,13 +1892,14 @@ const getPendingAccounts = async (req, res) => {
     else if(status==='PARTIAL')internetFilters.push(`${internetOutstandingSql}>0 AND ${internetReceivedSql}>0`);
     else if(['PAID','RECEIVED'].includes(status))internetFilters.push(`${internetOutstandingSql}<=0`);
     if(name){const search=`%${name}%`;internetFilters.push('(ic.full_name LIKE ? OR CAST(ic.customer_code AS CHAR) LIKE ? OR ic.legacy_customer_no LIKE ? OR ic.mobile_no LIKE ?)');internetValues.push(search,search,search,search);}
-    if(startDate){internetFilters.push('DATE(ia.created_at)>=?');internetValues.push(startDate);}
-    if(endDate){internetFilters.push('DATE(ia.created_at)<=?');internetValues.push(endDate);}
+    if(startDate){internetFilters.push('COALESCE(ic.installed_date, DATE(ia.created_at))>=?');internetValues.push(startDate);}
+    if(endDate){internetFilters.push('COALESCE(ic.installed_date, DATE(ia.created_at))<=?');internetValues.push(endDate);}
     const [internetSourceRows] = await db.query(
       `SELECT -(1000000000 + ia.internet_account_id) AS account_id, NULL approval_group_id,
-              ic.internet_customer_id AS cable_customer_id, ic.customer_code, ic.full_name, ic.mobile_no,
+              ic.internet_customer_id AS cable_customer_id, ic.customer_code, ic.legacy_customer_no, ic.full_name, ic.mobile_no,
               ic.network_type AS network_name, NULL location_name, NULL area_name, NULL street_name,
-              DATE(ia.created_at) account_date, 'INTERNET' connection_type,
+              COALESCE(ic.installed_date, DATE(ia.created_at)) install_update_date,
+              COALESCE(ic.installed_date, DATE(ia.created_at)) account_date, 'INTERNET' connection_type,
               COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), e.employee_code) installed_by_name,
               NULL received_by_name, ia.router_amount AS stb_amount, ia.router_discount AS stb_discount,
               ia.connection_amount, ia.labor_amount, ia.material_cost, ia.material_discount,
@@ -3025,6 +3044,7 @@ const getCableCustomerById = async (req, res) => {
     const db = connection.promise();
     await ensureCableTvExtendedTables(db);
     const { id } = req.params;
+    await reconcileApprovedLocationChanges(db, id);
     await synchronizeLatestCustomerStbStatus(db, [id]);
     const [[customer]] = await db.query(
       `SELECT c.*, n.network_name, l.location_name, a.area_name, s.street_name,
@@ -4202,7 +4222,8 @@ const updateCustomerStb = async (req, res) => {
       : (requestedReason || existingStb.update_reason || null);
     const stbType = initialRecord ? 'NEW' : (existingStb.stb_type || 'NEW');
     const stbAmount = stbMaster
-      ? money(issueMode === 'FULL_SET' ? stbMaster.full_set_amount : stbMaster.stb_amount)
+      ? money((issueMode === 'FULL_SET' ? stbMaster.full_set_amount : stbMaster.stb_amount)
+        || (issueMode === 'FULL_SET' ? 800 : 500))
       : money(req.body.stb_amount);
     const stbStatus = String(req.body.status || 'ACTIVE').toUpperCase();
     const [updateResult] = await db.query(
@@ -4254,23 +4275,18 @@ const deleteCustomerStb = async (req, res) => {
     const cableCustomerId = Number(req.params.id);
     const customerStbId = Number(req.params.stbId);
     const [[stbRecord]] = await db.query(
-      `SELECT customer_stb_id,
-              (SELECT MAX(latest.customer_stb_id)
-               FROM cable_customer_stbs latest
-               WHERE latest.cable_customer_id = ?) AS latest_customer_stb_id
+      `SELECT customer_stb_id
        FROM cable_customer_stbs
        WHERE customer_stb_id = ? AND cable_customer_id = ?
        LIMIT 1`,
-      [cableCustomerId, customerStbId, cableCustomerId]
+      [customerStbId, cableCustomerId]
     );
     if (!stbRecord) return res.status(404).json({ message: 'STB record not found' });
-    if (Number(stbRecord.customer_stb_id) === Number(stbRecord.latest_customer_stb_id)) {
-      return res.status(400).json({ message: 'Latest STB update cannot be deleted' });
-    }
     await db.query(
       'DELETE FROM cable_customer_stbs WHERE customer_stb_id = ? AND cable_customer_id = ?',
       [customerStbId, cableCustomerId]
     );
+    await synchronizeLatestCustomerStbStatus(db, [cableCustomerId]);
     return res.json({ message: 'STB details deleted successfully' });
   } catch (error) {
     return res.status(500).json({ message: 'STB delete failed', error: error.message });

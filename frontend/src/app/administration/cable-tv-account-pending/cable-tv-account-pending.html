@@ -60,8 +60,9 @@
     <table>
       <tr>
         <th><input type="checkbox" [checked]="allReportRowsSelected" (change)="toggleAllReportRows($any($event.target).checked)" aria-label="Select all rows"></th>
-        <th>Customer</th>
-        <th>Mobile</th>
+        <th>Install/Update Date</th>
+        <th>Cust No</th>
+        <th>Customer Name</th>
         <th>Installed By</th>
         <th>Connection Type</th>
         <th>STB</th>
@@ -74,14 +75,14 @@
         <th>Customer Paid</th>
         <th>Balance</th>
         <th>Due Date</th>
-        <th>Account Date</th>
         <th>Status</th>
         <th *ngIf="permissions.isAdmin()">Action</th>
       </tr>
       <tr *ngFor="let item of accounts" [class.selected-report-row]="isReportRowSelected(item)">
         <td><input type="checkbox" [checked]="isReportRowSelected(item)" (change)="toggleReportRow(item, $any($event.target).checked)" aria-label="Select row for payment invoice"></td>
-        <td>{{ item.customer_code }} - {{ item.full_name }}</td>
-        <td>{{ item.mobile_no }}</td>
+        <td>{{ installUpdateDate(item) | date:'dd-MM-yyyy' }}</td>
+        <td>{{ customerNumber(item) }}</td>
+        <td>{{ item.full_name || '-' }}</td>
         <td>{{ item.installed_by_name || '-' }}</td>
         <td>{{ connectionTypeLabel(item.connection_type) }}</td>
         <td>{{ item.stb_amount }}</td>
@@ -94,7 +95,6 @@
         <td>{{ item.customer_paid_amount }}</td>
         <td>{{ reportBalance(item) | number:'1.2-2' }}</td>
         <td>{{ item.due_date ? (item.due_date | date:'dd-MM-yyyy') : '-' }}</td>
-        <td>{{ item.account_date | date:'dd-MM-yyyy' }}</td>
         <td><span class="status-badge" [attr.data-status]="reportPaymentStatus(item)" [class.paid]="reportPaymentStatus(item) === 'PAID'">{{ reportPaymentStatus(item) }}</span></td>
         <td *ngIf="permissions.isAdmin()" class="action-cell">
           <button *ngIf="item.account_status === 'PENDING' || item.account_status === 'PARTIAL'" type="button"
@@ -107,7 +107,7 @@
         <td [attr.colspan]="permissions.isAdmin() ? 18 : 17" class="empty-row">No account records match the selected filters.</td>
       </tr>
       <tr *ngIf="accounts.length" class="report-total-row">
-        <td colspan="5">Grand Total ({{ accounts.length }} records)</td>
+        <td colspan="6">Grand Total ({{ accounts.length }} records)</td>
         <td>{{ reportTotals.stb | number:'1.2-2' }}</td>
         <td>{{ reportTotals.stbDiscount | number:'1.2-2' }}</td>
         <td>{{ reportTotals.connection | number:'1.2-2' }}</td>
@@ -142,9 +142,9 @@
           <thead>
             <tr>
               <th>S.No</th>
-              <th>Account Date</th>
+              <th>Install/Update Date</th>
               <th>Cust No</th>
-              <th>Name</th>
+              <th>Customer Name</th>
               <th>Installed By</th>
               <th>Type</th>
               <th>STB</th>
@@ -162,8 +162,8 @@
           <tbody>
             <tr *ngFor="let item of accounts; let index = index">
               <td>{{ index + 1 }}</td>
-              <td>{{ item.account_date | date:'dd-MM-yyyy' }}</td>
-              <td>{{ item.customer_code || '-' }}</td>
+              <td>{{ installUpdateDate(item) | date:'dd-MM-yyyy' }}</td>
+              <td>{{ customerNumber(item) }}</td>
               <td>{{ item.full_name || '-' }}</td>
               <td>{{ item.installed_by_name || '-' }}</td>
               <td>{{ connectionTypeLabel(item.connection_type) }}</td>
@@ -210,7 +210,7 @@
       </div>
 
       <div class="payment-grid">
-        <div class="display-field"><span>Cust No</span><strong>{{ selectedAccount?.customer_code || '-' }}</strong></div>
+        <div class="display-field"><span>Cust No</span><strong>{{ customerNumber(selectedAccount) }}</strong></div>
         <div class="display-field"><span>Customer Name</span><strong>{{ selectedAccount?.full_name || '-' }}</strong></div>
         <div class="display-field"><span>Installed By</span><strong>{{ selectedAccount?.installed_by_name || '-' }}</strong></div>
         <div class="display-field"><span>Total Payment</span><strong>{{ selectedAccount?.grand_total || 0 | number:'1.2-2' }}</strong></div>

@@ -272,13 +272,7 @@ export class CableTvCustomerHistory {
   }
 
   canDeleteRow(row: any) {
-    if (!this.canSection(this.section, 'delete')) return false;
-    if (this.section !== 'stbs') return true;
-    const latestStbId = Math.max(
-      0,
-      ...this.rows.map((item: any) => Number(item.customer_stb_id) || 0)
-    );
-    return Number(row?.customer_stb_id) !== latestStbId;
+    return this.canSection(this.section, 'delete');
   }
 
   buildForm() {
@@ -768,6 +762,7 @@ export class CableTvCustomerHistory {
       this.form.get('stb_type')?.disable({ emitEvent: false });
       this.form.get('stb_master_id')?.disable({ emitEvent: false });
       this.applyStbReasonState();
+      if (this.showStbIssueDetails) this.applyStbIssuePrice();
     }
     this.showModal = true;
   }
@@ -1305,7 +1300,7 @@ export class CableTvCustomerHistory {
     this.form.patchValue({
       stb_amount: selected
         ? Number(fullSet ? selected.full_set_amount : selected.stb_amount) || (fullSet ? 800 : 500)
-        : fallbackAmount || 0
+        : fallbackAmount || (this.showStbIssueDetails ? (fullSet ? 800 : 500) : 0)
     }, { emitEvent: false });
     if (fullSet) {
       this.enforceFullSetAccessories();
