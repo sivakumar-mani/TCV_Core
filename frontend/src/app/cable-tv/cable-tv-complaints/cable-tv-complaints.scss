@@ -44,7 +44,7 @@ td small { color: #667085; display: block; margin-top: 4px; }
 .attempt-form-grid > .mapping-type { grid-column: span 4; }
 .attempt-form-grid > .mapping-search { grid-column: span 8; }
 .attempt-form-grid > .wide { grid-column: 1 / -1; }
-.attempt-form-grid > .attempt-note { grid-column: span 4; }
+.attempt-form-grid > .attempt-note { grid-column: 1 / -1; }
 .search-select { min-height: 125px; }
 .customer-information { background: #eef5ff; border: 1px solid #cbdcf5; border-radius: 7px; display: grid; gap: 12px; grid-template-columns: 1fr 1fr; padding: 12px; }
 .customer-information div { display: grid; gap: 3px; }
