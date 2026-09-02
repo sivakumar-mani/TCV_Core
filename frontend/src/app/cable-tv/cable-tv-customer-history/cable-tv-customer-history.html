@@ -24,9 +24,9 @@
           <span>Cust No : <strong>{{ customer.customer_code || '-' }}</strong></span>
           <span class="old-customer-number">Old C No : <strong>{{ customer.legacy_customer_no || '-' }}</strong></span>
         </div>
-        <h1>{{ customer.full_name || 'Customer' }}</h1>
+        <h1>{{ (customer.full_name || 'Customer') | titlecase }}</h1>
         <span>STB Number: <strong>{{ headerStbNo }}</strong></span>
-        <span class="address-line">{{ headerAddress }}</span>
+        <span class="address-line">{{ headerAddress | titlecase }}</span>
       </div>
       <div class="summary-service-details">
         <span><strong>Status:</strong><b class="summary-status" [class.success]="headerStatus === 'ACTIVE'">{{ headerStatus }}</b></span>

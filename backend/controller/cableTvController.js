@@ -1959,9 +1959,11 @@ const getPendingAccounts = async (req, res) => {
       }
       return item;
     });
-    return res.json([...rows, ...materialRows, ...internetRows].sort(
-      (left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
-    ));
+    return res.json([...rows, ...materialRows, ...internetRows].sort((left, right) => {
+      const rightDate = new Date(right.account_date || right.install_update_date || right.created_at).getTime() || 0;
+      const leftDate = new Date(left.account_date || left.install_update_date || left.created_at).getTime() || 0;
+      return rightDate - leftDate || Number(right.account_id) - Number(left.account_id);
+    }));
   } catch (error) {
     return res.status(500).json({ message: 'Pending account list failed', error: error.message });
   }

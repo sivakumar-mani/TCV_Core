@@ -262,6 +262,7 @@ export class CableTvCustomerForm {
       'subscription.payment_type',
       'subscription.no_of_months',
       'subscription.no_of_years',
+      'subscription.subscription_month',
       'subscription.subscription_year',
       'subscription.payment_status'
     ].forEach((path) => this.form.get(path)?.valueChanges.subscribe(() => this.applySubscriptionPeriod()));
@@ -588,9 +589,13 @@ export class CableTvCustomerForm {
   applySubscriptionPeriod() {
     const sub = this.form.get('subscription') as FormGroup;
     const type = sub.get('payment_type')?.value || 'DAY';
+    const selectedMonth = Number(sub.get('subscription_month')?.value) || new Date().getMonth() + 1;
     const selectedYear = Number(sub.get('subscription_year')?.value) || new Date().getFullYear();
     const rawStart = sub.get('start_date')?.value || this.today();
-    const startWithYear = type === 'DAY' ? this.today() : `${selectedYear}-${rawStart.slice(5, 7)}-${rawStart.slice(8, 10)}`;
+    const selectedMonthText = String(selectedMonth).padStart(2, '0');
+    const startWithYear = this.permissions.isAdmin()
+      ? `${selectedYear}-${selectedMonthText}-${rawStart.slice(8, 10)}`
+      : type === 'DAY' ? this.today() : `${selectedYear}-${rawStart.slice(5, 7)}-${rawStart.slice(8, 10)}`;
     const startDate = this.normalizedSubscriptionStartDate(startWithYear, type);
     const expiryDate = this.subscriptionExpiryDate(startDate);
     sub.patchValue({
@@ -833,7 +838,7 @@ export class CableTvCustomerForm {
     }
 
     this.ngxLoader.start();
-    this.applySubscriptionPeriod();
+    if (!this.permissions.isAdmin()) this.applySubscriptionPeriod();
     if (!this.permissions.isAdmin()) this.account.get('account_status')?.setValue('PENDING', { emitEvent: false });
     const payload = this.form.getRawValue();
     const request = this.isEditMode
@@ -904,7 +909,7 @@ export class CableTvCustomerForm {
   normalizedSubscriptionStartDate(value: string, type: string) {
     const fallback = this.today();
     const raw = value || fallback;
-    if (type === 'DAY') return this.today();
+    if (type === 'DAY') return this.permissions.isAdmin() ? raw : this.today();
     return `${raw.slice(0, 7)}-01`;
   }
 
