@@ -33,6 +33,7 @@ td small { color: #667085; display: block; margin-top: 4px; }
 .modal-panel .modal-header p { font-size: 12px; }
 .modal-panel label { font-size: 12px; gap: 3px; }
 .modal-panel input, .modal-panel select, .modal-panel textarea { min-height: 34px; padding: 6px 8px; }
+.modal-panel .complaint-nature { min-height: 62px; }
 .close { background: #eef2f6; color: #344054; font-size: 12px; min-height: 32px; min-width: 58px; padding: 4px 10px; }
 .caller-types { display: flex; gap: 22px; margin: 16px 0; }
 .caller-types label { align-items: center; display: flex; }

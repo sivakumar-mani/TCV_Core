@@ -18,6 +18,7 @@ export class CustomerList {
 
   customerActions = [
     { label: 'Edit', action: (row: any) => this.editCustomer(row), permission: 'update' },
+    { label: 'Complaint', action: (row: any) => this.registerComplaint(row) },
     { label: 'Create Quotation', action: (row: any) => this.createQuotation(row), permission: 'create' },
     { label: 'Create Invoice', action: (row: any) => this.createInvoice(row), permission: 'create' },
     { label: 'Delete', action: (row: any) => this.deleteCustomer(row), permission: 'delete' }
@@ -98,6 +99,12 @@ export class CustomerList {
 
   editCustomer(row: any) {
     this.router.navigate(['/customers/edit', row.customer_id]);
+  }
+
+  registerComplaint(row: any) {
+    this.router.navigate(['/cable-tv/complaints'], {
+      queryParams: { customerType: 'CCTV', customerId: row.customer_id }
+    });
   }
 
   createQuotation(row: any) {

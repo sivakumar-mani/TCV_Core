@@ -203,8 +203,10 @@ export class CableTvServices {
     return this.http.get(`${this.endpoint}/complaints/${complaintId}`);
   }
 
-  getComplaintCustomers(type: 'CATV' | 'NET' | 'CCTV') {
-    return this.http.get(`${this.endpoint}/complaints/customers/lookup`, { params: { type } });
+  getComplaintCustomers(type: 'CATV' | 'NET' | 'CCTV', customerId?: number) {
+    const params: Record<string, string> = { type };
+    if (customerId) params['customer_id'] = String(customerId);
+    return this.http.get(`${this.endpoint}/complaints/customers/lookup`, { params });
   }
 
   addComplaint(data: any) {

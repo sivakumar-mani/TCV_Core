@@ -416,8 +416,7 @@ export const routes: Routes = [
         },
          {
             path:'internet/customers/:id/complaints',
-            loadComponent: ()=> import('./internet/internet-complaints/internet-complaints').then(n => n.InternetComplaints),
-            canActivate:[RouteGuard], data:{ expectedRole:['admin','user'] }
+            redirectTo: route => `/cable-tv/complaints?customerType=NET&customerId=${route.params['id']}`
         },
          {
             path:'cable-tv/customers',

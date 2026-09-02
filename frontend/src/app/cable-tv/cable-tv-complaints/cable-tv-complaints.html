@@ -105,8 +105,15 @@
         <label>Mobile No<input [(ngModel)]="complaint.anonymous_mobile"></label>
         <label class="wide">Address<textarea [(ngModel)]="complaint.anonymous_address" rows="2"></textarea></label>
       </ng-container>
-      <label class="wide">Nature of Complaint *<input [(ngModel)]="complaint.nature_of_complaint" placeholder="Example: No signal"></label>
-      <label class="wide">Complaint Details<textarea [(ngModel)]="complaint.complaint_description" rows="3"></textarea></label>
+      <label class="wide">Subject *
+        <select [(ngModel)]="complaint.subject">
+          <option value="">Select subject</option>
+          <option *ngFor="let subject of complaintSubjects" [value]="subject">{{ subject }}</option>
+        </select>
+      </label>
+      <label class="wide">Nature of Complaint *
+        <textarea class="complaint-nature" [(ngModel)]="complaint.nature_of_complaint" rows="2"></textarea>
+      </label>
     </div>
     <div class="modal-actions">
       <button type="button" class="secondary" (click)="closeRegister()">Cancel</button>
@@ -125,7 +132,7 @@
     <section class="update-panel" *ngIf="selectedComplaint.status !== 'COMPLETED'">
       <h3>Assign / Add Attempt</h3>
       <div class="form-grid attempt-form-grid">
-        <ng-container *ngIf="!selectedComplaint.cable_customer_id && !selectedComplaint.service_customer_id">
+        <ng-container *ngIf="!selectedComplaint.cable_customer_id && !selectedComplaint.internet_customer_id && !selectedComplaint.service_customer_id">
           <label class="mapping-type">Customer Type
             <select [(ngModel)]="attempt.mapping_type" (ngModelChange)="onMappingTypeChange()">
               <option value="CATV">CATV</option>
@@ -198,8 +205,8 @@
       <div><span>Alternate Contact</span><strong>{{ viewedComplaint.customer_alternate_mobile || '-' }}</strong></div>
       <div><span>Status</span><strong>{{ statusLabel(viewedComplaint.status) }}</strong></div>
       <div class="wide"><span>Address</span><strong>{{ viewedComplaint.customer_address || viewedComplaint.anonymous_address || '-' }}</strong></div>
+      <div class="wide"><span>Subject</span><strong>{{ viewedComplaint.complaint_subject || '-' }}</strong></div>
       <div class="wide"><span>Nature of Complaint</span><strong>{{ viewedComplaint.nature_of_complaint }}</strong></div>
-      <div class="wide"><span>Complaint Description</span><strong>{{ viewedComplaint.complaint_description || '-' }}</strong></div>
       <div><span>Registered By</span><strong>{{ viewedComplaint.registered_by_name || '-' }}</strong></div>
       <div><span>Assigned To</span><strong>{{ viewedComplaint.assigned_employee_name || 'Unassigned' }}</strong></div>
     </section>

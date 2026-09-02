@@ -32,6 +32,13 @@ export class CableTvComplaints {
   filters = { search: '', status: '', assigned_employee_id: '' };
   statuses = ['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
   updateStatuses = ['IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
+  readonly complaintSubjects = [
+    'Accessories Required', 'CCTV Not Working', 'Channel Problem/Package Change',
+    'Disconnection', 'Internet Not Working', 'Location Change', 'New Connection /Enquiry',
+    'Other CATV Issue', 'Picture Not Clear', 'Recharge / Payment Collection', 'Reconnection',
+    'Signal Issue/ Bad Signal', 'Slow Internet', 'STB Problem', 'Subscription Failure',
+    'Wire Cut / Cable Fault'
+  ];
   complaint = this.emptyComplaint();
   attempt = this.emptyAttempt();
 
@@ -49,24 +56,26 @@ export class CableTvComplaints {
     this.loadReferenceData();
     this.route.queryParamMap.subscribe(params => {
       const customerId = Number(params.get('customerId') || 0);
+      const customerType = String(params.get('customerType') || 'CATV').toUpperCase();
       if (customerId) {
-        this.openRegister(customerId);
+        this.openRegister(customerId, ['CATV', 'NET', 'CCTV'].includes(customerType) ? customerType : 'CATV');
       }
     });
   }
 
   emptyComplaint(): any {
     return {
-      complainant_type: 'CATV', customer_id: null, cable_customer_id: null, service_customer_id: null,
+      complainant_type: 'CATV', customer_id: null, cable_customer_id: null,
+      service_customer_id: null, internet_customer_id: null,
       anonymous_name: '', anonymous_mobile: '',
-      reported_mobile: '', anonymous_address: '', nature_of_complaint: '', complaint_description: ''
+      reported_mobile: '', anonymous_address: '', subject: '', nature_of_complaint: ''
     };
   }
 
   emptyAttempt(): any {
     return {
       status: 'IN_PROGRESS', assigned_employee_id: null, mapping_type: 'CATV',
-      cable_customer_id: null, service_customer_id: null,
+      cable_customer_id: null, internet_customer_id: null, service_customer_id: null,
       start_time: '', end_time: '', description: ''
     };
   }
@@ -84,7 +93,7 @@ export class CableTvComplaints {
   }
 
   get selectedRegistrationCustomer() {
-    return this.customers.find(customer =>
+    return (this.customerDirectories[this.callerType] || this.customers).find(customer =>
       Number(customer.customer_id) === Number(this.complaint.customer_id)
     );
   }
@@ -106,7 +115,7 @@ export class CableTvComplaints {
           NET: Array.isArray(netCustomers) ? netCustomers : [],
           CCTV: Array.isArray(cctvCustomers) ? cctvCustomers : []
         };
-        this.customers = this.customerDirectories['CATV'];
+        this.customers = this.callerType === 'ANONYMOUS' ? [] : this.customerDirectories[this.callerType] || [];
         this.employees = lookups?.employees || [];
       },
       error: error => this.handleError(error)
@@ -129,14 +138,34 @@ export class CableTvComplaints {
     this.search();
   }
 
-  openRegister(customerId?: number) {
+  openRegister(customerId?: number, customerType: string = 'CATV') {
     this.complaint = this.emptyComplaint();
     this.customerSearch = '';
     this.customerContextLocked = Boolean(customerId);
-    this.callerType = 'CATV';
-    this.complaint.complainant_type = 'CATV';
+    this.callerType = customerType as 'CATV' | 'NET' | 'CCTV';
+    this.complaint.complainant_type = this.callerType;
+    this.customers = this.customerDirectories[this.callerType] || [];
     this.complaint.customer_id = customerId || null;
     this.showRegisterModal = true;
+    if (customerId) this.loadLockedCustomer(this.callerType, customerId);
+  }
+
+  private loadLockedCustomer(customerType: 'CATV' | 'NET' | 'CCTV', customerId: number) {
+    this.cableTvService.getComplaintCustomers(customerType, customerId).subscribe({
+      next: (response: any) => {
+        const customer = (Array.isArray(response) ? response : []).find(item =>
+          Number(item.customer_id) === Number(customerId)
+        );
+        if (!customer) return;
+        const directory = this.customerDirectories[customerType] || [];
+        this.customerDirectories[customerType] = [
+          customer,
+          ...directory.filter(item => Number(item.customer_id) !== Number(customerId))
+        ];
+        if (this.callerType === customerType) this.customers = this.customerDirectories[customerType];
+      },
+      error: error => this.handleError(error)
+    });
   }
 
   closeRegister() {
@@ -156,6 +185,10 @@ export class CableTvComplaints {
   }
 
   registerComplaint() {
+    if (!this.complaint.subject?.trim()) {
+      this.showError('Subject is required');
+      return;
+    }
     if (!this.complaint.nature_of_complaint?.trim()) {
       this.showError('Nature of complaint is required');
       return;
@@ -173,7 +206,8 @@ export class CableTvComplaints {
       ...this.complaint,
       complainant_type: this.callerType,
       cable_customer_id: this.callerType === 'CATV' ? this.complaint.customer_id : null,
-      service_customer_id: ['NET', 'CCTV'].includes(this.callerType) ? this.complaint.customer_id : null
+      internet_customer_id: this.callerType === 'NET' ? this.complaint.customer_id : null,
+      service_customer_id: this.callerType === 'CCTV' ? this.complaint.customer_id : null
     };
     this.cableTvService.addComplaint(payload).subscribe({
       next: (response: any) => {
@@ -202,6 +236,9 @@ export class CableTvComplaints {
           : null;
         this.attempt.service_customer_id = response.service_customer_id
           ? Number(response.service_customer_id)
+          : null;
+        this.attempt.internet_customer_id = response.internet_customer_id
+          ? Number(response.internet_customer_id)
           : null;
         this.attempt.mapping_type = response.complainant_type === 'ANONYMOUS' ? 'CATV' : response.complainant_type;
         this.attempt.start_time = this.localDateTime();
@@ -239,7 +276,7 @@ export class CableTvComplaints {
       this.showError('Select the assigned technician');
       return;
     }
-    if ((this.attempt.cable_customer_id || this.attempt.service_customer_id)
+    if ((this.attempt.cable_customer_id || this.attempt.internet_customer_id || this.attempt.service_customer_id)
       && (!this.attempt.start_time || !this.attempt.end_time)) {
       this.showError('Start time and end time are required for customer complaints');
       return;
@@ -247,9 +284,8 @@ export class CableTvComplaints {
     const payload = {
       ...this.attempt,
       cable_customer_id: this.attempt.mapping_type === 'CATV' ? this.attempt.cable_customer_id : null,
-      service_customer_id: ['NET', 'CCTV'].includes(this.attempt.mapping_type)
-        ? this.attempt.service_customer_id
-        : null,
+      internet_customer_id: this.attempt.mapping_type === 'NET' ? this.attempt.internet_customer_id : null,
+      service_customer_id: this.attempt.mapping_type === 'CCTV' ? this.attempt.service_customer_id : null,
       start_time: this.mysqlDateTime(this.attempt.start_time),
       end_time: this.mysqlDateTime(this.attempt.end_time)
     };
@@ -278,18 +314,22 @@ export class CableTvComplaints {
   onMappingTypeChange() {
     this.mapCustomerSearch = '';
     this.attempt.cable_customer_id = null;
+    this.attempt.internet_customer_id = null;
     this.attempt.service_customer_id = null;
   }
 
   selectMappedCustomer(customerId: any) {
     if (this.attempt.mapping_type === 'CATV') this.attempt.cable_customer_id = customerId;
+    else if (this.attempt.mapping_type === 'NET') this.attempt.internet_customer_id = customerId;
     else this.attempt.service_customer_id = customerId;
   }
 
   mappedCustomerId() {
     return this.attempt.mapping_type === 'CATV'
       ? this.attempt.cable_customer_id
-      : this.attempt.service_customer_id;
+      : this.attempt.mapping_type === 'NET'
+        ? this.attempt.internet_customer_id
+        : this.attempt.service_customer_id;
   }
 
   private filterCustomers(searchValue: string, type: string) {

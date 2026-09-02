@@ -17,7 +17,7 @@ export class InternetCustomerList {
   defaultColDef:ColDef={resizable:true,flex:1,minWidth:120,filter:'agTextColumnFilter',floatingFilter:true,filterParams:{buttons:['reset'],maxNumConditions:1},headerClass:'ag-header-style'};
   readonly customerActions=[
     {label:'View',action:(r:any)=>this.router.navigate(['/internet/customers/view',r.internet_customer_id])},
-    {label:'Complaint',action:(r:any)=>this.router.navigate(['/internet/customers',r.internet_customer_id,'complaints'])},
+    {label:'Complaint',action:(r:any)=>this.router.navigate(['/cable-tv/complaints'],{queryParams:{customerType:'NET',customerId:r.internet_customer_id}})},
     {label:'Update',permission:'view',visible:(r:any)=>Boolean(String(r.legacy_customer_no||'').trim())||(r.approval_status==='APPROVED'&&r.account_status==='PAID'),action:(r:any)=>this.router.navigate(['/internet/customers/view',r.internet_customer_id])}
   ];
   colDefs:ColDef[]=[

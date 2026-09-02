@@ -13,11 +13,13 @@ const ensureComplaintTables = async db => {
       complaint_no VARCHAR(30) NOT NULL,
       complainant_type ENUM('CATV','NET','CCTV','ANONYMOUS') NOT NULL DEFAULT 'CATV',
       cable_customer_id BIGINT NULL,
+      internet_customer_id BIGINT NULL,
       service_customer_id INT NULL,
       anonymous_name VARCHAR(150) NULL,
       anonymous_mobile VARCHAR(20) NULL,
       reported_mobile VARCHAR(20) NULL,
       anonymous_address VARCHAR(500) NULL,
+      complaint_subject VARCHAR(250) NULL,
       nature_of_complaint VARCHAR(250) NOT NULL,
       complaint_description TEXT NULL,
       status ENUM('OPEN','IN_PROGRESS','HOLD','PENDING','COMPLETED') NOT NULL DEFAULT 'OPEN',
@@ -30,6 +32,7 @@ const ensureComplaintTables = async db => {
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       UNIQUE KEY uk_cable_tv_complaint_no (complaint_no),
       INDEX idx_cable_tv_complaint_customer (cable_customer_id),
+      INDEX idx_cable_tv_complaint_internet_customer (internet_customer_id),
       INDEX idx_cable_tv_complaint_service_customer (service_customer_id),
       INDEX idx_cable_tv_complaint_status (status),
       INDEX idx_cable_tv_complaint_assigned (assigned_employee_id),
@@ -41,7 +44,7 @@ const ensureComplaintTables = async db => {
   const [complaintTypeColumns] = await db.query(
     `SELECT COLUMN_NAME FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_tv_complaints'
-       AND COLUMN_NAME IN ('complainant_type', 'service_customer_id')`
+       AND COLUMN_NAME IN ('complainant_type', 'internet_customer_id', 'service_customer_id')`
   );
   const complaintTypeColumnNames = new Set(complaintTypeColumns.map(column => column.COLUMN_NAME));
   if (!complaintTypeColumnNames.has('complainant_type')) {
@@ -54,6 +57,10 @@ const ensureComplaintTables = async db => {
     await db.query('ALTER TABLE cable_tv_complaints ADD COLUMN service_customer_id INT NULL AFTER cable_customer_id');
     await db.query('ALTER TABLE cable_tv_complaints ADD INDEX idx_cable_tv_complaint_service_customer (service_customer_id)');
   }
+  if (!complaintTypeColumnNames.has('internet_customer_id')) {
+    await db.query('ALTER TABLE cable_tv_complaints ADD COLUMN internet_customer_id BIGINT NULL AFTER cable_customer_id');
+    await db.query('ALTER TABLE cable_tv_complaints ADD INDEX idx_cable_tv_complaint_internet_customer (internet_customer_id)');
+  }
   const [[reportedMobileColumn]] = await db.query(
     `SELECT 1 FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_tv_complaints'
@@ -61,6 +68,14 @@ const ensureComplaintTables = async db => {
   );
   if (!reportedMobileColumn) {
     await db.query('ALTER TABLE cable_tv_complaints ADD COLUMN reported_mobile VARCHAR(20) NULL AFTER anonymous_mobile');
+  }
+  const [[complaintSubjectColumn]] = await db.query(
+    `SELECT 1 FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_tv_complaints'
+       AND COLUMN_NAME = 'complaint_subject' LIMIT 1`
+  );
+  if (!complaintSubjectColumn) {
+    await db.query('ALTER TABLE cable_tv_complaints ADD COLUMN complaint_subject VARCHAR(250) NULL AFTER anonymous_address');
   }
   await db.query(`
     CREATE TABLE IF NOT EXISTS cable_tv_complaint_attempts (
@@ -101,13 +116,15 @@ const resolveEmployeeId = async (db, req, requestedId) => {
 
 const complaintSelect = `
   SELECT c.*,
-         COALESCE(CAST(customer.customer_code AS CHAR), CAST(service_customer.customer_id AS CHAR)) AS customer_code,
-         COALESCE(customer.full_name,
+         COALESCE(CAST(customer.customer_code AS CHAR), CAST(internet_customer.customer_code AS CHAR), CAST(service_customer.customer_id AS CHAR)) AS customer_code,
+         COALESCE(customer.full_name, internet_customer.full_name,
            NULLIF(TRIM(CONCAT_WS(' ', service_customer.salutation, service_customer.customer_name)), '')) AS customer_name,
-         COALESCE(customer.mobile_no, service_customer.phone) AS customer_mobile,
-         COALESCE(customer.alternate_mobile_no, service_customer.alternate_phone) AS customer_alternate_mobile,
+         COALESCE(customer.mobile_no, internet_customer.mobile_no, service_customer.phone) AS customer_mobile,
+         COALESCE(customer.alternate_mobile_no, internet_customer.alternate_mobile_no, service_customer.alternate_phone) AS customer_alternate_mobile,
          CASE WHEN c.cable_customer_id IS NOT NULL
            THEN CONCAT_WS(', ', customer.door_no, street.street_name, area.area_name, location.location_name, customer.city, customer.pincode)
+           WHEN c.internet_customer_id IS NOT NULL
+           THEN CONCAT_WS(', ', internet_customer.door_no, internet_street.street_name, internet_area.area_name, internet_location.location_name, internet_customer.city, internet_customer.pincode)
            ELSE CONCAT_WS(', ', service_customer.address, service_customer.city_district, service_customer.state, service_customer.pincode)
          END AS customer_address,
          COALESCE(NULLIF(TRIM(CONCAT_WS(' ', assigned.first_name, assigned.last_name)), ''), assigned.employee_code) AS assigned_employee_name,
@@ -117,6 +134,10 @@ const complaintSelect = `
   LEFT JOIN cable_streets street ON street.street_id = customer.street_id
   LEFT JOIN cable_areas area ON area.area_id = customer.area_id
   LEFT JOIN cable_locations location ON location.location_id = customer.location_id
+  LEFT JOIN internet_customers internet_customer ON internet_customer.internet_customer_id = c.internet_customer_id
+  LEFT JOIN cable_streets internet_street ON internet_street.street_id = internet_customer.street_id
+  LEFT JOIN cable_areas internet_area ON internet_area.area_id = internet_customer.area_id
+  LEFT JOIN cable_locations internet_location ON internet_location.location_id = internet_customer.location_id
   LEFT JOIN customers service_customer ON service_customer.customer_id = c.service_customer_id
   LEFT JOIN employees assigned ON assigned.employee_id = c.assigned_employee_id
   LEFT JOIN employees registered ON registered.employee_id = c.registered_by_employee_id
@@ -137,9 +158,10 @@ const getComplaints = async (req, res) => {
     if (textOrNull(req.query.search)) {
       const search = `%${textOrNull(req.query.search)}%`;
       filters.push(`(c.complaint_no LIKE ? OR customer.customer_code LIKE ? OR customer.full_name LIKE ?
+        OR internet_customer.customer_code LIKE ? OR internet_customer.full_name LIKE ?
         OR service_customer.customer_name LIKE ? OR service_customer.phone LIKE ?
         OR c.anonymous_name LIKE ? OR c.anonymous_mobile LIKE ? OR c.nature_of_complaint LIKE ?)`);
-      values.push(search, search, search, search, search, search, search, search);
+      values.push(search, search, search, search, search, search, search, search, search, search);
     }
     const [rows] = await db.query(
       `${complaintSelect} ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
@@ -157,6 +179,10 @@ const getComplaintCustomers = async (req, res) => {
     const db = connection.promise();
     await ensureComplaintTables(db);
     const type = String(req.query.type || 'CATV').toUpperCase();
+    const requestedCustomerId = numberOrNull(req.query.customer_id);
+    const sendCustomers = rows => res.json(requestedCustomerId
+      ? rows.filter(row => Number(row.customer_id) === requestedCustomerId)
+      : rows);
     if (!['CATV', 'NET', 'CCTV'].includes(type)) {
       return res.status(400).json({ message: 'Customer type must be CATV, Net or CCTV' });
     }
@@ -172,7 +198,22 @@ const getComplaintCustomers = async (req, res) => {
          LEFT JOIN cable_locations l ON l.location_id = c.location_id
          ORDER BY c.full_name`
       );
-      return res.json(rows);
+      return sendCustomers(rows);
+    }
+    if (type === 'NET') {
+      const [rows] = await db.query(
+        `SELECT c.internet_customer_id AS customer_id,
+                COALESCE(NULLIF(c.legacy_customer_no, ''), CAST(c.customer_code AS CHAR)) AS customer_code,
+                c.full_name AS customer_name, c.mobile_no AS phone,
+                c.alternate_mobile_no AS alternate_phone,
+                CONCAT_WS(', ', c.door_no, s.street_name, a.area_name, l.location_name, c.city, c.pincode) AS address
+         FROM internet_customers c
+         LEFT JOIN cable_streets s ON s.street_id = c.street_id
+         LEFT JOIN cable_areas a ON a.area_id = c.area_id
+         LEFT JOIN cable_locations l ON l.location_id = c.location_id
+         ORDER BY c.full_name`
+      );
+      return sendCustomers(rows);
     }
     const [rows] = await db.query(
       `SELECT customer_id, customer_id AS customer_code,
@@ -181,7 +222,7 @@ const getComplaintCustomers = async (req, res) => {
               CONCAT_WS(', ', address, city_district, state, pincode) AS address
        FROM customers WHERE is_active = 1 ORDER BY customer_name`
     );
-    return res.json(rows);
+    return sendCustomers(rows);
   } catch (error) {
     return res.status(500).json({ message: 'Complaint customers could not be loaded', error: error.message });
   }
@@ -220,9 +261,11 @@ const addComplaint = async (req, res) => {
     const payload = req.body || {};
     const complainantType = String(payload.complainant_type || (payload.cable_customer_id ? 'CATV' : 'ANONYMOUS')).toUpperCase();
     const customerId = complainantType === 'CATV' ? numberOrNull(payload.cable_customer_id) : null;
-    const serviceCustomerId = ['NET', 'CCTV'].includes(complainantType) ? numberOrNull(payload.service_customer_id) : null;
+    const internetCustomerId = complainantType === 'NET' ? numberOrNull(payload.internet_customer_id) : null;
+    const serviceCustomerId = complainantType === 'CCTV' ? numberOrNull(payload.service_customer_id) : null;
     const anonymousName = textOrNull(payload.anonymous_name);
     const anonymousMobile = textOrNull(payload.anonymous_mobile);
+    const subject = textOrNull(payload.subject);
     const nature = textOrNull(payload.nature_of_complaint);
     if (!allowedComplainantTypes.has(complainantType)) {
       return res.status(400).json({ message: 'Complaint type is invalid' });
@@ -231,9 +274,9 @@ const addComplaint = async (req, res) => {
       return res.status(400).json({ message: 'Select a customer or enter anonymous caller details' });
     }
     if (complainantType === 'CATV' && !customerId) return res.status(400).json({ message: 'Select a CATV customer' });
-    if (['NET', 'CCTV'].includes(complainantType) && !serviceCustomerId) {
-      return res.status(400).json({ message: `Select a ${complainantType === 'NET' ? 'Net' : 'CCTV'} customer` });
-    }
+    if (complainantType === 'NET' && !internetCustomerId) return res.status(400).json({ message: 'Select a Net customer' });
+    if (complainantType === 'CCTV' && !serviceCustomerId) return res.status(400).json({ message: 'Select a CCTV customer' });
+    if (!subject) return res.status(400).json({ message: 'Subject is required' });
     if (!nature) return res.status(400).json({ message: 'Nature of complaint is required' });
     if (customerId) {
       const [[customer]] = await db.query(
@@ -249,6 +292,13 @@ const addComplaint = async (req, res) => {
       );
       if (!serviceCustomer) return res.status(400).json({ message: 'Selected customer was not found' });
     }
+    if (internetCustomerId) {
+      const [[internetCustomer]] = await db.query(
+        'SELECT internet_customer_id FROM internet_customers WHERE internet_customer_id = ? LIMIT 1',
+        [internetCustomerId]
+      );
+      if (!internetCustomer) return res.status(400).json({ message: 'Selected Internet customer was not found' });
+    }
     const registeredEmployeeId = await resolveEmployeeId(db, req);
     await db.beginTransaction();
     transactionStarted = true;
@@ -259,14 +309,14 @@ const addComplaint = async (req, res) => {
     const complaintNo = `CMP-${String(next.next_no).padStart(6, '0')}`;
     const [result] = await db.query(
       `INSERT INTO cable_tv_complaints
-       (complaint_no, complainant_type, cable_customer_id, service_customer_id,
+       (complaint_no, complainant_type, cable_customer_id, internet_customer_id, service_customer_id,
         anonymous_name, anonymous_mobile, reported_mobile, anonymous_address,
-        nature_of_complaint, complaint_description, status, registered_by_user_id, registered_by_employee_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)`,
+        complaint_subject, nature_of_complaint, complaint_description, status, registered_by_user_id, registered_by_employee_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)`,
       [
-        complaintNo, complainantType, customerId, serviceCustomerId,
+        complaintNo, complainantType, customerId, internetCustomerId, serviceCustomerId,
         anonymousName, anonymousMobile, textOrNull(payload.reported_mobile), textOrNull(payload.anonymous_address),
-        nature, textOrNull(payload.complaint_description), userId(req), registeredEmployeeId
+        subject, nature, null, userId(req), registeredEmployeeId
       ]
     );
     await db.query(
@@ -317,8 +367,11 @@ const addComplaintAttempt = async (req, res) => {
       ? numberOrNull(payload.cable_customer_id) || complaint.cable_customer_id
       : complaint.cable_customer_id;
     const serviceCustomerId = ['NET', 'CCTV'].includes(mappingType)
-      ? numberOrNull(payload.service_customer_id) || complaint.service_customer_id
+      ? (mappingType === 'CCTV' ? numberOrNull(payload.service_customer_id) : null) || complaint.service_customer_id
       : complaint.service_customer_id;
+    const internetCustomerId = mappingType === 'NET'
+      ? numberOrNull(payload.internet_customer_id) || complaint.internet_customer_id
+      : complaint.internet_customer_id;
     const assignedEmployeeId = await resolveEmployeeId(db, req, payload.assigned_employee_id || complaint.assigned_employee_id);
     const startTime = textOrNull(payload.start_time);
     const endTime = textOrNull(payload.end_time);
@@ -326,7 +379,7 @@ const addComplaintAttempt = async (req, res) => {
       await db.rollback(); transactionStarted = false;
       return res.status(400).json({ message: 'Assigned technician is required' });
     }
-    if ((customerId || serviceCustomerId) && (!startTime || !endTime)) {
+    if ((customerId || internetCustomerId || serviceCustomerId) && (!startTime || !endTime)) {
       await db.rollback(); transactionStarted = false;
       return res.status(400).json({ message: 'Start time and end time are required for customer complaints' });
     }
@@ -352,11 +405,11 @@ const addComplaintAttempt = async (req, res) => {
     );
     await db.query(
       `UPDATE cable_tv_complaints
-       SET complainant_type = ?, cable_customer_id = ?, service_customer_id = ?,
+       SET complainant_type = ?, cable_customer_id = ?, internet_customer_id = ?, service_customer_id = ?,
            assigned_employee_id = ?, status = ?,
            completed_at = CASE WHEN ? = 'COMPLETED' THEN NOW() ELSE NULL END
        WHERE complaint_id = ?`,
-      [mappingType, customerId, serviceCustomerId, assignedEmployeeId, status, status, complaintId]
+      [mappingType, customerId, internetCustomerId, serviceCustomerId, assignedEmployeeId, status, status, complaintId]
     );
     await db.commit();
     return res.json({ message: status === 'COMPLETED' ? 'Complaint completed successfully' : 'Complaint attempt saved successfully' });
