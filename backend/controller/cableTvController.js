@@ -923,7 +923,7 @@ const recalculateLinkedPendingAccount = async (db, approvalGroupId) => {
   );
 };
 
-const reconcileReplacementStbAccounts = async (db, cableCustomerId) => {
+const reconcileMissingStbAmounts = async (db, cableCustomerId) => {
   const customerId = Number(cableCustomerId);
   const customerFilter = customerId ? 'AND stb.cable_customer_id = ?' : '';
   const [rows] = await db.query(
@@ -932,7 +932,10 @@ const reconcileReplacementStbAccounts = async (db, cableCustomerId) => {
      FROM cable_customer_stbs stb
      LEFT JOIN cable_stb_master sm ON sm.stb_master_id = stb.stb_master_id
      WHERE 1 = 1 ${customerFilter}
-       AND UPPER(COALESCE(stb.update_reason, '')) = 'REPLACED'
+       AND (
+         UPPER(COALESCE(stb.update_reason, '')) = 'REPLACED'
+         OR (COALESCE(stb.update_reason, '') = '' AND UPPER(COALESCE(stb.stb_type, '')) = 'NEW')
+       )
        AND stb.approval_status = 'APPROVED'
        AND COALESCE(stb.stb_amount, 0) <= 0
        AND stb.approval_group_id IS NOT NULL
@@ -944,9 +947,8 @@ const reconcileReplacementStbAccounts = async (db, cableCustomerId) => {
   );
   for (const row of rows) {
     const fullSet = String(row.issue_mode || 'BOX_ONLY').toUpperCase() === 'FULL_SET';
-    const restoredAmount = money(
-      (fullSet ? row.master_full_set_amount : row.master_stb_amount) || (fullSet ? 800 : 500)
-    );
+    const restoredAmount = money(fullSet ? row.master_full_set_amount : row.master_stb_amount)
+      || (fullSet ? 800 : 500);
     await db.query(
       `UPDATE cable_customer_stbs
        SET stb_amount = ?, updated_at = NOW()
@@ -1740,7 +1742,7 @@ const getPendingAccounts = async (req, res) => {
   try {
     const db = connection.promise();
     await ensureCableTvExtendedTables(db);
-    await reconcileReplacementStbAccounts(db);
+    await reconcileMissingStbAmounts(db);
     const status = String(req.query.status || 'PENDING').toUpperCase();
     const name = String(req.query.name || '').trim();
     const installedByEmployeeId = isAdmin(req)
@@ -3080,7 +3082,7 @@ const getCableCustomerById = async (req, res) => {
     await ensureCableTvExtendedTables(db);
     const { id } = req.params;
     await reconcileApprovedLocationChanges(db, id);
-    await reconcileReplacementStbAccounts(db, id);
+    await reconcileMissingStbAmounts(db, id);
     await synchronizeLatestCustomerStbStatus(db, [id]);
     const [[customer]] = await db.query(
       `SELECT c.*, n.network_name, l.location_name, a.area_name, s.street_name,
@@ -3392,7 +3394,8 @@ const addCableCustomer = async (req, res) => {
         return res.status(400).json({ message: 'Installed STB type must be New, Serviced or Returned' });
       }
       const issueMode = String(payload.stb.issue_mode || 'FULL_SET').toUpperCase() === 'BOX_ONLY' ? 'BOX_ONLY' : 'FULL_SET';
-      issuedStbAmount = money(issueMode === 'BOX_ONLY' ? (selectedStb?.stb_amount || 500) : (selectedStb?.full_set_amount || 800));
+      issuedStbAmount = money(issueMode === 'BOX_ONLY' ? selectedStb?.stb_amount : selectedStb?.full_set_amount)
+        || (issueMode === 'BOX_ONLY' ? 500 : 800);
 
       const [stbResult] = await db.query(
         `INSERT INTO cable_customer_stbs (
@@ -4162,7 +4165,8 @@ const addCustomerStb = async (req, res) => {
     }
 
     const issueMode = String(payload.issue_mode || 'BOX_ONLY').toUpperCase() === 'FULL_SET' ? 'FULL_SET' : 'BOX_ONLY';
-    const chargedStbAmount = money(issueMode === 'FULL_SET' ? (selectedStb?.full_set_amount || 800) : (selectedStb?.stb_amount || 500));
+    const chargedStbAmount = money(issueMode === 'FULL_SET' ? selectedStb?.full_set_amount : selectedStb?.stb_amount)
+      || (issueMode === 'FULL_SET' ? 800 : 500);
     const [stbResult] = await db.query(
       `INSERT INTO cable_customer_stbs (
         approval_group_id, cable_customer_id, stb_master_id, stb_type, issue_mode, installed_mso_id, exchange_original_mso_id,
@@ -4258,8 +4262,8 @@ const updateCustomerStb = async (req, res) => {
       : (requestedReason || existingStb.update_reason || null);
     const stbType = initialRecord ? 'NEW' : (existingStb.stb_type || 'NEW');
     const stbAmount = stbMaster
-      ? money((issueMode === 'FULL_SET' ? stbMaster.full_set_amount : stbMaster.stb_amount)
-        || (issueMode === 'FULL_SET' ? 800 : 500))
+      ? money(issueMode === 'FULL_SET' ? stbMaster.full_set_amount : stbMaster.stb_amount)
+        || (issueMode === 'FULL_SET' ? 800 : 500)
       : money(req.body.stb_amount);
     const laborAmount = money(req.body.labour_service_charge);
     const stbDiscount = money(req.body.stb_discount);
