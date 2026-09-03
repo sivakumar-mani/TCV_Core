@@ -8,7 +8,12 @@ const {
   addMaterialMovement,
   mapMaterialSaleCustomer,
   addMaterialIssueBatch,
-  addMaterialSaleBatch
+  addMaterialSaleBatch,
+  getIssuedMaterialSales,
+  getMaterialSaleAdjustments,
+  requestMaterialSaleAdjustment,
+  reviewMaterialSaleAdjustment,
+  markMaterialSaleSold
 } = require('../controller/materialSalesController');
 const {
   getComplaints,
@@ -78,7 +83,12 @@ router.get('/material-sales/movements', auth.requirePermission('MATERIAL_SALES')
 router.post('/material-sales/movements', auth.requirePermissionAction('MATERIAL_SALES', 'can_create'), addMaterialMovement);
 router.post('/material-sales/issues/batch', auth.requirePermissionAction('MATERIAL_SALES', 'can_create'), addMaterialIssueBatch);
 router.post('/material-sales/sales/batch', auth.requirePermissionAction('MATERIAL_SALES', 'can_create'), addMaterialSaleBatch);
+router.get('/material-sales/issued', auth.requirePermission('MATERIAL_SALES'), getIssuedMaterialSales);
+router.get('/material-sales/adjustments', auth.requirePermission('MATERIAL_SALES'), getMaterialSaleAdjustments);
+router.post('/material-sales/movements/:movementId/adjustments', auth.requirePermissionAction('MATERIAL_SALES', 'can_update'), requestMaterialSaleAdjustment);
+router.patch('/material-sales/adjustments/:adjustmentId/review', auth.requireAdmin, reviewMaterialSaleAdjustment);
 router.patch('/material-sales/movements/:movementId/customer', auth.requirePermissionAction('MATERIAL_SALES', 'can_update'), mapMaterialSaleCustomer);
+router.patch('/material-sales/movements/:movementId/sold', auth.requirePermissionAction('MATERIAL_SALES', 'can_update'), markMaterialSaleSold);
 router.get('/complaints', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaints);
 router.get('/complaints/customers/lookup', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintCustomers);
 router.get('/complaints/:complaintId', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintById);

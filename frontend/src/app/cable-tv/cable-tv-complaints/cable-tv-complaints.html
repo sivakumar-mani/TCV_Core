@@ -7,6 +7,17 @@
     <button type="button" (click)="openRegister()"><i class="bi bi-plus-circle"></i> Register Complaint</button>
   </div>
 
+  <section class="complaint-summary" aria-label="Complaints by Status">
+    <h2><i class="bi bi-megaphone"></i> Complaints by Status</h2>
+    <div class="summary-grid">
+      <article class="summary-card open"><span>Open</span><strong>{{ statusCount('OPEN') }}</strong></article>
+      <article class="summary-card progress"><span>In Progress</span><strong>{{ statusCount('IN_PROGRESS') }}</strong></article>
+      <article class="summary-card hold"><span>Hold</span><strong>{{ statusCount('HOLD') }}</strong></article>
+      <article class="summary-card pending"><span>Pending</span><strong>{{ statusCount('PENDING') }}</strong></article>
+      <article class="summary-card completed"><span>Completed</span><strong>{{ statusCount('COMPLETED') }}</strong></article>
+    </div>
+  </section>
+
   <section class="filter-panel">
     <label>Search
       <input type="search" [(ngModel)]="filters.search" placeholder="Complaint no, customer or mobile">

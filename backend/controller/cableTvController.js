@@ -1864,7 +1864,7 @@ const getPendingAccounts = async (req, res) => {
       values
     );
     await ensureMaterialSalesTables(db);
-    const materialFilters = ["m.movement_type = 'SALE'"];
+    const materialFilters = ["m.movement_type = 'SALE'", "m.sale_status = 'SOLD'"];
     const materialValues = [];
     const materialPaymentStatus = status === 'RECEIVED' ? 'PAID' : status;
     if (['PENDING', 'PARTIAL', 'PAID'].includes(materialPaymentStatus)) {

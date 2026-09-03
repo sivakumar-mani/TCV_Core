@@ -48,6 +48,7 @@ const ensureMaterialSalesTables = async db => {
       paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
       balance_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
       payment_status ENUM('PENDING','PARTIAL','PAID') NOT NULL DEFAULT 'PENDING',
+      sale_status ENUM('ISSUED','SOLD') NOT NULL DEFAULT 'SOLD',
       customer_type ENUM('CATV','NET','CCTV','ANONYMOUS') NULL,
       cable_customer_id BIGINT NULL,
       service_customer_id INT NULL,
@@ -72,7 +73,7 @@ const ensureMaterialSalesTables = async db => {
   const [paymentColumns] = await db.query(
     `SELECT COLUMN_NAME FROM information_schema.COLUMNS
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'technician_material_movements'
-       AND COLUMN_NAME IN ('commission_amount','paid_amount','balance_amount','payment_status')`
+       AND COLUMN_NAME IN ('commission_amount','paid_amount','balance_amount','payment_status','sale_status')`
   );
   const paymentColumnNames = new Set(paymentColumns.map(column => column.COLUMN_NAME));
   if (!paymentColumnNames.has('commission_amount')) {
@@ -92,6 +93,10 @@ const ensureMaterialSalesTables = async db => {
     await db.query(`UPDATE technician_material_movements SET payment_status = 'PAID'
       WHERE movement_type <> 'SALE' OR balance_amount <= 0`);
   }
+  if (!paymentColumnNames.has('sale_status')) {
+    await db.query(`ALTER TABLE technician_material_movements
+      ADD COLUMN sale_status ENUM('ISSUED','SOLD') NOT NULL DEFAULT 'SOLD' AFTER payment_status`);
+  }
   await db.query(`
     CREATE TABLE IF NOT EXISTS technician_material_sale_payments (
       material_sale_payment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -108,6 +113,26 @@ const ensureMaterialSalesTables = async db => {
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       INDEX idx_material_sale_payment_movement (material_movement_id),
       CONSTRAINT fk_material_sale_payment_movement FOREIGN KEY (material_movement_id)
+        REFERENCES technician_material_movements(material_movement_id)
+    )
+  `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS technician_material_sale_adjustments (
+      material_sale_adjustment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+      material_movement_id BIGINT NOT NULL,
+      adjustment_type ENUM('RETURN','FAULT') NOT NULL,
+      qty DECIMAL(10,2) NOT NULL,
+      remarks TEXT NULL,
+      approval_status ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING',
+      requested_by_user_id INT NULL,
+      requested_by_employee_id INT NULL,
+      reviewed_by_user_id INT NULL,
+      reviewed_at DATETIME NULL,
+      review_remarks TEXT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_material_adjustment_sale (material_movement_id),
+      INDEX idx_material_adjustment_status (approval_status),
+      CONSTRAINT fk_material_adjustment_sale FOREIGN KEY (material_movement_id)
         REFERENCES technician_material_movements(material_movement_id)
     )
   `);
@@ -176,6 +201,11 @@ const getMaterialMovements = async (req, res) => {
     if (movementTypes.has(String(req.query.movement_type || '').toUpperCase())) {
       conditions.push('m.movement_type = ?'); values.push(String(req.query.movement_type).toUpperCase());
     }
+    const saleStatus = String(req.query.status || '').toUpperCase();
+    if (['ISSUED', 'SOLD'].includes(saleStatus)) { conditions.push('m.sale_status = ?'); values.push(saleStatus); }
+    if (isAdmin(req) && id(req.query.issued_by_employee_id)) {
+      conditions.push('m.created_by_employee_id = ?'); values.push(id(req.query.issued_by_employee_id));
+    }
     if (text(req.query.start_date)) { conditions.push('DATE(m.movement_date) >= ?'); values.push(text(req.query.start_date)); }
     if (text(req.query.end_date)) { conditions.push('DATE(m.movement_date) <= ?'); values.push(text(req.query.end_date)); }
     const [rows] = await db.query(
@@ -185,9 +215,11 @@ const getMaterialMovements = async (req, res) => {
                 NULLIF(TRIM(CONCAT_WS(' ', service.salutation, service.customer_name)), ''),
                 m.anonymous_name) AS customer_name,
               COALESCE(catv.mobile_no, service.phone, m.anonymous_mobile) AS customer_mobile
+              ,COALESCE(NULLIF(TRIM(CONCAT_WS(' ', issuer.first_name, issuer.last_name)), ''), issuer.employee_code) AS issued_by_name
        FROM technician_material_movements m
        JOIN products p ON p.product_id = m.product_id
        JOIN employees e ON e.employee_id = m.employee_id
+       LEFT JOIN employees issuer ON issuer.employee_id = m.created_by_employee_id
        LEFT JOIN cable_tv_customers catv ON catv.cable_customer_id = m.cable_customer_id
        LEFT JOIN customers service ON service.customer_id = m.service_customer_id
        ${conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''}
@@ -197,6 +229,152 @@ const getMaterialMovements = async (req, res) => {
     return res.json(rows);
   } catch (error) {
     return res.status(500).json({ message: 'Material movement report failed', error: error.message });
+  }
+};
+
+const getIssuedMaterialSales = async (req, res) => {
+  try {
+    const db = connection.promise();
+    await ensureMaterialSalesTables(db);
+    const employeeId = isAdmin(req) ? id(req.query.employee_id) : await resolveEmployeeId(db, req, null);
+    const conditions = ["m.movement_type = 'SALE'", "m.sale_status = 'ISSUED'"];
+    const values = [];
+    if (employeeId) { conditions.push('m.employee_id = ?'); values.push(employeeId); }
+    else if (!isAdmin(req)) conditions.push('1 = 0');
+    const [rows] = await db.query(
+      `SELECT m.*, p.product_name, p.unit,
+              COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), e.employee_code) AS employee_name,
+              COALESCE(catv.full_name, service.customer_name, m.anonymous_name) AS customer_name,
+              GREATEST(m.qty - COALESCE(a.adjusted_qty, 0), 0) AS available_adjustment_qty
+       FROM technician_material_movements m
+       JOIN products p ON p.product_id = m.product_id
+       JOIN employees e ON e.employee_id = m.employee_id
+       LEFT JOIN cable_tv_customers catv ON catv.cable_customer_id = m.cable_customer_id
+       LEFT JOIN customers service ON service.customer_id = m.service_customer_id
+       LEFT JOIN (
+         SELECT material_movement_id, SUM(qty) AS adjusted_qty
+         FROM technician_material_sale_adjustments
+         GROUP BY material_movement_id
+       ) a ON a.material_movement_id = m.material_movement_id
+       WHERE ${conditions.join(' AND ')}
+       ORDER BY m.movement_date DESC, m.material_movement_id DESC`, values
+    );
+    return res.json(rows.filter(row => num(row.available_adjustment_qty) > 0));
+  } catch (error) {
+    return res.status(500).json({ message: 'Issued materials could not be loaded', error: error.message });
+  }
+};
+
+const getMaterialSaleAdjustments = async (req, res) => {
+  try {
+    const db = connection.promise();
+    await ensureMaterialSalesTables(db);
+    const employeeId = isAdmin(req) ? id(req.query.employee_id) : await resolveEmployeeId(db, req, null);
+    const conditions = ["a.approval_status = 'PENDING'"];
+    const values = [];
+    if (employeeId) { conditions.push('m.employee_id = ?'); values.push(employeeId); }
+    else if (!isAdmin(req)) conditions.push('1 = 0');
+    const [rows] = await db.query(
+      `SELECT a.*, m.movement_no, m.movement_date, m.qty AS issued_qty, m.employee_id,
+              p.product_name, p.unit,
+              COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), e.employee_code) AS employee_name
+       FROM technician_material_sale_adjustments a
+       JOIN technician_material_movements m ON m.material_movement_id = a.material_movement_id
+       JOIN products p ON p.product_id = m.product_id
+       JOIN employees e ON e.employee_id = m.employee_id
+       ${conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''}
+       ORDER BY a.created_at DESC, a.material_sale_adjustment_id DESC`, values
+    );
+    return res.json(rows);
+  } catch (error) {
+    return res.status(500).json({ message: 'Fault and return materials could not be loaded', error: error.message });
+  }
+};
+
+const requestMaterialSaleAdjustment = async (req, res) => {
+  const db = connection.promise();
+  let started = false;
+  try {
+    await ensureMaterialSalesTables(db);
+    const movementId = id(req.params.movementId);
+    const adjustmentType = String(req.body.adjustment_type || '').toUpperCase();
+    const qty = num(req.body.qty);
+    if (!movementId || !['RETURN', 'FAULT'].includes(adjustmentType) || qty <= 0) {
+      return res.status(400).json({ message: 'Sale, return/fault type and quantity are required' });
+    }
+    await db.beginTransaction(); started = true;
+    const [[sale]] = await db.query(
+      `SELECT material_movement_id, employee_id, qty FROM technician_material_movements
+       WHERE material_movement_id = ? AND movement_type = 'SALE' FOR UPDATE`, [movementId]
+    );
+    if (!sale) throw Object.assign(new Error('Issued material row was not found'), { statusCode: 404 });
+    const requesterEmployeeId = await resolveEmployeeId(db, req, null);
+    if (!isAdmin(req) && Number(sale.employee_id) !== Number(requesterEmployeeId)) {
+      throw Object.assign(new Error('You can update only your issued materials'), { statusCode: 403 });
+    }
+    const [[used]] = await db.query(
+      `SELECT COALESCE(SUM(qty), 0) AS qty FROM technician_material_sale_adjustments
+       WHERE material_movement_id = ? FOR UPDATE`, [movementId]
+    );
+    const availableQty = Number((num(sale.qty) - num(used.qty)).toFixed(2));
+    if (qty > availableQty) throw Object.assign(new Error(`Quantity cannot exceed available quantity ${availableQty}`), { statusCode: 409 });
+    await db.query(
+      `INSERT INTO technician_material_sale_adjustments
+       (material_movement_id, adjustment_type, qty, remarks, requested_by_user_id, requested_by_employee_id)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [movementId, adjustmentType, qty, text(req.body.remarks), currentUserId(req), requesterEmployeeId]
+    );
+    await db.commit(); started = false;
+    return res.status(201).json({ message: `${adjustmentType === 'FAULT' ? 'Fault' : 'Return'} submitted for admin approval` });
+  } catch (error) {
+    if (started) await db.rollback();
+    return res.status(error.statusCode || 500).json({ message: error.message || 'Material adjustment failed' });
+  }
+};
+
+const reviewMaterialSaleAdjustment = async (req, res) => {
+  const db = connection.promise();
+  let started = false;
+  try {
+    if (!isAdmin(req)) return res.status(403).json({ message: 'Administrator permission is required' });
+    await ensureMaterialSalesTables(db);
+    const adjustmentId = id(req.params.adjustmentId);
+    const action = String(req.body.action || '').toUpperCase();
+    if (!adjustmentId || !['APPROVED', 'REJECTED'].includes(action)) return res.status(400).json({ message: 'Valid review action is required' });
+    await db.beginTransaction(); started = true;
+    const [[adjustment]] = await db.query(
+      `SELECT a.*, m.product_id FROM technician_material_sale_adjustments a
+       JOIN technician_material_movements m ON m.material_movement_id = a.material_movement_id
+       WHERE a.material_sale_adjustment_id = ? FOR UPDATE`, [adjustmentId]
+    );
+    if (!adjustment) throw Object.assign(new Error('Fault/return request was not found'), { statusCode: 404 });
+    if (adjustment.approval_status !== 'PENDING') throw Object.assign(new Error('Only pending requests can be reviewed'), { statusCode: 409 });
+    // Approved returns and rejected requests are restored to fresh office stock as requested.
+    if (action === 'REJECTED' || adjustment.adjustment_type === 'RETURN') {
+      await db.query(
+        `INSERT INTO stock_master (product_id, available_qty, last_stock_check_date)
+         VALUES (?, ?, CURDATE()) ON DUPLICATE KEY UPDATE available_qty = available_qty + VALUES(available_qty), last_stock_check_date = CURDATE(), last_updated = NOW()`,
+        [adjustment.product_id, adjustment.qty]
+      );
+      const [[stock]] = await db.query('SELECT available_qty FROM stock_master WHERE product_id = ?', [adjustment.product_id]);
+      await db.query(
+        `INSERT INTO stock_ledger (product_id, transaction_type, transaction_id, reference_no, qty_in, qty_out, balance_qty, remarks, recorded_by_employee_id)
+         VALUES (?, 'RETURN', ?, ?, ?, 0, ?, ?, ?)`,
+        [adjustment.product_id, adjustmentId, `MAT-ADJ-${adjustmentId}`, adjustment.qty, stock.available_qty,
+          action === 'REJECTED' ? 'Rejected material adjustment moved to fresh stock' : 'Approved material return moved to fresh stock',
+          await resolveEmployeeId(db, req, null)]
+      );
+    }
+    await db.query(
+      `UPDATE technician_material_sale_adjustments SET approval_status = ?, reviewed_by_user_id = ?, reviewed_at = NOW(), review_remarks = ?
+       WHERE material_sale_adjustment_id = ?`,
+      [action, currentUserId(req), text(req.body.review_remarks), adjustmentId]
+    );
+    await db.commit(); started = false;
+    return res.json({ message: `Material ${adjustment.adjustment_type.toLowerCase()} ${action.toLowerCase()} successfully` });
+  } catch (error) {
+    if (started) await db.rollback();
+    return res.status(error.statusCode || 500).json({ message: error.message || 'Material adjustment review failed' });
   }
 };
 
@@ -423,6 +601,30 @@ const mapMaterialSaleCustomer = async (req, res) => {
   }
 };
 
+const markMaterialSaleSold = async (req, res) => {
+  try {
+    const db = connection.promise();
+    await ensureMaterialSalesTables(db);
+    const movementId = id(req.params.movementId);
+    const customerType = String(req.body.customer_type || 'ANONYMOUS').toUpperCase();
+    if (!movementId || !customerTypes.has(customerType)) return res.status(400).json({ message: 'A valid issued material and customer type are required' });
+    const cableCustomerId = customerType === 'CATV' ? id(req.body.cable_customer_id) : null;
+    const serviceCustomerId = ['NET', 'CCTV'].includes(customerType) ? id(req.body.service_customer_id) : null;
+    const employeeId = await resolveEmployeeId(db, req, null);
+    const conditions = ["material_movement_id = ?", "movement_type = 'SALE'", "sale_status = 'ISSUED'"];
+    const values = [customerType, cableCustomerId, serviceCustomerId, movementId];
+    if (!isAdmin(req)) { conditions.push('employee_id = ?'); values.push(employeeId); }
+    const [result] = await db.query(
+      `UPDATE technician_material_movements SET sale_status = 'SOLD', customer_type = ?, cable_customer_id = ?, service_customer_id = ?
+       WHERE ${conditions.join(' AND ')}`, values
+    );
+    if (!result.affectedRows) return res.status(404).json({ message: 'Issued material was not found' });
+    return res.json({ message: 'Material marked as sold and added to pending accounts' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Material could not be marked as sold', error: error.message });
+  }
+};
+
 const addMaterialIssueBatch = async (req, res) => {
   const db = connection.promise();
   let started = false;
@@ -512,18 +714,7 @@ const addMaterialSaleBatch = async (req, res) => {
   try {
     await ensureMaterialSalesTables(db);
     const payload = req.body || {};
-    const employeeId = isAdmin(req)
-      ? id(payload.employee_id)
-      : await resolveEmployeeId(db, req, null);
-    const customerType = String(payload.customer_type || 'ANONYMOUS').toUpperCase();
-    const cableCustomerId = customerType === 'CATV' ? id(payload.cable_customer_id) : null;
-    const serviceCustomerId = ['NET', 'CCTV'].includes(customerType) ? id(payload.service_customer_id) : null;
-    if (!employeeId) return res.status(400).json({ message: 'Technician is required' });
-    if (!customerTypes.has(customerType)) return res.status(400).json({ message: 'Customer type is invalid' });
-    if (customerType === 'CATV' && !cableCustomerId) return res.status(400).json({ message: 'Select a CATV customer' });
-    if (['NET', 'CCTV'].includes(customerType) && !serviceCustomerId) {
-      return res.status(400).json({ message: `Select a ${customerType} customer` });
-    }
+    const loggedInEmployeeId = await resolveEmployeeId(db, req, null);
     const items = Array.isArray(payload.items) ? payload.items : [];
     if (!items.length) return res.status(400).json({ message: 'Add at least one material sale row' });
     const normalized = items.map((item, index) => {
@@ -532,12 +723,13 @@ const addMaterialSaleBatch = async (req, res) => {
       const commission = num(item.commission_amount);
       const gross = Number((qty * unitPrice).toFixed(2));
       return {
-        row: index + 1, productId: id(item.product_id), qty, unitPrice, commission, gross,
-        net: Number((gross - commission).toFixed(2)), remarks: text(item.remarks)
+        row: index + 1, employeeId: isAdmin(req) ? id(item.employee_id) : loggedInEmployeeId,
+        productId: id(item.product_id), qty, unitPrice, commission, gross,
+        net: Number(((unitPrice - commission) * qty).toFixed(2)), remarks: text(item.remarks)
       };
     });
     const invalid = normalized.find(item =>
-      !item.productId || item.qty <= 0 || item.unitPrice < 0 || item.commission < 0 || item.commission > item.gross
+      !item.employeeId || !item.productId || item.qty <= 0 || item.unitPrice < 0 || item.commission < 0 || item.commission > item.unitPrice
     );
     if (invalid) return res.status(400).json({ message: `Check material, quantity, price and commission in row ${invalid.row}` });
 
@@ -552,11 +744,11 @@ const addMaterialSaleBatch = async (req, res) => {
     const movementNumbers = [];
     for (const item of normalized) {
       const [[stock]] = await db.query(
-        `SELECT ts.available_qty, p.product_name
+        `SELECT ts.available_qty, p.product_name, p.selling_price
          FROM technician_material_stock ts
          JOIN products p ON p.product_id = ts.product_id
          WHERE ts.employee_id = ? AND ts.product_id = ? FOR UPDATE`,
-        [employeeId, item.productId]
+        [item.employeeId, item.productId]
       );
       const availableQty = num(stock?.available_qty);
       if (!stock || availableQty < item.qty) {
@@ -565,10 +757,18 @@ const addMaterialSaleBatch = async (req, res) => {
           { statusCode: 409 }
         );
       }
+      if (!isAdmin(req)) {
+        item.unitPrice = num(stock.selling_price);
+        item.gross = Number((item.qty * item.unitPrice).toFixed(2));
+        item.net = Number(((item.unitPrice - item.commission) * item.qty).toFixed(2));
+        if (item.commission > item.unitPrice) {
+          throw Object.assign(new Error(`Commission cannot exceed selling price in row ${item.row}`), { statusCode: 400 });
+        }
+      }
       await db.query(
         `UPDATE technician_material_stock SET available_qty = ?
          WHERE employee_id = ? AND product_id = ?`,
-        [availableQty - item.qty, employeeId, item.productId]
+        [availableQty - item.qty, item.employeeId, item.productId]
       );
       nextNo += 1;
       const movementNo = `MAT-${String(nextNo).padStart(6, '0')}`;
@@ -576,15 +776,14 @@ const addMaterialSaleBatch = async (req, res) => {
       await db.query(
         `INSERT INTO technician_material_movements
          (movement_no, movement_type, employee_id, product_id, qty, unit_price, total_amount,
-          commission_amount, paid_amount, balance_amount, payment_status, customer_type,
+          commission_amount, paid_amount, balance_amount, payment_status, sale_status, customer_type,
           cable_customer_id, service_customer_id, anonymous_name, anonymous_mobile,
           remarks, movement_date, created_by_user_id, created_by_employee_id)
-         VALUES (?, 'SALE', ?, ?, ?, ?, ?, ?, 0, ?, 'PENDING', ?, ?, ?, ?, ?, ?, COALESCE(?, NOW()), ?, ?)`,
+         VALUES (?, 'SALE', ?, ?, ?, ?, ?, ?, 0, ?, 'PENDING', 'ISSUED', NULL, NULL, NULL, NULL, NULL, ?, CURDATE(), ?, ?)`,
         [
-          movementNo, employeeId, item.productId, item.qty, item.unitPrice, item.net,
-          item.commission, item.net, customerType, cableCustomerId, serviceCustomerId,
-          text(payload.anonymous_name), text(payload.anonymous_mobile), item.remarks,
-          text(payload.movement_date), currentUserId(req), createdByEmployeeId
+          movementNo, item.employeeId, item.productId, item.qty, item.unitPrice, item.net,
+          item.commission, item.net, item.remarks,
+          currentUserId(req), createdByEmployeeId
         ]
       );
     }
@@ -603,5 +802,7 @@ const addMaterialSaleBatch = async (req, res) => {
 module.exports = {
   ensureMaterialSalesTables, getMaterialSalesLookups, getTechnicianStock,
   getMaterialMovements, addMaterialMovement, mapMaterialSaleCustomer,
-  getMaterialSalePayments, receiveMaterialSale, addMaterialIssueBatch, addMaterialSaleBatch
+  getMaterialSalePayments, receiveMaterialSale, addMaterialIssueBatch, addMaterialSaleBatch,
+  getIssuedMaterialSales, getMaterialSaleAdjustments, requestMaterialSaleAdjustment,
+  reviewMaterialSaleAdjustment, markMaterialSaleSold
 };

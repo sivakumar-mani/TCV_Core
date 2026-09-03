@@ -22,7 +22,7 @@ export class Sidebar {
     { label: 'Service', icon: 'bi-headset', items: [['Complaints', '/cable-tv/complaints', 'CABLE_TV_COMPLAINTS'], ['Service Tickets', '/service-tickets', 'SERVICE_TICKETS'], ['Warranty Master', '/warranty-master', 'WARRANTIES']] },
     { label: 'HR Process', icon: 'bi-person-badge', items: [['Employees', '/employees', 'EMPLOYEES'], ['Employee Attendance', '/employee-attendance', 'EMPLOYEE_ATTENDANCE'], ['Employee Salary', '/employee-salary', 'EMPLOYEE_SALARY']] },
     { label: 'Accounts', icon: 'bi-bank', items: [['Transactions', '/transactions', 'TRANSACTIONS'], ['Pending Accounts', '/cable-tv-account-pending', 'CABLE_TV_ACCOUNTS'], ['LO Accounts', '/lo-accounts', 'LO_ACCOUNTS'], ['CATV Subscription', '/cable-tv-subscription-pending', 'CABLE_TV_SUBSCRIPTION_DUES'], ['Net Subscription', '/net-subscription-pending', 'NET_SUBSCRIPTION'], ['Append CATV Subscriptions', '/cable-tv-subscription-append', 'CABLE_TV_SUBSCRIPTION_GENERATE'], ['Append Net Subscriptions', '/net-subscription-append', 'NET_SUBSCRIPTION_APPEND']] },
-    { label: 'Reports', icon: 'bi-bar-chart', items: [['CATV Subscription Report', '/cable-tv-subscription-report', 'CABLE_TV_SUBSCRIPTION_REPORT'], ['STB Payment Report', '/stb-payment-report', 'STB_PAYMENT_REPORT'], ['Net Subscription Report', '/net-subscription-report', 'NET_SUBSCRIPTION_REPORT']] },
+    { label: 'Reports', icon: 'bi-bar-chart', items: [['CATV Subscription Report', '/cable-tv-subscription-report', 'CABLE_TV_SUBSCRIPTION_REPORT'], ['STB Payment Report', '/stb-payment-report', 'STB_PAYMENT_REPORT'], ['Net Subscription Report', '/net-subscription-report', 'NET_SUBSCRIPTION_REPORT'], ['Material Sales Report', '/material-sales-report', 'MATERIAL_SALES']] },
     { label: 'Administration', icon: 'bi-shield-lock', items: [['Workflow Approvals', '/workflow-approval', 'WORKFLOW_APPROVAL'], ['Net Cash/Admin Correction', '/net-cash-admin-correction', 'INTERNET_CUSTOMERS', 'ADMIN'], ['Location Info', '/cable-tv-masters', 'CABLE_TV_MASTERS'], ['Package List', '/cable-tv-packages', 'CABLE_TV_PACKAGES'], ['STB Master', '/cable-tv-stbs', 'CABLE_TV_STBS'], ['Users', '/users', 'USERS'], ['Role Permissions', '/role-permissions', 'ROLE_PERMISSIONS'], ['Audit Logs', '/audit-logs', 'AUDIT_LOGS']] }
   ];
   constructor(public permissions: PermissionService) {}
@@ -40,6 +40,7 @@ export class Sidebar {
       '/net-subscription-pending': 'bi-wifi', '/cable-tv-subscription-append': 'bi-calendar-plus', '/net-subscription-append': 'bi-calendar-plus',
       '/cable-tv-subscription-report': 'bi-bar-chart-line', '/workflow-approval': 'bi-check2-square',
       '/stb-payment-report': 'bi-cash-coin',
+      '/material-sales-report': 'bi-box-seam',
       '/net-subscription-report': 'bi-wifi',
       '/net-cash-admin-correction': 'bi-cash-coin',
       '/cable-tv-masters': 'bi-geo-alt', '/cable-tv-packages': 'bi-box-seam', '/cable-tv-stbs': 'bi-router-fill',

@@ -1,140 +1,27 @@
 <div class="page-shell">
-  <div class="page-header">
-    <div><h1>Material Sales</h1><p>Office issue, technician stock, customer sale, returns and fault tracking.</p></div>
-    <div class="entry-buttons no-print">
-      <button *ngIf="permissions.isAdmin()" (click)="openEntry('ISSUE')">Office Issue</button>
-      <button (click)="openEntry('SALE')">Customer Sale</button>
-      <button (click)="openEntry('FAULT')">Fault Material</button>
-      <button (click)="openEntry('RETURN')">Return to Office</button>
-    </div>
-  </div>
-
-  <section class="filters no-print">
-    <label>Technician<select [(ngModel)]="filters.employee_id" [disabled]="!permissions.isAdmin()"><option value="">All technicians</option><option *ngFor="let e of employees" [value]="e.employee_id">{{e.employee_name}}</option></select></label>
-    <label>Movement<select [(ngModel)]="filters.movement_type"><option value="">All movements</option><option *ngFor="let type of movementTypes" [value]="type">{{label(type)}}</option></select></label>
-    <label>Start Date<input type="date" [(ngModel)]="filters.start_date"></label>
-    <label>End Date<input type="date" [(ngModel)]="filters.end_date"></label>
-    <button (click)="searchReport()">Search</button><button class="secondary" (click)="resetReport()">Reset</button>
-    <button class="secondary" (click)="printReport()"><i class="bi bi-printer"></i> Print</button>
+  <div class="page-header"><div><h1>Material Sales</h1><p>Issue materials and record technician sales.</p></div></div>
+  <section class="panel"><h2>Issue Material</h2>
+    <div class="toolbar"><span>Add one or more material rows.</span><button type="button" (click)="addRow()">Add Row</button></div>
+    <div class="table-scroll"><table class="entry-table"><thead><tr><th>Movement Date</th><th>Technician</th><th>Material</th><th>Qty</th><th>Price</th><th>Comm.</th><th>Total</th><th>Remark</th><th>Action</th></tr></thead><tbody>
+      <tr *ngFor="let row of saleRows; let index=index">
+        <td><input type="date" [(ngModel)]="row.movement_date" [min]="today()" [max]="today()"></td>
+        <td><select [(ngModel)]="row.employee_id" (ngModelChange)="onTechnicianChange(row)" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{employee.employee_name}}</option></select></td>
+        <td><input type="search" [(ngModel)]="row.material_search" (input)="selectProduct(row)" (change)="selectProduct(row)" [attr.list]="'material-options-' + index" placeholder="Search product name"><datalist [id]="'material-options-' + index"><option *ngFor="let product of products" [value]="materialLabel(product,row)"></option></datalist></td>
+        <td><input type="number" min="0.01" step="0.01" [max]="availableQty(row.product_id,row.employee_id)" [(ngModel)]="row.qty"></td>
+        <td><input type="number" min="0" [(ngModel)]="row.unit_price" [readonly]="!permissions.isAdmin()"></td>
+        <td><input type="number" min="0" [(ngModel)]="row.commission_amount"></td><td><strong>{{rowTotal(row) | number:'1.2-2'}}</strong></td>
+        <td><input [(ngModel)]="row.remarks" placeholder="Enter remark"></td><td><button class="danger icon-button" title="Delete row" aria-label="Delete row" (click)="removeRow(index)"><i class="bi bi-trash"></i></button></td>
+      </tr>
+    </tbody></table></div><div class="save-bar"><strong>Total to pay admin: {{grandTotal | number:'1.2-2'}}</strong><button (click)="save()">Save</button></div>
   </section>
-
-  <section class="panel">
-    <h2>Technician Material Stock</h2>
-    <table><thead><tr><th>Technician</th><th>Material</th><th>Unit</th><th>Available Qty</th></tr></thead>
-      <tbody><tr *ngFor="let row of technicianStock"><td>{{row.employee_name}}</td><td>{{row.product_code}} - {{row.product_name}}</td><td>{{row.unit}}</td><td>{{row.available_qty}}</td></tr>
-      <tr *ngIf="!technicianStock.length"><td colspan="4" class="empty">No technician material stock.</td></tr></tbody></table>
-  </section>
-
-  <section class="panel report">
-    <h2>Material Movement Report</h2>
-    <table><thead><tr><th>No</th><th>Date</th><th>Type</th><th>Technician</th><th>Material</th><th>Qty</th><th>Customer</th><th>Amount</th><th>Commission</th><th>Reason / Remarks</th><th class="no-print">Action</th></tr></thead>
-      <tbody><tr *ngFor="let row of movements"><td>{{row.movement_no}}</td><td>{{row.movement_date | date:'dd-MM-yyyy, h:mm a'}}</td><td>{{label(row.movement_type)}}</td><td>{{row.employee_name}}</td><td>{{row.product_name}}</td><td>{{row.qty}} {{row.unit}}</td><td>{{row.customer_type || '-'}}<small>{{row.customer_name || row.customer_mobile || ''}}</small></td><td>{{row.total_amount | number:'1.2-2'}}</td><td>{{row.commission_amount | number:'1.2-2'}}</td><td>{{row.reason || row.remarks || '-'}}</td><td class="no-print"><button *ngIf="row.movement_type === 'SALE' && (!row.customer_name || row.customer_type === 'ANONYMOUS')" (click)="openCustomerMapping(row)">Map Customer</button></td></tr>
-      <tr *ngIf="!movements.length"><td colspan="11" class="empty">No material movements.</td></tr></tbody></table>
-  </section>
+  <section class="panel"><h2>Issued Materials</h2><div class="table-scroll"><table class="issued-table"><thead><tr><th>Date</th><th>Technician</th><th>Material</th><th>Qty</th><th>Customer Type</th><th>Customer (optional)</th><th>Price</th><th>Comm.</th><th>Total</th><th>Remark</th><th>Action</th></tr></thead><tbody>
+    <tr *ngFor="let row of issuedMaterials; let index=index"><td>{{row.movement_date | date:'dd-MM-yyyy'}}</td><td>{{row.employee_name}}</td><td>{{row.product_name}}</td><td>{{row.available_adjustment_qty}} {{row.unit}}</td>
+      <td><select [(ngModel)]="row.customer_type" (ngModelChange)="onCustomerTypeChange(row)"><option value="">Not selected</option><option value="CATV">CATV</option><option value="NET">Net</option><option value="CCTV">CCTV</option><option value="ANONYMOUS">Anonymous</option></select></td>
+      <td><input *ngIf="row.customer_type && row.customer_type !== 'ANONYMOUS'" type="search" [(ngModel)]="row.customer_search" (input)="selectCustomer(row)" (change)="selectCustomer(row)" [attr.list]="'issued-customer-' + index" placeholder="Search and select"><datalist [id]="'issued-customer-' + index"><option *ngFor="let customer of customerOptions(row)" [value]="customerLabel(customer)"></option></datalist><span *ngIf="!row.customer_type || row.customer_type === 'ANONYMOUS'">-</span></td>
+      <td>{{row.unit_price | number:'1.2-2'}}</td><td>{{row.commission_amount | number:'1.2-2'}}</td><td>{{row.total_amount | number:'1.2-2'}}</td><td>{{row.remarks || '-'}}</td><td class="actions"><button class="sold" (click)="sold(row)">Sold</button><button (click)="openAdjustment(row,'RETURN')">Return</button><button class="fault" (click)="openAdjustment(row,'FAULT')">Fault</button></td></tr>
+    <tr *ngIf="!issuedMaterials.length"><td colspan="11" class="empty">No issued materials.</td></tr></tbody></table></div></section>
+  <section class="panel"><h2>Fault and Return Materials</h2><div class="table-scroll"><table><thead><tr><th>Date</th><th>Technician</th><th>Material</th><th>Qty</th><th>Type</th><th>Remark</th><th>Status</th><th *ngIf="permissions.isAdmin()">Admin Action</th></tr></thead><tbody>
+    <tr *ngFor="let row of adjustments"><td>{{row.created_at | date:'dd-MM-yyyy'}}</td><td>{{row.employee_name}}</td><td>{{row.product_name}}</td><td>{{row.qty}} {{row.unit}}</td><td>{{row.adjustment_type}}</td><td>{{row.remarks || '-'}}</td><td><span class="status" [attr.data-status]="row.approval_status">{{row.approval_status}}</span></td><td *ngIf="permissions.isAdmin()" class="actions"><ng-container *ngIf="row.approval_status === 'PENDING'"><button (click)="review(row,'APPROVED')">Approve</button><button class="danger" (click)="review(row,'REJECTED')">Reject</button></ng-container></td></tr>
+    <tr *ngIf="!adjustments.length"><td [attr.colspan]="permissions.isAdmin() ? 8 : 7" class="empty">No fault or return materials.</td></tr></tbody></table></div></section>
 </div>
-
-<div class="modal-backdrop" *ngIf="mappingMovement">
-  <section class="modal-panel">
-    <div class="modal-header"><h2>Map Customer - {{mappingMovement.movement_no}}</h2><button class="close" (click)="closeCustomerMapping()">×</button></div>
-    <div class="form-grid">
-      <label>Customer Type<select [(ngModel)]="customerMapping.customer_type" (ngModelChange)="customerMapping.customer_id = null; customerSearch = ''"><option value="CATV">CATV</option><option value="NET">Net</option><option value="CCTV">CCTV</option></select></label>
-      <label class="wide">Customer
-        <input type="search" [(ngModel)]="customerSearch" (input)="selectCustomerFromSearch(customerSearch, 'MAPPING')" (change)="selectCustomerFromSearch(customerSearch, 'MAPPING')" list="mapping-customer-options" placeholder="Search and select customer">
-        <datalist id="mapping-customer-options"><option *ngFor="let c of mappingCustomerOptions" [value]="customerOptionLabel(c)"></option></datalist>
-      </label>
-    </div>
-    <div class="modal-actions"><button class="secondary" (click)="closeCustomerMapping()">Cancel</button><button (click)="saveCustomerMapping()">Map Customer</button></div>
-  </section>
-</div>
-
-<div class="modal-backdrop" *ngIf="showEntry">
-  <section class="modal-panel">
-    <div class="modal-header"><h2>{{label(movement.movement_type)}}</h2><button class="close" (click)="closeEntry()">×</button></div>
-    <section class="issue-entry" *ngIf="movement.movement_type === 'ISSUE'">
-      <div class="issue-toolbar"><p>Issue multiple materials to one or more technicians.</p><button type="button" (click)="addIssueRow()"><i class="bi bi-plus-circle"></i> Add</button></div>
-      <div class="issue-table-scroll">
-        <table class="issue-table">
-          <thead><tr><th>Technician</th><th>Material</th><th>Quantity</th><th>Movement Date</th><th>Remarks</th><th>Action</th></tr></thead>
-          <tbody>
-            <tr *ngFor="let row of issueRows; let index = index">
-              <td><select [(ngModel)]="row.employee_id"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></td>
-              <td>
-                <input type="search" [(ngModel)]="row.material_search" (change)="selectIssueProduct(row)" (input)="selectIssueProduct(row)" list="issue-material-options" placeholder="Search material">
-              </td>
-              <td><input type="number" min="0.01" step="0.01" [(ngModel)]="row.qty"></td>
-              <td><input type="datetime-local" [(ngModel)]="row.movement_date"></td>
-              <td><input [(ngModel)]="row.remarks" placeholder="Enter remarks"></td>
-              <td><button type="button" class="row-delete" title="Remove row" (click)="removeIssueRow(index)"><i class="bi bi-trash"></i></button></td>
-            </tr>
-          </tbody>
-        </table>
-        <datalist id="issue-material-options"><option *ngFor="let p of products" [value]="productOptionLabel(p)"></option></datalist>
-      </div>
-    </section>
-    <section class="issue-entry" *ngIf="movement.movement_type === 'SALE'">
-      <div class="form-grid sale-customer">
-        <label>Technician *<select [(ngModel)]="movement.employee_id" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></label>
-        <label>Customer Type<select [(ngModel)]="movement.customer_type" (ngModelChange)="onCustomerTypeChange()"><option value="CATV">CATV</option><option value="NET">Net</option><option value="CCTV">CCTV</option><option value="ANONYMOUS">Anonymous</option></select></label>
-        <ng-container *ngIf="movement.customer_type !== 'ANONYMOUS'">
-          <label>Customer
-            <input type="search" [(ngModel)]="customerSearch" (input)="selectCustomerFromSearch(customerSearch, 'SALE')" (change)="selectCustomerFromSearch(customerSearch, 'SALE')" list="sale-customer-options" placeholder="Search and select customer">
-            <datalist id="sale-customer-options"><option *ngFor="let c of saleCustomerOptions" [value]="customerOptionLabel(c)"></option></datalist>
-          </label>
-        </ng-container>
-        <ng-container *ngIf="movement.customer_type === 'ANONYMOUS'"><label>Customer Name<input [(ngModel)]="movement.anonymous_name"></label><label>Mobile<input [(ngModel)]="movement.anonymous_mobile"></label></ng-container>
-        <label>Movement Date<input type="datetime-local" [(ngModel)]="movement.movement_date"></label>
-      </div>
-      <div class="issue-toolbar"><p>Add multiple materials for this customer.</p><button type="button" (click)="addSaleRow()"><i class="bi bi-plus-circle"></i> Add</button></div>
-      <div class="issue-table-scroll">
-        <table class="issue-table sale-table">
-          <colgroup>
-            <col class="sale-material-column">
-            <col class="sale-amount-column">
-            <col class="sale-amount-column">
-            <col class="sale-amount-column">
-            <col class="sale-amount-column">
-            <col class="sale-remarks-column">
-            <col class="sale-action-column">
-          </colgroup>
-          <thead><tr><th>Material</th><th>Quantity</th><th>Unit Price</th><th>Commission</th><th>Pending Amount</th><th>Remarks</th><th>Action</th></tr></thead>
-          <tbody><tr *ngFor="let row of saleRows; let index = index">
-            <td><input type="search" [(ngModel)]="row.material_search" (input)="selectSaleProduct(row)" (change)="selectSaleProduct(row)" list="sale-material-options" placeholder="Search issued material"></td>
-            <td><input type="number" min="0.01" step="0.01" [(ngModel)]="row.qty"></td>
-            <td><input type="number" min="0" [(ngModel)]="row.unit_price"></td>
-            <td><input type="number" min="0" [(ngModel)]="row.commission_amount"></td>
-            <td><strong>{{saleRowNet(row) | number:'1.2-2'}}</strong></td>
-            <td><input [(ngModel)]="row.remarks" placeholder="Enter remarks"></td>
-            <td><button type="button" class="row-delete" title="Remove row" (click)="removeSaleRow(index)"><i class="bi bi-trash"></i></button></td>
-          </tr></tbody>
-        </table>
-        <datalist id="sale-material-options"><option *ngFor="let p of availableProducts" [value]="saleProductLabel(p)"></option></datalist>
-      </div>
-      <div class="sale-total"><span>Gross: {{saleGrossTotal | number:'1.2-2'}}</span><span>Commission: {{saleCommissionTotal | number:'1.2-2'}}</span><strong>Total Pending Account Amount: {{salePendingTotal | number:'1.2-2'}}</strong></div>
-    </section>
-    <div class="form-grid" *ngIf="movement.movement_type !== 'ISSUE' && movement.movement_type !== 'SALE'">
-      <label>Technician *<select [(ngModel)]="movement.employee_id" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let e of employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></label>
-      <label>Material *<select [(ngModel)]="movement.product_id" (ngModelChange)="onProductChange()"><option [ngValue]="null">Select material</option><option *ngFor="let p of availableProducts" [ngValue]="p.product_id">{{p.product_code}} - {{p.product_name}} ({{permissions.isAdmin() && movement.movement_type === 'ISSUE' ? 'Office' : 'Issued'}}: {{permissions.isAdmin() && movement.movement_type === 'ISSUE' ? p.office_qty : technicianProductQty(p.product_id)}})</option></select></label>
-      <label>Quantity *<input type="number" min="0.01" step="0.01" [(ngModel)]="movement.qty"></label>
-      <label *ngIf="movement.movement_type === 'SALE'">Unit Price<input type="number" min="0" [(ngModel)]="movement.unit_price"></label>
-      <label *ngIf="movement.movement_type === 'SALE'">Commission Amount<input type="number" min="0" [(ngModel)]="movement.commission_amount"></label>
-      <div class="sale-total wide" *ngIf="movement.movement_type === 'SALE'">
-        <span>Gross: {{ grossSaleAmount | number:'1.2-2' }}</span>
-        <span>Commission: {{ movement.commission_amount || 0 | number:'1.2-2' }}</span>
-        <strong>Pending Account Amount: {{ netSaleAmount | number:'1.2-2' }}</strong>
-      </div>
-      <div class="stock-info wide" *ngIf="movement.employee_id && movement.product_id">Technician available stock: <strong>{{selectedTechnicianQty}}</strong></div>
-      <ng-container *ngIf="movement.movement_type === 'SALE'">
-        <label>Customer Type<select [(ngModel)]="movement.customer_type" (ngModelChange)="onCustomerTypeChange()"><option value="CATV">CATV</option><option value="NET">Net</option><option value="CCTV">CCTV</option><option value="ANONYMOUS">Anonymous</option></select></label>
-        <ng-container *ngIf="movement.customer_type !== 'ANONYMOUS'">
-          <label class="wide">Search Customer<input type="search" [(ngModel)]="customerSearch" placeholder="Number, name, mobile or address"></label>
-          <label class="wide">Select Customer<select size="5" [(ngModel)]="movement.customer_id"><option [ngValue]="null">Select customer</option><option *ngFor="let c of filteredCustomers" [ngValue]="c.customer_id">{{c.customer_code}} - {{c.customer_name}} - {{c.phone}} - {{c.address}}</option></select></label>
-        </ng-container>
-        <ng-container *ngIf="movement.customer_type === 'ANONYMOUS'"><label>Customer Name<input [(ngModel)]="movement.anonymous_name"></label><label>Mobile<input [(ngModel)]="movement.anonymous_mobile"></label></ng-container>
-      </ng-container>
-      <label class="wide" *ngIf="movement.movement_type === 'FAULT'">Fault Reason *<textarea rows="2" [(ngModel)]="movement.reason"></textarea></label>
-      <label>Movement Date<input type="datetime-local" [(ngModel)]="movement.movement_date"></label>
-      <label class="wide">Remarks<textarea rows="2" [(ngModel)]="movement.remarks"></textarea></label>
-    </div>
-    <div class="modal-actions"><button class="secondary" (click)="closeEntry()">Cancel</button><button (click)="save()">{{movement.movement_type === 'ISSUE' ? 'Save All Issues' : movement.movement_type === 'SALE' ? 'Save All Sales' : 'Save'}}</button></div>
-  </section>
-</div>
+<div class="modal-backdrop" *ngIf="adjustment"><section class="modal-panel"><div class="modal-header"><h2>Material {{adjustment.adjustment_type === 'FAULT' ? 'Fault' : 'Return'}}</h2><button class="secondary" (click)="closeAdjustment()">Close</button></div><div class="display-grid"><div><span>Date</span><strong>{{adjustment.movement_date | date:'dd-MM-yyyy'}}</strong></div><div><span>Technician</span><strong>{{adjustment.employee_name}}</strong></div><div><span>Material</span><strong>{{adjustment.product_name}}</strong></div><div><span>Available Qty</span><strong>{{adjustment.available_adjustment_qty}} {{adjustment.unit}}</strong></div></div><div class="form-grid"><label>{{adjustment.adjustment_type === 'FAULT' ? 'Fault' : 'Return'}} Qty *<input type="number" min="0.01" step="0.01" [max]="adjustment.available_adjustment_qty" [(ngModel)]="adjustment.adjustment_qty"></label><label>Remark<textarea rows="2" [(ngModel)]="adjustment.adjustment_remarks"></textarea></label></div><div class="save-bar"><button class="secondary" (click)="closeAdjustment()">Cancel</button><button (click)="saveAdjustment()">Submit for Approval</button></div></section></div>

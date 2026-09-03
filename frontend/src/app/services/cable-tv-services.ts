@@ -245,6 +245,30 @@ export class CableTvServices {
     return this.http.post(`${this.endpoint}/material-sales/sales/batch`, data, { headers: this.jsonHeaders });
   }
 
+  getIssuedMaterialSales(employeeId = '') {
+    return this.http.get(`${this.endpoint}/material-sales/issued`, {
+      params: employeeId ? { employee_id: employeeId } : {}
+    });
+  }
+
+  getMaterialSaleAdjustments(employeeId = '') {
+    return this.http.get(`${this.endpoint}/material-sales/adjustments`, {
+      params: employeeId ? { employee_id: employeeId } : {}
+    });
+  }
+
+  requestMaterialSaleAdjustment(movementId: number, data: any) {
+    return this.http.post(`${this.endpoint}/material-sales/movements/${movementId}/adjustments`, data, { headers: this.jsonHeaders });
+  }
+
+  reviewMaterialSaleAdjustment(adjustmentId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/material-sales/adjustments/${adjustmentId}/review`, data, { headers: this.jsonHeaders });
+  }
+
+  markMaterialSaleSold(movementId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/material-sales/movements/${movementId}/sold`, data, { headers: this.jsonHeaders });
+  }
+
   mapMaterialSaleCustomer(movementId: number, data: any) {
     return this.http.patch(`${this.endpoint}/material-sales/movements/${movementId}/customer`, data, { headers: this.jsonHeaders });
   }

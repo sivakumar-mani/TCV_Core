@@ -17,6 +17,7 @@ import { PermissionService } from '../../services/permission.service';
 })
 export class CableTvComplaints {
   complaints: any[] = [];
+  summaryComplaints: any[] = [];
   customers: any[] = [];
   customerDirectories: Record<string, any[]> = { CATV: [], NET: [], CCTV: [] };
   employees: any[] = [];
@@ -102,14 +103,16 @@ export class CableTvComplaints {
     this.loader.start();
     forkJoin({
       complaints: this.cableTvService.getComplaints(this.filters),
+      summaryComplaints: this.cableTvService.getComplaints(),
       catvCustomers: this.cableTvService.getComplaintCustomers('CATV'),
       netCustomers: this.cableTvService.getComplaintCustomers('NET'),
       cctvCustomers: this.cableTvService.getComplaintCustomers('CCTV'),
       lookups: this.cableTvService.getLookups()
     }).subscribe({
-      next: ({ complaints, catvCustomers, netCustomers, cctvCustomers, lookups }: any) => {
+      next: ({ complaints, summaryComplaints, catvCustomers, netCustomers, cctvCustomers, lookups }: any) => {
         this.loader.stop();
         this.complaints = Array.isArray(complaints) ? complaints : [];
+        this.summaryComplaints = Array.isArray(summaryComplaints) ? summaryComplaints : [];
         this.customerDirectories = {
           CATV: Array.isArray(catvCustomers) ? catvCustomers : [],
           NET: Array.isArray(netCustomers) ? netCustomers : [],
@@ -124,10 +127,12 @@ export class CableTvComplaints {
 
   search() {
     this.loader.start();
-    this.cableTvService.getComplaints(this.filters).subscribe({
-      next: (response: any) => {
+    const summaryFilters = { search: this.filters.search, assigned_employee_id: this.filters.assigned_employee_id };
+    forkJoin({ rows: this.cableTvService.getComplaints(this.filters), summary: this.cableTvService.getComplaints(summaryFilters) }).subscribe({
+      next: ({ rows, summary }: any) => {
         this.loader.stop();
-        this.complaints = Array.isArray(response) ? response : [];
+        this.complaints = Array.isArray(rows) ? rows : [];
+        this.summaryComplaints = Array.isArray(summary) ? summary : [];
       },
       error: error => this.handleError(error)
     });
@@ -344,6 +349,10 @@ export class CableTvComplaints {
 
   statusLabel(status: string) {
     return String(status || '').replaceAll('_', ' ');
+  }
+
+  statusCount(status: string) {
+    return this.summaryComplaints.filter(row => row.status === status).length;
   }
 
   localDateTime() {

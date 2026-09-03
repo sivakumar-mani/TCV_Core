@@ -1,0 +1,13 @@
+<div class="report-page"><header><h1>Material Sales Report</h1></header>
+  <section class="filter-card">
+    <label>Start Date<input type="date" [(ngModel)]="filters.start_date"></label>
+    <label>End Date<input type="date" [(ngModel)]="filters.end_date" [min]="filters.start_date"></label>
+    <label>Technician<select [(ngModel)]="filters.employee_id"><option value="">All technicians</option><option *ngFor="let employee of employees" [value]="employee.employee_id">{{employee.employee_name}}</option></select></label>
+    <label>Issued By<select [(ngModel)]="filters.issued_by_employee_id"><option value="">All issuers</option><option *ngFor="let employee of employees" [value]="employee.employee_id">{{employee.employee_name}}</option></select></label>
+    <label>Status<select [(ngModel)]="filters.status"><option value="">All statuses</option><option value="ISSUED">Issued</option><option value="SOLD">Sold</option></select></label>
+    <div class="filter-actions"><button class="primary" (click)="load()">Search</button><button class="secondary" (click)="clear()">Clear</button></div>
+  </section>
+  <section class="report-card"><div class="table-scroll"><table class="report-table"><thead><tr><th>Date</th><th>No</th><th>Technician</th><th>Issued By</th><th>Material</th><th>Qty</th><th>Price</th><th>Comm.</th><th>Total</th><th>Customer</th><th>Status</th><th>Remark</th></tr></thead><tbody>
+    <tr *ngFor="let row of rows"><td>{{row.movement_date | date:'dd-MM-yyyy'}}</td><td>{{row.movement_no}}</td><td>{{row.employee_name}}</td><td>{{row.issued_by_name || '-'}}</td><td>{{row.product_name}}</td><td>{{row.qty}} {{row.unit}}</td><td>{{row.unit_price | number:'1.2-2'}}</td><td>{{row.commission_amount | number:'1.2-2'}}</td><td>{{row.total_amount | number:'1.2-2'}}</td><td>{{row.customer_name || '-'}}</td><td>{{row.sale_status}}</td><td>{{row.remarks || '-'}}</td></tr>
+    <tr *ngIf="!rows.length"><td colspan="12" class="empty">No material sales found.</td></tr></tbody><tfoot><tr><td colspan="8">Total Records: <strong>{{rows.length}}</strong></td><td class="number"><strong>{{totalAmount | number:'1.2-2'}}</strong></td><td colspan="3"></td></tr></tfoot></table></div></section>
+</div>

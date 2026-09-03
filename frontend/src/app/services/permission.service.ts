@@ -36,7 +36,7 @@ export class PermissionService {
     'stb-payment-report': 'STB_PAYMENT_REPORT',
     'net-subscription-report': 'NET_SUBSCRIPTION_REPORT',
     'net-cash-admin-correction': 'INTERNET_CUSTOMERS',
-    transactions: 'TRANSACTIONS', 'material-sales': 'MATERIAL_SALES',
+    transactions: 'TRANSACTIONS', 'material-sales': 'MATERIAL_SALES', 'material-sales-report': 'MATERIAL_SALES',
     complaints: 'CABLE_TV_COMPLAINTS'
   };
 
