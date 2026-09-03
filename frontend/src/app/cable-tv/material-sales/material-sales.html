@@ -1,6 +1,6 @@
 <div class="page-shell">
   <div class="page-header"><div><h1>Material Sales</h1><p>Issue materials and record technician sales.</p></div></div>
-  <section class="panel"><h2>Issue Material</h2>
+  <section class="panel" *ngIf="permissions.isAdmin()"><h2>Issue Material</h2>
     <div class="toolbar"><span>Add one or more material rows.</span><button type="button" (click)="addRow()">Add Row</button></div>
     <div class="table-scroll"><table class="entry-table"><thead><tr><th>Movement Date</th><th>Technician</th><th>Material</th><th>Qty</th><th>Price</th><th>Comm.</th><th>Total</th><th>Remark</th><th>Action</th></tr></thead><tbody>
       <tr *ngFor="let row of saleRows; let index=index">
