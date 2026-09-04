@@ -811,6 +811,42 @@ app-layout .backdrop {
   z-index: 10000 !important;
 }
 
+// Keep every feature modal inside the usable mobile viewport between the
+// shared 60px header and 32px footer. The modal, rather than the page, scrolls.
+@media (max-width: 767px) {
+  app-layout .modal-backdrop,
+  app-layout .backdrop {
+    align-items: flex-start !important;
+    bottom: 32px !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    max-height: calc(100vh - 92px) !important;
+    max-height: calc(100dvh - 92px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding: 8px !important;
+    top: 60px !important;
+  }
+
+  app-layout .modal-backdrop > :is(.modal-panel, .modal, .dialog, .payment-modal, .report-preview-modal),
+  app-layout .backdrop > :is(.modal-panel, .modal, .dialog, .payment-modal, .report-preview-modal) {
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    max-height: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    width: 100% !important;
+  }
+
+  .cdk-overlay-pane.mat-mdc-dialog-panel,
+  .cdk-overlay-pane .mat-mdc-dialog-surface {
+    max-height: calc(100dvh - 108px) !important;
+    overflow-y: auto !important;
+  }
+}
+
 .cdk-overlay-container {
   z-index: 20000 !important;
 }

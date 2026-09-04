@@ -39,6 +39,9 @@
         <app-input-form-field [label]="'Email'" [classLabel]="'form-label'" [inputClass]="'form-control'"
           [type]="'email'" [formControl]="$any(supplierForm.controls['email'])"></app-input-form-field>
 
+        <app-input-form-field [label]="'Website Address'" [classLabel]="'form-label'" [inputClass]="'form-control'"
+          [type]="'url'" [formControl]="$any(supplierForm.controls['website_address'])"></app-input-form-field>
+
         <app-input-form-field [label]="'GST No'" [classLabel]="'form-label'" [inputClass]="'form-control'"
           [type]="'text'" [formControl]="$any(supplierForm.controls['gst_no'])"></app-input-form-field>
       </div>

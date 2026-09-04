@@ -25,9 +25,9 @@ export class WorkflowList {
   };
 
   colDefs: ColDef[] = [
-    { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1 },
-    { field: 'module_name', headerName: 'Module', maxWidth: 140 },
-    { field: 'reference_no', headerName: 'Reference No', maxWidth: 170 },
+    { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1, filter: false, floatingFilter: false, sortable: false },
+    { field: 'requested_at', headerName: 'Updated', maxWidth: 150, valueFormatter: (params) => this.displayDateTime(params.value) },
+    { headerName: 'Reference No', maxWidth: 190, valueGetter: (params: any) => this.referenceLabel(params.data) },
     { headerName: 'Party', valueGetter: (params: any) => params.data?.customer_name || params.data?.supplier_name || '' },
     { field: 'subject', headerName: 'Subject', minWidth: 240, cellRenderer: (params: any) => this.subjectBadges(params.value) },
     { headerName: 'Date', maxWidth: 150, valueGetter: (params: any) => params.data?.quotation_date || params.data?.purchase_date, valueFormatter: (params) => this.displayDate(params.value) },
@@ -35,7 +35,6 @@ export class WorkflowList {
     { field: 'balance_amount', headerName: 'Balance', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
     { headerName: 'Status', maxWidth: 160, valueGetter: (params: any) => params.data?.quotation_status || params.data?.workflow_status, cellRenderer: (params: any) => this.statusPill(params.value) },
     { field: 'workflow_status', headerName: 'Workflow', maxWidth: 160, cellRenderer: (params: any) => this.statusPill(params.value) },
-    { field: 'requested_at', headerName: 'Requested At', maxWidth: 180, valueFormatter: (params) => this.displayDateTime(params.value) },
     {
       headerName: 'Action',
       maxWidth: 130,
@@ -172,6 +171,13 @@ export class WorkflowList {
     return `Rs. ${(Number(value) || 0).toFixed(2)}`;
   }
 
+  referenceLabel(row: any) {
+    const reference = String(row?.reference_no || '').trim();
+    if (row?.module_name === 'CABLE_TV_CUSTOMER') return `${reference} - CATV`;
+    if (row?.module_name === 'CCTV_CUSTOMER') return `${reference} - CCTV`;
+    return reference;
+  }
+
   statusPill(value: any) {
     const status = String(value || 'PENDING').trim();
     const pill = document.createElement('span');
@@ -193,7 +199,7 @@ export class WorkflowList {
   subjectBadges(value: any) {
     const container = document.createElement('span');
     container.style.cssText = 'display:flex;align-items:center;gap:5px;flex-wrap:wrap;height:100%;';
-    const subjects = String(value || 'General').split('•').map(item => item.trim()).filter(Boolean);
+    const subjects = String(value || 'General').split('•').map(item => item.trim()).filter(item => item && item.toUpperCase() !== 'DISCOUNT');
     subjects.forEach(subject => {
       const badge = document.createElement('span');
       const key = subject.toUpperCase();

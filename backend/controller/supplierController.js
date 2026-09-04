@@ -1,13 +1,21 @@
 const connection = require('../connection');
 
 let supplierCityColumn = null;
+let supplierSchemaPromise = null;
 
 const getSupplierCityColumn = async () => {
     if (supplierCityColumn) return supplierCityColumn;
-
-    const [columns] = await connection.promise().query('SHOW COLUMNS FROM suppliers');
-    const columnNames = columns.map((column) => column.Field);
-    supplierCityColumn = columnNames.includes('city_district') ? 'city_district' : 'city';
+    if (!supplierSchemaPromise) {
+        supplierSchemaPromise = (async () => {
+            const [columns] = await connection.promise().query('SHOW COLUMNS FROM suppliers');
+            const columnNames = columns.map((column) => column.Field);
+            if (!columnNames.includes('website_address')) {
+                await connection.promise().query('ALTER TABLE suppliers ADD COLUMN website_address VARCHAR(255) NULL AFTER email');
+            }
+            supplierCityColumn = columnNames.includes('city_district') ? 'city_district' : 'city';
+        })().catch((error) => { supplierSchemaPromise = null; throw error; });
+    }
+    await supplierSchemaPromise;
     return supplierCityColumn;
 };
 
@@ -16,7 +24,7 @@ const getSuppliers = async (req, res) => {
         const cityColumn = await getSupplierCityColumn();
         const [rows] = await connection.promise().query(
             `SELECT supplier_id, supplier_name, contact_person, phone, alternate_phone,
-                    email, gst_no, pan_no, address, ${cityColumn} AS city_district, ${cityColumn} AS city, state, pincode,
+                    email, website_address, gst_no, pan_no, address, ${cityColumn} AS city_district, ${cityColumn} AS city, state, pincode,
                     opening_balance, is_active, is_active AS status, payment_terms, bank_account_no,
                     bank_name, ifsc_code, created_at, updated_at
              FROM suppliers
@@ -40,6 +48,7 @@ const addSupplier = async (req, res) => {
             phone,
             alternate_phone,
             email,
+            website_address,
             gst_no,
             pan_no,
             address,
@@ -66,6 +75,7 @@ const addSupplier = async (req, res) => {
                 phone,
                 alternate_phone,
                 email,
+                website_address,
                 gst_no,
                 pan_no,
                 address,
@@ -78,7 +88,7 @@ const addSupplier = async (req, res) => {
                 bank_account_no,
                 bank_name,
                 ifsc_code
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const values = [
@@ -87,6 +97,7 @@ const addSupplier = async (req, res) => {
             phone || null,
             alternate_phone || null,
             email || null,
+            website_address || null,
             gst_no || null,
             pan_no || null,
             address || null,
@@ -121,6 +132,7 @@ const updateSupplier = async (req, res) => {
             phone,
             alternate_phone,
             email,
+            website_address,
             gst_no,
             pan_no,
             address,
@@ -157,6 +169,7 @@ const updateSupplier = async (req, res) => {
                 phone = ?,
                 alternate_phone = ?,
                 email = ?,
+                website_address = ?,
                 gst_no = ?,
                 pan_no = ?,
                 address = ?,
@@ -179,6 +192,7 @@ const updateSupplier = async (req, res) => {
             phone || null,
             alternate_phone || null,
             email || null,
+            website_address || null,
             gst_no || null,
             pan_no || null,
             address || null,
@@ -239,7 +253,7 @@ const getSupplierById = async (req, res) => {
 
         const [rows] = await connection.promise().query(
             `SELECT supplier_id, supplier_name, contact_person, phone, alternate_phone,
-                    email, gst_no, pan_no, address, ${cityColumn} AS city_district, ${cityColumn} AS city, state, pincode,
+                    email, website_address, gst_no, pan_no, address, ${cityColumn} AS city_district, ${cityColumn} AS city, state, pincode,
                     opening_balance, is_active, is_active AS status, payment_terms, bank_account_no,
                     bank_name, ifsc_code, created_at, updated_at
              FROM suppliers

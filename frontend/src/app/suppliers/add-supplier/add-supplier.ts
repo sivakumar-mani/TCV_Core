@@ -70,6 +70,7 @@ export class AddSupplier {
       contact_person: [''],
       phone: [''],
       email: ['', Validators.email],
+      website_address: [''],
       gst_no: [''],
       address: [''],
       city_district: [''],

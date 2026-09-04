@@ -4,10 +4,10 @@
     <div class="toolbar"><span>Add one or more material rows.</span><button type="button" (click)="addRow()">Add Row</button></div>
     <div class="table-scroll"><table class="entry-table"><thead><tr><th>Movement Date</th><th>Technician</th><th>Material</th><th>Qty</th><th>Price</th><th>Comm.</th><th>Total</th><th>Remark</th><th>Action</th></tr></thead><tbody>
       <tr *ngFor="let row of saleRows; let index=index">
-        <td><input type="date" [(ngModel)]="row.movement_date" [min]="today()" [max]="today()"></td>
+        <td><input type="date" [(ngModel)]="row.movement_date"></td>
         <td><select [(ngModel)]="row.employee_id" (ngModelChange)="onTechnicianChange(row)" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{employee.employee_name}}</option></select></td>
         <td><input type="search" [(ngModel)]="row.material_search" (input)="selectProduct(row)" (change)="selectProduct(row)" [attr.list]="'material-options-' + index" placeholder="Search product name"><datalist [id]="'material-options-' + index"><option *ngFor="let product of products" [value]="materialLabel(product,row)"></option></datalist></td>
-        <td><input type="number" min="0.01" step="0.01" [max]="availableQty(row.product_id,row.employee_id)" [(ngModel)]="row.qty"></td>
+        <td><input type="number" min="0.01" step="0.01" [max]="availableQty(row.product_id)" [(ngModel)]="row.qty"></td>
         <td><input type="number" min="0" [(ngModel)]="row.unit_price" [readonly]="!permissions.isAdmin()"></td>
         <td><input type="number" min="0" [(ngModel)]="row.commission_amount"></td><td><strong>{{rowTotal(row) | number:'1.2-2'}}</strong></td>
         <td><input [(ngModel)]="row.remarks" placeholder="Enter remark"></td><td><button class="danger icon-button" title="Delete row" aria-label="Delete row" (click)="removeRow(index)"><i class="bi bi-trash"></i></button></td>

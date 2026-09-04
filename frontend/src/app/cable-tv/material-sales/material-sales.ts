@@ -34,8 +34,8 @@ export class MaterialSales {
     });
   }
 
-  materialLabel(product: any, row: any) { return `${product.product_name} (Available: ${this.availableQty(product.product_id, row.employee_id)} ${product.unit || ''})`; }
-  availableQty(productId: number, employeeId: number) { return Number(this.technicianStock.find(row => Number(row.employee_id) === Number(employeeId) && Number(row.product_id) === Number(productId))?.available_qty || 0); }
+  materialLabel(product: any, row: any) { return `${product.product_name} (Available: ${this.availableQty(product.product_id)} ${product.unit || ''})`; }
+  availableQty(productId: number) { return Number(this.products.find(product => Number(product.product_id) === Number(productId))?.office_qty || 0); }
   selectProduct(row: any) {
     const value = String(row.material_search || '').trim().toLowerCase();
     const product = this.products.find(item => this.materialLabel(item, row).toLowerCase() === value || String(item.product_name).toLowerCase() === value);
@@ -52,7 +52,7 @@ export class MaterialSales {
   get grandTotal() { return this.saleRows.reduce((sum, row) => sum + this.rowTotal(row), 0); }
 
   save() {
-    const invalid = this.saleRows.findIndex(row => !row.employee_id || !row.product_id || Number(row.qty) <= 0 || Number(row.qty) > this.availableQty(row.product_id, row.employee_id) || Number(row.unit_price) < 0 || Number(row.commission_amount) < 0 || Number(row.commission_amount) > Number(row.unit_price));
+    const invalid = this.saleRows.findIndex(row => !row.employee_id || !row.product_id || Number(row.qty) <= 0 || Number(row.qty) > this.availableQty(row.product_id) || Number(row.unit_price) < 0 || Number(row.commission_amount) < 0 || Number(row.commission_amount) > Number(row.unit_price));
     if (invalid >= 0) return this.error(`Check material, available quantity, price and commission in row ${invalid + 1}`);
     const rowsByTechnician = this.saleRows.reduce((groups: Map<number, any[]>, row: any) => {
       const employeeId = Number(row.employee_id);

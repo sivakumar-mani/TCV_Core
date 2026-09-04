@@ -615,7 +615,8 @@ const markMaterialSaleSold = async (req, res) => {
     const values = [customerType, cableCustomerId, serviceCustomerId, movementId];
     if (!isAdmin(req)) { conditions.push('employee_id = ?'); values.push(employeeId); }
     const [result] = await db.query(
-      `UPDATE technician_material_movements SET sale_status = 'SOLD', customer_type = ?, cable_customer_id = ?, service_customer_id = ?
+      `UPDATE technician_material_movements SET sale_status = 'SOLD', customer_type = ?, cable_customer_id = ?, service_customer_id = ?,
+              movement_date = movement_date
        WHERE ${conditions.join(' AND ')}`, values
     );
     if (!result.affectedRows) return res.status(404).json({ message: 'Issued material was not found' });
@@ -725,7 +726,9 @@ const addMaterialSaleBatch = async (req, res) => {
       return {
         row: index + 1, employeeId: isAdmin(req) ? id(item.employee_id) : loggedInEmployeeId,
         productId: id(item.product_id), qty, unitPrice, commission, gross,
-        net: Number(((unitPrice - commission) * qty).toFixed(2)), remarks: text(item.remarks)
+        net: Number(((unitPrice - commission) * qty).toFixed(2)), remarks: text(item.remarks),
+        movementDate: isAdmin(req) && /^\d{4}-\d{2}-\d{2}$/.test(String(item.movement_date || ''))
+          ? String(item.movement_date) : null
       };
     });
     const invalid = normalized.find(item =>
@@ -744,16 +747,15 @@ const addMaterialSaleBatch = async (req, res) => {
     const movementNumbers = [];
     for (const item of normalized) {
       const [[stock]] = await db.query(
-        `SELECT ts.available_qty, p.product_name, p.selling_price
-         FROM technician_material_stock ts
-         JOIN products p ON p.product_id = ts.product_id
-         WHERE ts.employee_id = ? AND ts.product_id = ? FOR UPDATE`,
-        [item.employeeId, item.productId]
+        `SELECT COALESCE(sm.available_qty, 0) AS available_qty, p.product_name, p.selling_price
+         FROM products p LEFT JOIN stock_master sm ON sm.product_id = p.product_id
+         WHERE p.product_id = ? FOR UPDATE`,
+        [item.productId]
       );
       const availableQty = num(stock?.available_qty);
       if (!stock || availableQty < item.qty) {
         throw Object.assign(
-          new Error(`Insufficient technician stock for ${stock?.product_name || `row ${item.row}`}. Available: ${availableQty}`),
+          new Error(`Insufficient office stock for ${stock?.product_name || `row ${item.row}`}. Available: ${availableQty}`),
           { statusCode: 409 }
         );
       }
@@ -766,25 +768,33 @@ const addMaterialSaleBatch = async (req, res) => {
         }
       }
       await db.query(
-        `UPDATE technician_material_stock SET available_qty = ?
-         WHERE employee_id = ? AND product_id = ?`,
-        [availableQty - item.qty, item.employeeId, item.productId]
+        `UPDATE stock_master SET available_qty = ?, last_stock_check_date = CURDATE(), last_updated = NOW()
+         WHERE product_id = ?`,
+        [availableQty - item.qty, item.productId]
       );
       nextNo += 1;
       const movementNo = `MAT-${String(nextNo).padStart(6, '0')}`;
       movementNumbers.push(movementNo);
-      await db.query(
+      const [movementResult] = await db.query(
         `INSERT INTO technician_material_movements
          (movement_no, movement_type, employee_id, product_id, qty, unit_price, total_amount,
           commission_amount, paid_amount, balance_amount, payment_status, sale_status, customer_type,
           cable_customer_id, service_customer_id, anonymous_name, anonymous_mobile,
           remarks, movement_date, created_by_user_id, created_by_employee_id)
-         VALUES (?, 'SALE', ?, ?, ?, ?, ?, ?, 0, ?, 'PENDING', 'ISSUED', NULL, NULL, NULL, NULL, NULL, ?, CURDATE(), ?, ?)`,
+         VALUES (?, 'SALE', ?, ?, ?, ?, ?, ?, 0, ?, 'PENDING', 'ISSUED', NULL, NULL, NULL, NULL, NULL, ?, COALESCE(?, CURDATE()), ?, ?)`,
         [
           movementNo, item.employeeId, item.productId, item.qty, item.unitPrice, item.net,
-          item.commission, item.net, item.remarks,
+          item.commission, item.net, item.remarks, item.movementDate,
           currentUserId(req), createdByEmployeeId
         ]
+      );
+      await db.query(
+        `INSERT INTO stock_ledger
+         (product_id, transaction_type, transaction_id, reference_no, qty_in, qty_out,
+          balance_qty, unit_cost, remarks, recorded_by_employee_id)
+         VALUES (?, 'ADJUSTMENT', ?, ?, 0, ?, ?, ?, ?, ?)`,
+        [item.productId, movementResult.insertId, movementNo, item.qty, availableQty - item.qty, item.unitPrice,
+          `Issued to technician ${item.employeeId}${item.remarks ? ` - ${item.remarks}` : ''}`, createdByEmployeeId]
       );
     }
     await db.commit();
