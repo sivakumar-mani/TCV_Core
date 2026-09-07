@@ -1,7 +1,11 @@
 .customer-list-filters { grid-template-columns: repeat(3, minmax(0, 1fr)) .8fr auto; }
 .customer-list-filters p-select { min-width: 0; width: 100%; }
-.customer-list-table { min-width: 980px; }
-.customer-list-table tbody tr:nth-child(even) { background: #e2e2e2; }
-.manual-column { min-width: 130px; }
+.customer-list-table { min-width: 980px; table-layout: auto; }
+.customer-list-table tbody tr { background: #fff !important; }
+.customer-list-table th, .customer-list-table td { border: 1px solid #555; font-size: 12px; height: 24px; line-height: 1.1; padding: 10px 5px; }
+.fit-column { white-space: nowrap; width: 1%; }
+.date-column { min-width: 10ch; width: 10ch; }
+.manual-column { min-width: 24ch; width: 24ch; }
+.write-column { min-width: 9ch; width: 9ch; }
 @media (max-width: 1050px) { .customer-list-filters { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 650px) { .customer-list-filters { grid-template-columns: 1fr; } }

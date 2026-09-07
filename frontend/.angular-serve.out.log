@@ -78,3 +78,69 @@ chunk-PIGKEHW6.js   | cable-tv-stbs                 |  63.59 kB |
 Application bundle generation complete. [0.578 seconds] - 2026-09-07T07:20:04.634Z
 
 Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                     | Raw size
+main.js             | main                      | 24.82 kB | 
+
+Lazy chunk files    | Names                     | Raw size
+chunk-T4JLOYXH.js   | catv-customer-list-report | 34.84 kB | 
+
+Application bundle generation complete. [1.016 seconds] - 2026-09-07T07:40:37.653Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                     | Raw size
+main.js             | main                      | 24.82 kB | 
+
+Lazy chunk files    | Names                     | Raw size
+chunk-64ZNGKTM.js   | catv-customer-list-report | 35.75 kB | 
+
+Application bundle generation complete. [0.661 seconds] - 2026-09-07T08:49:44.517Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                  |  Raw size
+main.js             | main                   |  24.82 kB | 
+
+Lazy chunk files    | Names                  |  Raw size
+chunk-UC263MP3.js   | internet-customer-view | 246.26 kB | 
+
+Application bundle generation complete. [2.643 seconds] - 2026-09-07T12:03:55.336Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                  |  Raw size
+main.js             | main                   |  24.82 kB | 
+
+Lazy chunk files    | Names                  |  Raw size
+chunk-5ZNZQSGM.js   | internet-customer-view | 246.18 kB | 
+
+Application bundle generation complete. [3.541 seconds] - 2026-09-07T12:05:37.892Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                  |  Raw size
+main.js             | main                   |  24.82 kB | 
+
+Lazy chunk files    | Names                  |  Raw size
+chunk-Z7AHKKVM.js   | internet-customer-view | 243.77 kB | 
+
+Application bundle generation complete. [3.412 seconds] - 2026-09-07T12:12:21.019Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                  |  Raw size
+main.js             | main                   |  24.82 kB | 
+
+Lazy chunk files    | Names                  |  Raw size
+chunk-KW7RNVHL.js   | internet-customer-view | 245.65 kB | 
+
+Application bundle generation complete. [3.725 seconds] - 2026-09-07T12:21:51.148Z
+
+Component update sent to client(s).

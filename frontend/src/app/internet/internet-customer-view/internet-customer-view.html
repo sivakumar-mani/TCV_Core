@@ -7,59 +7,30 @@
     </div>
   </ng-template>
   <section class="customer-summary-card">
-    <div class="summary-top">
-      <div class="summary-identity">
-        <div class="name-line">
-          <h1>{{ details.customer?.full_name || 'Internet Customer' }}</h1>
-          <span class="customer-no">Customer No. {{ customerNumber() || '-' }}</span>
-        </div>
-        <div class="address-line">
-          <i class="bi bi-geo-alt" aria-hidden="true"></i>{{ address() }}
-        </div>
-      </div>
-      <div class="summary-actions">
-        <label class="customer-jump"
-          >Customer No<span
-            ><input
-              type="search"
-              [(ngModel)]="customerSearchNo"
-              (keyup.enter)="searchCustomerByNumber()"
-              placeholder="Customer No" /><button
-              type="button"
-              class="search-btn"
-              (click)="searchCustomerByNumber()"
-            >
-              <i class="bi bi-search" aria-hidden="true"></i></button></span></label
-        ><button type="button" class="back-btn" (click)="back()">
-          <i class="bi bi-arrow-left" aria-hidden="true"></i>Back
-        </button>
-      </div>
+    <div class="summary-search-row">
+      <label>Cust No
+        <input type="search" [(ngModel)]="customerSearchNo" (keyup.enter)="searchCustomerByNumber()" placeholder="Cust No" />
+      </label>
+      <button type="button" class="search-btn" (click)="searchCustomerByNumber()">
+        <i class="bi bi-search" aria-hidden="true"></i> Search
+      </button>
+      <button type="button" class="back-btn" (click)="back()">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+      </button>
     </div>
-    <div class="summary-grid">
-      <div class="summary-tile tile-blue">
-        <span class="tile-icon"><i class="bi bi-person" aria-hidden="true"></i></span
-        ><span class="tile-label">Customer Number</span
-        ><strong>{{ customerNumber() || '-' }}</strong>
+    <div class="summary-details-row">
+      <div class="summary-identity">
+        <div class="customer-number-line">
+          <strong>Cust No : {{ details.customer?.customer_code || '-' }}</strong>
+        </div>
+        <h1>{{ details.customer?.full_name || 'Internet Customer' }}</h1>
+        <p class="address-line">{{ address() || '-' }}</p>
       </div>
-      <div class="summary-tile tile-purple">
-        <span class="tile-icon"><i class="bi bi-at" aria-hidden="true"></i></span
-        ><span class="tile-label">Net ID</span
-        ><strong class="copyable-value">{{ details.customer?.net_id || '-' }}</strong>
-      </div>
-      <div class="summary-tile tile-purple">
-        <span class="tile-icon"><i class="bi bi-diagram-3" aria-hidden="true"></i></span
-        ><span class="tile-label">Network Type</span
-        ><strong>{{ details.customer?.network_type || '-' }}</strong>
-      </div>
-      <div class="summary-tile tile-green">
-        <span class="tile-icon"><i class="bi bi-calendar-event" aria-hidden="true"></i></span
-        ><span class="tile-label">Install Date</span
-        ><strong>{{ details.customer?.installed_date | date: 'dd-MM-yyyy' }}</strong>
-      </div>
-      <div class="summary-tile tile-orange">
-        <span class="tile-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span
-        ><span class="tile-label">Customer Status</span
-        ><strong class="summary-status" [attr.data-status]="headerStatus()">{{ headerStatus() }}</strong>
+      <div class="summary-meta">
+        <div><span>Net ID:</span><strong class="copyable-value">{{ details.customer?.net_id || '-' }}</strong></div>
+        <div><span>Network Type:</span><strong>{{ details.customer?.network_type || '-' }}</strong></div>
+        <div><span>Status:</span><strong class="summary-status" [attr.data-status]="headerStatus()">{{ headerStatus() }}</strong></div>
+        <div><span>Install Date:</span><strong>{{ (details.customer?.installed_date | date: 'dd-MM-yyyy') || '-' }}</strong></div>
       </div>
     </div>
   </section>

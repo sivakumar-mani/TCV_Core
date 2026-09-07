@@ -120,7 +120,7 @@ export class InternetCustomerView {
           return value;
         };
         this.details = rounded(r);
-        this.customerSearchNo = this.customerNumber(r.customer);
+        this.customerSearchNo = '';
         this.customerForm = {
           network_type: r.customer?.network_type,
           full_name: r.customer?.full_name,
@@ -168,11 +168,13 @@ export class InternetCustomerView {
     );
   }
   searchCustomerByNumber() {
-    const value = this.customerSearchNo.trim();
-    if (!value) return;
+    const customerNo = this.customerSearchNo.trim();
+    if (!customerNo) return;
     this.api.getCustomers().subscribe({
       next: (rows) => {
-        const match = (rows || []).find((x) => this.customerNumber(x) === value);
+        const match = (rows || []).find(
+          (x) => String(x?.customer_code || '').trim() === customerNo,
+        );
         if (!match)
           return this.common.handleError({
             error: { message: 'Internet customer number was not found' },
