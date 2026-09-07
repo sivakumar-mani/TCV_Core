@@ -4,8 +4,9 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { InternetCustomerServices } from '../../services/internet-customer-services';
 import { CommonMethods } from '../../shared/common-methods';
+import { SelectModule } from 'primeng/select';
 
-@Component({selector:'app-internet-customer-form',imports:[CommonModule,ReactiveFormsModule,RouterLink],templateUrl:'./internet-customer-form.html',styleUrls:['./internet-customer-form.scss','./router-category.scss']})
+@Component({selector:'app-internet-customer-form',imports:[CommonModule,ReactiveFormsModule,RouterLink,SelectModule],templateUrl:'./internet-customer-form.html',styleUrls:['./internet-customer-form.scss','./router-category.scss']})
 export class InternetCustomerForm {
   form!:FormGroup; lookups:any={}; id=0; areas:any[]=[]; streets:any[]=[];
   readonly monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -16,12 +17,13 @@ export class InternetCustomerForm {
     this.form.get('location_id')?.valueChanges.subscribe(id=>{this.areas=(this.lookups.areas||[]).filter((x:any)=>Number(x.location_id)===Number(id));this.form.patchValue({area_id:null,street_id:null});});
     this.form.get('area_id')?.valueChanges.subscribe(id=>{this.streets=(this.lookups.streets||[]).filter((x:any)=>Number(x.area_id)===Number(id));this.form.patchValue({street_id:null});});
     this.form.get('installed_date')?.valueChanges.subscribe(v=>{this.form.get('connection.connection_date')?.setValue(v,{emitEvent:false});this.packages.controls.forEach((_,i)=>this.calculatePackage(i));});
-    this.form.get('network_type')?.valueChanges.subscribe(network=>{this.packages.controls.forEach((row,i)=>{const selected=(this.lookups.packages||[]).find((x:any)=>Number(x.package_id)===Number(row.get('package_id')?.value));if(selected?.internet_network_type&&selected.internet_network_type!==network)row.patchValue({package_id:null,base_price:0,gst_percent:0,package_price:0,amount:0},{emitEvent:false});this.calculatePackage(i);});});
+    this.form.get('network_type')?.valueChanges.subscribe(network=>{this.packages.controls.forEach((row,i)=>{const selected=(this.lookups.packages||[]).find((x:any)=>Number(x.package_id)===Number(row.get('package_id')?.value));if(selected&&this.packageNetwork(selected)!==String(network||'').toUpperCase())row.patchValue({package_id:null,base_price:0,gst_percent:0,package_price:0,amount:0},{emitEvent:false});this.calculatePackage(i);});});
     this.form.get('installed_by_employee_id')?.valueChanges.subscribe(()=>{if(this.lookups.is_admin===true){this.routers.controls.forEach(r=>r.patchValue({product_id:null,hsn_code:'',rate:0,discount:0,amount:0},{emitEvent:false}));this.total();}});
   }
   ngOnInit(){this.api.getLookups().subscribe({next:r=>{this.lookups=r;this.applyLoggedInstaller();if(this.id)this.load();},error:e=>this.common.handleError(e)});}
   applyLoggedInstaller(){if(this.lookups.is_admin===false)this.form.patchValue({installed_by_employee_id:this.lookups.logged_in_employee_id,installed_date:this.today},{emitEvent:false});}
-  filteredPackages(){const network=this.form.get('network_type')?.value;return (this.lookups.packages||[]).filter((x:any)=>!x.internet_network_type||x.internet_network_type===network);}
+  packageNetwork(item:any){return String(item?.provider_category||item?.internet_network_type||'').trim().toUpperCase();}
+  filteredPackages(){const network=String(this.form.get('network_type')?.value||'').toUpperCase();return (this.lookups.packages||[]).filter((x:any)=>this.packageNetwork(x)===network);}
   filteredRouters(){const employeeId=Number(this.form.get('installed_by_employee_id')?.value);return (this.lookups.routers||[]).filter((x:any)=>Number(x.employee_id)===employeeId);}
   packageRow(x:any={}){return this.fb.group({package_id:[x.package_id||null,Validators.required],base_price:[x.base_price||0],gst_percent:[x.gst_percent||0],package_price:[x.total_price||x.package_price||0],start_date:[this.date(x.start_date)||this.today],end_date:[this.date(x.end_date)||this.today],amount:[x.amount||0]});}
   routerRow(x:any={}){return this.fb.group({router_type:[x.router_type||'NEW'],usage_category:[x.usage_category||'CUSTOMER_PAID'],product_id:[x.product_id||null],hsn_code:[x.hsn_code||''],qty:[x.qty||1],unit:[x.unit||'PCS'],rate:[x.rate||0],discount:[x.discount||0],amount:[x.amount||0]});}

@@ -2415,6 +2415,64 @@ const getCableSubscriptionReport = async (req, res) => {
   }
 };
 
+const getCableCustomerListReport = async (req, res) => {
+  try {
+    const db = connection.promise();
+    await ensureCableTvExtendedTables(db);
+    const filters = ["c.approval_status = 'APPROVED'"];
+    const values = [];
+    const networkId = intOrNull(req.query.network_id);
+    const areaId = intOrNull(req.query.area_id);
+    const streetId = intOrNull(req.query.street_id);
+    const status = String(req.query.status || '').trim().toUpperCase();
+    const allowedStatuses = ['ACTIVE', 'INACTIVE', 'DISCONNECTED', 'SHIFTED', 'TRANSFERRED', 'RETRIEVED', 'FAULT', 'UPGRADE', 'FREE', 'LEASE_LINE'];
+    if (status && !allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Select a valid customer status' });
+    }
+    if (networkId) { filters.push('c.network_id = ?'); values.push(networkId); }
+    if (areaId) { filters.push('c.area_id = ?'); values.push(areaId); }
+    if (streetId) { filters.push('c.street_id = ?'); values.push(streetId); }
+    if (status) { filters.push('UPPER(c.status) = ?'); values.push(status); }
+
+    const [rows] = await db.query(
+      `SELECT c.cable_customer_id, c.customer_code, c.legacy_customer_no, c.full_name,
+              c.status, a.area_name, s.street_name,
+              COALESCE(NULLIF(stb.stb_no, ''), sm.stb_number, '') AS stb_no,
+              COALESCE(stb.installed_date, DATE(c.created_at)) AS report_date,
+              ROUND(COALESCE(acc.customer_paid_amount, 0), 2) AS paid_amount,
+              ROUND(COALESCE(acc.balance_amount, 0), 2) AS balance_amount
+       FROM cable_tv_customers c
+       INNER JOIN cable_areas a ON a.area_id = c.area_id
+       INNER JOIN cable_streets s ON s.street_id = c.street_id
+       LEFT JOIN cable_customer_stbs stb ON stb.customer_stb_id = (
+         SELECT latest_stb.customer_stb_id FROM cable_customer_stbs latest_stb
+         WHERE latest_stb.cable_customer_id = c.cable_customer_id
+           AND latest_stb.approval_status = 'APPROVED'
+         ORDER BY latest_stb.customer_stb_id DESC LIMIT 1
+       )
+       LEFT JOIN cable_stb_master sm ON sm.stb_master_id = stb.stb_master_id
+       LEFT JOIN cable_customer_accounts acc ON acc.account_id = (
+         SELECT latest_account.account_id FROM cable_customer_accounts latest_account
+         WHERE latest_account.cable_customer_id = c.cable_customer_id
+           AND latest_account.approval_status <> 'REJECTED'
+         ORDER BY latest_account.account_id DESC LIMIT 1
+       )
+       WHERE ${filters.join(' AND ')}
+       ORDER BY a.area_name, s.street_name, c.customer_code`,
+      values
+    );
+    return res.json({
+      filters: { network_id: networkId, area_id: areaId, street_id: streetId, status: status || null },
+      total_records: rows.length,
+      total_paid: rows.reduce((sum, row) => sum + money(row.paid_amount), 0),
+      total_balance: rows.reduce((sum, row) => sum + money(row.balance_amount), 0),
+      rows
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'CATV customer list report failed', error: error.message });
+  }
+};
+
 const getStbPaymentReport = async (req,res) => {
   try {
     const db=connection.promise();await ensureCableTvExtendedTables(db);
@@ -4908,6 +4966,7 @@ module.exports = {
   previewSubscriptionGeneration,
   generateMonthlySubscriptions,
   getCableSubscriptionReport,
+  getCableCustomerListReport,
   getStbPaymentReport,
   getAccountPayments,
   receiveSubscriptionPayment,

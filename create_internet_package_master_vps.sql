@@ -1,0 +1,368 @@
+-- Separate Internet package master migration
+-- Sources: package_list.xlsx (199 Railwire packages)
+--          package_details.xlsx (17 unique Krishi packages; 28 source rows)
+-- Excel price is stored in price as the amount BEFORE GST.
+-- Existing internet_customer_packages rows are preserved unchanged.
+-- Take a database backup before running this complete script.
+
+CREATE TABLE IF NOT EXISTS internet_package_master (
+  package_id INT NOT NULL AUTO_INCREMENT,
+  package_code VARCHAR(50) COLLATE utf8mb4_unicode_ci NULL,
+  package_name VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  provider_category VARCHAR(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  price DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT 'Price before GST',
+  gst_percent DECIMAL(5,2) NOT NULL DEFAULT 18.00,
+  price_including_gst DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  description TEXT COLLATE utf8mb4_unicode_ci NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (package_id),
+  UNIQUE KEY uk_internet_package_provider_code (provider_category, package_code),
+  KEY idx_internet_package_provider_active (provider_category, is_active),
+  CONSTRAINT internet_package_master_chk_price CHECK (price >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Dedicated Internet package master';
+
+-- Preserve current Internet masters and every master currently referenced by a
+-- customer. package_id is retained, so customer package assignments do not change.
+INSERT INTO internet_package_master (
+  package_id, package_code, package_name, provider_category, price,
+  gst_percent, price_including_gst, description, is_active, created_at, updated_at
+)
+SELECT
+  pm.package_id,
+  NULL,
+  pm.package_name,
+  COALESCE(pm.internet_network_type, 'LEGACY'),
+  pm.price,
+  pm.gst_percent,
+  pm.price_including_gst,
+  pm.description,
+  pm.is_active,
+  pm.created_at,
+  pm.updated_at
+FROM cable_package_master pm
+WHERE pm.service_category = 'INTERNET'
+   OR EXISTS (
+     SELECT 1 FROM internet_customer_packages icp
+     WHERE icp.package_id = pm.package_id
+   )
+ON DUPLICATE KEY UPDATE
+  package_name = VALUES(package_name),
+  price = VALUES(price),
+  gst_percent = VALUES(gst_percent),
+  price_including_gst = VALUES(price_including_gst),
+  description = VALUES(description),
+  is_active = VALUES(is_active),
+  updated_at = VALUES(updated_at);
+
+-- Load attached Railwire plans. package_name is "CODE - PACKAGE NAME".
+INSERT INTO internet_package_master (
+  package_code, package_name, provider_category, price,
+  gst_percent, price_including_gst, is_active
+) VALUES
+('2','2 - 512kbps_Unlimited','RAILWIRE',349.00,18.00,ROUND(349.00 * 1.18,2),1),
+('3','3 - 1Mbps_Unlimited','RAILWIRE',449.00,18.00,ROUND(449.00 * 1.18,2),1),
+('66','66 - 2Mbps_Unlimited','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('800','800 - 6Mbps_Unlimited','RAILWIRE',1399.00,18.00,ROUND(1399.00 * 1.18,2),1),
+('801','801 - 10Mbps UL@2499','RAILWIRE',2499.00,18.00,ROUND(2499.00 * 1.18,2),1),
+('20066','20066 - 10Mbps UL@499','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20067','20067 - S20Mbps_Unlimited','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20332','20332 - 50Mbps Unlimited','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20377','20377 - 50mbps_UNLIMITED_599','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20068','20068 - S50Mbps_Unlimited','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20378','20378 - 50mbps_UNLIMITED_799','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20069','20069 - S100Mbps_Unlimited','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('800164','800164 - TN-GHS-100Mbps Unlimited','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('801403','801403 - PM-WANI_10Mbps _500GB_2Mbps','RAILWIRE',299.00,18.00,ROUND(299.00 * 1.18,2),1),
+('900','900 - FUP 10Mbps_100GB','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('800246','800246 - FUP20Mbps-2Mbps 1000GB','RAILWIRE',199.00,18.00,ROUND(199.00 * 1.18,2),1),
+('901','901 - FUP 20Mbps_200GB','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('801404','801404 - PM-WANI_25Mbps _1.5TB_2Mbps','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('600003','600003 - FUP30Mbps-2Mbps 2500GB','RAILWIRE',399.00,18.00,ROUND(399.00 * 1.18,2),1),
+('800823','800823 - Freedom-30_30Mbps_1.5TB_2Mbps','RAILWIRE',299.00,18.00,ROUND(299.00 * 1.18,2),1),
+('801315','801315 - FUP30Mbps-2Mbps 1TB','RAILWIRE',249.00,18.00,ROUND(249.00 * 1.18,2),1),
+('801319','801319 - FUP30Mbps-2Mbps 1.5TB','RAILWIRE',299.00,18.00,ROUND(299.00 * 1.18,2),1),
+('800402','800402 - Tarang-30-T1(F) 30Mbps_1TB_2Mbps','RAILWIRE',249.00,18.00,ROUND(249.00 * 1.18,2),1),
+('801287','801287 - IOI Home Pack-1_30Mbps_2Mbps_1TB','RAILWIRE',399.00,18.00,ROUND(399.00 * 1.18,2),1),
+('801323','801323 - FUP40Mbps-2Mbps 2TB','RAILWIRE',449.00,18.00,ROUND(449.00 * 1.18,2),1),
+('800812','800812 - Umang-40-T1(FHA)40Mbps_2TB_2Mbps','RAILWIRE',449.00,18.00,ROUND(449.00 * 1.18,2),1),
+('902','902 - FUP 40Mbps_300GB','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('800233','800233 - Tarang_3-50-T1(F) 50Mbps_2TB_2Mbps','RAILWIRE',549.00,18.00,ROUND(549.00 * 1.18,2),1),
+('800403','800403 - Umang-50-T1(FHA) 50Mbps_2.5TB_2Mbps','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('800407','800407 - Tarang-50-T1 (FHA) 50Mbps_2.5TB_2Mbps','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('800669','800669 - Tarang-50-T1(F) 50 Mbps_2.5 TB_1Mbps','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('800676','800676 - Tarang-50-T1(FH) 50Mbps_2.5TB_1Mbps','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('903','903 - FUP 50Mbps_400GB','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('800666','800666 - Umang-50-T1(F) 50 Mbps_2.5 TB_1Mbps','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('800673','800673 - Umang-50-T1(FH) 50Mbps_2.5TB_1Mbps','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('801335','801335 - RW Gold PlusTN_50 Mbps_2Mbps_2TB','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20336','20336 - FUP60Mbps-5Mbps 3300GB','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('801336','801336 - RW Gold PlusTN_75 Mbps_2Mbps_2.5TB','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('904','904 - FUP 75Mbps_500GB','RAILWIRE',949.00,18.00,ROUND(949.00 * 1.18,2),1),
+('905','905 - FUP 100Mbps_600GB','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('20340','20340 - FUP100Mbps-10Mbps 700GB','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('20344','20344 - FUP100Mbps-10Mbps 1000GB','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20360','20360 - FUP100Mbps-10Mbps 1200GB','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('20373','20373 - 100Mbps_300GB_499','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('800667','800667 - Umang-100-T1(F) 100 Mbps_3TB_2Mbps','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('800674','800674 - Umang-100-T1(FH) 100Mbps_3TB_2Mbps','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('20374','20374 - 100Mbps_600GB_599','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20376','20376 - 100Mbps_900GB_799','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('800404','800404 - Umang-100-T1 (FHA) 100Mbps_3TB_2Mbps','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('800408','800408 - Tarang-100-T1 (FHA) 100Mbps_3TB_2Mbps','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('800670','800670 - Tarang-100-T1(F) 100 Mbps_3TB_2Mbps','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('800677','800677 - Tarang-100-T1(FH) 100Mbps_3TB_2Mbps','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('801337','801337 - RW Gold PlusTN_100 Mbps_2Mbps_2.5TB','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('800405','800405 - Umang-125-T1 (FHA) 125Mbps_3TB_2Mbps','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('800409','800409 - Tarang-125-T1 (FHA) 125Mbps_3TB_2Mbps','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('906','906 - FUP 125Mbps_750GB','RAILWIRE',1249.00,18.00,ROUND(1249.00 * 1.18,2),1),
+('800126','800126 - Umang-125-T1(F) 125Mbps_3TB_2Mbps','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('800128','800128 - Tarang_1-125-T1(F) 125Mbps_3TB_2Mbps','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('907','907 - FUP 150Mbps_750GB','RAILWIRE',1499.00,18.00,ROUND(1499.00 * 1.18,2),1),
+('20348','20348 - FUP150Mbps-10Mbps 3000GB','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('800671','800671 - Tarang-150-T1(F) 150 Mbps_3.3 TB_2 Mbps','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('800678','800678 - Tarang-150-T1(FH) 150Mbps_3.3TB_2Mbps','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('801338','801338 - RW Gold PlusTN_150 Mbps_2Mbps_3TB','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('800406','800406 - Umang-150-T1 (FHA) 150Mbps_3.3TB_2Mbps','RAILWIRE',1099.00,18.00,ROUND(1099.00 * 1.18,2),1),
+('800410','800410 - Tarang-150-T1 (FHA) 150Mbps_3.3TB_2Mbps','RAILWIRE',1099.00,18.00,ROUND(1099.00 * 1.18,2),1),
+('800668','800668 - Umang-150-T1(F) 150 Mbps_3.3 TB_2 Mbps','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('800675','800675 - Umang-150-T1(FH) 150Mbps_3.3TB_2Mbps','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('801405','801405 - PM-WANI_150Mbps_3TB_2Mbps','RAILWIRE',1499.00,18.00,ROUND(1499.00 * 1.18,2),1),
+('801406','801406 - PM-WANI_175Mbps _3.3TB_2Mbps','RAILWIRE',1799.00,18.00,ROUND(1799.00 * 1.18,2),1),
+('908','908 - FUP 175Mbps_750GB','RAILWIRE',1899.00,18.00,ROUND(1899.00 * 1.18,2),1),
+('909','909 - FUP 200Mbps_1TB','RAILWIRE',1949.00,18.00,ROUND(1949.00 * 1.18,2),1),
+('20352','20352 - FUP200Mbps-10Mbps 3500GB','RAILWIRE',1249.00,18.00,ROUND(1249.00 * 1.18,2),1),
+('800127','800127 - Umang-200-T1(F) 200Mbps_3.5TB_2Mbps','RAILWIRE',1099.00,18.00,ROUND(1099.00 * 1.18,2),1),
+('800129','800129 - Tarang_1-200-T1(F) 200Mbps_3.5TB_2Mbps','RAILWIRE',1099.00,18.00,ROUND(1099.00 * 1.18,2),1),
+('800411','800411 - Satrang Super Pack 200Mbps_3.3TB_2Mbps','RAILWIRE',1199.00,18.00,ROUND(1199.00 * 1.18,2),1),
+('801339','801339 - RW Gold PlusTN_200 Mbps_2Mbps_3.5TB','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('801407','801407 - PM-WANI_200Mbps_3.5TB _2Mbps','RAILWIRE',1999.00,18.00,ROUND(1999.00 * 1.18,2),1),
+('800412','800412 - Satrang Super Pack 250Mbps_3.5TB_2Mbps','RAILWIRE',1299.00,18.00,ROUND(1299.00 * 1.18,2),1),
+('20375','20375 - 300Mbps_1800GB_1555','RAILWIRE',1555.00,18.00,ROUND(1555.00 * 1.18,2),1),
+('800413','800413 - Satrang Super Pack 300Mbps_3.5TB_2Mbps','RAILWIRE',1399.00,18.00,ROUND(1399.00 * 1.18,2),1),
+('801340','801340 - RW Gold PlusTN_300 Mbps_2Mbps_3.5TB','RAILWIRE',1099.00,18.00,ROUND(1099.00 * 1.18,2),1),
+('700','700 - BOD Upto 50Mbps 100GB','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('20039','20039 - HFUP_20Mbps_1.4TB 6Months+1Month','RAILWIRE',4194.00,18.00,ROUND(4194.00 * 1.18,2),1),
+('20043','20043 - HFUP_40Mbps_4.2TB 12Months+2Months','RAILWIRE',9588.00,18.00,ROUND(9588.00 * 1.18,2),1),
+('20051','20051 - HFUP_100Mbps_4.2TB 6Months+1Month','RAILWIRE',5994.00,18.00,ROUND(5994.00 * 1.18,2),1),
+('20050','20050 - HFUP_100Mbps_1.8TB 3Months+7Days','RAILWIRE',2997.00,18.00,ROUND(2997.00 * 1.18,2),1),
+('20052','20052 - HFUP_100Mbps_8.4TB 12Months+2Months','RAILWIRE',11988.00,18.00,ROUND(11988.00 * 1.18,2),1),
+('20054','20054 - HFUP_125Mbps_5.25TB 6Months+1Month','RAILWIRE',7494.00,18.00,ROUND(7494.00 * 1.18,2),1),
+('20056','20056 - HFUP_150Mbps_2.25TB 3Months+7Days','RAILWIRE',4497.00,18.00,ROUND(4497.00 * 1.18,2),1),
+('20059','20059 - HFUP_175Mbps_2.25TB 3Months+7Days','RAILWIRE',5697.00,18.00,ROUND(5697.00 * 1.18,2),1),
+('20064','20064 - HFUP_200Mbps_14.0TB 12Months+2Months','RAILWIRE',23388.00,18.00,ROUND(23388.00 * 1.18,2),1),
+('20062','20062 - HFUP_200Mbps_3.0TB 3Months+7Days','RAILWIRE',5847.00,18.00,ROUND(5847.00 * 1.18,2),1),
+('20142','20142 - 1Mbps_Unlimited x6','RAILWIRE',449.00,18.00,ROUND(449.00 * 1.18,2),1),
+('20071','20071 - 10Mbps UL@499 x6','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20070','20070 - 10Mbps UL@499 x3','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20072','20072 - 10Mbps UL@499 x10','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20073','20073 - S20Mbps_Unlimited x3','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20075','20075 - S20Mbps_Unlimited x10','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20074','20074 - S20Mbps_Unlimited x6','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20077','20077 - S50Mbps_Unlimited x6','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20334','20334 - 50Mbps Unlimited x6','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20076','20076 - S50Mbps_Unlimited x3','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20078','20078 - S50Mbps_Unlimited x10','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20333','20333 - 50Mbps Unlimited x3','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20335','20335 - 50Mbps Unlimited x10','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20384','20384 - 50mbps_UNLIMITED_599 x3','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20079','20079 - S100Mbps_Unlimited x3','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('20081','20081 - S100Mbps_Unlimited x10','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('20080','20080 - S100Mbps_Unlimited x6','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('20185','20185 - FUP 20Mbps_200GB x10','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('800247','800247 - FUP20Mbps-2Mbps 1000GB x3','RAILWIRE',199.00,18.00,ROUND(199.00 * 1.18,2),1),
+('800249','800249 - FUP20Mbps-2Mbps 1000GB x10','RAILWIRE',199.00,18.00,ROUND(199.00 * 1.18,2),1),
+('800248','800248 - FUP20Mbps-2Mbps 1000GB x6','RAILWIRE',199.00,18.00,ROUND(199.00 * 1.18,2),1),
+('600005','600005 - FUP30Mbps-2Mbps 2500GB x6','RAILWIRE',399.00,18.00,ROUND(399.00 * 1.18,2),1),
+('800813','800813 - Umang-30-T12(FHA)30Mbps_2TB_2Mbps x12','RAILWIRE',415.84,18.00,ROUND(415.84 * 1.18,2),1),
+('801317','801317 - FUP30Mbps-2Mbps 1TB x6','RAILWIRE',249.00,18.00,ROUND(249.00 * 1.18,2),1),
+('801321','801321 - FUP30Mbps-2Mbps 1.5TB x6','RAILWIRE',299.00,18.00,ROUND(299.00 * 1.18,2),1),
+('801332','801332 - IOI Home Pack-1_30Mbps_2Mbps_1TB x6','RAILWIRE',399.00,18.00,ROUND(399.00 * 1.18,2),1),
+('600004','600004 - FUP30Mbps-2Mbps 2500GB x3','RAILWIRE',399.00,18.00,ROUND(399.00 * 1.18,2),1),
+('600006','600006 - FUP30Mbps-2Mbps 2500GB x10','RAILWIRE',399.00,18.00,ROUND(399.00 * 1.18,2),1),
+('800818','800818 - Tarang-30-T12(FHA)30Mbps_2TB_2Mbps x12','RAILWIRE',415.84,18.00,ROUND(415.84 * 1.18,2),1),
+('801316','801316 - FUP30Mbps-2Mbps 1TB x3','RAILWIRE',249.00,18.00,ROUND(249.00 * 1.18,2),1),
+('801318','801318 - FUP30Mbps-2Mbps 1TB x10','RAILWIRE',249.00,18.00,ROUND(249.00 * 1.18,2),1),
+('801320','801320 - FUP30Mbps-2Mbps 1.5TB x3','RAILWIRE',299.00,18.00,ROUND(299.00 * 1.18,2),1),
+('801322','801322 - FUP30Mbps-2Mbps 1.5TB x10','RAILWIRE',299.00,18.00,ROUND(299.00 * 1.18,2),1),
+('801329','801329 - IOI Home Pack-1_30Mbps_2Mbps_1TB x3','RAILWIRE',399.00,18.00,ROUND(399.00 * 1.18,2),1),
+('800092','800092 - Umang-50-T3(F) 50Mbps_2.5TB_1Mbps x3','RAILWIRE',499.68,18.00,ROUND(499.68 * 1.18,2),1),
+('800112','800112 - Tarang_1-50-T3(F) 50Mbps_2.5TB_1Mbps x3','RAILWIRE',499.68,18.00,ROUND(499.68 * 1.18,2),1),
+('800819','800819 - Tarang-50-T12(FHA)50Mbps_2.5TB_2Mbps x12','RAILWIRE',499.17,18.00,ROUND(499.17 * 1.18,2),1),
+('800095','800095 - Tarang-50-T3(F) 50Mbps_2.5TB_1Mbps x3','RAILWIRE',499.68,18.00,ROUND(499.68 * 1.18,2),1),
+('800814','800814 - Umang-50-T12(FHA)50Mbps_2.5TB_2Mbps x12','RAILWIRE',499.17,18.00,ROUND(499.17 * 1.18,2),1),
+('801341','801341 - RW Gold PlusTN_50 Mbps_2Mbps_2TB x3','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('801347','801347 - RW Gold PlusTN_50 Mbps_2Mbps_2TB x6','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('801353','801353 - RW Gold PlusTN_50 Mbps_2Mbps_2TB x12','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20338','20338 - FUP60Mbps-5Mbps 3300GB x6','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20337','20337 - FUP60Mbps-5Mbps 3300GB x3','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20339','20339 - FUP60Mbps-5Mbps 3300GB x10','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('801342','801342 - RW Gold PlusTN_75 Mbps_2Mbps_2.5TB x3','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('801348','801348 - RW Gold PlusTN_75 Mbps_2Mbps_2.5TB x6','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('801354','801354 - RW Gold PlusTN_75 Mbps_2Mbps_2.5TB x12','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('20193','20193 - FUP 75Mbps_500GB x6','RAILWIRE',949.00,18.00,ROUND(949.00 * 1.18,2),1),
+('800234','800234 - Tarang_3-75-T3(F)75Mbps_2.5TB_2Mbps x3','RAILWIRE',649.66,18.00,ROUND(649.66 * 1.18,2),1),
+('20195','20195 - FUP 100Mbps_600GB x3','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('20197','20197 - FUP 100Mbps_600GB x10','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('20342','20342 - FUP100Mbps-10Mbps 700GB x6','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('20346','20346 - FUP100Mbps-10Mbps 1000GB x6','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20362','20362 - FUP100Mbps-10Mbps 1200GB x6','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('20379','20379 - 100Mbps_300GB_499 x3','RAILWIRE',499.00,18.00,ROUND(499.00 * 1.18,2),1),
+('20381','20381 - 100Mbps_600GB_599 x6','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20383','20383 - 100mbps_700 GB_699 x3','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('800096','800096 - Tarang-100-T3(F) 100Mbps_3TB_2Mbps x3','RAILWIRE',699.68,18.00,ROUND(699.68 * 1.18,2),1),
+('800235','800235 - Tarang_3-100-T3(F)100Mbps_3TB_2Mbps x3','RAILWIRE',799.66,18.00,ROUND(799.66 * 1.18,2),1),
+('800815','800815 - Umang-100-T12(FHA)100Mbps_3TB_2Mbps x12','RAILWIRE',665.84,18.00,ROUND(665.84 * 1.18,2),1),
+('20196','20196 - FUP 100Mbps_600GB x6','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('20341','20341 - FUP100Mbps-10Mbps 700GB x3','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('20343','20343 - FUP100Mbps-10Mbps 700GB x10','RAILWIRE',699.00,18.00,ROUND(699.00 * 1.18,2),1),
+('20345','20345 - FUP100Mbps-10Mbps 1000GB x3','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20347','20347 - FUP100Mbps-10Mbps 1000GB x10','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20361','20361 - FUP100Mbps-10Mbps 1200GB x3','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('20363','20363 - FUP100Mbps-10Mbps 1200GB x10','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('20380','20380 - 100Mbps_600GB_599 x3','RAILWIRE',599.00,18.00,ROUND(599.00 * 1.18,2),1),
+('20382','20382 - 100mbps_900GB_799 x3','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('800093','800093 - Umang-100-T3(F) 100Mbps_3TB_2Mbps x3','RAILWIRE',699.68,18.00,ROUND(699.68 * 1.18,2),1),
+('800113','800113 - Tarang_1-100-T3(F) 100Mbps_3TB_2Mbps x3','RAILWIRE',699.68,18.00,ROUND(699.68 * 1.18,2),1),
+('800820','800820 - Tarang-100-T12(FHA)100Mbps_3TB_2Mbps x12','RAILWIRE',665.84,18.00,ROUND(665.84 * 1.18,2),1),
+('801343','801343 - RW Gold PlusTN_100 Mbps_2Mbps_2.5TB x3','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('801349','801349 - RW Gold PlusTN_100 Mbps_2Mbps_2.5TB x6','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('801355','801355 - RW Gold PlusTN_100 Mbps_2Mbps_2.5TB x12','RAILWIRE',799.00,18.00,ROUND(799.00 * 1.18,2),1),
+('20200','20200 - FUP 125Mbps_750GB x10','RAILWIRE',1249.00,18.00,ROUND(1249.00 * 1.18,2),1),
+('800821','800821 - Tarang-125-T12(FHA)125Mbps_3TB_2Mbps x12','RAILWIRE',749.17,18.00,ROUND(749.17 * 1.18,2),1),
+('20199','20199 - FUP 125Mbps_750GB x6','RAILWIRE',1249.00,18.00,ROUND(1249.00 * 1.18,2),1),
+('800816','800816 - Umang-125-T12(FHA)125Mbps_3TB_2Mbps x12','RAILWIRE',749.17,18.00,ROUND(749.17 * 1.18,2),1),
+('20350','20350 - FUP150Mbps-10Mbps 3000GB x6','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('800094','800094 - Umang-150-T3(F) 150Mbps_3.3TB_2Mbps x3','RAILWIRE',999.68,18.00,ROUND(999.68 * 1.18,2),1),
+('800114','800114 - Tarang_1-150-T3(F) 150Mbps_3.3TB_2Mbps x3','RAILWIRE',999.68,18.00,ROUND(999.68 * 1.18,2),1),
+('800817','800817 - Umang-150-T12(FHA)150Mbps_3.33TB_2Mbps x12','RAILWIRE',915.84,18.00,ROUND(915.84 * 1.18,2),1),
+('801344','801344 - RW Gold PlusTN_150 Mbps_2Mbps_3TB x3','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('801350','801350 - RW Gold PlusTN_150 Mbps_2Mbps_3TB x6','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('801356','801356 - RW Gold PlusTN_150 Mbps_2Mbps_3TB x12','RAILWIRE',899.00,18.00,ROUND(899.00 * 1.18,2),1),
+('20203','20203 - FUP 150Mbps_750GB x10','RAILWIRE',1499.00,18.00,ROUND(1499.00 * 1.18,2),1),
+('20349','20349 - FUP150Mbps-10Mbps 3000GB x3','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('20351','20351 - FUP150Mbps-10Mbps 3000GB x10','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('800097','800097 - Tarang-150-T3(F) 150Mbps_3.3TB_2Mbps x3','RAILWIRE',999.68,18.00,ROUND(999.68 * 1.18,2),1),
+('800822','800822 - Tarang-150-T12(FHA)150Mbps_3.33TB_2Mbps x12','RAILWIRE',915.84,18.00,ROUND(915.84 * 1.18,2),1),
+('20205','20205 - FUP 175Mbps_750GB x6','RAILWIRE',1899.00,18.00,ROUND(1899.00 * 1.18,2),1),
+('20208','20208 - FUP 200Mbps_1TB x6','RAILWIRE',1949.00,18.00,ROUND(1949.00 * 1.18,2),1),
+('20354','20354 - FUP200Mbps-10Mbps 3500GB x6','RAILWIRE',1249.00,18.00,ROUND(1249.00 * 1.18,2),1),
+('800370','800370 - Umang_2-200-T3(F) 200Mbps_3.5TB_2Mbps x3','RAILWIRE',1099.66,18.00,ROUND(1099.66 * 1.18,2),1),
+('20207','20207 - FUP 200Mbps_1TB x3','RAILWIRE',1949.00,18.00,ROUND(1949.00 * 1.18,2),1),
+('20209','20209 - FUP 200Mbps_1TB x10','RAILWIRE',1949.00,18.00,ROUND(1949.00 * 1.18,2),1),
+('20353','20353 - FUP200Mbps-10Mbps 3500GB x3','RAILWIRE',1249.00,18.00,ROUND(1249.00 * 1.18,2),1),
+('20355','20355 - FUP200Mbps-10Mbps 3500GB x10','RAILWIRE',1249.00,18.00,ROUND(1249.00 * 1.18,2),1),
+('800351','800351 - Umang_2-200-T3(F)200Mbps_3.5TB_2Mbps x3','RAILWIRE',1099.66,18.00,ROUND(1099.66 * 1.18,2),1),
+('801345','801345 - RW Gold PlusTN_200 Mbps_2Mbps_3.5TB x3','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('801351','801351 - RW Gold PlusTN_200 Mbps_2Mbps_3.5TB x6','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('801357','801357 - RW Gold PlusTN_200 Mbps_2Mbps_3.5TB x12','RAILWIRE',999.00,18.00,ROUND(999.00 * 1.18,2),1),
+('801346','801346 - RW Gold PlusTN_300 Mbps_2Mbps_3.5TB x3','RAILWIRE',1099.00,18.00,ROUND(1099.00 * 1.18,2),1),
+('801352','801352 - RW Gold PlusTN_300 Mbps_2Mbps_3.5TB x6','RAILWIRE',1099.00,18.00,ROUND(1099.00 * 1.18,2),1),
+('801358','801358 - RW Gold PlusTN_300 Mbps_2Mbps_3.5TB x12','RAILWIRE',1099.00,18.00,ROUND(1099.00 * 1.18,2),1)
+ON DUPLICATE KEY UPDATE
+  package_name = VALUES(package_name),
+  price = VALUES(price),
+  gst_percent = VALUES(gst_percent),
+  price_including_gst = VALUES(price_including_gst),
+  is_active = VALUES(is_active),
+  updated_at = CURRENT_TIMESTAMP;
+
+-- Load attached Krishi plans. Repeated spreadsheet rows are intentionally deduplicated by code.
+INSERT INTO internet_package_master (
+  package_code, package_name, provider_category, price,
+  gst_percent, price_including_gst, is_active
+) VALUES
+('1323','1323 - KRISHII_BASIC_20M_300','KRISHI',300.00,18.00,ROUND(300.00 * 1.18,2),1),
+('1326','1326 - KRISHII_STARTER_PLUS_100M_600','KRISHI',600.00,18.00,ROUND(600.00 * 1.18,2),1),
+('1327','1327 - KRISHII_HERO_125M_650','KRISHI',650.00,18.00,ROUND(650.00 * 1.18,2),1),
+('1328','1328 - KRISHII_HERO-PLUS_175M_750','KRISHI',750.00,18.00,ROUND(750.00 * 1.18,2),1),
+('1329','1329 - KRISHII_MAX_190M_850','KRISHI',850.00,18.00,ROUND(850.00 * 1.18,2),1),
+('1330','1330 - KRISHII_MAXPRO_250M_1000','KRISHI',1000.00,18.00,ROUND(1000.00 * 1.18,2),1),
+('1331','1331 - KRISHII_ULTRA_350M_1200','KRISHI',1200.00,18.00,ROUND(1200.00 * 1.18,2),1),
+('1336','1336 - KRISHII_CiniFi_400M_1500_INTERNET','KRISHI',1500.00,18.00,ROUND(1500.00 * 1.18,2),1),
+('1337','1337 - KRISHII_FiberFlix_500M_1800_INTERNET','KRISHI',1800.00,18.00,ROUND(1800.00 * 1.18,2),1),
+('1325','1325 - KRISHII_STARTER_75M_500','KRISHI',500.00,18.00,ROUND(500.00 * 1.18,2),1),
+('1324','1324 - KRISHII_BASIC_PLUS_50M_400','KRISHI',400.00,18.00,ROUND(400.00 * 1.18,2),1),
+('570','570 - KRISHII_HERO_125M_650','KRISHI',650.00,18.00,ROUND(650.00 * 1.18,2),1),
+('571','571 - KRISHII_HERO_125M_650 [3]','KRISHI',650.00,18.00,ROUND(650.00 * 1.18,2),1),
+('572','572 - KRISHII_HERO_125M_650 [6]','KRISHI',650.00,18.00,ROUND(650.00 * 1.18,2),1),
+('573','573 - KRISHII_HERO_125M_650 [12]','KRISHI',650.00,18.00,ROUND(650.00 * 1.18,2),1),
+('1148','1148 - PD_FR_15_275M_1300','KRISHI',1300.00,18.00,ROUND(1300.00 * 1.18,2),1),
+('1321','1321 - KRISHII_CineFi_400M_1499','KRISHI',1499.00,18.00,ROUND(1499.00 * 1.18,2),1)
+ON DUPLICATE KEY UPDATE
+  package_name = VALUES(package_name),
+  price = VALUES(price),
+  gst_percent = VALUES(gst_percent),
+  price_including_gst = VALUES(price_including_gst),
+  is_active = VALUES(is_active),
+  updated_at = CURRENT_TIMESTAMP;
+
+
+
+-- Stop before replacing the FK if any existing assignment lacks a new master.
+DROP PROCEDURE IF EXISTS assert_internet_package_migration;
+DELIMITER $$
+CREATE PROCEDURE assert_internet_package_migration()
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM internet_customer_packages icp
+    LEFT JOIN internet_package_master ipm ON ipm.package_id = icp.package_id
+    WHERE ipm.package_id IS NULL
+  ) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Migration stopped: customer package master is missing';
+  END IF;
+END$$
+DELIMITER ;
+CALL assert_internet_package_migration();
+DROP PROCEDURE assert_internet_package_migration;
+
+-- Replace only the package foreign key. No internet_customer_packages row is deleted.
+SET @old_internet_package_fk = (
+  SELECT kcu.CONSTRAINT_NAME
+  FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu
+  WHERE kcu.TABLE_SCHEMA = DATABASE()
+    AND kcu.TABLE_NAME = 'internet_customer_packages'
+    AND kcu.COLUMN_NAME = 'package_id'
+    AND kcu.REFERENCED_TABLE_NAME IS NOT NULL
+  LIMIT 1
+);
+SET @drop_internet_package_fk_sql = IF(
+  @old_internet_package_fk IS NULL,
+  'SELECT 1',
+  CONCAT('ALTER TABLE internet_customer_packages DROP FOREIGN KEY `',
+         REPLACE(@old_internet_package_fk, '`', '``'), '`')
+);
+PREPARE drop_internet_package_fk_stmt FROM @drop_internet_package_fk_sql;
+EXECUTE drop_internet_package_fk_stmt;
+DEALLOCATE PREPARE drop_internet_package_fk_stmt;
+
+ALTER TABLE internet_customer_packages
+  ADD CONSTRAINT fk_internet_package_master
+  FOREIGN KEY (package_id)
+  REFERENCES internet_package_master(package_id)
+  ON DELETE RESTRICT
+  ON UPDATE CASCADE;
+
+DELETE FROM cable_package_master
+WHERE service_category = 'INTERNET';
+
+-- Verification: expected missing=0, Railwire=199, Krishi=17,
+-- and remaining cable Internet rows=0.
+SELECT COUNT(*) AS retained_customer_package_rows FROM internet_customer_packages;
+SELECT COUNT(*) AS missing_master_rows
+FROM internet_customer_packages icp
+LEFT JOIN internet_package_master ipm ON ipm.package_id = icp.package_id
+WHERE ipm.package_id IS NULL;
+SELECT COUNT(*) AS railwire_excel_rows
+FROM internet_package_master
+WHERE provider_category = 'RAILWIRE' AND package_code IS NOT NULL;
+SELECT COUNT(*) AS krishi_excel_rows
+FROM internet_package_master
+WHERE provider_category = 'KRISHI' AND package_code IS NOT NULL;
+SELECT COUNT(*) AS internet_rows_remaining_in_cable_master
+FROM cable_package_master
+WHERE service_category = 'INTERNET';

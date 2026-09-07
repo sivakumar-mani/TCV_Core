@@ -8,7 +8,7 @@
     <label>Start Date<input type="date" [(ngModel)]="filters.start_date"></label>
     <label>End Date<input type="date" [(ngModel)]="filters.end_date" [min]="filters.start_date"></label>
     <label>Type<select [(ngModel)]="filters.transaction_type"><option value="">Debit & Credit</option><option value="DEBIT">Debit</option><option value="CREDIT">Credit</option></select></label>
-    <label>User Name
+    <label *ngIf="permissions.isAdmin()">User Name
       <select [(ngModel)]="filters.created_by_user_id">
         <option value="">All Users</option>
         <option *ngFor="let user of users" [value]="user.user_id">{{ user.user_name }}{{ user.username ? ' (' + user.username + ')' : '' }}</option>

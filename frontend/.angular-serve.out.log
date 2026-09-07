@@ -1,0 +1,80 @@
+
+> tcv-erp@0.0.0 start
+> ng serve --port 4500
+
+> Building...
+√ Building...
+Initial chunk files | Names                         |  Raw size
+styles.css          | styles                        | 409.40 kB | 
+scripts.js          | scripts                       | 107.73 kB | 
+main.js             | main                          |  24.82 kB | 
+chunk-EDXTDRDW.js   | -                             |   4.91 kB | 
+chunk-63734GXC.js   | -                             |   2.05 kB | 
+chunk-MOWWJJJ2.js   | -                             |   1.62 kB | 
+chunk-VGKOSW2G.js   | -                             |   1.10 kB | 
+polyfills.js        | polyfills                     |  95 bytes | 
+
+                    | Initial total                 | 551.72 kB
+
+Lazy chunk files    | Names                         |  Raw size
+chunk-UWAHH5QT.js   | cable-tv-customer-history     | 260.07 kB | 
+chunk-UFQUF5TU.js   | internet-customer-view        | 239.94 kB | 
+chunk-ZKMXQEZW.js   | cable-tv-customer-form        | 130.29 kB | 
+chunk-ABQV3PWJ.js   | cable-tv-account-pending      | 112.93 kB | 
+chunk-JBIUMPBZ.js   | quotation-form                | 108.55 kB | 
+chunk-AADY2JAB.js   | cable-tv-complaints           | 104.55 kB | 
+chunk-3IPRCNNC.js   | cable-tv-customer-view        |  85.22 kB | 
+chunk-OGFX6PUH.js   | layout                        |  80.51 kB | 
+chunk-ZKYPARQA.js   | transaction-list              |  77.58 kB | 
+chunk-35L4DI2X.js   | material-sales                |  74.81 kB | 
+chunk-N6UISB2Q.js   | internet-customer-form        |  72.75 kB | 
+chunk-UXXN3OUE.js   | work-order-material           |  71.48 kB | 
+chunk-Z6NTJ5TK.js   | cable-tv-subscription-pending |  71.43 kB | 
+chunk-HJL7W5CJ.js   | net-subscription-pending      |  65.67 kB | 
+chunk-4LZJESSI.js   | cable-tv-stbs                 |  63.59 kB | 
+...and 67 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [18.222 seconds] - 2026-09-07T07:14:33.881Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+  ➜  Local:   http://localhost:4500/
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Application bundle generation failed. [8.345 seconds] - 2026-09-07T07:19:08.175Z
+
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                         |  Raw size
+styles.css          | styles                        | 409.40 kB | 
+scripts.js          | scripts                       | 107.73 kB | 
+main.js             | main                          |  24.82 kB | 
+chunk-EDXTDRDW.js   | -                             |   4.91 kB | 
+chunk-63734GXC.js   | -                             |   2.05 kB | 
+chunk-MOWWJJJ2.js   | -                             |   1.62 kB | 
+chunk-VGKOSW2G.js   | -                             |   1.10 kB | 
+polyfills.js        | polyfills                     |  95 bytes | 
+
+                    | Initial total                 | 551.72 kB
+
+Lazy chunk files    | Names                         |  Raw size
+chunk-T4TGE6NO.js   | cable-tv-customer-history     | 260.07 kB | 
+chunk-UFQUF5TU.js   | internet-customer-view        | 239.94 kB | 
+chunk-4CTF4OGZ.js   | cable-tv-customer-form        | 130.29 kB | 
+chunk-G663B4MK.js   | cable-tv-account-pending      | 112.93 kB | 
+chunk-JBIUMPBZ.js   | quotation-form                | 108.55 kB | 
+chunk-GUNW6JOK.js   | cable-tv-complaints           | 104.55 kB | 
+chunk-67J2N4LX.js   | cable-tv-customer-view        |  85.22 kB | 
+chunk-OGFX6PUH.js   | layout                        |  80.51 kB | 
+chunk-ZKYPARQA.js   | transaction-list              |  77.58 kB | 
+chunk-5VE5LEEO.js   | material-sales                |  74.81 kB | 
+chunk-N6UISB2Q.js   | internet-customer-form        |  72.75 kB | 
+chunk-UXXN3OUE.js   | work-order-material           |  71.48 kB | 
+chunk-NNUCPXGV.js   | cable-tv-subscription-pending |  71.43 kB | 
+chunk-HJL7W5CJ.js   | net-subscription-pending      |  65.67 kB | 
+chunk-PIGKEHW6.js   | cable-tv-stbs                 |  63.59 kB | 
+...and 67 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [0.578 seconds] - 2026-09-07T07:20:04.634Z
+
+Page reload sent to client(s).

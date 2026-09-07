@@ -558,8 +558,8 @@ button {
   padding: 0 5px !important;
 }
 
-.ag-row:nth-child(even) {
-  background-color: #fbfcff !important;
+.ag-row:nth-child(2n) {
+  background-color: #e2e2e2 !important;
 }
 
 .ag-action-dropdown {
@@ -586,11 +586,33 @@ button {
   .page-title,
   h1 {
     color: var(--tcv-primary-text);
-    font-size: 1.35rem !important;
+    font-size: 1.25rem !important;
     letter-spacing: 0;
     line-height: 1.4;
     margin-bottom: 0;
   }
+}
+
+// Consistent application typography for form choices and displayed data.
+select,
+select option,
+.mat-mdc-select,
+.mat-mdc-option,
+.p-select-label,
+.p-select-option,
+.p-select-filter {
+  font-size: .8rem !important;
+  font-weight: 400 !important;
+}
+
+label,
+th,
+td,
+select option,
+.mat-mdc-option,
+.p-select-label,
+.p-select-option {
+  text-transform: capitalize;
 }
 
 .form-section,

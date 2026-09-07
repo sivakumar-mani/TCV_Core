@@ -1,0 +1,144 @@
+X [ERROR] TS2339: Property 'networkChanged' does not exist on type 'CatvCustomerListReport'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.html:6:249:
+      6 │ ...r]="true" appendTo="body" (onChange)="networkChanged()"></p-select>
+        ╵                                          ~~~~~~~~~~~~~~
+
+  Error occurs in the template of component CatvCustomerListReport.
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:13:15:
+      13 │   templateUrl: './catv-customer-list-report.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2339: Property 'networkLabel' does not exist on type 'CatvCustomerListReport'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.html:21:57:
+      21 │ ...><div><strong>Network: {{ networkLabel }}</strong><span>Area: {...
+         ╵                              ~~~~~~~~~~~~
+
+  Error occurs in the template of component CatvCustomerListReport.
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:13:15:
+      13 │   templateUrl: './catv-customer-list-report.html',
+         ╵                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2339: Property 'networkLabel' does not exist on type 'CatvCustomerListReport'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:100:111:
+      100 │ ...work: ${this.escape(this.networkLabel)}</span><span>Area: ${th...
+          ╵                             ~~~~~~~~~~~~
+
+
+X [ERROR] TS1434: Unexpected keyword or identifier. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:110:2:
+      110 │   get networkLabel() {
+          ╵   ~~~
+
+
+X [ERROR] TS2304: Cannot find name 'get'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:110:2:
+      110 │   get networkLabel() {
+          ╵   ~~~
+
+
+X [ERROR] TS2304: Cannot find name 'networkLabel'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:110:6:
+      110 │   get networkLabel() {
+          ╵       ~~~~~~~~~~~~
+
+
+X [ERROR] TS1005: ';' expected. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:110:21:
+      110 │   get networkLabel() {
+          ╵                      ^
+
+
+X [ERROR] TS2532: Object is possibly 'undefined'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:111:20:
+      111 │     const network = this.networks.find(item => Number(item.networ...
+          ╵                     ~~~~
+
+
+X [ERROR] TS7006: Parameter 'item' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:111:39:
+      111 │ ...network = this.networks.find(item => Number(item.network_id) =...
+          ╵                                 ~~~~
+
+
+X [ERROR] TS2532: Object is possibly 'undefined'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:111:82:
+      111 │ ... => Number(item.network_id) === Number(this.filters.network_id));
+          ╵                                           ~~~~
+
+
+X [ERROR] TS2304: Cannot find name 'networkChanged'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:114:2:
+      114 │   networkChanged() {
+          ╵   ~~~~~~~~~~~~~~
+
+
+X [ERROR] TS1005: ';' expected. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:114:19:
+      114 │   networkChanged() {
+          ╵                    ^
+
+
+X [ERROR] TS2532: Object is possibly 'undefined'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:115:9:
+      115 │     if (!this.filteredAreas.some(item => Number(item.area_id) ===...
+          ╵          ~~~~
+
+
+X [ERROR] TS7006: Parameter 'item' implicitly has an 'any' type. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:115:33:
+      115 │ ...if (!this.filteredAreas.some(item => Number(item.area_id) === ...
+          ╵                                 ~~~~
+
+
+X [ERROR] TS2532: Object is possibly 'undefined'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:115:73:
+      115 │ ...ber(item.area_id) === Number(this.filters.area_id))) this.filt...
+          ╵                                 ~~~~
+
+
+X [ERROR] TS2532: Object is possibly 'undefined'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:115:97:
+      115 │ ...id) === Number(this.filters.area_id))) this.filters.area_id = '';
+          ╵                                           ~~~~
+
+
+X [ERROR] TS2532: Object is possibly 'undefined'. [plugin angular-compiler]
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:116:4:
+      116 │     this.areaChanged();
+          ╵     ~~~~
+
+
+X [ERROR] Top-level return cannot be used inside an ECMAScript module
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:349:4:
+      349 │     return network ? (network.network_code || network.network_nam...
+          ╵     ~~~~~~
+
+  This file is considered to be an ECMAScript module because of the "export" keyword here:
+
+    src/app/administration/catv-customer-list-report/catv-customer-list-report.ts:84:0:
+      84 │ export class CatvCustomerListReport {
+         ╵ ~~~~~~
+
+

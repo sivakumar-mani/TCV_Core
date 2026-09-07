@@ -41,6 +41,7 @@ const permissionCatalog = [
   ['Accounts', 'NET_SUBSCRIPTION_APPEND', 'Append Net Subscriptions', '/net-subscription-append'],
   ['Accounts', 'TRANSACTIONS', 'Transactions', '/transactions'],
   ['Reports', 'CABLE_TV_SUBSCRIPTION_REPORT', 'CATV Subscription Report', '/cable-tv-subscription-report'],
+  ['Reports', 'CATV_CUSTOMER_LIST_REPORT', 'CATV Customer List Report', '/catv-customer-list-report'],
   ['Reports', 'STB_PAYMENT_REPORT', 'STB Payment Report', '/stb-payment-report'],
   ['Reports', 'NET_SUBSCRIPTION_REPORT', 'Net Subscription Report', '/net-subscription-report'],
 ].map(([group, key, label, route]) => ({ group, key, label, route }));

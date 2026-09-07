@@ -179,6 +179,11 @@ export class CableTvServices {
     });
     return this.http.get(`${this.endpoint}/reports/subscriptions`, { params });
   }
+  getCableCustomerListReport(filters: { network_id?: string; area_id?: string; street_id?: string; status?: string }) {
+    const params: Record<string, string> = {};
+    Object.entries(filters || {}).forEach(([key, value]) => { if (value) params[key] = value; });
+    return this.http.get<any>(`${this.endpoint}/reports/customers`, { params });
+  }
   getStbPaymentReport(filters:any){return this.http.get<any>(`${this.endpoint}/reports/stb-payments`,{params:filters});}
 
   previewMonthlySubscriptions(subscriptionMonth: number, subscriptionYear: number) {

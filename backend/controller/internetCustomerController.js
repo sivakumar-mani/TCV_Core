@@ -23,26 +23,7 @@ const dateOnly = (value) => {
   return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
 };
 
-const ensureInternetSchema = async (db) => {
-  const [[categoryColumn]] = await db.query(
-    `SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
-     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_package_master' AND COLUMN_NAME = 'service_category'`
-  );
-  if (!categoryColumn.count) {
-    await db.query("ALTER TABLE cable_package_master ADD COLUMN service_category ENUM('CATV','INTERNET') NOT NULL DEFAULT 'CATV' AFTER package_type");
-  }
-  for (const [column, definition] of [
-    ['gst_percent', 'DECIMAL(5,2) NOT NULL DEFAULT 0 AFTER price'],
-    ['price_including_gst', 'DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER gst_percent'],
-    ['internet_network_type', "ENUM('KRISHI','RAILWIRE') NULL AFTER service_category"]
-  ]) {
-    const [[existing]] = await db.query(
-      `SELECT COUNT(*) AS count FROM INFORMATION_SCHEMA.COLUMNS
-       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'cable_package_master' AND COLUMN_NAME = ?`,
-      [column]
-    );
-    if (!existing.count) await db.query(`ALTER TABLE cable_package_master ADD COLUMN ${column} ${definition}`);
-  }
+const initializeInternetSchema = async (db) => {
   await db.query(`CREATE TABLE IF NOT EXISTS internet_customers (
     internet_customer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     customer_code INT NOT NULL, legacy_customer_no VARCHAR(100) NULL, network_type ENUM('KRISHI','RAILWIRE','DMNET') NOT NULL,
@@ -63,13 +44,23 @@ const ensureInternetSchema = async (db) => {
   if (!legacyCustomerColumn.count) {
     await db.query('ALTER TABLE internet_customers ADD COLUMN legacy_customer_no VARCHAR(100) NULL AFTER customer_code, ADD INDEX idx_internet_legacy_customer_no (legacy_customer_no)');
   }
+  await db.query(`CREATE TABLE IF NOT EXISTS internet_package_master (
+    package_id INT AUTO_INCREMENT PRIMARY KEY, package_code VARCHAR(50) NULL,
+    package_name VARCHAR(255) NOT NULL, provider_category VARCHAR(50) NOT NULL,
+    price DECIMAL(12,2) NOT NULL DEFAULT 0, gst_percent DECIMAL(5,2) NOT NULL DEFAULT 18,
+    price_including_gst DECIMAL(12,2) NOT NULL DEFAULT 0, description TEXT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_internet_package_provider_code (provider_category, package_code),
+    INDEX idx_internet_package_provider_active (provider_category, is_active)
+  ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
   await db.query(`CREATE TABLE IF NOT EXISTS internet_customer_packages (
     internet_customer_package_id BIGINT AUTO_INCREMENT PRIMARY KEY, internet_customer_id BIGINT NOT NULL,
     package_id INT NOT NULL, package_price DECIMAL(12,2) NOT NULL DEFAULT 0, start_date DATE NOT NULL,
     end_date DATE NOT NULL, is_active TINYINT(1) NOT NULL DEFAULT 1, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_internet_package_customer (internet_customer_id),
     CONSTRAINT fk_internet_package_customer FOREIGN KEY (internet_customer_id) REFERENCES internet_customers(internet_customer_id) ON DELETE CASCADE,
-    CONSTRAINT fk_internet_package_master FOREIGN KEY (package_id) REFERENCES cable_package_master(package_id)
+    CONSTRAINT fk_internet_package_master FOREIGN KEY (package_id) REFERENCES internet_package_master(package_id)
   ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
   await db.query(`CREATE TABLE IF NOT EXISTS internet_customer_routers (
     internet_router_id BIGINT AUTO_INCREMENT PRIMARY KEY, internet_customer_id BIGINT NOT NULL,
@@ -219,15 +210,26 @@ const ensureInternetSchema = async (db) => {
   ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`);
 };
 
+let internetSchemaReadyPromise = null;
+const ensureInternetSchema = async (db) => {
+  if (!internetSchemaReadyPromise) {
+    internetSchemaReadyPromise = initializeInternetSchema(db).catch((error) => {
+      internetSchemaReadyPromise = null;
+      throw error;
+    });
+  }
+  return internetSchemaReadyPromise;
+};
+
 const internetLookups = async (req, res) => {
   try {
     const db = connection.promise(); await ensureInternetSchema(db);
     const employeeId = await resolveLoggedInEmployeeId(db, req);
-    const [packages] = await db.query(`SELECT *,
+    const packageQuery = db.query(`SELECT *, provider_category AS internet_network_type,
       ROUND(CASE WHEN price_including_gst > 0 THEN price_including_gst ELSE price + (price * gst_percent / 100) END, 2) AS total_price
-      FROM cable_package_master WHERE service_category = 'INTERNET' AND is_active = 1 ORDER BY package_name`);
+      FROM internet_package_master WHERE is_active = 1 ORDER BY package_name`);
     const routerEmployeeFilter=isAdmin(req)?'':'AND ts.employee_id = ?';
-    const [routers] = (isAdmin(req)||employeeId) ? await db.query(`SELECT p.product_id, p.product_name, p.hsn_code, p.unit, p.selling_price,
+    const routerQuery = (isAdmin(req)||employeeId) ? db.query(`SELECT p.product_id, p.product_name, p.hsn_code, p.unit, p.selling_price,
         ts.employee_id, ts.available_qty
       FROM technician_material_stock ts
       JOIN products p ON p.product_id = ts.product_id
@@ -236,11 +238,22 @@ const internetLookups = async (req, res) => {
         AND p.status = 'ACTIVE'
         AND (LOWER(c.category_name) = 'router' OR LOWER(COALESCE(c.slug, '')) LIKE 'internet%')
       ORDER BY p.product_name`, isAdmin(req)?[]:[employeeId]) : [[]];
-    const [products] = await db.query("SELECT product_id, product_name, hsn_code, unit, selling_price FROM products WHERE status = 'ACTIVE' ORDER BY product_name");
-    const [locations] = await db.query('SELECT * FROM cable_locations WHERE is_active = 1 ORDER BY location_name');
-    const [areas] = await db.query('SELECT * FROM cable_areas WHERE is_active = 1 ORDER BY area_name');
-    const [streets] = await db.query('SELECT * FROM cable_streets WHERE is_active = 1 ORDER BY street_name');
-    const [employees] = await db.query("SELECT employee_id, employee_code, CONCAT_WS(' ', first_name, last_name) employee_name FROM employees WHERE is_active = 1 ORDER BY first_name");
+    const [packageResult, routerResult, productResult, locationResult, areaResult, streetResult, employeeResult] = await Promise.all([
+      packageQuery,
+      routerQuery,
+      db.query("SELECT product_id, product_name, hsn_code, unit, selling_price FROM products WHERE status = 'ACTIVE' ORDER BY product_name"),
+      db.query('SELECT * FROM cable_locations WHERE is_active = 1 ORDER BY location_name'),
+      db.query('SELECT * FROM cable_areas WHERE is_active = 1 ORDER BY area_name'),
+      db.query('SELECT * FROM cable_streets WHERE is_active = 1 ORDER BY street_name'),
+      db.query("SELECT employee_id, employee_code, CONCAT_WS(' ', first_name, last_name) employee_name FROM employees WHERE is_active = 1 ORDER BY first_name")
+    ]);
+    const [packages] = packageResult;
+    const [routers] = routerResult;
+    const [products] = productResult;
+    const [locations] = locationResult;
+    const [areas] = areaResult;
+    const [streets] = streetResult;
+    const [employees] = employeeResult;
     return res.json({ packages, routers, products, locations, areas, streets, employees, logged_in_employee_id: employeeId, is_admin: isAdmin(req),
       networks: ['KRISHI','RAILWIRE','DMNET'], sources: ['Customer Approach Office','Direct','Customer Approach Engineer'] });
   } catch (error) { return res.status(500).json({ message: 'Internet customer lookups failed', error: error.message }); }
@@ -264,7 +277,7 @@ const getInternetCustomers = async (_req, res) => {
       END AS status,
       COALESCE(acc.account_status, 'PENDING') AS account_status,
       COALESCE((SELECT SUM(p.package_price) FROM internet_customer_packages p WHERE p.internet_customer_id=c.internet_customer_id AND p.is_active=1),0) package_amount,
-      (SELECT GROUP_CONCAT(pm.package_name ORDER BY pm.package_name SEPARATOR ', ') FROM internet_customer_packages p JOIN cable_package_master pm ON pm.package_id=p.package_id WHERE p.internet_customer_id=c.internet_customer_id AND p.is_active=1) package_names
+      (SELECT GROUP_CONCAT(pm.package_name ORDER BY pm.package_name SEPARATOR ', ') FROM internet_customer_packages p JOIN internet_package_master pm ON pm.package_id=p.package_id WHERE p.internet_customer_id=c.internet_customer_id AND p.is_active=1) package_names
       FROM internet_customers c LEFT JOIN cable_locations l ON l.location_id=c.location_id
       LEFT JOIN cable_areas a ON a.area_id=c.area_id LEFT JOIN cable_streets s ON s.street_id=c.street_id
       LEFT JOIN employees e ON e.employee_id=c.installed_by_employee_id
@@ -288,17 +301,25 @@ const getInternetCustomer = async (req, res) => {
       LEFT JOIN cable_streets s ON s.street_id=c.street_id LEFT JOIN employees e ON e.employee_id=c.installed_by_employee_id
       WHERE c.internet_customer_id=?`, [id]);
     if (!customer) return res.status(404).json({ message: 'Internet customer not found' });
-    const [packages] = await db.query(`SELECT p.*, pm.package_name, pm.package_type, pm.price AS base_price,
+    const [packageResult, routerResult, connectionResult, materialResult, subscriptionResult, accountResult] = await Promise.all([
+      db.query(`SELECT p.*, pm.package_name, pm.provider_category AS package_type, pm.price AS base_price,
       CONCAT_WS(' ', updated_by.first_name, updated_by.last_name) updated_by_name,
       pm.gst_percent, ROUND(CASE WHEN pm.price_including_gst > 0 THEN pm.price_including_gst ELSE pm.price + (pm.price * pm.gst_percent / 100) END, 2) AS total_price
-      FROM internet_customer_packages p JOIN cable_package_master pm ON pm.package_id=p.package_id
+      FROM internet_customer_packages p JOIN internet_package_master pm ON pm.package_id=p.package_id
       LEFT JOIN employees updated_by ON updated_by.employee_id=p.updated_by_employee_id
-      WHERE p.internet_customer_id=? ORDER BY p.internet_customer_package_id DESC`, [id]);
-    const [routers] = await db.query(`SELECT r.*, p.product_name,adapter.product_name returned_adapter_name,CONCAT_WS(' ',updated_by.first_name,updated_by.last_name) updated_by_name FROM internet_customer_routers r JOIN products p ON p.product_id=r.product_id LEFT JOIN products adapter ON adapter.product_id=r.returned_adapter_product_id LEFT JOIN employees updated_by ON updated_by.employee_id=r.updated_by_employee_id WHERE r.internet_customer_id=? ORDER BY r.internet_router_id DESC`, [id]);
-    const [connections] = await db.query(`SELECT conn.*,CONCAT_WS(' ',e.first_name,e.last_name) installed_by_name FROM internet_connections conn LEFT JOIN employees e ON e.employee_id=conn.installed_by_employee_id WHERE conn.internet_customer_id=? ORDER BY conn.internet_connection_id DESC`, [id]);
-    const [materials] = await db.query('SELECT * FROM internet_connection_materials WHERE internet_customer_id=?', [id]);
-    const [subscriptions] = await db.query(`SELECT sub.*,CONCAT_WS(' ',e.first_name,e.last_name) collected_by_name,CONCAT_WS(' ',renewed.first_name,renewed.last_name) renewed_by_employee_name,CONCAT_WS(' ',mapped.first_name,mapped.last_name) payment_mapped_employee_name FROM internet_subscriptions sub LEFT JOIN employees e ON e.employee_id=sub.collected_by_employee_id LEFT JOIN employees renewed ON renewed.employee_id=sub.renewed_by_employee_id LEFT JOIN employees mapped ON mapped.employee_id=sub.payment_mapped_employee_id WHERE sub.internet_customer_id=? ORDER BY sub.internet_subscription_id DESC`, [id]);
-    const [[account]] = await db.query("SELECT * FROM internet_customer_accounts WHERE internet_customer_id=? AND NOT(account_source='ROUTER' AND grand_total=0) ORDER BY internet_account_id DESC LIMIT 1", [id]);
+      WHERE p.internet_customer_id=? ORDER BY p.internet_customer_package_id DESC`, [id]),
+      db.query(`SELECT r.*, p.product_name,adapter.product_name returned_adapter_name,CONCAT_WS(' ',updated_by.first_name,updated_by.last_name) updated_by_name FROM internet_customer_routers r JOIN products p ON p.product_id=r.product_id LEFT JOIN products adapter ON adapter.product_id=r.returned_adapter_product_id LEFT JOIN employees updated_by ON updated_by.employee_id=r.updated_by_employee_id WHERE r.internet_customer_id=? ORDER BY r.internet_router_id DESC`, [id]),
+      db.query(`SELECT conn.*,CONCAT_WS(' ',e.first_name,e.last_name) installed_by_name FROM internet_connections conn LEFT JOIN employees e ON e.employee_id=conn.installed_by_employee_id WHERE conn.internet_customer_id=? ORDER BY conn.internet_connection_id DESC`, [id]),
+      db.query('SELECT * FROM internet_connection_materials WHERE internet_customer_id=?', [id]),
+      db.query(`SELECT sub.*,CONCAT_WS(' ',e.first_name,e.last_name) collected_by_name,CONCAT_WS(' ',renewed.first_name,renewed.last_name) renewed_by_employee_name,CONCAT_WS(' ',mapped.first_name,mapped.last_name) payment_mapped_employee_name FROM internet_subscriptions sub LEFT JOIN employees e ON e.employee_id=sub.collected_by_employee_id LEFT JOIN employees renewed ON renewed.employee_id=sub.renewed_by_employee_id LEFT JOIN employees mapped ON mapped.employee_id=sub.payment_mapped_employee_id WHERE sub.internet_customer_id=? ORDER BY sub.internet_subscription_id DESC`, [id]),
+      db.query("SELECT * FROM internet_customer_accounts WHERE internet_customer_id=? AND NOT(account_source='ROUTER' AND grand_total=0) ORDER BY internet_account_id DESC LIMIT 1", [id])
+    ]);
+    const [packages] = packageResult;
+    const [routers] = routerResult;
+    const [connections] = connectionResult;
+    const [materials] = materialResult;
+    const [subscriptions] = subscriptionResult;
+    const [[account]] = accountResult;
     return res.json({ customer, packages, routers, connections, materials, subscriptions, account: account || {} });
   } catch (error) { return res.status(500).json({ message: 'Internet customer details failed', error: error.message }); }
 };
@@ -341,7 +362,7 @@ const saveInternetCustomer = async (req, res) => {
     else { const [[next]]=await db.query('SELECT COALESCE(MAX(customer_code),2000)+1 next_code FROM internet_customers'); const [result]=await db.query(`INSERT INTO internet_customers(customer_code,network_type,full_name,net_id,network_password,door_no,location_id,area_id,street_id,state,city,pincode,mobile_no,alternate_mobile_no,aadhaar_no,source_name,installed_by_employee_id,installed_date,status,created_by_user_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,[next.next_code,network,payload.full_name,netId,textOrNull(payload.network_password),payload.door_no,payload.location_id,payload.area_id,payload.street_id,payload.state||'Tamil Nadu',payload.city||address.city,textOrNull(payload.pincode)||address.pincode,payload.mobile_no,textOrNull(payload.alternate_mobile_no),textOrNull(payload.aadhaar_no),payload.source_name||'Direct',installedByEmployeeId,installedDate,'ACTIVE',userId(req)]); customerId=result.insertId; }
     await db.query('UPDATE internet_customers SET approval_status=? WHERE internet_customer_id=?',[approvalStatus,customerId]);
     let subscriptionTotal=0;
-    for(const item of packages){ const [[master]]=await db.query("SELECT price,gst_percent,price_including_gst,internet_network_type FROM cable_package_master WHERE package_id=? AND service_category='INTERNET' AND is_active=1",[item.package_id]); if(!master) throw Object.assign(new Error('Select only active Internet packages'),{status:400}); if(master.internet_network_type&&master.internet_network_type!==network) throw Object.assign(new Error(`Select only ${network} packages for this customer`),{status:400}); const price=money(Number(master.price_including_gst)>0?master.price_including_gst:Number(master.price)+(Number(master.price)*Number(master.gst_percent)/100)); const dates=subscriptionDates(network,item.start_date||installedDate); const month=new Date(`${dates.start}T00:00:00Z`).getUTCMonth()+1, year=Number(dates.start.slice(0,4)); if(!isAdmin(req)){ const [[dup]]=await db.query('SELECT internet_subscription_id FROM internet_subscriptions WHERE internet_customer_id=? AND subscription_month=? AND subscription_year=? AND internet_customer_package_id IN (SELECT internet_customer_package_id FROM internet_customer_packages WHERE package_id=?) LIMIT 1',[customerId,month,year,item.package_id]); if(dup) throw Object.assign(new Error('Subscription already exists for selected package month and year'),{status:409}); } const amount=network==='KRISHI'?money(price/ new Date(year,month,0).getDate()*dates.days):price; const [pr]=await db.query('INSERT INTO internet_customer_packages(internet_customer_id,package_id,package_price,start_date,end_date) VALUES(?,?,?,?,?)',[customerId,item.package_id,price,dates.start,dates.end]); await db.query('INSERT INTO internet_subscriptions(internet_customer_id,internet_customer_package_id,subscription_month,subscription_year,start_date,end_date,amount,balance_amount) VALUES(?,?,?,?,?,?,?,?)',[customerId,pr.insertId,month,year,dates.start,dates.end,amount,amount]); subscriptionTotal+=amount; }
+    for(const item of packages){ const [[master]]=await db.query("SELECT price,gst_percent,price_including_gst,provider_category AS internet_network_type FROM internet_package_master WHERE package_id=? AND is_active=1",[item.package_id]); if(!master) throw Object.assign(new Error('Select only active Internet packages'),{status:400}); if(master.internet_network_type&&master.internet_network_type!==network) throw Object.assign(new Error(`Select only ${network} packages for this customer`),{status:400}); const price=money(Number(master.price_including_gst)>0?master.price_including_gst:Number(master.price)+(Number(master.price)*Number(master.gst_percent)/100)); const dates=subscriptionDates(network,item.start_date||installedDate); const month=new Date(`${dates.start}T00:00:00Z`).getUTCMonth()+1, year=Number(dates.start.slice(0,4)); if(!isAdmin(req)){ const [[dup]]=await db.query('SELECT internet_subscription_id FROM internet_subscriptions WHERE internet_customer_id=? AND subscription_month=? AND subscription_year=? AND internet_customer_package_id IN (SELECT internet_customer_package_id FROM internet_customer_packages WHERE package_id=?) LIMIT 1',[customerId,month,year,item.package_id]); if(dup) throw Object.assign(new Error('Subscription already exists for selected package month and year'),{status:409}); } const amount=network==='KRISHI'?money(price/ new Date(year,month,0).getDate()*dates.days):price; const [pr]=await db.query('INSERT INTO internet_customer_packages(internet_customer_id,package_id,package_price,start_date,end_date) VALUES(?,?,?,?,?)',[customerId,item.package_id,price,dates.start,dates.end]); await db.query('INSERT INTO internet_subscriptions(internet_customer_id,internet_customer_package_id,subscription_month,subscription_year,start_date,end_date,amount,balance_amount) VALUES(?,?,?,?,?,?,?,?)',[customerId,pr.insertId,month,year,dates.start,dates.end,amount,amount]); subscriptionTotal+=amount; }
     const routerStockEmployeeId=isAdmin(req)?installedByEmployeeId:loggedInEmployeeId;
     if(routers.length&&!routerStockEmployeeId) throw Object.assign(new Error('Select Installed By employee for router stock'),{status:400});
     let routerTotal=0,routerDiscount=0; for(const item of routers){ const [[p]]=await db.query(`SELECT p.hsn_code,p.unit,p.selling_price,ts.available_qty FROM technician_material_stock ts JOIN products p ON p.product_id=ts.product_id JOIN categories c ON c.category_id=p.category_id WHERE ts.employee_id=? AND ts.product_id=? AND ts.available_qty>0 AND p.status='ACTIVE' AND LOWER(COALESCE(c.slug,'')) LIKE 'internet%' FOR UPDATE`,[routerStockEmployeeId,item.product_id]); if(!p) throw Object.assign(new Error('Select an issued Internet router assigned to the Installed By employee'),{status:400}); const qty=money(item.qty||1); if(qty>money(p.available_qty)) throw Object.assign(new Error(`Router quantity cannot exceed issued stock (${money(p.available_qty)})`),{status:400}); const rate=money(p.selling_price),gross=money(qty*rate),usageCategory=String(item.usage_category||'CUSTOMER_PAID').toUpperCase()==='FREE_USE'?'FREE_USE':'CUSTOMER_PAID',routerItemDiscount=usageCategory==='FREE_USE'?gross:0,amount=money(gross-routerItemDiscount); routerTotal+=amount;routerDiscount+=routerItemDiscount; await db.query('INSERT INTO internet_customer_routers(internet_customer_id,router_type,usage_category,product_id,hsn_code,qty,unit,rate,discount,amount) VALUES(?,?,?,?,?,?,?,?,?,?)',[customerId,String(item.router_type||'NEW').toUpperCase(),usageCategory,item.product_id,p.hsn_code,qty,p.unit||'PCS',rate,routerItemDiscount,amount]); if(!id)await db.query('UPDATE technician_material_stock SET available_qty=available_qty-? WHERE employee_id=? AND product_id=?',[qty,routerStockEmployeeId,item.product_id]); }
@@ -422,7 +443,7 @@ const addInternetCustomerHistory = async (req,res) => {
       const connectionStatus=type==='DISCONNECT'?'DISCONNECTED':'ACTIVE';await db.query('INSERT INTO internet_connections(internet_customer_id,connection_date,connection_type,connection_status,installed_by_employee_id,old_address,new_address,new_door_no,new_location_id,new_area_id,new_street_id,connection_charge,connection_discount,labour_service_charge,remarks,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[customerId,dateOnly(p.connection_date),type,connectionStatus,employeeId,oldAddress,newAddress,newDoorNo,newLocationId,newAreaId,newStreetId,connectionAmount,discount,laborAmount,textOrNull(p.remarks),approval]);
       if(isAdmin(req)){if(type==='DISCONNECT')await db.query("UPDATE internet_customers SET status='INACTIVE',updated_at=NOW() WHERE internet_customer_id=?",[customerId]);else if(type==='RECONNECTION')await db.query("UPDATE internet_customers SET status='ACTIVE',updated_at=NOW() WHERE internet_customer_id=?",[customerId]);else await db.query("UPDATE internet_customers SET door_no=?,location_id=?,area_id=?,street_id=?,updated_at=NOW() WHERE internet_customer_id=?",[newDoorNo,newLocationId,newAreaId,newStreetId,customerId]);}
     }else if(section==='packages'){
-      const [[pkg]]=await db.query("SELECT package_id,price,gst_percent,price_including_gst,internet_network_type FROM cable_package_master WHERE package_id=? AND service_category='INTERNET' AND is_active=1",[Number(p.package_id)]);if(!pkg)throw Object.assign(new Error('Select an active Internet package'),{status:400});if(pkg.internet_network_type&&pkg.internet_network_type!==customer.network_type)throw Object.assign(new Error(`Select only ${customer.network_type} packages for this customer`),{status:400});
+      const [[pkg]]=await db.query("SELECT package_id,price,gst_percent,price_including_gst,provider_category AS internet_network_type FROM internet_package_master WHERE package_id=? AND is_active=1",[Number(p.package_id)]);if(!pkg)throw Object.assign(new Error('Select an active Internet package'),{status:400});if(pkg.internet_network_type&&pkg.internet_network_type!==customer.network_type)throw Object.assign(new Error(`Select only ${customer.network_type} packages for this customer`),{status:400});
       const [[duplicatePackage]]=await db.query("SELECT internet_customer_package_id FROM internet_customer_packages WHERE internet_customer_id=? AND package_id=? AND approval_status<>'REJECTED' AND (is_active=1 OR approval_status='PENDING') LIMIT 1",[customerId,pkg.package_id]);if(duplicatePackage)throw Object.assign(new Error('This package is already assigned to the customer'),{status:409});
       const [[pendingPackage]]=await db.query("SELECT internet_customer_package_id FROM internet_customer_packages WHERE internet_customer_id=? AND approval_status='PENDING' LIMIT 1",[customerId]);if(pendingPackage)throw Object.assign(new Error('Approve or remove the pending package request before adding another package'),{status:409});
       const start=dateOnly(p.start_date);if(!start)throw Object.assign(new Error('Select a valid package start date'),{status:400});
@@ -459,7 +480,7 @@ const getPendingInternetSubscriptions = async (req,res) => {
     if(req.query.customer_name){conditions.push('c.full_name LIKE ?');values.push(`%${String(req.query.customer_name).trim()}%`);}
     if(req.query.area_id){conditions.push('c.area_id=?');values.push(Number(req.query.area_id));}
     if(req.query.street_id){conditions.push('c.street_id=?');values.push(Number(req.query.street_id));}
-    const [rows]=await db.query(`SELECT s.*,c.internet_customer_id,c.customer_code,c.legacy_customer_no,COALESCE(NULLIF(TRIM(c.legacy_customer_no),''),CAST(c.customer_code AS CHAR)) display_customer_no,c.full_name,c.net_id,c.network_type,c.door_no,c.city,c.pincode,c.status customer_status,a.area_name,st.street_name,pm.package_name,cp.package_price FROM internet_subscriptions s JOIN internet_customers c ON c.internet_customer_id=s.internet_customer_id LEFT JOIN cable_areas a ON a.area_id=c.area_id LEFT JOIN cable_streets st ON st.street_id=c.street_id LEFT JOIN internet_customer_packages cp ON cp.internet_customer_package_id=s.internet_customer_package_id LEFT JOIN cable_package_master pm ON pm.package_id=cp.package_id WHERE ${conditions.join(' AND ')} ORDER BY CAST(COALESCE(NULLIF(TRIM(c.legacy_customer_no),''),CAST(c.customer_code AS CHAR)) AS UNSIGNED),s.start_date`,values);
+    const [rows]=await db.query(`SELECT s.*,c.internet_customer_id,c.customer_code,c.legacy_customer_no,COALESCE(NULLIF(TRIM(c.legacy_customer_no),''),CAST(c.customer_code AS CHAR)) display_customer_no,c.full_name,c.net_id,c.network_type,c.door_no,c.city,c.pincode,c.status customer_status,a.area_name,st.street_name,pm.package_name,cp.package_price FROM internet_subscriptions s JOIN internet_customers c ON c.internet_customer_id=s.internet_customer_id LEFT JOIN cable_areas a ON a.area_id=c.area_id LEFT JOIN cable_streets st ON st.street_id=c.street_id LEFT JOIN internet_customer_packages cp ON cp.internet_customer_package_id=s.internet_customer_package_id LEFT JOIN internet_package_master pm ON pm.package_id=cp.package_id WHERE ${conditions.join(' AND ')} ORDER BY CAST(COALESCE(NULLIF(TRIM(c.legacy_customer_no),''),CAST(c.customer_code AS CHAR)) AS UNSIGNED),s.start_date`,values);
     const map=new Map();for(const row of rows){let customer=map.get(row.internet_customer_id);if(!customer){customer={...row,pending_subscriptions:[]};delete customer.internet_subscription_id;map.set(row.internet_customer_id,customer);}customer.pending_subscriptions.push({...row});}
     return res.json({customers:[...map.values()],total_customers:map.size});
   } catch(error){return res.status(500).json({message:'Internet subscription dues failed',error:error.message});}
@@ -499,7 +520,7 @@ const updateInternetCustomerPackage = async (req,res) => {
     if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});
     await ensureInternetSchema(db);await db.beginTransaction();const customerId=Number(req.params.id),packageRowId=Number(req.params.packageRowId),p=req.body||{};
     const [[row]]=await db.query('SELECT * FROM internet_customer_packages WHERE internet_customer_package_id=? AND internet_customer_id=? FOR UPDATE',[packageRowId,customerId]);if(!row)throw Object.assign(new Error('Internet package detail not found'),{status:404});
-    const [[pkg]]=await db.query("SELECT package_id,price,gst_percent,price_including_gst,internet_network_type FROM cable_package_master WHERE package_id=? AND service_category='INTERNET' AND is_active=1",[Number(p.package_id)]);if(!pkg)throw Object.assign(new Error('Select an active Internet package'),{status:400});const [[customer]]=await db.query('SELECT network_type FROM internet_customers WHERE internet_customer_id=?',[customerId]);if(pkg.internet_network_type&&pkg.internet_network_type!==customer?.network_type)throw Object.assign(new Error(`Select only ${customer?.network_type} packages for this customer`),{status:400});
+    const [[pkg]]=await db.query("SELECT package_id,price,gst_percent,price_including_gst,provider_category AS internet_network_type FROM internet_package_master WHERE package_id=? AND is_active=1",[Number(p.package_id)]);if(!pkg)throw Object.assign(new Error('Select an active Internet package'),{status:400});const [[customer]]=await db.query('SELECT network_type FROM internet_customers WHERE internet_customer_id=?',[customerId]);if(pkg.internet_network_type&&pkg.internet_network_type!==customer?.network_type)throw Object.assign(new Error(`Select only ${customer?.network_type} packages for this customer`),{status:400});
     const [[duplicatePackage]]=await db.query("SELECT internet_customer_package_id FROM internet_customer_packages WHERE internet_customer_id=? AND package_id=? AND internet_customer_package_id<>? AND approval_status<>'REJECTED' AND (is_active=1 OR approval_status='PENDING') LIMIT 1",[customerId,pkg.package_id,packageRowId]);if(duplicatePackage)throw Object.assign(new Error('This package is already assigned to the customer'),{status:409});
     const start=dateOnly(p.start_date);if(!start)throw Object.assign(new Error('Select a valid package start date'),{status:400});const [[period]]=await db.query("SELECT DATE_FORMAT(DATE_ADD(?,INTERVAL 1 YEAR),'%Y-%m-%d') end_date",[start]);
     const employeeId=await resolveLoggedInEmployeeId(db,req),price=money(Number(pkg.price_including_gst)>0?pkg.price_including_gst:Number(pkg.price)+(Number(pkg.price)*Number(pkg.gst_percent)/100));
@@ -525,7 +546,7 @@ const internetAppendPeriod=(monthValue,yearValue)=>{const month=Number(monthValu
 const internetAppendRows=async(db,period,customerIds=[])=>{
   const filters=["c.approval_status='APPROVED'","c.status='ACTIVE'",`NOT EXISTS(SELECT 1 FROM internet_subscriptions existing WHERE existing.internet_customer_id=c.internet_customer_id AND existing.subscription_month=? AND existing.subscription_year=? AND existing.approval_status<>'REJECTED')`,'(last_sub.end_date IS NULL OR last_sub.end_date<=?)'],values=[period.month,period.year,period.endDate];
   if(customerIds.length){filters.push(`c.internet_customer_id IN (${customerIds.map(()=>'?').join(',')})`);values.push(...customerIds);}
-  const [rows]=await db.query(`SELECT c.internet_customer_id,c.customer_code,c.full_name,c.network_type,c.door_no,c.city,c.pincode,a.area_name,s.street_name,cp.internet_customer_package_id,cp.package_id,cp.package_price,pm.package_name,last_sub.end_date previous_end_date,ROUND(cp.package_price,2) amount FROM internet_customers c JOIN internet_customer_packages cp ON cp.internet_customer_package_id=(SELECT cp2.internet_customer_package_id FROM internet_customer_packages cp2 WHERE cp2.internet_customer_id=c.internet_customer_id AND cp2.is_active=1 AND cp2.approval_status='APPROVED' ORDER BY cp2.internet_customer_package_id DESC LIMIT 1) JOIN cable_package_master pm ON pm.package_id=cp.package_id LEFT JOIN cable_areas a ON a.area_id=c.area_id LEFT JOIN cable_streets s ON s.street_id=c.street_id LEFT JOIN internet_subscriptions last_sub ON last_sub.internet_subscription_id=(SELECT sub2.internet_subscription_id FROM internet_subscriptions sub2 WHERE sub2.internet_customer_id=c.internet_customer_id AND sub2.approval_status='APPROVED' ORDER BY sub2.end_date DESC,sub2.internet_subscription_id DESC LIMIT 1) WHERE ${filters.join(' AND ')} ORDER BY c.customer_code`,values);
+  const [rows]=await db.query(`SELECT c.internet_customer_id,c.customer_code,c.full_name,c.network_type,c.door_no,c.city,c.pincode,a.area_name,s.street_name,cp.internet_customer_package_id,cp.package_id,cp.package_price,pm.package_name,last_sub.end_date previous_end_date,ROUND(cp.package_price,2) amount FROM internet_customers c JOIN internet_customer_packages cp ON cp.internet_customer_package_id=(SELECT cp2.internet_customer_package_id FROM internet_customer_packages cp2 WHERE cp2.internet_customer_id=c.internet_customer_id AND cp2.is_active=1 AND cp2.approval_status='APPROVED' ORDER BY cp2.internet_customer_package_id DESC LIMIT 1) JOIN internet_package_master pm ON pm.package_id=cp.package_id LEFT JOIN cable_areas a ON a.area_id=c.area_id LEFT JOIN cable_streets s ON s.street_id=c.street_id LEFT JOIN internet_subscriptions last_sub ON last_sub.internet_subscription_id=(SELECT sub2.internet_subscription_id FROM internet_subscriptions sub2 WHERE sub2.internet_customer_id=c.internet_customer_id AND sub2.approval_status='APPROVED' ORDER BY sub2.end_date DESC,sub2.internet_subscription_id DESC LIMIT 1) WHERE ${filters.join(' AND ')} ORDER BY c.customer_code`,values);
   return rows.map(row=>{let start=new Date(`${period.startDate}T00:00:00Z`);const previous=dateOnly(row.previous_end_date);if(previous&&previous>=period.startDate){start=new Date(`${previous}T00:00:00Z`);start.setUTCDate(start.getUTCDate()+1);}const end=new Date(start);end.setUTCMonth(end.getUTCMonth()+1);end.setUTCDate(end.getUTCDate()-1);return{...row,start_date:dateOnly(start),end_date:dateOnly(end),number_of_days:Math.round((end.getTime()-start.getTime())/86400000)+1};});
 };
 const previewInternetSubscriptionAppend=async(req,res)=>{try{if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});const db=connection.promise();await ensureInternetSchema(db);const period=internetAppendPeriod(req.query.subscription_month,req.query.subscription_year);if(!period)return res.status(400).json({message:'Valid subscription month and year are required'});const rows=await internetAppendRows(db,period);return res.json({period,total_customers:rows.length,total_amount:rows.reduce((sum,row)=>sum+money(row.amount),0),rows});}catch(error){return res.status(500).json({message:'Net subscription append preview failed',error:error.message});}};

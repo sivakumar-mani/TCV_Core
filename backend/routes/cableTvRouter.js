@@ -53,6 +53,7 @@ const {
   previewSubscriptionGeneration,
   generateMonthlySubscriptions,
   getCableSubscriptionReport,
+  getCableCustomerListReport,
   getAccountPayments,
   receiveSubscriptionPayment,
   receiveAccount,
@@ -73,7 +74,7 @@ router.use('/lookups', auth.requireAnyPermission([
   'CABLE_TV_CUSTOMER_PACKAGES', 'CABLE_TV_SUBSCRIPTIONS', 'CABLE_TV_MASTERS',
   'CABLE_TV_PACKAGES', 'CABLE_TV_STBS', 'CABLE_TV_ACCOUNTS',
   'CABLE_TV_SUBSCRIPTION_DUES', 'CABLE_TV_SUBSCRIPTION_REPORT', 'CABLE_TV_COMPLAINTS',
-  'MATERIAL_SALES', 'LO_ACCOUNTS', 'STB_PAYMENT_REPORT'
+  'MATERIAL_SALES', 'LO_ACCOUNTS', 'STB_PAYMENT_REPORT', 'CATV_CUSTOMER_LIST_REPORT'
 ]));
 
 router.get('/lookups', getLookups);
@@ -116,6 +117,7 @@ router.get('/subscriptions/generation-preview', auth.requireAdmin, previewSubscr
 router.post('/subscriptions/generate', auth.requireAdmin, generateMonthlySubscriptions);
 router.patch('/subscriptions/:subscriptionId/receive', auth.requirePermissionAction('CABLE_TV_SUBSCRIPTION_DUES', 'can_view'), receiveSubscriptionPayment);
 router.get('/reports/subscriptions', auth.requirePermission('CABLE_TV_SUBSCRIPTION_REPORT'), getCableSubscriptionReport);
+router.get('/reports/customers', auth.requirePermission('CATV_CUSTOMER_LIST_REPORT'), getCableCustomerListReport);
 router.get('/reports/stb-payments', auth.requirePermission('STB_PAYMENT_REPORT'), getStbPaymentReport);
 router.get('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomers);
 router.get('/customers/:id', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomerById);

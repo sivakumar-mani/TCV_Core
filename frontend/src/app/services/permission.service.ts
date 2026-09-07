@@ -33,6 +33,7 @@ export class PermissionService {
     'net-subscription-append': 'NET_SUBSCRIPTION_APPEND',
     'cable-tv-subscription-append': 'CABLE_TV_SUBSCRIPTION_GENERATE',
     'cable-tv-subscription-report': 'CABLE_TV_SUBSCRIPTION_REPORT',
+    'catv-customer-list-report': 'CATV_CUSTOMER_LIST_REPORT',
     'stb-payment-report': 'STB_PAYMENT_REPORT',
     'net-subscription-report': 'NET_SUBSCRIPTION_REPORT',
     'net-cash-admin-correction': 'INTERNET_CUSTOMERS',

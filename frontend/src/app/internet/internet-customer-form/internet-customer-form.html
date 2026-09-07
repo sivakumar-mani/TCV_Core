@@ -1,5 +1,5 @@
 <div class="page">
-  <div class="heading">
+  <div class="heading page-header">
     <div>
       <a routerLink="/internet/customers">Internet Customers</a>
       <h1>{{ id ? 'Update' : 'Add' }} Internet Customer</h1>
@@ -19,22 +19,11 @@
         ><label>Password<input type="password" formControlName="network_password" /></label>
         <label>Door No<input formControlName="door_no" /></label
         ><label
-          >Postal Area<select formControlName="location_id">
-            <option [ngValue]="null">Select</option>
-            <option *ngFor="let x of lookups.locations" [ngValue]="x.location_id">
-              {{ x.location_name }}
-            </option>
-          </select></label
+          >Postal Area<p-select formControlName="location_id" [options]="lookups.locations || []" optionLabel="location_name" optionValue="location_id" placeholder="Select" [filter]="true" filterBy="location_name" appendTo="body"></p-select></label
         ><label
-          >Location<select formControlName="area_id">
-            <option [ngValue]="null">Select</option>
-            <option *ngFor="let x of areas" [ngValue]="x.area_id">{{ x.area_name }}</option>
-          </select></label
+          >Location<p-select formControlName="area_id" [options]="areas" optionLabel="area_name" optionValue="area_id" placeholder="Select" [filter]="true" filterBy="area_name" appendTo="body"></p-select></label
         ><label
-          >Street<select formControlName="street_id">
-            <option [ngValue]="null">Select</option>
-            <option *ngFor="let x of streets" [ngValue]="x.street_id">{{ x.street_name }}</option>
-          </select></label
+          >Street<p-select formControlName="street_id" [options]="streets" optionLabel="street_name" optionValue="street_id" placeholder="Select" [filter]="true" filterBy="street_name" appendTo="body"></p-select></label
         >
         <label>State<input formControlName="state" /></label
         ><label>City/District<input formControlName="city" /></label
@@ -48,15 +37,12 @@
             <option *ngFor="let x of lookups.sources" [value]="x">{{ x }}</option>
           </select></label
         ><label
-          >Installed By<select
+          >Installed By<p-select
             formControlName="installed_by_employee_id"
-            [attr.disabled]="lookups.is_admin === false ? true : null"
-          >
-            <option [ngValue]="null">Select</option>
-            <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
-          {{ x.employee_name }}
-            </option>
-          </select></label
+            [options]="lookups.employees || []" optionLabel="employee_name" optionValue="employee_id"
+            placeholder="Select" [filter]="true" filterBy="employee_name" appendTo="body"
+            [disabled]="lookups.is_admin === false"
+          ></p-select></label
         ><label
           >Installed Date<input
             type="date"
@@ -72,8 +58,7 @@
       </div>
       <div class="package-labels">
         <span>Package</span><span>Price</span><span>GST %</span
-        ><span>Package Price (Incl. GST)</span><span>Start Date</span><span>End Date</span
-        ><span>Amount</span><span></span>
+        ><span>Package Price (Incl. GST)</span><span>Amount</span><span></span>
       </div>
       <div formArrayName="packages" class="rows">
         <div
@@ -81,20 +66,12 @@
           *ngFor="let r of packages.controls; let i = index"
           [formGroupName]="i"
         >
-          <select formControlName="package_id" (change)="selectPackage(i)">
-            <option [ngValue]="null">{{ form.get('network_type')?.value }} Package</option>
-            <option *ngFor="let x of filteredPackages()" [ngValue]="x.package_id">
-              {{ x.package_name }}
-            </option></select
+          <p-select formControlName="package_id" [options]="filteredPackages()" optionLabel="package_name" optionValue="package_id" [placeholder]="form.get('network_type')?.value + ' Package'" [filter]="true" filterBy="package_name,package_code" appendTo="body" (onChange)="selectPackage(i)"></p-select
           ><input type="number" formControlName="base_price" readonly /><input
             type="number"
             formControlName="gst_percent"
             readonly
           /><input type="number" formControlName="package_price" readonly /><input
-            type="date"
-            formControlName="start_date"
-            readonly
-          /><input type="date" formControlName="end_date" readonly /><input
             type="number"
             formControlName="amount"
             readonly
@@ -122,11 +99,7 @@
             <option>NEW</option>
             <option>SERVICED</option>
             <option>RETURNED</option></select
-          ><select formControlName="product_id" (change)="selectRouter(i)">
-            <option [ngValue]="null">Router</option>
-            <option *ngFor="let x of filteredRouters()" [ngValue]="x.product_id">
-              {{ x.product_name }} (Stock: {{ x.available_qty }})
-            </option></select
+          ><p-select formControlName="product_id" [options]="filteredRouters()" optionLabel="product_name" optionValue="product_id" placeholder="Router" [filter]="true" filterBy="product_name,hsn_code" appendTo="body" (onChange)="selectRouter(i)"><ng-template #item let-x><span>{{ x.product_name }} (Stock: {{ x.available_qty }})</span></ng-template></p-select
           ><select formControlName="usage_category" (change)="calcRouter(i)">
             <option value="CUSTOMER_PAID">Customer Paid</option>
             <option value="FREE_USE">Free Use</option></select
@@ -185,11 +158,7 @@
           *ngFor="let r of materials.controls; let i = index"
           [formGroupName]="i"
         >
-          <select formControlName="product_id" (change)="selectMaterial(i)">
-            <option [ngValue]="null">Product</option>
-            <option *ngFor="let x of lookups.products" [ngValue]="x.product_id">
-              {{ x.product_name }}
-            </option></select
+          <p-select formControlName="product_id" [options]="lookups.products || []" optionLabel="product_name" optionValue="product_id" placeholder="Product" [filter]="true" filterBy="product_name,hsn_code" appendTo="body" (onChange)="selectMaterial(i)"></p-select
           ><input formControlName="item_name" placeholder="Item" /><input
             type="number"
             formControlName="qty"

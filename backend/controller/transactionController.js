@@ -53,6 +53,7 @@ const ensureTransactionTable = async (db = connection.promise()) => {
 
 const currentUserId = (res) => Number(res.locals?.userId || res.locals?.user_id) || null;
 const currentEmployeeId = (res) => Number(res.locals?.employee_id || res.locals?.employeeId) || null;
+const isAdmin = (res) => String(res.locals?.role || '').toUpperCase() === 'ADMIN';
 
 const addTransaction = async (req, res) => {
   try {
@@ -148,11 +149,14 @@ const getTransactions = async (req, res) => {
       typeFilter = ' AND ft.transaction_type = ?';
       values.push(type);
     }
-    const createdByUserId = Number(req.query.created_by_user_id) || null;
+    const loggedInUserId = currentUserId(res);
+    const createdByUserId = isAdmin(res) ? Number(req.query.created_by_user_id) || null : loggedInUserId;
     let userFilter = '';
     if (createdByUserId) {
       userFilter = ' AND ft.created_by_user_id = ?';
       values.push(createdByUserId);
+    } else if (!isAdmin(res)) {
+      userFilter = ' AND 1 = 0';
     }
     const [rows] = await db.query(
       `SELECT ft.*,
@@ -166,6 +170,7 @@ const getTransactions = async (req, res) => {
        ORDER BY ft.transaction_date DESC, ft.finance_transaction_id DESC`,
       values
     );
+    const userListFilter = isAdmin(res) ? '' : 'WHERE ft.created_by_user_id = ?';
     const [users] = await db.query(
       `SELECT DISTINCT ft.created_by_user_id AS user_id,
               COALESCE(NULLIF(CONCAT_WS(' ', e.first_name, e.last_name), ''),
@@ -174,8 +179,9 @@ const getTransactions = async (req, res) => {
        FROM finance_transactions ft
        LEFT JOIN employees e ON e.employee_id = ft.created_by_employee_id
        LEFT JOIN users u ON u.user_id = ft.created_by_user_id
-       WHERE ft.created_by_user_id IS NOT NULL
-       ORDER BY user_name`
+       ${userListFilter || 'WHERE ft.created_by_user_id IS NOT NULL'}
+       ORDER BY user_name`,
+      isAdmin(res) ? [] : [loggedInUserId || 0]
     );
     const [instructedByUsers] = await db.query(
       `SELECT u.user_id,
