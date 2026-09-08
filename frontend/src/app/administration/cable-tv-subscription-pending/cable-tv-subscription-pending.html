@@ -69,18 +69,28 @@
   <div class="modal-backdrop" *ngIf="showPaymentModal">
     <section class="payment-modal" role="dialog" aria-modal="true" aria-labelledby="subscription-payment-title">
       <div class="modal-header">
-        <div><p class="eyebrow">Enter Subscription</p><h2 id="subscription-payment-title">{{ selectedCustomer?.customer_code }} - {{ selectedCustomer?.full_name }}</h2></div>
+        <h2 id="subscription-payment-title">Enter Subscription</h2>
         <button type="button" class="secondary" (click)="closePayment()">Close</button>
       </div>
 
-      <div class="customer-summary">
-        <div><span>Cust No</span><strong>{{ selectedCustomer?.customer_code }}</strong></div>
-        <div><span>STB Number</span><strong>{{ selectedCustomer?.stb_no || '-' }}</strong></div>
-        <div><span>Address</span><strong>{{ address(selectedCustomer) }}</strong></div>
-        <div><span>Customer Status</span><strong>{{ selectedCustomer?.customer_status || '-' }}</strong></div>
-      </div>
+      <div class="modal-content">
+        <div class="customer-summary">
+        <div class="summary-customer-details">
+          <div class="customer-number-line">
+            <span>Cust No : <strong>{{ selectedCustomer?.customer_code || '-' }}</strong></span>
+            <span class="old-customer-number">Old C No : <strong>{{ selectedCustomer?.legacy_customer_no || '-' }}</strong></span>
+          </div>
+          <h3>{{ (selectedCustomer?.full_name || 'Customer') | titlecase }}</h3>
+          <span>STB Number: <strong>{{ selectedCustomer?.stb_no || '-' }}</strong></span>
+          <span class="summary-address">{{ address(selectedCustomer) | titlecase }}</span>
+        </div>
+        <div class="summary-service-details">
+          <span><strong>Status:</strong><b class="customer-status-pill" [class.active]="selectedCustomer?.customer_status === 'ACTIVE'">{{ selectedCustomer?.customer_status || '-' }}</b></span>
+          <span><strong>Install Date:</strong><b>{{ selectedCustomer?.installed_date ? (selectedCustomer.installed_date | date:'dd-MM-yyyy') : '-' }}</b></span>
+        </div>
+        </div>
 
-      <div class="payment-grid">
+        <div class="payment-grid">
         <label>Month / Year
           <div class="month-year-control">
             <select [(ngModel)]="paymentForm.subscription_month" disabled>
@@ -123,6 +133,7 @@
           </select>
         </label>
         <label>Mode of Payment<select [(ngModel)]="paymentForm.payment_mode" [disabled]="!permissions.isAdmin()"><option *ngFor="let mode of paymentModes" [value]="mode">{{ mode }}</option></select></label>
+        </div>
       </div>
 
       <div class="modal-actions">

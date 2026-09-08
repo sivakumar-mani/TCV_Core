@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InternetCustomerServices } from '../../services/internet-customer-services';
 import { WorkflowServices } from '../../services/workflow-services';
 import { CommonMethods } from '../../shared/common-methods';
+import { openInternetSubscriptionInvoicePdf } from '../../shared/internet-subscription-invoice-pdf';
 
 @Component({
   selector: 'app-internet-customer-view',
@@ -18,6 +19,7 @@ export class InternetCustomerView {
   customerForm: any = {};
   historyForm: any = {};
   customerSearchNo = '';
+  netIdSearch = '';
   id = 0;
   activeTab = 'subscription';
   reviewTab = 'subscription';
@@ -121,6 +123,7 @@ export class InternetCustomerView {
         };
         this.details = rounded(r);
         this.customerSearchNo = '';
+        this.netIdSearch = '';
         this.customerForm = {
           network_type: r.customer?.network_type,
           full_name: r.customer?.full_name,
@@ -169,15 +172,18 @@ export class InternetCustomerView {
   }
   searchCustomerByNumber() {
     const customerNo = this.customerSearchNo.trim();
-    if (!customerNo) return;
+    const netId = this.netIdSearch.trim().toLowerCase();
+    if (!customerNo && !netId) return;
     this.api.getCustomers().subscribe({
       next: (rows) => {
         const match = (rows || []).find(
-          (x) => String(x?.customer_code || '').trim() === customerNo,
+          (x) =>
+            (!customerNo || String(x?.customer_code || '').trim() === customerNo) &&
+            (!netId || String(x?.net_id || '').trim().toLowerCase() === netId),
         );
         if (!match)
           return this.common.handleError({
-            error: { message: 'Internet customer number was not found' },
+            error: { message: 'Internet customer was not found' },
           });
         this.id = Number(match.internet_customer_id);
         this.router.navigate(['/internet/customers/view', this.id]).then(() => this.load());
@@ -530,6 +536,28 @@ export class InternetCustomerView {
   monthName(value: any) {
     return new Date(2000, Math.max(Number(value) - 1, 0), 1).toLocaleString('en', {
       month: 'long',
+    });
+  }
+  subscriptionDays(startValue: any, endValue: any) {
+    const start = new Date(`${this.inputDate(startValue)}T00:00:00Z`);
+    const end = new Date(`${this.inputDate(endValue)}T00:00:00Z`);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return 0;
+    return Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+  }
+  subscriptionPackage(subscription: any) {
+    const packages = this.details.packages || [];
+    return packages.find(
+      (row: any) => Number(row.internet_customer_package_id) === Number(subscription?.internet_customer_package_id),
+    ) || packages.find((row: any) => Number(row.is_active) === 1) || packages[0] || {};
+  }
+  openSubscriptionInvoice(subscription: any, invoiceType: string) {
+    if (!invoiceType) return;
+    openInternetSubscriptionInvoicePdf({
+      kind: invoiceType === 'TCV' ? 'TCV' : 'PROVIDER',
+      customer: this.details.customer || {},
+      subscription,
+      package: this.subscriptionPackage(subscription),
+      address: this.address(),
     });
   }
 }

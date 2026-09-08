@@ -142,3 +142,30 @@ X [ERROR] Top-level return cannot be used inside an ECMAScript module
          ╵ ~~~~~~
 
 
+X [ERROR] TS2322: Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+    Types of property 'buffer' are incompatible.
+      Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+        Type 'SharedArrayBuffer' is not assignable to type 'ArrayBuffer'.
+          Types of property '[Symbol.toStringTag]' are incompatible.
+            Type '"SharedArrayBuffer"' is not assignable to type '"ArrayBuffer"'. [plugin angular-compiler]
+
+    src/app/shared/internet-subscription-invoice-pdf.ts:197:52:
+      197 │ ...jectURL(new Blob([header, ...objects, encode(xref)], { type: '...
+          ╵                              ~~~~~~~~~~
+
+
+X [ERROR] TS2322: Type 'Uint8Array<ArrayBufferLike> | Uint8Array<ArrayBuffer>' is not assignable to type 'BlobPart'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BlobPart'.
+    Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'ArrayBufferView<ArrayBuffer>'.
+      Types of property 'buffer' are incompatible.
+        Type 'ArrayBufferLike' is not assignable to type 'ArrayBuffer'.
+          Type 'SharedArrayBuffer' is not assignable to type 'ArrayBuffer'.
+            Types of property '[Symbol.toStringTag]' are incompatible.
+              Type '"SharedArrayBuffer"' is not assignable to type '"ArrayBuffer"'. [plugin angular-compiler]
+
+    src/app/shared/internet-subscription-invoice-pdf.ts:197:64:
+      197 │ ...lob([header, ...objects, encode(xref)], { type: 'application/p...
+          ╵                             ~~~~~~~~~~~~
+
+

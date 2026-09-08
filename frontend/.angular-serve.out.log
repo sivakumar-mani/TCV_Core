@@ -144,3 +144,119 @@ chunk-KW7RNVHL.js   | internet-customer-view | 245.65 kB |
 Application bundle generation complete. [3.725 seconds] - 2026-09-07T12:21:51.148Z
 
 Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                  |  Raw size
+main.js             | main                   |  24.82 kB | 
+
+Lazy chunk files    | Names                  |  Raw size
+chunk-HUPVHFW4.js   | internet-customer-view | 246.01 kB | 
+
+Application bundle generation complete. [3.764 seconds] - 2026-09-08T06:47:17.781Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                  |  Raw size
+main.js             | main                   |  24.82 kB | 
+
+Lazy chunk files    | Names                  |  Raw size
+chunk-ONURCEQY.js   | internet-customer-view | 247.31 kB | 
+
+Application bundle generation complete. [4.182 seconds] - 2026-09-08T07:32:59.210Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                         | Raw size
+main.js             | main                          | 24.82 kB | 
+
+Lazy chunk files    | Names                         | Raw size
+chunk-Q62QGLNT.js   | cable-tv-subscription-pending | 75.59 kB | 
+
+Application bundle generation complete. [4.451 seconds] - 2026-09-08T08:56:58.554Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                         | Raw size
+main.js             | main                          | 24.82 kB | 
+
+Lazy chunk files    | Names                         | Raw size
+chunk-IW7K4W2W.js   | cable-tv-subscription-pending | 75.72 kB | 
+
+Application bundle generation complete. [0.860 seconds] - 2026-09-08T09:32:07.924Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                         | Raw size
+main.js             | main                          | 24.82 kB | 
+
+Lazy chunk files    | Names                         | Raw size
+chunk-6B4KSTWP.js   | cable-tv-subscription-pending | 79.89 kB | 
+
+Application bundle generation complete. [0.577 seconds] - 2026-09-08T09:37:22.686Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                  |  Raw size
+main.js             | main                   |  24.82 kB | 
+
+Lazy chunk files    | Names                  |  Raw size
+chunk-BOXZR4WF.js   | internet-customer-view | 260.42 kB | 
+
+Application bundle generation complete. [5.555 seconds] - 2026-09-08T11:49:27.174Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                  |  Raw size
+main.js             | main                   |  24.82 kB | 
+
+Lazy chunk files    | Names                  |  Raw size
+chunk-HUDRIZ7P.js   | internet-customer-view | 261.21 kB | 
+
+Application bundle generation complete. [4.054 seconds] - 2026-09-08T11:51:21.396Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Application bundle generation failed. [1.977 seconds] - 2026-09-08T12:00:57.864Z
+
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                         |  Raw size
+styles.css          | styles                        | 409.40 kB | 
+scripts.js          | scripts                       | 107.73 kB | 
+main.js             | main                          |  24.82 kB | 
+chunk-WQTIOGR5.js   | -                             |   4.91 kB | 
+chunk-5BTAALNW.js   | -                             |   2.18 kB | 
+chunk-3PKKS6WQ.js   | -                             |   2.05 kB | 
+chunk-VGKOSW2G.js   | -                             |   1.10 kB | 
+polyfills.js        | polyfills                     |  95 bytes | 
+
+                    | Initial total                 | 552.28 kB
+
+Lazy chunk files    | Names                         |  Raw size
+chunk-4NDNYFBE.js   | internet-customer-view        | 263.39 kB | 
+chunk-WSRTI5FV.js   | cable-tv-customer-history     | 260.07 kB | 
+chunk-PMYKM5P6.js   | cable-tv-customer-form        | 130.29 kB | 
+chunk-OU6W2LRZ.js   | cable-tv-account-pending      | 112.93 kB | 
+chunk-VFSIB2QG.js   | quotation-form                | 108.55 kB | 
+chunk-DQLLM6KC.js   | cable-tv-complaints           | 104.55 kB | 
+chunk-RQHHA7JF.js   | cable-tv-customer-view        |  85.22 kB | 
+chunk-WFF3F3SE.js   | layout                        |  80.51 kB | 
+chunk-QQAOQG5H.js   | cable-tv-subscription-pending |  79.89 kB | 
+chunk-YE3OCQDY.js   | transaction-list              |  77.58 kB | 
+chunk-45YIUXIC.js   | material-sales                |  74.81 kB | 
+chunk-MTA2OPOT.js   | internet-customer-form        |  72.75 kB | 
+chunk-R4IMZKPN.js   | work-order-material           |  71.48 kB | 
+chunk-VRPEPWU4.js   | net-subscription-pending      |  65.67 kB | 
+chunk-76344375.js   | cable-tv-stbs                 |  63.59 kB | 
+...and 67 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [0.651 seconds] - 2026-09-08T12:02:51.736Z
+
+Page reload sent to client(s).
