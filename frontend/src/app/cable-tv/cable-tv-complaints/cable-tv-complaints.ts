@@ -1,3 +1,4 @@
+import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-complaints',
-  imports: [CommonModule, FormsModule],
+  imports: [MatMenuModule, CommonModule, FormsModule],
   templateUrl: './cable-tv-complaints.html',
   styleUrl: './cable-tv-complaints.scss'
 })

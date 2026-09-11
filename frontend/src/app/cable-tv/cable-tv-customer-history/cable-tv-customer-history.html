@@ -210,12 +210,12 @@
                       : packageStatusLabel(row) }}
               </span>
             </td>
-            <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete') || (section === 'packages' && canSection(section, 'create'))">
-              <button *ngIf="section === 'packages' && row.is_active == 1 && packageTypeLabel(row.package_type) === 'Addon' && canSection(section, 'update')" type="button" class="table-icon-btn deactivate" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)"><i class="bi bi-slash-circle" aria-hidden="true"></i></button>
-              <button *ngIf="section === 'packages' && canRemovePackage(row)" type="button" class="package-remove-btn" (click)="removePackage(row)">Remove</button>
-              <button *ngIf="canEditRow(row)" type="button" class="table-icon-btn edit" [title]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" [attr.aria-label]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" (click)="edit(row)"><i class="bi bi-pencil-square" aria-hidden="true"></i></button>
-              <button *ngIf="canDeleteRow(row)" type="button" class="table-icon-btn delete" title="Delete" aria-label="Delete" (click)="delete(row)"><i class="bi bi-trash" aria-hidden="true"></i></button>
-            </td>
+            <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete') || (section === 'packages' && canSection(section, 'create'))"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu">
+              <button mat-menu-item *ngIf="section === 'packages' && row.is_active == 1 && packageTypeLabel(row.package_type) === 'Addon' && canSection(section, 'update')" type="button" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)">Deactivate</button>
+              <button mat-menu-item *ngIf="section === 'packages' && canRemovePackage(row)" type="button" (click)="removePackage(row)">Remove</button>
+              <button mat-menu-item *ngIf="canEditRow(row)" type="button" [title]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" [attr.aria-label]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" (click)="edit(row)">{{ section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit' }}</button>
+              <button mat-menu-item *ngIf="canDeleteRow(row)" type="button" title="Delete" aria-label="Delete" (click)="delete(row)">Delete</button>
+            </mat-menu></td>
           </tr>
           <tr *ngIf="!rows.length"><td colspan="8" class="empty-row">No records added yet.</td></tr>
         </tbody>

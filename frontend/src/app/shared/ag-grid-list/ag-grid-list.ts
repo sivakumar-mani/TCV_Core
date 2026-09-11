@@ -15,10 +15,10 @@ const tcvGridTheme = themeQuartz.withParams({
   wrapperBorderRadius: 10,
   headerBackgroundColor: '#eef1ff',
   headerTextColor: '#1c2569',
-  headerFontWeight: 600,
+  headerFontWeight: 500,
   oddRowBackgroundColor: '#fafbff',
   rowHoverColor: '#f5f6fb',
-  fontSize: 13,
+  fontSize: 12,
   spacing: 6,
 });
 

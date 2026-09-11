@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { MatMenuModule } from '@angular/material/menu';
 
 export interface BootstrapActionItem {
   label: string;
@@ -9,30 +10,14 @@ export interface BootstrapActionItem {
 
 @Component({
   selector: 'app-bootstrap-action-menu',
-  imports: [CommonModule],
+  imports: [CommonModule, MatMenuModule],
   template: `
-    <div class="dropdown ag-action-dropdown">
-      <button
-        class="btn btn-outline-secondary btn-sm dropdown-toggle"
-        type="button"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-      >
-        Action
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li *ngFor="let item of params?.dropdownMenu">
-          <button
-            class="dropdown-item"
-            [ngClass]="item.className"
-            type="button"
-            (click)="execute(item)"
-          >
-            {{ item.label }}
-          </button>
-        </li>
-      </ul>
-    </div>
+    <button type="button" class="app-action-trigger" [matMenuTriggerFor]="menu" aria-label="Open row actions">
+      Action<span class="app-action-caret" aria-hidden="true"></span>
+    </button>
+    <mat-menu #menu="matMenu" class="app-row-action-menu">
+      <button mat-menu-item *ngFor="let item of params?.dropdownMenu" [ngClass]="item.className" type="button" (click)="execute(item)">{{ item.label }}</button>
+    </mat-menu>
   `,
 })
 export class BootstrapActionMenu {

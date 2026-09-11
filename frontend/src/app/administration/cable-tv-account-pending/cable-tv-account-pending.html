@@ -96,12 +96,12 @@
         <td>{{ reportBalance(item) | number:'1.2-2' }}</td>
         <td>{{ item.due_date ? (item.due_date | date:'dd-MM-yyyy') : '-' }}</td>
         <td><span class="status-badge" [attr.data-status]="reportPaymentStatus(item)" [class.paid]="reportPaymentStatus(item) === 'PAID'">{{ reportPaymentStatus(item) }}</span></td>
-        <td *ngIf="permissions.isAdmin()" class="action-cell">
-          <button *ngIf="item.account_status === 'PENDING' || item.account_status === 'PARTIAL'" type="button"
+        <td *ngIf="permissions.isAdmin()" class="action-cell"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu">
+          <button mat-menu-item *ngIf="item.account_status === 'PENDING' || item.account_status === 'PARTIAL'" type="button"
             (click)="openPayment(item)">Payment</button>
-          <button *ngIf="item.account_status === 'PAID' && item.account_id > 0" type="button" class="revert"
+          <button mat-menu-item *ngIf="item.account_status === 'PAID' && item.account_id > 0" type="button" class="revert"
             (click)="revertToPending(item.account_id)">Revert to Pending</button>
-        </td>
+        </mat-menu></td>
       </tr>
       <tr *ngIf="!accounts.length">
         <td [attr.colspan]="permissions.isAdmin() ? 18 : 17" class="empty-row">No account records match the selected filters.</td>

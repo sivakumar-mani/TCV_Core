@@ -258,6 +258,14 @@ export class CableTvServices {
     return this.http.post(`${this.endpoint}/material-sales/sales/batch`, data, { headers: this.jsonHeaders });
   }
 
+  updateIssuedMaterial(movementId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/material-sales/issued/${movementId}`, data, { headers: this.jsonHeaders });
+  }
+
+  deleteIssuedMaterial(movementId: number) {
+    return this.http.delete(`${this.endpoint}/material-sales/issued/${movementId}`);
+  }
+
   getIssuedMaterialSales(employeeId = '') {
     return this.http.get(`${this.endpoint}/material-sales/issued`, {
       params: employeeId ? { employee_id: employeeId } : {}

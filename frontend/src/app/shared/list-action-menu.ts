@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import {MatMenuModule} from '@angular/material/menu';
-import {MatButtonModule} from '@angular/material/button';
-import { NgClass, NgFor } from '@angular/common';
+import { NgFor, NgIf, NgClass } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
 import { PermissionService } from '../services/permission.service';
 import { Router } from '@angular/router';
 export interface ActionItem {
@@ -12,21 +12,25 @@ export interface ActionItem {
 }
 @Component({
   selector: 'app-action-menu',
-   imports: [MatMenuModule, MatButtonModule, NgFor, NgClass],
+   imports: [MatMenuModule, MatButtonModule, NgFor, NgIf, NgClass],
   template: `<span class="serial-number" [class.hidden]="!showSerial">{{ serialNumber }}</span>
-<button mat-icon-button [class.customer-action-trigger]="params?.statusAware" [matMenuTriggerFor]="menu"
-  [attr.aria-label]="params?.statusAware ? statusTooltip : 'Open row actions'"
-  [attr.title]="params?.statusAware ? statusTooltip : 'Open row actions'">
+<button *ngIf="params?.statusAware; else textTrigger" type="button" mat-icon-button class="customer-action-trigger"
+  [matMenuTriggerFor]="menu" [attr.aria-label]="statusTooltip" [attr.title]="statusTooltip">
   <i class="bi" [ngClass]="triggerIconClasses" aria-hidden="true"></i>
 </button>
+<ng-template #textTrigger>
+<button type="button" class="app-action-trigger" [matMenuTriggerFor]="menu"
+  aria-label="Open row actions" title="Open row actions">
+  Action<span class="app-action-caret" aria-hidden="true"></span>
+</button>
+</ng-template>
 
-<mat-menu #menu="matMenu">
+<mat-menu #menu="matMenu" class="app-row-action-menu">
   <button
     mat-menu-item
     *ngFor="let actionMenu of visibleActions"
     (click)="execute(actionMenu.action)"
   >
-    <i class="bi action-menu-icon" [ngClass]="iconClass(actionMenu.label)" aria-hidden="true"></i>
     <span>{{ actionMenu.label }}</span>
   </button>
 </mat-menu>`,

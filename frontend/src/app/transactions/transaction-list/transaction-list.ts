@@ -1,3 +1,4 @@
+import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +10,7 @@ import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-transaction-list',
-  imports: [CommonModule, FormsModule],
+  imports: [MatMenuModule, CommonModule, FormsModule],
   templateUrl: './transaction-list.html',
   styleUrl: './transaction-list.scss'
 })

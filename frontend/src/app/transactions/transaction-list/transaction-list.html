@@ -37,25 +37,21 @@
           </td><td>{{ row.entered_by_name || '-' }}</td>
           <td><span class="status-pill" [class.approved]="row.approval_status === 'APPROVED'">{{ row.approval_status || 'PENDING' }}</span></td>
           <td class="number">{{ row.amount | number:'1.2-2' }}</td>
-          <td class="action-cell">
-            <button
+          <td class="action-cell"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu">
+            <button mat-menu-item
               type="button"
-              class="view-icon"
+
               title="View Transaction"
               aria-label="View Transaction"
-              (click)="view(row)">
-              <i class="bi bi-eye-fill" aria-hidden="true"></i>
-            </button>
-            <button
+              (click)="view(row)">View Transaction</button>
+            <button mat-menu-item
               *ngIf="permissions.isAdmin()"
               type="button"
-              class="delete-icon"
+
               title="Delete Transaction"
               aria-label="Delete Transaction"
-              (click)="delete(row)">
-              <i class="bi bi-trash-fill" aria-hidden="true"></i>
-            </button>
-          </td>
+              (click)="delete(row)">Delete Transaction</button>
+          </mat-menu></td>
         </tr>
         <tr *ngIf="!rows.length"><td colspan="11" class="empty">No transactions found for the selected period.</td></tr>
       </tbody>

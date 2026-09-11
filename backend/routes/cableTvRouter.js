@@ -2,6 +2,7 @@ const express = require('express');
 const auth = require('../services/authendication');
 const router = express.Router();
 const {
+  correctIssuedMaterial,
   getMaterialSalesLookups,
   getTechnicianStock,
   getMaterialMovements,
@@ -86,6 +87,8 @@ router.post('/material-sales/movements', auth.requirePermissionAction('MATERIAL_
 router.post('/material-sales/issues/batch', auth.requirePermissionAction('MATERIAL_SALES', 'can_create'), addMaterialIssueBatch);
 router.post('/material-sales/sales/batch', auth.requirePermissionAction('MATERIAL_SALES', 'can_create'), addMaterialSaleBatch);
 router.get('/material-sales/issued', auth.requirePermission('MATERIAL_SALES'), getIssuedMaterialSales);
+router.patch('/material-sales/issued/:movementId', auth.requireAdmin, correctIssuedMaterial);
+router.delete('/material-sales/issued/:movementId', auth.requireAdmin, correctIssuedMaterial);
 router.get('/material-sales/adjustments', auth.requirePermission('MATERIAL_SALES'), getMaterialSaleAdjustments);
 router.post('/material-sales/movements/:movementId/adjustments', auth.requirePermissionAction('MATERIAL_SALES', 'can_update'), requestMaterialSaleAdjustment);
 router.patch('/material-sales/adjustments/:adjustmentId/review', auth.requireAdmin, reviewMaterialSaleAdjustment);

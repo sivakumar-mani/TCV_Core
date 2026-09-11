@@ -1,3 +1,4 @@
+import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +10,7 @@ import { openInternetSubscriptionInvoicePdf } from '../../shared/internet-subscr
 
 @Component({
   selector: 'app-internet-customer-view',
-  imports: [CommonModule, FormsModule],
+  imports: [MatMenuModule, CommonModule, FormsModule],
   templateUrl: './internet-customer-view.html',
   styleUrl: './internet-customer-view.scss',
 })
@@ -178,7 +179,7 @@ export class InternetCustomerView {
       next: (rows) => {
         const match = (rows || []).find(
           (x) =>
-            (!customerNo || String(x?.customer_code || '').trim() === customerNo) &&
+            (!customerNo || this.customerNumber(x) === customerNo) &&
             (!netId || String(x?.net_id || '').trim().toLowerCase() === netId),
         );
         if (!match)
@@ -520,7 +521,7 @@ export class InternetCustomerView {
     return Boolean(String(customer?.legacy_customer_no || '').trim());
   }
   customerNumber(customer = this.details.customer) {
-    return String(customer?.legacy_customer_no || customer?.customer_code || '');
+    return String(customer?.legacy_customer_no || '').trim() || String(customer?.customer_code || '').trim();
   }
   headerStatus() {
     const customer = this.details.customer || {},

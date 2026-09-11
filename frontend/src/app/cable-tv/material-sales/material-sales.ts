@@ -1,3 +1,4 @@
+import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,10 +9,13 @@ import { Snackbar } from '../../services/snackbar';
 import { globalConstants } from '../../services/global-constants';
 import { PermissionService } from '../../services/permission.service';
 
-@Component({ selector: 'app-material-sales', imports: [CommonModule, FormsModule], templateUrl: './material-sales.html', styleUrl: './material-sales.scss' })
+@Component({ selector: 'app-material-sales', imports: [MatMenuModule, CommonModule, FormsModule], templateUrl: './material-sales.html', styleUrl: './material-sales.scss' })
 export class MaterialSales {
   products: any[] = []; employees: any[] = []; technicianStock: any[] = [];
   issuedMaterials: any[] = []; adjustments: any[] = [];
+  get hasSelectedCustomerType() { return this.issuedMaterials.some(row => Boolean(row.customer_type)); }
+  editingIssue: any = null;
+  correctingIssue = false;
   customerDirectories: Record<string, any[]> = { CATV: [], NET: [], CCTV: [] };
   loggedInEmployeeId: number | null = null;
   header = this.emptyHeader(); saleRows: any[] = [this.emptySaleRow()]; adjustment: any = null;
@@ -68,6 +72,28 @@ export class MaterialSales {
       error: error => this.handleError(error)
     });
   }
+  editIssue(row: any) {
+    if (!this.permissions.isAdmin()) return;
+    const date = new Date(row.movement_date);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    this.editingIssue = { ...row, employee_id: Number(row.employee_id), product_id: Number(row.product_id), movement_date: date.toISOString().slice(0, 10) };
+  }
+  saveIssue() {
+    if (!this.permissions.isAdmin() || this.correctingIssue || !this.editingIssue) return;
+    this.correctingIssue = true;
+    this.service.updateIssuedMaterial(this.editingIssue.material_movement_id, this.editingIssue).subscribe({
+      next: (response: any) => { this.correctingIssue = false; this.editingIssue = null; this.snackbar.openSnackbar(response.message, ''); this.loadAll(); },
+      error: error => { this.correctingIssue = false; this.handleError(error); }
+    });
+  }
+  deleteIssue(row: any) {
+    if (!this.permissions.isAdmin() || this.correctingIssue || !confirm(`Delete ${row.product_name} issued to ${row.employee_name}? The quantity will be restored to office stock.`)) return;
+    this.correctingIssue = true;
+    this.service.deleteIssuedMaterial(row.material_movement_id).subscribe({
+      next: (response: any) => { this.correctingIssue = false; this.snackbar.openSnackbar(response.message, ''); this.loadAll(); },
+      error: error => { this.correctingIssue = false; this.handleError(error); }
+    });
+  }
   sold(row: any) {
     const customerType = row.customer_type || 'ANONYMOUS';
     this.loader.start(); this.service.markMaterialSaleSold(row.material_movement_id, { customer_type: customerType, cable_customer_id: customerType === 'CATV' ? row.customer_id : null, service_customer_id: ['NET', 'CCTV'].includes(customerType) ? row.customer_id : null }).subscribe({ next: (response: any) => { this.loader.stop(); this.snackbar.openSnackbar(response.message, ''); this.loadAll(); }, error: error => this.handleError(error) });
@@ -85,5 +111,15 @@ export class MaterialSales {
   }
   today() { const date = new Date(); date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); return date.toISOString().slice(0, 10); }
   private error(message: string) { this.snackbar.openSnackbar(message, globalConstants.errorRegex); }
-  private handleError(error: any) { this.loader.stop(); this.error(error?.error?.message || globalConstants.genericError); }
+  private handleError(error: any) {
+    this.loader.stop();
+    const message = error?.error?.message || (error?.status === 0
+      ? 'Cannot reach the server. Check the backend connection and try again.'
+      : error?.status === 404
+        ? 'This action is unavailable on the server. Please update and restart the backend.'
+        : error?.status === 401 || error?.status === 403
+          ? 'Your session has expired or you do not have permission. Please sign in again.'
+          : globalConstants.genericError);
+    this.error(message);
+  }
 }

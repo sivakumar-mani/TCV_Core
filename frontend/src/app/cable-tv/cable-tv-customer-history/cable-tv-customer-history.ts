@@ -1,3 +1,4 @@
+import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +14,7 @@ type Section = 'customer' | 'connections' | 'stbs' | 'packages' | 'subscriptions
 
 @Component({
   selector: 'app-cable-tv-customer-history',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './cable-tv-customer-history.html',
   styleUrl: './cable-tv-customer-history.scss'
 })

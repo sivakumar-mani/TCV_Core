@@ -1,3 +1,4 @@
+import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-cable-tv-account-pending',
-  imports: [CommonModule, FormsModule],
+  imports: [MatMenuModule, CommonModule, FormsModule],
   templateUrl: './cable-tv-account-pending.html',
   styleUrl: './cable-tv-account-pending.scss'
 })

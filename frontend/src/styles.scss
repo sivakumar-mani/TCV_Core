@@ -939,3 +939,71 @@ app-net-subscription-pending .dues button:disabled {
   border-color: #fecaca !important;
   color: #991b1b !important;
 }
+
+// Shared row-action trigger: text and caret, matching every list's action menu.
+button.app-action-trigger {
+  align-items: center !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  color: #0067c5 !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  gap: 7px;
+  height: 32px !important;
+  line-height: 20px !important;
+  min-height: 32px !important;
+  min-width: 0 !important;
+  padding: 4px 8px !important;
+  white-space: nowrap;
+  width: auto !important;
+}
+button.app-action-trigger:hover { background: #f1f3f5 !important; }
+button.app-action-trigger:focus-visible { outline: 2px solid #0067c5; outline-offset: 2px; }
+.app-action-caret {
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid currentColor;
+  display: inline-block;
+  height: 0;
+  width: 0;
+}
+.app-row-action-menu button.mat-mdc-menu-item {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #344054 !important;
+  display: flex !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  height: auto !important;
+  min-height: 40px !important;
+  padding: 8px 16px !important;
+  text-align: left;
+  width: 100% !important;
+}
+.app-row-action-menu button.mat-mdc-menu-item:hover,
+.app-row-action-menu button.mat-mdc-menu-item:focus { background: #f1f3f5 !important; }
+.app-row-action-menu button.mat-mdc-menu-item:disabled { opacity: .5; }
+
+// Consistent table typography for native, Material, PrimeNG and AG Grid lists.
+:root :is(table, .mat-mdc-table, .ag-root-wrapper) {
+  --ag-font-size: 12px;
+  --ag-header-font-size: 12px;
+  --ag-header-font-weight: 500;
+  font-size: 12px;
+}
+:root :is(td, th, .mat-mdc-cell, .mat-mdc-footer-cell, .mat-mdc-header-cell, .ag-cell, .ag-header-cell, .ag-header-group-cell),
+:root :is(td, th, .mat-mdc-cell, .mat-mdc-footer-cell, .mat-mdc-header-cell, .ag-cell, .ag-header-cell, .ag-header-group-cell)
+  :is(span, strong, b, small, a, label, input, select, textarea, button, p):not(.bi, .ag-icon, .material-icons, .material-symbols-outlined) {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+}
+:root :is(th, .mat-mdc-header-cell, .ag-header-cell, .ag-header-group-cell),
+:root :is(th, .mat-mdc-header-cell, .ag-header-cell, .ag-header-group-cell)
+  :is(span, strong, b, small, a, label, input, select, textarea, button, p):not(.bi, .ag-icon, .material-icons, .material-symbols-outlined) {
+  font-weight: 500 !important;
+}

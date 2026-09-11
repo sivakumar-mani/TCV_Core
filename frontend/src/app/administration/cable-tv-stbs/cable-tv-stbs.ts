@@ -1,3 +1,4 @@
+import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,7 +11,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-cable-tv-stbs',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './cable-tv-stbs.html',
   styleUrl: './cable-tv-stbs.scss'
 })

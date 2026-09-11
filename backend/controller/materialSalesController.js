@@ -809,7 +809,69 @@ const addMaterialSaleBatch = async (req, res) => {
   }
 };
 
+// Corrections apply only to untouched issues; downstream accounting must stay intact.
+const correctIssuedMaterial = async (req, res) => {
+  if (!isAdmin(req)) return res.status(403).json({ message: 'Admin access required' });
+  const movementId = id(req.params.movementId);
+  if (!movementId) return res.status(400).json({ message: 'Invalid material issue' });
+  const deleting = req.method === 'DELETE';
+  const payload = req.body || {};
+  const qty = Number(payload.qty), price = Number(payload.unit_price), commission = Number(payload.commission_amount);
+  const employeeId = id(payload.employee_id), productId = id(payload.product_id);
+  const date = String(payload.movement_date || '');
+  if (!deleting && (!employeeId || !productId || !Number.isFinite(qty) || qty <= 0 ||
+      !Number.isFinite(price) || price < 0 || !Number.isFinite(commission) || commission < 0 || commission > price ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date)) {
+    return res.status(400).json({ message: 'Check technician, material, quantity, price, commission and date' });
+  }
+  const db = connection.promise();
+  let started = false;
+  try {
+    await db.beginTransaction(); started = true;
+    const [[sale]] = await db.query('SELECT * FROM technician_material_movements WHERE material_movement_id = ? FOR UPDATE', [movementId]);
+    const fail = (message, statusCode = 409) => { throw Object.assign(new Error(message), { statusCode }); };
+    if (!sale) fail('Material issue not found', 404);
+    if (sale.movement_type !== 'SALE' || sale.sale_status !== 'ISSUED') fail('Only issued materials can be corrected');
+    const [payments] = await db.query('SELECT material_sale_payment_id FROM technician_material_sale_payments WHERE material_movement_id = ? FOR UPDATE', [movementId]);
+    const [adjustments] = await db.query('SELECT material_sale_adjustment_id FROM technician_material_sale_adjustments WHERE material_movement_id = ? FOR UPDATE', [movementId]);
+    if (num(sale.paid_amount) || payments.length || adjustments.length) fail('Cannot correct an issue with payments or return/fault records');
+    if (!deleting) {
+      const [[employee]] = await db.query('SELECT employee_id FROM employees WHERE employee_id = ? AND is_active = 1', [employeeId]);
+      const [[product]] = await db.query("SELECT product_id FROM products WHERE product_id = ? AND status = 'ACTIVE' AND product_type = 'MATERIAL'", [productId]);
+      if (!employee || !product) fail('Select an active technician and material', 400);
+    }
+    const changes = new Map([[Number(sale.product_id), num(sale.qty)]]);
+    if (!deleting) changes.set(productId, (changes.get(productId) || 0) - qty);
+    for (const [stockProductId, delta] of [...changes.entries()].sort((a, b) => a[0] - b[0])) {
+      const [[stock]] = await db.query('SELECT available_qty FROM stock_master WHERE product_id = ? FOR UPDATE', [stockProductId]);
+      if (!stock || num(stock.available_qty) + delta < 0) fail('Insufficient office stock for this correction');
+      const balance = Number((num(stock.available_qty) + delta).toFixed(2));
+      await db.query('UPDATE stock_master SET available_qty = ?, last_stock_check_date = CURDATE(), last_updated = NOW() WHERE product_id = ?', [balance, stockProductId]);
+      if (delta !== 0) await db.query(`INSERT INTO stock_ledger
+        (product_id, transaction_type, transaction_id, reference_no, qty_in, qty_out, balance_qty, unit_cost, remarks, recorded_by_employee_id)
+        VALUES (?, 'ADJUSTMENT', ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [stockProductId, movementId, sale.movement_no, Math.max(delta, 0), Math.max(-delta, 0), balance,
+          stockProductId === Number(sale.product_id) ? sale.unit_price : price,
+          `${deleting ? 'Deleted' : 'Corrected'} material issue by admin user ${currentUserId(req)}`, await resolveEmployeeId(db, req, null)]);
+    }
+    if (deleting) {
+      await db.query('DELETE FROM technician_material_movements WHERE material_movement_id = ?', [movementId]);
+    } else {
+      const total = Number(((price - commission) * qty).toFixed(2));
+      await db.query(`UPDATE technician_material_movements SET employee_id = ?, product_id = ?, qty = ?, unit_price = ?,
+        commission_amount = ?, total_amount = ?, balance_amount = ?, movement_date = ?, remarks = ? WHERE material_movement_id = ?`,
+        [employeeId, productId, qty, price, commission, total, total, date, text(payload.remarks), movementId]);
+    }
+    await db.commit(); started = false;
+    return res.json({ message: `Material issue ${deleting ? 'deleted' : 'updated'} successfully` });
+  } catch (error) {
+    if (started) await db.rollback();
+    return res.status(error.statusCode || 500).json({ message: error.message || 'Material correction failed' });
+  }
+};
+
 module.exports = {
+  correctIssuedMaterial,
   ensureMaterialSalesTables, getMaterialSalesLookups, getTechnicianStock,
   getMaterialMovements, addMaterialMovement, mapMaterialSaleCustomer,
   getMaterialSalePayments, receiveMaterialSale, addMaterialIssueBatch, addMaterialSaleBatch,

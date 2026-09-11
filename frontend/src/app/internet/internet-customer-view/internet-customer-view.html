@@ -24,7 +24,7 @@
     <div class="summary-details-row">
       <div class="summary-identity">
         <div class="customer-number-line">
-          <strong>Cust No : {{ details.customer?.customer_code || '-' }}</strong>
+          <strong>Cust No : {{ customerNumber() || '-' }}</strong>
         </div>
         <h1>{{ details.customer?.full_name || 'Internet Customer' }}</h1>
         <p class="address-line">{{ address() || '-' }}</p>
@@ -111,7 +111,7 @@
                 <option value="TCV">TCV Invoice</option>
               </select>
             </td>
-            <td *ngIf="showSubscriptionActions()" class="row-actions"><button *ngIf="canEditSubscription(x)" type="button" (click)="editSubscription(x)">Edit</button><button *ngIf="lookups.is_admin" type="button" class="danger" (click)="deleteSubscription(x)">Delete</button></td>
+            <td *ngIf="showSubscriptionActions()" class="row-actions"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu"><button mat-menu-item *ngIf="canEditSubscription(x)" type="button" (click)="editSubscription(x)">Edit</button><button mat-menu-item *ngIf="lookups.is_admin" type="button" (click)="deleteSubscription(x)">Delete</button></mat-menu></td>
           </tr>
           <tr *ngIf="!details.subscriptions?.length">
             <td [attr.colspan]="showSubscriptionActions() ? 11 : 10" class="empty">No subscription details</td>
@@ -162,10 +162,10 @@
             <td><span class="status-pill" [attr.data-status]="routerPaymentStatus(x)">{{ routerPaymentStatus(x) }}</span></td>
             <td><span class="status-pill" [attr.data-status]="x.refund_status || 'NOT_APPLICABLE'">{{ (x.refund_status || 'NOT_APPLICABLE') === 'NOT_APPLICABLE' ? 'NA' : (x.refund_status || '').replace('_', ' ') }}</span></td>
             <td><span class="status-pill" [attr.data-status]="x.router_status || 'ACTIVE'">{{ x.router_status || 'ACTIVE' }}</span></td>
-            <td *ngIf="lookups.is_admin" class="row-actions">
-              <button class="table-action" type="button" (click)="editRouter(x)">Edit</button>
-              <button class="table-action danger" type="button" (click)="deleteRouter(x)">Delete</button>
-            </td>
+            <td *ngIf="lookups.is_admin" class="row-actions"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu2" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu2="matMenu" class="app-row-action-menu">
+              <button mat-menu-item type="button" (click)="editRouter(x)">Edit</button>
+              <button mat-menu-item type="button" (click)="deleteRouter(x)">Delete</button>
+            </mat-menu></td>
           </tr>
           <tr *ngIf="!details.routers?.length">
             <td [attr.colspan]="lookups.is_admin ? 14 : 13" class="empty">No router details</td>
@@ -205,16 +205,16 @@
             <td>{{ x.labour_service_charge | number: '1.2-2' }}</td>
             <td><span class="status-pill" [attr.data-status]="connectionPaymentStatus(x)">{{ connectionPaymentStatus(x) }}</span></td>
             <td><span class="status-pill" [attr.data-status]="x.approval_status === 'PENDING' ? 'PENDING' : (x.connection_status || 'ACTIVE')">{{ connectionStatus(x) }}</span></td>
-            <td>
-              <button
-                class="table-action"
+            <td><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu3" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu3="matMenu" class="app-row-action-menu">
+              <button mat-menu-item
+
                 type="button"
                 [disabled]="!canUpdate()"
                 (click)="editHistory()"
               >
                 Update
               </button>
-            </td>
+            </mat-menu></td>
           </tr>
           <tr *ngIf="!details.connections?.length">
             <td colspan="10" class="empty">No connection details</td>
@@ -262,13 +262,13 @@
                   : 'PENDING'
               }}</span>
             </td>
-            <td>
+            <td><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu4" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu4="matMenu" class="app-row-action-menu">
               <ng-container *ngIf="lookups.is_admin">
-                <button class="table-action" type="button" (click)="editPackage(x)">Edit</button>
-                <button class="table-action danger" type="button" (click)="deletePackage(x)">Delete</button>
+                <button mat-menu-item type="button" (click)="editPackage(x)">Edit</button>
+                <button mat-menu-item type="button" (click)="deletePackage(x)">Delete</button>
               </ng-container>
               <span *ngIf="!lookups.is_admin">-</span>
-            </td>
+            </mat-menu></td>
           </tr>
           <tr *ngIf="!details.packages?.length">
             <td colspan="9" class="empty">No package details</td>

@@ -72,14 +72,10 @@
           </div>
         </td>
         <td><span class="status-pill" [class.available]="item.status === 'AVAILABLE'" [class.not-available]="item.status !== 'AVAILABLE'">{{ statusLabel(item.status) }}</span></td>
-        <td class="action-cell">
-          <button type="button" class="table-icon-btn" title="Edit" aria-label="Edit STB" (click)="editStb(item)">
-            <i class="bi bi-pencil-square" aria-hidden="true"></i>
-          </button>
-          <button type="button" class="table-icon-btn" title="Delete" aria-label="Delete STB" (click)="deleteStb(item)">
-            <i class="bi bi-trash" aria-hidden="true"></i>
-          </button>
-        </td>
+        <td class="action-cell"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu">
+          <button mat-menu-item type="button" title="Edit" aria-label="Edit STB" (click)="editStb(item)">Edit</button>
+          <button mat-menu-item type="button" title="Delete" aria-label="Delete STB" (click)="deleteStb(item)">Delete</button>
+        </mat-menu></td>
       </tr>
       <tr *ngIf="!filteredStbs.length">
         <td colspan="9" class="empty-row">No STB records match the selected filters.</td>
