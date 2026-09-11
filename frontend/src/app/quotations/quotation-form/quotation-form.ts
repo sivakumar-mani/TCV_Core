@@ -585,7 +585,7 @@ export class QuotationForm implements OnDestroy {
     });
 
     const summaryTop = tableBottom;
-    const summaryBottom = 180;
+    const summaryBottom = 125;
     const totalsLeft = 330;
     const totalsWidth = pageRight - totalsLeft;
     const totalsRowHeight = 17;
@@ -603,8 +603,21 @@ export class QuotationForm implements OnDestroy {
     ].forEach((term, index) => {
       this.pdfText(commands, pageLeft + 16, summaryTop - 36 - index * 13, 7, `${index + 1}. ${term}`.slice(0, 64));
     });
+    const noteBoxX = pageLeft + 10;
+    const noteBoxY = summaryBottom + 13;
+    const noteBoxWidth = totalsLeft - noteBoxX - 10;
+    const noteBoxHeight = 48;
+    this.pdfFillStrokeRect(commands, noteBoxX, noteBoxY, noteBoxWidth, noteBoxHeight, 255, 248, 223);
+    this.pdfTextColor(commands, noteBoxX + 7, noteBoxY + 34, 7, 'Note:', 0.42, 0.31, 0.04);
+    [
+      'Electrical accessories and related materials are not included in the above quotation.',
+      'Required electrical accessories will be charged separately based on actual requirements.',
+      'Alternatively, the customer may procure the required electrical accessories directly.'
+    ].forEach((line, index) => {
+      this.pdfTextColor(commands, noteBoxX + 7, noteBoxY + 24 - index * 10, 6.5, line.slice(0, 78), 0.35, 0.28, 0.09);
+    });
     const contactLine = `For any enquiries, email us on ${quotation.prepared_by_email || 'timecablevision@gmail.com'} or call us on ${quotation.prepared_by_phone || '9876543210'}`;
-    this.pdfText(commands, pageLeft + 10, summaryBottom + 12, 8, contactLine.slice(0, 72));
+    this.pdfText(commands, pageLeft + 10, summaryBottom + 3, 8, contactLine.slice(0, 72));
 
     [
       ['Sub Total', quotation.total_amount, false],

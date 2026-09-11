@@ -204,6 +204,14 @@ export class CableTvServices {
     return this.http.get(`${this.endpoint}/complaints`, { params });
   }
 
+  getComplaintReport(filters: { start_date: string; end_date: string; status?: string; assigned_employee_id?: string }) {
+    const params: Record<string, string> = {};
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = String(value);
+    });
+    return this.http.get<any>(`${this.endpoint}/reports/complaints`, { params });
+  }
+
   getComplaintById(complaintId: number) {
     return this.http.get(`${this.endpoint}/complaints/${complaintId}`);
   }

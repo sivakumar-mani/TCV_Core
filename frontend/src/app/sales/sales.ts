@@ -85,6 +85,8 @@ export class Sales {
       net_amount: [0, [Validators.min(0)]],
       paid_amount: [0, [Validators.min(0)]],
       payment_mode: ['CREDIT'],
+      paid_date: [this.toInputDate(new Date()), Validators.required],
+      payment_reference: ['', Validators.required],
       payment_status: ['PENDING'],
       sales_status: ['DRAFT'],
       due_date: [''],
@@ -156,6 +158,7 @@ export class Sales {
     this.form.patchValue({
       ...row,
       invoice_date: this.toInputDate(row.invoice_date),
+      paid_date: row.paid_date ? this.toInputDate(row.paid_date) : '',
       due_date: row.due_date ? this.toInputDate(row.due_date) : ''
     });
   }
@@ -204,7 +207,7 @@ export class Sales {
 
   reset() {
     this.selectedId = null;
-    this.form.reset({ invoice_date: this.toInputDate(new Date()), total_amount: 0, discount_amount: 0, tax_amount: 0, net_amount: 0, paid_amount: 0, payment_mode: 'CREDIT', payment_status: 'PENDING', sales_status: 'DRAFT' });
+    this.form.reset({ invoice_date: this.toInputDate(new Date()), total_amount: 0, discount_amount: 0, tax_amount: 0, net_amount: 0, paid_amount: 0, payment_mode: 'CREDIT', paid_date: this.toInputDate(new Date()), payment_reference: '', payment_status: 'PENDING', sales_status: 'DRAFT' });
   }
 
   toInputDate(value: string | Date) {

@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { SelectModule } from 'primeng/select';
 import { ProductService } from '../../services/product-service';
 import { PurchaseServices } from '../../services/purchase-services';
 import { SupplierServices } from '../../services/supplier-services';
@@ -13,7 +14,7 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
 
 @Component({
   selector: 'app-purchase-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField, SelectModule],
   templateUrl: './purchase-form.html',
   styleUrl: './purchase-form.scss',
 })

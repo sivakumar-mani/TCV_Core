@@ -260,3 +260,192 @@ chunk-76344375.js   | cable-tv-stbs                 |  63.59 kB |
 Application bundle generation complete. [0.651 seconds] - 2026-09-08T12:02:51.736Z
 
 Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names           | Raw size
+main.js             | main            | 24.82 kB | 
+
+Lazy chunk files    | Names           | Raw size
+chunk-BPY65TOX.js   | work-order-form | 57.76 kB | 
+
+Application bundle generation complete. [1.567 seconds] - 2026-09-08T12:40:30.382Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names | Raw size
+main.js             | main  | 24.82 kB | 
+
+Lazy chunk files    | Names | Raw size
+chunk-ENBTMM44.js   | sales | 45.40 kB | 
+
+Application bundle generation complete. [2.002 seconds] - 2026-09-09T05:22:43.702Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names | Raw size
+main.js             | main  | 24.82 kB | 
+
+Lazy chunk files    | Names | Raw size
+chunk-VOT7XPZD.js   | sales | 45.32 kB | 
+
+Application bundle generation complete. [1.177 seconds] - 2026-09-09T05:38:36.254Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names | Raw size
+main.js             | main  | 24.82 kB | 
+
+Lazy chunk files    | Names | Raw size
+chunk-KCZEDFW5.js   | sales | 45.42 kB | 
+
+Application bundle generation complete. [0.375 seconds] - 2026-09-09T05:39:12.905Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names | Raw size
+main.js             | main  | 24.82 kB | 
+
+Lazy chunk files    | Names | Raw size
+chunk-C4GJVJTY.js   | sales | 47.58 kB | 
+
+Application bundle generation complete. [1.251 seconds] - 2026-09-09T06:02:06.217Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names  | Raw size
+main.js             | main   | 24.82 kB | 
+
+Lazy chunk files    | Names  | Raw size
+chunk-QUFYF6ZF.js   | layout | 80.52 kB | 
+
+Application bundle generation complete. [1.665 seconds] - 2026-09-09T06:49:17.662Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names         | Raw size
+main.js             | main          | 24.82 kB | 
+
+Lazy chunk files    | Names         | Raw size
+chunk-P5I7APYC.js   | purchase-form | 43.44 kB | 
+
+Application bundle generation complete. [4.511 seconds] - 2026-09-09T10:30:26.417Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names          |  Raw size
+main.js             | main           |  24.82 kB | 
+
+Lazy chunk files    | Names          |  Raw size
+chunk-TN4D747U.js   | quotation-form | 109.52 kB | 
+
+Application bundle generation complete. [7.570 seconds] - 2026-09-09T11:53:41.261Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names          |  Raw size
+main.js             | main           |  24.82 kB | 
+
+Lazy chunk files    | Names          |  Raw size
+chunk-XQOO2GT6.js   | quotation-form | 110.97 kB | 
+
+Application bundle generation complete. [3.124 seconds] - 2026-09-09T11:53:44.410Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names          |  Raw size
+main.js             | main           |  24.82 kB | 
+
+Lazy chunk files    | Names          |  Raw size
+chunk-GVHQEA6T.js   | quotation-form | 111.13 kB | 
+
+Application bundle generation complete. [3.250 seconds] - 2026-09-09T11:59:28.040Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names          |  Raw size
+main.js             | main           |  24.82 kB | 
+
+Lazy chunk files    | Names          |  Raw size
+chunk-KCNF5KFI.js   | quotation-form | 111.86 kB | 
+
+Application bundle generation complete. [3.481 seconds] - 2026-09-09T11:59:31.544Z
+
+Component update sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                         |  Raw size
+main.js             | main                          |  24.82 kB | 
+
+Lazy chunk files    | Names                         |  Raw size
+chunk-FQYBQUDE.js   | cable-tv-customer-history     | 260.07 kB | 
+chunk-NOXXWIME.js   | cable-tv-customer-form        | 130.29 kB | 
+chunk-OMOWRKGV.js   | cable-tv-account-pending      | 112.93 kB | 
+chunk-ZGF5KUYX.js   | cable-tv-complaints           | 104.55 kB | 
+chunk-UYIPZKOW.js   | cable-tv-customer-view        |  85.22 kB | 
+chunk-Y3OC4RGI.js   | cable-tv-subscription-pending |  79.89 kB | 
+chunk-73V6N3JA.js   | material-sales                |  74.81 kB | 
+chunk-PI7AFONL.js   | cable-tv-stbs                 |  63.59 kB | 
+chunk-4BS5D7BM.js   | cable-tv-subscription-report  |  49.64 kB | 
+chunk-NRG3GMBC.js   | cable-tv-masters              |  38.60 kB | 
+chunk-VRXKUSX5.js   | catv-customer-list-report     |  35.75 kB | 
+chunk-JZEDPCGV.js   | cable-tv-customer-list        |  32.04 kB | 
+chunk-YVTATGLD.js   | stb-payment-report            |  30.64 kB | 
+chunk-K4P4ONON.js   | cable-tv-subscription-append  |  28.08 kB | 
+chunk-MVLJR2YE.js   | lo-accounts                   |  27.80 kB | 
+...and 3 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [1.045 seconds] - 2026-09-09T12:13:25.537Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names  | Raw size
+main.js             | main   | 24.82 kB | 
+
+Lazy chunk files    | Names  | Raw size
+chunk-CSMHDUAZ.js   | layout | 80.64 kB | 
+
+Application bundle generation complete. [0.534 seconds] - 2026-09-09T12:13:26.083Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Initial chunk files | Names                         |  Raw size
+main.js             | main                          |  24.82 kB | 
+chunk-5IGXTJSY.js   | -                             |   4.96 kB | 
+
+Lazy chunk files    | Names                         |  Raw size
+chunk-FVGPDRZ3.js   | cable-tv-customer-history     | 260.07 kB | 
+chunk-VL5VP64J.js   | cable-tv-customer-form        | 130.29 kB | 
+chunk-T3FCQYIU.js   | cable-tv-account-pending      | 112.93 kB | 
+chunk-RRWV426P.js   | cable-tv-complaints           | 104.55 kB | 
+chunk-GYA7UYMN.js   | layout                        |  80.64 kB | 
+chunk-EVOMWF5I.js   | cable-tv-subscription-pending |  79.89 kB | 
+chunk-7P4T3SZ7.js   | transaction-list              |  77.58 kB | 
+chunk-4SJ46CFV.js   | material-sales                |  74.81 kB | 
+chunk-FMBJE4F4.js   | net-subscription-pending      |  65.67 kB | 
+chunk-V32PCQSL.js   | cable-tv-subscription-report  |  49.64 kB | 
+chunk-YQBSCBAW.js   | sales                         |  47.58 kB | 
+chunk-CAOVYZC3.js   | net-subscription-report       |  44.73 kB | 
+chunk-B66LNLBM.js   | employee-salary               |  43.97 kB | 
+chunk-YKPLDUA5.js   | user-list                     |  42.81 kB | 
+chunk-ZAB5EIKA.js   | product-list                  |  37.76 kB | 
+...and 22 more lazy chunks files. Use "--verbose" to show all the files.
+
+Application bundle generation complete. [0.593 seconds] - 2026-09-09T12:13:26.687Z
+
+Page reload sent to client(s).
+> Changes detected. Rebuilding...
+√ Changes detected. Rebuilding...
+Application bundle generation failed. [0.474 seconds] - 2026-09-09T12:14:21.112Z
+

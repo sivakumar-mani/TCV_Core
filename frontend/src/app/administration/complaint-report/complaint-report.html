@@ -1,0 +1,52 @@
+<div class="report-page">
+  <header><h1>Complaint Report</h1></header>
+
+  <section class="filter-card">
+    <label>Start Date *<input type="date" [(ngModel)]="filters.start_date" required /></label>
+    <label>End Date *<input type="date" [(ngModel)]="filters.end_date" [min]="filters.start_date" required /></label>
+    <label>Status
+      <select [(ngModel)]="filters.status">
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of statuses" [value]="status">{{ statusText(status) }}</option>
+      </select>
+    </label>
+    <label>Technician
+      <select [(ngModel)]="filters.assigned_employee_id">
+        <option value="">All Technicians</option>
+        <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
+      </select>
+    </label>
+    <div class="filter-actions">
+      <button type="button" class="primary" (click)="loadReport()">Search</button>
+      <button type="button" class="secondary" (click)="clearFilters()">Clear</button>
+    </div>
+  </section>
+
+  <section class="report-card">
+    <div class="report-toolbar">
+      <div>
+        <strong>TIME CABLE VISION</strong>
+        <span>Period: {{ date(filters.start_date) }} To {{ date(filters.end_date) }}</span>
+        <span>Status: {{ statusLabel }}</span>
+        <span>Technician: {{ technicianLabel }}</span>
+      </div>
+      <div class="export-actions"><button type="button" class="icon-action" (click)="printReport()">Print</button></div>
+    </div>
+
+    <div class="table-scroll">
+      <table class="report-table">
+        <thead>
+          <tr><th>S.No</th><th>Complaint No</th><th>Registered On</th><th>Type</th><th>Customer No</th><th>Customer / Contact</th><th>Complaint</th><th>Technician</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows; let index = index">
+            <td class="serial">{{ index + 1 }}</td><td>{{ row.complaint_no }}</td><td>{{ dateTime(row.registered_at) }}</td><td>{{ row.complainant_type }}</td><td>{{ row.customer_code || '-' }}</td>
+            <td><strong>{{ customer(row) }}</strong><br><small>{{ contact(row) }}</small></td><td>{{ row.complaint_subject || row.nature_of_complaint }}</td><td>{{ row.assigned_employee_name || 'Unassigned' }}</td><td>{{ statusText(row.status) }}</td>
+          </tr>
+          <tr *ngIf="!rows.length"><td colspan="9" class="empty">No complaints found for the selected filters.</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="9">Total Records: <strong>{{ rows.length }}</strong></td></tr></tfoot>
+      </table>
+    </div>
+  </section>
+</div>

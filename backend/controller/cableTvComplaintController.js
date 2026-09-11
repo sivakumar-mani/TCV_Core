@@ -174,6 +174,43 @@ const getComplaints = async (req, res) => {
   }
 };
 
+const getComplaintReport = async (req, res) => {
+  try {
+    const db = connection.promise();
+    await ensureComplaintTables(db);
+    const startDate = String(req.query.start_date || '').trim();
+    const endDate = String(req.query.end_date || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) {
+      return res.status(400).json({ message: 'Start date and end date are required' });
+    }
+    if (endDate < startDate) {
+      return res.status(400).json({ message: 'End date cannot be before start date' });
+    }
+
+    const filters = ['c.registered_at >= ?', 'c.registered_at < DATE_ADD(?, INTERVAL 1 DAY)'];
+    const values = [startDate, endDate];
+    const status = String(req.query.status || '').toUpperCase();
+    if (allowedStatuses.has(status)) {
+      filters.push('c.status = ?');
+      values.push(status);
+    }
+    const technicianId = numberOrNull(req.query.assigned_employee_id);
+    if (technicianId) {
+      filters.push('c.assigned_employee_id = ?');
+      values.push(technicianId);
+    }
+
+    const [rows] = await db.query(
+      `${complaintSelect} WHERE ${filters.join(' AND ')}
+       ORDER BY c.registered_at DESC, c.complaint_id DESC`,
+      values
+    );
+    return res.json({ rows, total_records: rows.length });
+  } catch (error) {
+    return res.status(500).json({ message: 'Complaint report could not be loaded', error: error.message });
+  }
+};
+
 const getComplaintCustomers = async (req, res) => {
   try {
     const db = connection.promise();
@@ -421,5 +458,5 @@ const addComplaintAttempt = async (req, res) => {
 
 module.exports = {
   ensureComplaintTables, getComplaintCustomers, getComplaints,
-  getComplaintById, addComplaint, addComplaintAttempt
+  getComplaintReport, getComplaintById, addComplaint, addComplaintAttempt
 };

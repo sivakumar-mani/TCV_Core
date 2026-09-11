@@ -64,6 +64,11 @@
   min-width: 190px;
 }
 
+:host ::ng-deep .work-item-product-select {
+  min-height: 38px;
+  width: 100%;
+}
+
 .total-cell {
   font-weight: 600;
   white-space: nowrap;

@@ -10,6 +10,8 @@
     <app-input-form-field [label]="'Net'" [type]="'number'" [formControl]="$any(form.controls['net_amount'])"></app-input-form-field>
     <app-input-form-field [label]="'Paid'" [type]="'number'" [formControl]="$any(form.controls['paid_amount'])"></app-input-form-field>
     <app-select-form-field [label]="'Payment Mode'" [options]="paymentModeOptions" [formControl]="$any(form.controls['payment_mode'])"></app-select-form-field>
+    <app-input-form-field [label]="'Paid Date'" [type]="'date'" [formControl]="$any(form.controls['paid_date'])"></app-input-form-field>
+    <app-input-form-field [label]="'Payment Reference'" [type]="'text'" [formControl]="$any(form.controls['payment_reference'])"></app-input-form-field>
     <app-select-form-field [label]="'Payment Status'" [options]="paymentStatusOptions" [formControl]="$any(form.controls['payment_status'])"></app-select-form-field>
     <app-select-form-field [label]="'Sales Status'" [options]="salesStatusOptions" [formControl]="$any(form.controls['sales_status'])"></app-select-form-field>
     <app-input-form-field [label]="'Due Date'" [type]="'date'" [formControl]="$any(form.controls['due_date'])"></app-input-form-field>
@@ -40,6 +42,8 @@
       <div><span>Phone</span><strong>{{ previewInvoice.phone || '-' }}</strong></div>
       <div><span>Work Order</span><strong>{{ previewInvoice.work_order_no || '-' }}</strong></div>
       <div><span>Payment Status</span><strong>{{ previewInvoice.payment_status }}</strong></div>
+      <div><span>Paid Date</span><strong>{{ displayDate(previewInvoice.paid_date) || '-' }}</strong></div>
+      <div><span>Payment Reference</span><strong>{{ previewInvoice.payment_reference || '-' }}</strong></div>
     </div>
 
     <div class="table-responsive invoice-items">

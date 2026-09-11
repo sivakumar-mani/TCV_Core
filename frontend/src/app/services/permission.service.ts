@@ -36,6 +36,7 @@ export class PermissionService {
     'catv-customer-list-report': 'CATV_CUSTOMER_LIST_REPORT',
     'stb-payment-report': 'STB_PAYMENT_REPORT',
     'net-subscription-report': 'NET_SUBSCRIPTION_REPORT',
+    'complaint-report': 'CABLE_TV_COMPLAINT_REPORT',
     'net-cash-admin-correction': 'INTERNET_CUSTOMERS',
     transactions: 'TRANSACTIONS', 'material-sales': 'MATERIAL_SALES', 'material-sales-report': 'MATERIAL_SALES',
     complaints: 'CABLE_TV_COMPLAINTS'

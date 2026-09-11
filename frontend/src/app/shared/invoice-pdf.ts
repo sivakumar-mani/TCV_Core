@@ -45,30 +45,33 @@ export function downloadInvoicePdf(invoice: any, displayDate: (value: string | D
   const right = 555;
   const width = right - left;
 
-  // Keep the document label at the top, ahead of all invoice content.
-  text(270, 810, 15, 'Invoice');
-  line(left, 801, right, 801);
-  text(left, 775, 22, 'TCV');
-  text(left, 755, 9, 'No:2/3, Second Street, Arkeeswarar Colony');
-  text(left, 741, 9, 'Chrompet, Chennai - 600044');
-  text(left, 727, 9, 'Contact # : 9962543540');
-  text(left, 713, 9, 'GSTIN: 33AYUPM7228A1ZD');
-  line(left, 702, right, 702);
+  text(left, 785, 22, 'TIME CABLE VISON');
+  text(left, 765, 9, 'No:2/3, Second Street, Arkeeswarar Colony');
+  text(left, 751, 9, 'Chrompet, Chennai - 600044');
+  text(left, 737, 9, 'Contact # : 9962543540');
+  text(left, 723, 9, 'GSTIN: 33AYUPM7228A1ZD');
+  line(left, 712, right, 712);
+  text(252, 698, 15, 'Sales Invoice');
+  line(left, 688, right, 688);
 
-  fillRect(left, 638, 248, 54, 241);
-  fillRect(307, 638, 248, 54, 241);
-  text(left + 12, 675, 9, 'To:');
-  text(left + 36, 675, 9, String(invoice.customer_name || '-').slice(0, 32));
-  text(left + 36, 661, 8, String(invoice.address || '-').slice(0, 42));
-  text(left + 36, 647, 8, `Contact #: ${invoice.phone || ''}`.slice(0, 42));
-  text(321, 675, 9, 'Invoice#');
-  text(408, 675, 9, String(invoice.invoice_no || ''));
-  text(321, 659, 9, 'Invoice Date');
-  text(408, 659, 9, displayDate(invoice.invoice_date));
-  text(321, 645, 9, 'Work Order');
-  text(408, 645, 9, String(invoice.work_order_no || '-'));
+  fillRect(left, 600, 248, 84, 241);
+  fillRect(307, 600, 248, 84, 241);
+  text(left + 12, 667, 9, 'To:');
+  text(left + 36, 667, 9, String(invoice.customer_name || '-').slice(0, 32));
+  text(left + 36, 653, 8, String(invoice.address || '-').slice(0, 42));
+  text(left + 36, 639, 8, `Contact #: ${invoice.phone || ''}`.slice(0, 42));
+  text(321, 667, 9, 'Invoice#');
+  text(408, 667, 9, String(invoice.invoice_no || ''));
+  text(321, 651, 9, 'Invoice Date');
+  text(408, 651, 9, displayDate(invoice.invoice_date));
+  text(321, 637, 9, 'Work Order');
+  text(408, 637, 9, String(invoice.work_order_no || '-'));
+  text(321, 621, 9, 'Paid Date');
+  text(408, 621, 9, invoice.paid_date ? displayDate(invoice.paid_date) : '-');
+  text(321, 605, 9, 'Payment Ref');
+  text(408, 605, 9, String(invoice.payment_reference || '-').slice(0, 24));
 
-  const tableTop = 622;
+  const tableTop = 584;
   const headerHeight = 24;
   const rowHeight = 30;
   const items = (invoice.items || []).slice(0, 10);
@@ -100,22 +103,24 @@ export function downloadInvoicePdf(invoice: any, displayDate: (value: string | D
   });
 
   const summaryTop = tableBottom;
-  const summaryBottom = 100;
+  const summaryBottom = 140;
   const totalsLeft = 330;
   rect(left, summaryBottom, width, summaryTop - summaryBottom);
   line(totalsLeft, summaryBottom, totalsLeft, summaryTop);
-  text(left + 10, summaryTop - 20, 10, 'UPI Payment: 9962543540');
-  text(left + 10, summaryTop - 40, 9, 'Please pay to this account');
+  text(left + 10, summaryTop - 18, 10, 'Terms and Conditions');
+  let termsY = summaryTop - 36;
   [
-    'Account Name: Time Cable Vision',
-    'CA No: 510909010042677',
-    'Bank Name: City Union Bank',
-    'Branch: New Colony Chrompet',
-    'IFSC Code: CIUB0000432',
-    'MICR Code: 600054082'
-  ].forEach((value, index) => text(left + 10, summaryTop - 60 - index * 15, 8, value));
-  text(left + 10, summaryTop - 165, 8, 'Thank you for giving us the opportunity to serve you.');
-  text(left + 10, summaryTop - 180, 8, 'We truly appreciate your business and continued support.');
+    'One Year service warranty from the invoice date for camera, DVR and Hard Disk.',
+    'No burning warranty for any product.',
+    'No replacement. No exchange.',
+    'Free service support during the warranty period.'
+  ].forEach((value, index) => {
+    wrap(`${index + 1}. ${value}`, 64, 2).forEach((termLine) => {
+      text(left + 16, termsY, 7, termLine);
+      termsY -= 10;
+    });
+    termsY -= 3;
+  });
 
   [
     ['Sub Total', invoice.total_amount],
@@ -130,8 +135,7 @@ export function downloadInvoicePdf(invoice: any, displayDate: (value: string | D
     text(totalsLeft + 8, rowBottom + 5, 9, label);
     rightText(right - 8, rowBottom + 5, 9, number(value));
   });
-  line(totalsLeft + 115, summaryBottom + 35, right - 20, summaryBottom + 35);
-  text(totalsLeft + 125, summaryBottom + 20, 8, 'Authorized Signature');
+  text(left + 10, summaryBottom + 10, 7, 'Thank you for giving us the opportunity to serve you.');
 
   const content = `${commands.join('\n')}\n`;
   const objects = [

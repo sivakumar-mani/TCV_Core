@@ -79,6 +79,8 @@ const addSale = async (req, res) => {
         await ensureSalesTable(conn);
         const payload = req.body;
         if (!payload.customer_id) return res.status(400).json({ success: false, message: 'Customer is required' });
+        if (!payload.paid_date) return res.status(400).json({ success: false, message: 'Paid Date is required' });
+        if (!String(payload.payment_reference || '').trim()) return res.status(400).json({ success: false, message: 'Payment Reference is required' });
         const invoiceNo = payload.invoice_no || await createInvoiceNo(conn);
         const summary = summarize(payload);
 
@@ -86,8 +88,8 @@ const addSale = async (req, res) => {
             `INSERT INTO sales_master
                 (invoice_no, invoice_date, customer_id, quotation_id, work_order_id, total_amount,
                  discount_amount, discount_percent, tax_amount, net_amount, paid_amount, balance_amount,
-                 payment_mode, payment_status, sales_status, due_date, remarks, created_by_employee_id)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                 payment_mode, paid_date, payment_reference, payment_status, sales_status, due_date, remarks, created_by_employee_id)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 invoiceNo,
                 String(payload.invoice_date || new Date().toISOString()).slice(0, 10),
@@ -102,6 +104,8 @@ const addSale = async (req, res) => {
                 summary.paid,
                 summary.balance,
                 payload.payment_mode || 'CREDIT',
+                String(payload.paid_date).slice(0, 10),
+                String(payload.payment_reference).trim(),
                 payload.payment_status || (summary.paid >= summary.net ? 'PAID' : summary.paid > 0 ? 'PARTIAL' : 'PENDING'),
                 payload.sales_status || 'DRAFT',
                 payload.due_date ? String(payload.due_date).slice(0, 10) : null,
@@ -123,13 +127,15 @@ const updateSale = async (req, res) => {
         const payload = req.body;
         if (!payload.sales_id) return res.status(400).json({ success: false, message: 'sales_id is required' });
         if (!payload.customer_id) return res.status(400).json({ success: false, message: 'Customer is required' });
+        if (!payload.paid_date) return res.status(400).json({ success: false, message: 'Paid Date is required' });
+        if (!String(payload.payment_reference || '').trim()) return res.status(400).json({ success: false, message: 'Payment Reference is required' });
         const summary = summarize(payload);
 
         await conn.query(
             `UPDATE sales_master SET
                 invoice_no = ?, invoice_date = ?, customer_id = ?, quotation_id = ?, work_order_id = ?,
                 total_amount = ?, discount_amount = ?, discount_percent = ?, tax_amount = ?, net_amount = ?,
-                paid_amount = ?, balance_amount = ?, payment_mode = ?, payment_status = ?, sales_status = ?,
+                paid_amount = ?, balance_amount = ?, payment_mode = ?, paid_date = ?, payment_reference = ?, payment_status = ?, sales_status = ?,
                 due_date = ?, remarks = ?, created_by_employee_id = ?
              WHERE sales_id = ?`,
             [
@@ -146,6 +152,8 @@ const updateSale = async (req, res) => {
                 summary.paid,
                 summary.balance,
                 payload.payment_mode || 'CREDIT',
+                String(payload.paid_date).slice(0, 10),
+                String(payload.payment_reference).trim(),
                 payload.payment_status || (summary.paid >= summary.net ? 'PAID' : summary.paid > 0 ? 'PARTIAL' : 'PENDING'),
                 payload.sales_status || 'DRAFT',
                 payload.due_date ? String(payload.due_date).slice(0, 10) : null,

@@ -44,6 +44,7 @@ const permissionCatalog = [
   ['Reports', 'CATV_CUSTOMER_LIST_REPORT', 'CATV Customer List Report', '/catv-customer-list-report'],
   ['Reports', 'STB_PAYMENT_REPORT', 'STB Payment Report', '/stb-payment-report'],
   ['Reports', 'NET_SUBSCRIPTION_REPORT', 'Net Subscription Report', '/net-subscription-report'],
+  ['Reports', 'CABLE_TV_COMPLAINT_REPORT', 'Complaint Report', '/complaint-report'],
 ].map(([group, key, label, route]) => ({ group, key, label, route }));
 
 const apiModules = {

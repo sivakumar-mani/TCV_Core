@@ -395,13 +395,43 @@
 .quote-terms ol {
   color: #505761;
   margin: 0;
-  padding-left: 1.15rem;
+  counter-reset: quotation-term;
+  list-style: none;
+  padding: 0;
 }
 
 .quote-terms li {
+  column-gap: 0.35rem;
+  counter-increment: quotation-term;
+  display: grid;
   font-size: .75rem;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
   margin-bottom: 0.2rem;
-  padding-left: 0.45rem;
+}
+
+.quote-terms li::before {
+  content: counter(quotation-term) '.';
+  text-align: right;
+}
+
+.quote-terms li span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.quote-electrical-note {
+  background: #fff8df;
+  border: 1px solid #e6c96e;
+  border-left: 4px solid #c9981e;
+  color: #594717;
+  font-size: .73rem;
+  line-height: 1.4;
+  margin-top: 0.8rem;
+  padding: 0.55rem 0.65rem;
+}
+
+.quote-electrical-note strong {
+  color: #6a4f09;
 }
 
 .bottom-info {
@@ -453,7 +483,7 @@
 .quote-contact {
   color: #111111;
   font-weight: 700;
-  margin-top: 2.3rem !important;
+  margin-top: 1.25rem !important;
 }
 
 .quote-total-panel {

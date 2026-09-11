@@ -169,3 +169,17 @@ X [ERROR] TS2322: Type 'Uint8Array<ArrayBufferLike> | Uint8Array<ArrayBuffer>' i
           ╵                             ~~~~~~~~~~~~
 
 
+X [ERROR] TS2307: Cannot find module './administration/complaint-report/complaint-report' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/app.routes.ts:159:39:
+      159 │ ...=> import('./administration/complaint-report/complaint-report'...
+          ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] Could not resolve "./administration/complaint-report/complaint-report"
+
+    src/app/app.routes.ts:154:44:
+      154 │ ...=> import('./administration/complaint-report/complaint-report'...
+          ╵              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+

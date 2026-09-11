@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
+import { SelectModule } from 'primeng/select';
 import { CustomerServices } from '../../services/customer-services';
 import { EmployeeServices } from '../../services/employee-services';
 import { ProductService } from '../../services/product-service';
@@ -16,7 +17,7 @@ import { downloadSimplePdf } from '../../shared/simple-pdf';
 
 @Component({
   selector: 'app-work-order-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField, SelectModule],
   templateUrl: './work-order-form.html',
   styleUrl: './work-order-form.scss',
 })
@@ -73,6 +74,10 @@ export class WorkOrderForm {
 
   get materialReturnForm() {
     return this.workOrderForm.get('material_return') as FormGroup;
+  }
+
+  get workItemProductOptions() {
+    return [{ product_id: '', product_name: 'Custom item' }, ...this.products];
   }
 
   get customerQuotations() {

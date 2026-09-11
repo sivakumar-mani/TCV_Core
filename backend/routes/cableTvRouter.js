@@ -17,6 +17,7 @@ const {
 } = require('../controller/materialSalesController');
 const {
   getComplaints,
+  getComplaintReport,
   getComplaintCustomers,
   getComplaintById,
   addComplaint,
@@ -73,7 +74,7 @@ router.use('/lookups', auth.requireAnyPermission([
   'CABLE_TV_CUSTOMERS', 'CABLE_TV_CONNECTIONS', 'CABLE_TV_CUSTOMER_STBS',
   'CABLE_TV_CUSTOMER_PACKAGES', 'CABLE_TV_SUBSCRIPTIONS', 'CABLE_TV_MASTERS',
   'CABLE_TV_PACKAGES', 'CABLE_TV_STBS', 'CABLE_TV_ACCOUNTS',
-  'CABLE_TV_SUBSCRIPTION_DUES', 'CABLE_TV_SUBSCRIPTION_REPORT', 'CABLE_TV_COMPLAINTS',
+  'CABLE_TV_SUBSCRIPTION_DUES', 'CABLE_TV_SUBSCRIPTION_REPORT', 'CABLE_TV_COMPLAINTS', 'CABLE_TV_COMPLAINT_REPORT',
   'MATERIAL_SALES', 'LO_ACCOUNTS', 'STB_PAYMENT_REPORT', 'CATV_CUSTOMER_LIST_REPORT'
 ]));
 
@@ -91,6 +92,7 @@ router.patch('/material-sales/adjustments/:adjustmentId/review', auth.requireAdm
 router.patch('/material-sales/movements/:movementId/customer', auth.requirePermissionAction('MATERIAL_SALES', 'can_update'), mapMaterialSaleCustomer);
 router.patch('/material-sales/movements/:movementId/sold', auth.requirePermissionAction('MATERIAL_SALES', 'can_update'), markMaterialSaleSold);
 router.get('/complaints', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaints);
+router.get('/reports/complaints', auth.requirePermission('CABLE_TV_COMPLAINT_REPORT'), getComplaintReport);
 router.get('/complaints/customers/lookup', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintCustomers);
 router.get('/complaints/:complaintId', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintById);
 router.post('/complaints', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_create'), addComplaint);

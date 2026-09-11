@@ -43,17 +43,58 @@
 }
 
 .purchase-items-table {
-  min-width: 1100px;
+  min-width: 900px;
+  table-layout: fixed;
+  width: 100%;
 }
 
 .purchase-items-table th:first-child,
 .purchase-items-table td:first-child {
-  width: 64px;
+  width: 48px;
 }
 
 .purchase-items-table th:nth-child(2),
 .purchase-items-table td:nth-child(2) {
-  min-width: 320px;
+  width: 260px;
+}
+
+.purchase-items-table th,
+.purchase-items-table td {
+  padding: 5px 4px;
+}
+
+.purchase-items-table th:nth-child(3),
+.purchase-items-table td:nth-child(3),
+.purchase-items-table th:nth-child(6),
+.purchase-items-table td:nth-child(6) { width: 72px; }
+
+.purchase-items-table th:nth-child(4),
+.purchase-items-table td:nth-child(4) { width: 94px; }
+
+.purchase-items-table th:nth-child(5),
+.purchase-items-table td:nth-child(5),
+.purchase-items-table th:nth-child(7),
+.purchase-items-table td:nth-child(7) { width: 86px; }
+
+.purchase-items-table th:nth-child(8),
+.purchase-items-table td:nth-child(8) { width: 105px; }
+
+.purchase-items-table th:nth-child(9),
+.purchase-items-table td:nth-child(9) { width: 82px; }
+
+.purchase-items-table input.form-control {
+  font-size: 12px;
+  min-height: 34px;
+  padding: 4px 6px;
+}
+
+:host ::ng-deep .purchase-product-select {
+  min-height: 34px;
+  width: 100%;
+}
+
+:host ::ng-deep .purchase-product-select .p-select-label {
+  padding: 5px 7px;
 }
 
 .total-cell {

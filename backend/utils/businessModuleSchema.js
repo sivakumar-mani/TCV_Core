@@ -35,6 +35,8 @@ const ensureSalesTable = async (conn) => {
             paid_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
             balance_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
             payment_mode ENUM('CASH','CARD','UPI','BANK','CHEQUE','CREDIT') DEFAULT 'CREDIT',
+            paid_date DATE NULL,
+            payment_reference VARCHAR(150) NULL,
             payment_status ENUM('PENDING','PARTIAL','PAID','OVERDUE') NOT NULL DEFAULT 'PENDING',
             sales_status ENUM('DRAFT','COMPLETED','CANCELLED','RETURNED') NOT NULL DEFAULT 'DRAFT',
             due_date DATE NULL,
@@ -53,6 +55,18 @@ const ensureSalesTable = async (conn) => {
             INDEX idx_due_date (due_date)
         ) ENGINE=InnoDB CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `);
+    const [paymentColumns] = await conn.query(`
+        SELECT column_name FROM information_schema.columns
+        WHERE table_schema = DATABASE() AND table_name = 'sales_master'
+          AND column_name IN ('paid_date', 'payment_reference')
+    `);
+    const existingColumns = new Set(paymentColumns.map((column) => column.column_name));
+    if (!existingColumns.has('paid_date')) {
+        await conn.query('ALTER TABLE sales_master ADD COLUMN paid_date DATE NULL AFTER payment_mode');
+    }
+    if (!existingColumns.has('payment_reference')) {
+        await conn.query('ALTER TABLE sales_master ADD COLUMN payment_reference VARCHAR(150) NULL AFTER paid_date');
+    }
 };
 
 const ensurePaymentTables = async (conn) => {
