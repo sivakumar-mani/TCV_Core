@@ -23,7 +23,11 @@ const summarize = (payload) => {
     const tax = toNumber(payload.tax_amount);
     const paid = toNumber(payload.paid_amount);
     const net = payload.net_amount !== undefined ? toNumber(payload.net_amount) : Math.max(total - discount + tax, 0);
-    return { total, discount, tax, paid, net, balance: net - paid };
+    // A supplied net amount is the base for the payment discount. The fallback
+    // above already includes the discount, so do not deduct it twice.
+    const amountDue = payload.net_amount !== undefined ? net - discount : net;
+    const balance = Math.round((amountDue - paid) * 100) / 100 || 0;
+    return { total, discount, tax, paid, net, balance };
 };
 
 const getSales = async (req, res) => {
@@ -106,7 +110,7 @@ const addSale = async (req, res) => {
                 payload.payment_mode || 'CREDIT',
                 String(payload.paid_date).slice(0, 10),
                 String(payload.payment_reference).trim(),
-                payload.payment_status || (summary.paid >= summary.net ? 'PAID' : summary.paid > 0 ? 'PARTIAL' : 'PENDING'),
+                payload.payment_status || (summary.balance <= 0 ? 'PAID' : summary.paid > 0 ? 'PARTIAL' : 'PENDING'),
                 payload.sales_status || 'DRAFT',
                 payload.due_date ? String(payload.due_date).slice(0, 10) : null,
                 payload.remarks || null,
@@ -154,7 +158,7 @@ const updateSale = async (req, res) => {
                 payload.payment_mode || 'CREDIT',
                 String(payload.paid_date).slice(0, 10),
                 String(payload.payment_reference).trim(),
-                payload.payment_status || (summary.paid >= summary.net ? 'PAID' : summary.paid > 0 ? 'PARTIAL' : 'PENDING'),
+                payload.payment_status || (summary.balance <= 0 ? 'PAID' : summary.paid > 0 ? 'PARTIAL' : 'PENDING'),
                 payload.sales_status || 'DRAFT',
                 payload.due_date ? String(payload.due_date).slice(0, 10) : null,
                 payload.remarks || null,

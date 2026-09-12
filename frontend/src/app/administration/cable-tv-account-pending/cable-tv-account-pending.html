@@ -40,6 +40,12 @@
         <option value="PAID">Paid</option>
       </select>
     </label>
+    <label>Connection Type
+      <select [(ngModel)]="connectionTypeFilter">
+        <option value="">All</option>
+        <option *ngFor="let type of connectionTypeOptions" [value]="type">{{ type }}</option>
+      </select>
+    </label>
     <label>Installed By
       <select [(ngModel)]="installedByFilter" [disabled]="!permissions.isAdmin()">
         <option value="">All employees</option>

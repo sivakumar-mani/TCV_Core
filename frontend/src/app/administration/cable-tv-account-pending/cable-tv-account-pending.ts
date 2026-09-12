@@ -20,6 +20,8 @@ export class CableTvAccountPending {
   accounts: any[] = [];
   nameFilter = '';
   statusFilter = 'PENDING';
+  connectionTypeFilter = '';
+  connectionTypeOptions: string[] = [];
   installedByFilter = '';
   startDate = '';
   endDate = '';
@@ -88,7 +90,14 @@ export class CableTvAccountPending {
     }).subscribe({
       next: ({ rows, pendingRows, partialRows }: any) => {
         this.ngxLoader.stop();
-        this.accounts = rows || [];
+        const availableRows = Array.isArray(rows) ? rows : [];
+        this.connectionTypeOptions = [...new Set<string>([
+          ...availableRows.map((item: any) => this.connectionTypeLabel(item.connection_type)),
+          ...(this.connectionTypeFilter ? [this.connectionTypeFilter] : [])
+        ])].sort();
+        this.accounts = this.connectionTypeFilter
+          ? availableRows.filter((item: any) => this.connectionTypeLabel(item.connection_type) === this.connectionTypeFilter)
+          : availableRows;
         const pending = Array.isArray(pendingRows) ? pendingRows : [];
         const partial = Array.isArray(partialRows) ? partialRows : [];
         this.accountSummary = {
@@ -166,6 +175,7 @@ export class CableTvAccountPending {
   }
 
   resetFilters() {
+    this.connectionTypeFilter = '';
     this.nameFilter = '';
     this.statusFilter = 'PENDING';
     this.installedByFilter = this.permissions.isAdmin()
@@ -445,6 +455,7 @@ export class CableTvAccountPending {
         <span>Installed By: ${this.escapeHtml(this.reportInstalledByLabel)}</span>
         <span>Start Date: ${this.escapeHtml(this.reportStartDateLabel)}</span>
         <span>End Date: ${this.escapeHtml(this.reportEndDateLabel)}</span>
+        <span>Connection Type: ${this.escapeHtml(this.connectionTypeFilter || 'All')}</span>
         <span>Status: ${this.escapeHtml(this.statusFilter || 'ALL')}</span>
         <span>Printed: ${this.displayDate(new Date())}</span>
       </div>
