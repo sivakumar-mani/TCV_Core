@@ -3,7 +3,7 @@
     <div><h1>Net Cash/Admin Correction</h1><p>Bulk-correct existing subscriptions without changing the staff member who collects the amount.</p></div>
   </header>
 
-  <div class="alert"><strong>Correction:</strong> Only subscriptions in the selected month and year will be locked with Mode of Payment as <b>Cash</b> and Renewed By as <b>Admin</b>. Collected By and other months remain unchanged.</div>
+  <div class="alert"><strong>Correction:</strong> Existing subscriptions for the supplied Net IDs and selected month/year will receive the selected renewal, payment mode and status. Paid sets the paid amount to the full subscription amount; Unpaid sets it to zero. Collected By remains unchanged.</div>
 
   <div class="period-selector">
     <label>Subscription Month
@@ -16,10 +16,14 @@
         <option *ngFor="let year of years" [ngValue]="year">{{ year }}</option>
       </select>
     </label>
+    <label>Renewed By<select required [(ngModel)]="selection.renewed_by_value" (ngModelChange)="renewedChanged()"><option value="CUSTOMER">Online</option><option value="ADMIN">Admin</option></select></label>
+    <label>Mode of Payment<select required [(ngModel)]="selection.payment_mode" (ngModelChange)="periodChanged()" [disabled]="selection.renewed_by_value==='CUSTOMER'"><option *ngIf="selection.renewed_by_value==='CUSTOMER'" value="DASHBOARD">Dashboard</option><option *ngIf="selection.renewed_by_value==='ADMIN'" value="CASH">Cash</option><option *ngIf="selection.renewed_by_value==='ADMIN'" value="ACCOUNT">Account</option></select></label>
+    <label>Status<select required [(ngModel)]="selection.payment_status" (ngModelChange)="periodChanged()"><option value="PAID">Paid</option><option value="PENDING">Unpaid</option></select></label>
   </div>
 
+  <label>Upload Customer Net IDs (text or single-column CSV)<input type="file" accept=".txt,.csv" (change)="uploadNetIds($event)" /></label>
   <label class="net-ids">Customer Net IDs
-    <textarea [(ngModel)]="netIds" rows="8" placeholder="Paste Net IDs separated by commas, spaces, or new lines"></textarea>
+    <textarea [(ngModel)]="netIds" (ngModelChange)="periodChanged()" rows="8" placeholder="Paste Net IDs separated by commas, spaces, or new lines"></textarea>
   </label>
   <div class="actions">
     <button type="button" class="secondary" (click)="clear()">Clear</button>
@@ -48,6 +52,6 @@
         </tbody>
       </table>
     </div>
-    <div class="apply"><button type="button" class="danger" [disabled]="applying || !preview.subscription_count" (click)="applyChanges()">{{ applying ? 'Applying...' : 'Apply and Lock' }}</button></div>
+    <div class="apply"><button type="button" class="danger" [disabled]="applying || !preview.subscription_count" (click)="applyChanges()">{{ applying ? 'Applying...' : 'Apply Correction' }}</button></div>
   </ng-container>
 </section>

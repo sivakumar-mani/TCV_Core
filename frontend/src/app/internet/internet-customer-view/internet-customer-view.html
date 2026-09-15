@@ -111,7 +111,7 @@
                 <option value="TCV">TCV Invoice</option>
               </select>
             </td>
-            <td *ngIf="showSubscriptionActions()" class="row-actions"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu"><button mat-menu-item *ngIf="canEditSubscription(x)" type="button" (click)="editSubscription(x)">Edit</button><button mat-menu-item *ngIf="lookups.is_admin" type="button" (click)="deleteSubscription(x)">Delete</button></mat-menu></td>
+            <td *ngIf="showSubscriptionActions()" class="row-actions"><button *ngIf="canEditSubscription(x)" type="button" (click)="editSubscription(x)" aria-label="Edit subscription" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></button><button *ngIf="lookups.is_admin" type="button" (click)="deleteSubscription(x)" aria-label="Delete subscription" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button></td>
           </tr>
           <tr *ngIf="!details.subscriptions?.length">
             <td [attr.colspan]="showSubscriptionActions() ? 11 : 10" class="empty">No subscription details</td>
@@ -535,16 +535,9 @@
             </option>
           </select></label
         ><label
-          >Renewed By<select [(ngModel)]="historyForm.renewed_by_value" [disabled]="!lookups.is_admin">
-            <option *ngFor="let x of lookups.employees" [value]="'EMPLOYEE:'+x.employee_id">{{x.employee_name}}</option>
-            <option value="ADMIN">Admin</option><option value="CUSTOMER">Customer</option>
-          </select></label
+          >Renewed By<select [(ngModel)]="historyForm.renewed_by_value" (ngModelChange)="changeRenewedBy()" [disabled]="!lookups.is_admin"><option value="CUSTOMER">Online</option><option value="ADMIN">Admin</option></select></label
         ><label
-          >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin">
-            <option value="CASH">Cash</option>
-            <option value="ONLINE">Online</option>
-            <option value="BANK_PAYMENT">Bank Payment</option>
-          </select></label
+          >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin || historyForm.renewed_by_value!=='ADMIN'"><option *ngIf="historyForm.renewed_by_value==='CUSTOMER'" value="DASHBOARD">Dashboard</option><option *ngIf="historyForm.renewed_by_value==='ADMIN'" value="CASH">Cash</option><option *ngIf="historyForm.renewed_by_value==='ADMIN'" value="ACCOUNT">Account</option></select></label
         ><label>Payment Reference<input [(ngModel)]="historyForm.payment_reference" /></label
         ><label
           >Payment Mapped Employee<select [(ngModel)]="historyForm.payment_mapped_employee_id">
@@ -664,16 +657,9 @@
             </option>
           </select></label
         ><label
-          >Renewed By<select [(ngModel)]="historyForm.renewed_by_value" (ngModelChange)="changeRenewedBy()" [disabled]="!lookups.is_admin && historyForm.cash_admin_locked">
-            <ng-container *ngFor="let x of lookups.employees"><option *ngIf="lookups.is_admin || x.employee_id===lookups.logged_in_employee_id" [value]="'EMPLOYEE:'+x.employee_id">{{x.employee_name}}</option></ng-container>
-            <option *ngIf="lookups.is_admin || historyForm.cash_admin_locked" value="ADMIN">Admin</option><option *ngIf="lookups.is_admin || !historyForm.cash_admin_locked" value="CUSTOMER">Customer</option>
-          </select></label
+          >Renewed By<select [(ngModel)]="historyForm.renewed_by_value" (ngModelChange)="changeRenewedBy()" [disabled]="!lookups.is_admin"><option value="CUSTOMER">Online</option><option value="ADMIN">Admin</option></select></label
         ><label
-          >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin || historyForm.renewed_by_value!=='ADMIN'">
-            <option value="DASHBOARD">Dashboard</option>
-            <option value="CASH">Cash</option>
-            <option value="ONLINE">Online</option>
-          </select></label
+          >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin || historyForm.renewed_by_value!=='ADMIN'"><option *ngIf="historyForm.renewed_by_value==='CUSTOMER'" value="DASHBOARD">Dashboard</option><option *ngIf="historyForm.renewed_by_value==='ADMIN'" value="CASH">Cash</option><option *ngIf="historyForm.renewed_by_value==='ADMIN'" value="ACCOUNT">Account</option></select></label
         ><label *ngIf="lookups.is_admin">Payment Reference<input [(ngModel)]="historyForm.payment_reference" /></label
         ><label *ngIf="lookups.is_admin"
           >Payment Mapped Employee<select [(ngModel)]="historyForm.payment_mapped_employee_id">

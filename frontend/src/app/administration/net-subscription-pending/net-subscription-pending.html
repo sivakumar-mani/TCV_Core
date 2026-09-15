@@ -6,7 +6,7 @@
     </div>
   </div>
   <section class="filter-card">
-    <label>Customer No<input [(ngModel)]="filters.customer_no" (keyup.enter)="load()" /></label
+    <label>C No<input [(ngModel)]="filters.customer_no" (keyup.enter)="load()" /></label
     ><label>Customer Name<input [(ngModel)]="filters.customer_name" (keyup.enter)="load()" /></label
     ><label
       >Area<select [(ngModel)]="filters.area_id" (change)="filters.street_id = ''">
@@ -33,12 +33,10 @@
         <thead>
           <tr>
             <th>S No</th>
-            <th>Customer No</th>
+            <th>C No</th>
             <th>Customer Name</th>
             <th>Network</th>
-            <th>Net ID</th>
-            <th>Address</th>
-            <th>Package</th>
+            <th>Package Amount</th>
             <th>Unpaid Subscription</th>
           </tr>
         </thead>
@@ -46,11 +44,12 @@
           <tr *ngFor="let c of customers; let i = index">
             <td>{{ i + 1 }}</td>
             <td>{{ c.display_customer_no }}</td>
-            <td>{{ c.full_name }}</td>
+            <td>
+              <div>{{ c.full_name }}</div>
+              <div class="customer-address">{{ subscriptionAddress(c) }}</div>
+            </td>
             <td>{{ c.network_type }}</td>
-            <td>{{ c.net_id }}</td>
-            <td>{{ address(c) }}</td>
-            <td>{{ c.package_name || '-' }}</td>
+            <td>{{ c.package_price | number:'1.2-2' }}</td>
             <td class="dues">
               <button
                 type="button"
@@ -63,7 +62,7 @@
             </td>
           </tr>
           <tr *ngIf="!customers.length">
-            <td colspan="8" class="empty">No unpaid Internet subscriptions found.</td>
+            <td colspan="6" class="empty">No unpaid Internet subscriptions found.</td>
           </tr>
         </tbody>
       </table>
@@ -74,22 +73,24 @@
       <div class="modal-head">
         <div>
           <p class="eyebrow">Enter Net Subscription</p>
-          <h2>{{ customer?.display_customer_no }} - {{ customer?.full_name }}</h2>
         </div>
-        <button (click)="close()">Close</button>
+        <button class="secondary" (click)="close()">Close</button>
       </div>
       <div class="customer-summary">
-        <div>
-          <span>Customer Number</span><strong>{{ customer?.display_customer_no }}</strong>
+        <div class="customer-summary-details">
+          <div class="customer-number-line">
+            <strong>C No: {{ customer?.display_customer_no }}</strong>
+          </div>
+          <div class="customer-name-line">
+            <strong class="customer-name">{{ customer?.full_name | titlecase }}</strong>
+            <strong class="net-id">Net ID: {{ customer?.net_id }}</strong>
+          </div>
+          <p>{{ address(customer) }}</p>
         </div>
-        <div>
-          <span>Net ID</span><strong>{{ customer?.net_id }}</strong>
-        </div>
-        <div>
-          <span>Address</span><strong>{{ address(customer) }}</strong>
-        </div>
-        <div>
-          <span>Customer Status</span><strong>{{ customer?.customer_status }}</strong>
+        <div class="customer-summary-meta">
+          <div><span>Status:</span><strong class="customer-status">{{ customer?.customer_status }}</strong></div>
+          <div><span>Install Date:</span><strong>{{ customer?.installed_date | date:'dd-MM-yyyy' }}</strong></div>
+          <div><span>Network:</span><strong>{{ customer?.network_type }}</strong></div>
         </div>
       </div>
       <div class="grid">
@@ -142,7 +143,7 @@
             (ngModelChange)="paidChanged()" /></label
         ><label>Balance<input type="number" [(ngModel)]="form.balance_amount" disabled /></label
         ><label
-          >Status<select [(ngModel)]="form.payment_status" disabled>
+          >Status<select [(ngModel)]="form.payment_status" [disabled]="!permissions.isAdmin()">
             <option value="PENDING">Unpaid</option>
             <option value="PARTIAL">Partial</option>
             <option value="PAID">Paid</option>
@@ -163,27 +164,9 @@
             </option>
           </select></label
         ><label
-          >Renewed By<select [(ngModel)]="form.renewed_by_value" (ngModelChange)="renewedChanged()" [disabled]="!permissions.isAdmin() && form.cash_admin_locked">
-            <ng-container *ngFor="let e of employees"
-              ><option
-                *ngIf="permissions.isAdmin() || e.employee_id === lookups.logged_in_employee_id"
-                [value]="'EMPLOYEE:' + e.employee_id"
-              >
-                {{ e.employee_name }}
-              </option></ng-container
-            >
-            <option *ngIf="permissions.isAdmin() || form.cash_admin_locked" value="ADMIN">Admin</option>
-            <option *ngIf="permissions.isAdmin() || !form.cash_admin_locked" value="CUSTOMER">Customer</option>
-          </select></label
+          >Renewed By<select [(ngModel)]="form.renewed_by_value" (ngModelChange)="renewedChanged()" [disabled]="!permissions.isAdmin()"><option value="CUSTOMER">Online</option><option value="ADMIN">Admin</option></select></label
         ><label
-          >Mode of Payment<select
-            [(ngModel)]="form.payment_mode"
-            [disabled]="!permissions.isAdmin() || form.renewed_by_value !== 'ADMIN'"
-          >
-            <option value="DASHBOARD">Dashboard</option>
-            <option value="CASH">Cash</option>
-            <option value="ONLINE">Online</option>
-          </select></label
+          >Mode of Payment<select [(ngModel)]="form.payment_mode" [disabled]="!permissions.isAdmin() || form.renewed_by_value!=='ADMIN'"><option *ngIf="form.renewed_by_value==='CUSTOMER'" value="DASHBOARD">Dashboard</option><option *ngIf="form.renewed_by_value==='ADMIN'" value="CASH">Cash</option><option *ngIf="form.renewed_by_value==='ADMIN'" value="ACCOUNT">Account</option></select></label
         ><label *ngIf="permissions.isAdmin()"
           >Payment Reference<input [(ngModel)]="form.payment_reference" /></label
         ><label *ngIf="permissions.isAdmin()"
@@ -196,7 +179,7 @@
         >
       </div>
       <div class="actions end">
-        <button (click)="close()">Cancel</button
+        <button class="secondary" (click)="close()">Cancel</button
         ><button class="primary" [disabled]="saving" (click)="save()">
           {{ saving ? 'Saving...' : 'Save Subscription' }}
         </button>

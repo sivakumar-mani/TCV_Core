@@ -79,11 +79,10 @@ export class NetSubscriptionPending {
   open(c: any, s: any) {
     this.customer = c;
     const employee = this.lookups.logged_in_employee_id || this.permissions.employeeId();
-    const admin = this.permissions.isAdmin();
     const cashAdminLocked = Number(s.cash_admin_locked) === 1;
-    const storedRenewedBy = ['ADMIN', 'CUSTOMER'].includes(String(s.renewed_by || '').toUpperCase())
-      ? String(s.renewed_by).toUpperCase()
-      : `EMPLOYEE:${s.renewed_by_employee_id || employee || ''}`;
+    const renewedByValue = !this.permissions.isAdmin() || String(s.renewed_by || '').toUpperCase() === 'ADMIN'
+      ? 'ADMIN'
+      : 'CUSTOMER';
     this.form = {
       subscription_month: Number(s.subscription_month) || new Date().getMonth() + 1,
       subscription_year: Number(s.subscription_year) || new Date().getFullYear(),
@@ -100,12 +99,15 @@ export class NetSubscriptionPending {
       payment_status: s.payment_status || 'PENDING',
       collect_date: this.today(),
       collected_by_employee_id: employee,
-      renewed_by_value: cashAdminLocked ? 'ADMIN' : storedRenewedBy,
-      payment_mode: cashAdminLocked ? 'CASH' : (s.payment_mode || 'DASHBOARD'),
+      renewed_by_value: renewedByValue,
+      payment_mode: renewedByValue === 'ADMIN' && ['CASH', 'ACCOUNT'].includes(String(s.payment_mode || '').toUpperCase())
+          ? String(s.payment_mode).toUpperCase()
+          : 'DASHBOARD',
       cash_admin_locked: cashAdminLocked,
       payment_reference: '',
       payment_mapped_employee_id: null,
     };
+    this.renewedChanged();
     this.selected = s;
   }
   close() {
@@ -180,16 +182,8 @@ export class NetSubscriptionPending {
     this.paidChanged();
   }
   renewedChanged() {
-    if (!this.permissions.isAdmin() && this.form.cash_admin_locked) {
-      this.form.renewed_by_value = 'ADMIN';
-      this.form.payment_mode = 'CASH';
-      this.form.payment_reference = '';
-      this.form.payment_mapped_employee_id = null;
-    } else if (this.form.renewed_by_value !== 'ADMIN') {
-      this.form.payment_mode = 'DASHBOARD';
-      this.form.payment_reference = '';
-      this.form.payment_mapped_employee_id = null;
-    }
+    if (!this.permissions.isAdmin()) { this.form.renewed_by_value = 'ADMIN'; this.form.payment_mode = 'CASH'; }
+    this.form.payment_mode = this.form.renewed_by_value === 'CUSTOMER' ? 'DASHBOARD' : (['CASH', 'ACCOUNT'].includes(this.form.payment_mode) ? this.form.payment_mode : 'CASH');
   }
   save() {
     this.calculate();
@@ -224,6 +218,9 @@ export class NetSubscriptionPending {
           this.error(e);
         },
       });
+  }
+  subscriptionAddress(c: any) {
+    return [c.door_no, c.street_name, c.area_name].filter(Boolean).join(', ') || '-';
   }
   address(c: any) {
     return (

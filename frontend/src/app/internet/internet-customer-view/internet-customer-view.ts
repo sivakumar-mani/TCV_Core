@@ -237,8 +237,8 @@ export class InternetCustomerView {
                 payment_status: 'UNPAID',
                 collect_date: this.today,
                 collected_by_employee_id: this.lookups.logged_in_employee_id,
-                renewed_by_value: `EMPLOYEE:${this.lookups.logged_in_employee_id || ''}`,
-                payment_mode: 'DASHBOARD',
+                renewed_by_value: 'ADMIN',
+                payment_mode: 'CASH',
                 cash_admin_locked: false,
                 payment_reference: '',
                 payment_mapped_employee_id: null,
@@ -247,11 +247,25 @@ export class InternetCustomerView {
     if (this.activeTab === 'subscription') {
       this.editingSubscriptionId = null;
       this.calculateSubscription();
+      this.changeRenewedBy();
       this.showSubscriptionPeriodModal = true;
     } else this.showHistoryModal = true;
   }
   calculateSubscription(preserveEditedDates = false) {
     if (this.activeTab !== 'subscription') return;
+    // A payment edit must not reprice the existing subscription or its period.
+    if (preserveEditedDates && this.editingSubscriptionId) {
+      const f = this.historyForm;
+      const amount = Math.max(Number(f.amount) || 0, 0);
+      const paid = Math.max(Math.min(Math.round(Number(f.paid_amount) || 0), amount), 0);
+      Object.assign(f, {
+        paid_amount: paid,
+        customer_paid_amount: paid,
+        balance_amount: amount - paid,
+        payment_status: paid >= amount ? 'PAID' : paid > 0 ? 'PARTIAL' : 'UNPAID',
+      });
+      return;
+    }
     const f = this.historyForm,
       pkg = [...(this.details.packages || [])]
         .filter((x: any) => x.is_active)
@@ -331,16 +345,8 @@ export class InternetCustomerView {
     this.calculateSubscription();
   }
   changeRenewedBy() {
-    if (this.historyForm.cash_admin_locked) {
-      this.historyForm.renewed_by_value = 'ADMIN';
-      this.historyForm.payment_mode = 'CASH';
-      return;
-    }
-    if (!this.lookups.is_admin || this.historyForm.renewed_by_value !== 'ADMIN') {
-      this.historyForm.payment_mode = 'DASHBOARD';
-      this.historyForm.payment_reference = '';
-      this.historyForm.payment_mapped_employee_id = null;
-    }
+    if (!this.lookups.is_admin) { this.historyForm.renewed_by_value = 'ADMIN'; this.historyForm.payment_mode = 'CASH'; }
+    this.historyForm.payment_mode = this.historyForm.renewed_by_value === 'CUSTOMER' ? 'DASHBOARD' : (['CASH', 'ACCOUNT'].includes(this.historyForm.payment_mode) ? this.historyForm.payment_mode : 'CASH');
   }
   saveHistory() {
     if (this.savingHistory) return;
@@ -388,20 +394,20 @@ export class InternetCustomerView {
     if (!this.canEditSubscription(row)) return;
     this.activeTab = 'subscription';
     this.editingSubscriptionId = Number(row.internet_subscription_id);
-    const renewed = row.renewed_by === 'ADMIN' || row.renewed_by === 'CUSTOMER'
-      ? row.renewed_by : `EMPLOYEE:${row.renewed_by_employee_id || this.lookups.logged_in_employee_id || ''}`;
+    const renewed = row.renewed_by === 'ADMIN' ? 'ADMIN' : 'CUSTOMER';
     this.historyForm = {
       subscription_month: Number(row.subscription_month), subscription_year: Number(row.subscription_year),
       period_value: Number(row.period_value) || 1, period_unit: row.billing_basis || 'MONTH',
       period_count: Number(row.period_count) || 1, free_period_value: Number(row.free_period_value) || 0,
       free_period_unit: row.free_period_unit || 'MONTH', start_date: this.inputDate(row.start_date),
       end_date: this.inputDate(row.end_date), amount: Math.round(Number(row.amount) || 0), paid_amount: Math.round(Number(row.paid_amount) || 0),
-      balance_amount: Math.round(Number(row.balance_amount) || 0), payment_status: row.payment_status || 'PENDING',
+      balance_amount: Math.round(Number(row.balance_amount) || 0), payment_status: row.payment_status === 'PENDING' ? 'UNPAID' : (row.payment_status || 'UNPAID'),
       collect_date: this.inputDate(row.collect_date) || this.today, collected_by_employee_id: this.lookups.is_admin ? row.collected_by_employee_id : this.lookups.logged_in_employee_id,
-      renewed_by_value: Number(row.cash_admin_locked) === 1 ? 'ADMIN' : renewed, payment_mode: Number(row.cash_admin_locked) === 1 ? 'CASH' : (row.payment_mode || 'DASHBOARD'), payment_reference: row.payment_reference || '',
+      renewed_by_value: !this.lookups.is_admin ? 'ADMIN' : renewed, payment_mode: row.payment_mode || 'DASHBOARD', payment_reference: row.payment_reference || '',
       cash_admin_locked: Number(row.cash_admin_locked) === 1,
       payment_mapped_employee_id: row.payment_mapped_employee_id
     };
+    this.changeRenewedBy();
     this.showSubscriptionPeriodModal = true;
   }
   canEditSubscription(row: any) {

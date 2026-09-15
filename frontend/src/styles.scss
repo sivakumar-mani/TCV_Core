@@ -31,7 +31,7 @@
   --bs-gray-800: #343a40;
   --bs-gray-900: #212529;
   --bs-primary: #4154f1;
-  --bs-secondary: #6c757d;
+  --bs-secondary: #667585;
   --bs-success: #22a06b;
   --bs-info: #17a2b8;
   --bs-warning: #f5a524;
@@ -56,7 +56,7 @@
   --tcv-primary: var(--tcv-primary-500);
   --tcv-primary-hover: var(--tcv-primary-600);
   --tcv-primary-text: #1c2569;
-  --tcv-muted: #6b7690;
+  --tcv-muted: #667585;
   --tcv-text: #1e2438;
 
   --tcv-shell-bg: #f5f6fb;
@@ -493,6 +493,18 @@ button {
 
 .btn-no {
   background-color: var(--tcv-muted);
+}
+
+// Shared secondary actions used for Close, Cancel and Back controls.
+button.secondary,
+button.secondary-btn,
+button.back,
+button.close,
+button.btn-secondary,
+button.btn-outline-secondary {
+  background-color: #667585 !important;
+  border-color: #667585 !important;
+  color: #fff !important;
 }
 
 .btn-yes {

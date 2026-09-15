@@ -1,0 +1,13 @@
+{
+  "verified": 139,
+  "before": 0,
+  "after": 139,
+  "inserted": 139,
+  "skipped": 37,
+  "adjacent_tables_verified": [
+    "internet_customers",
+    "internet_customer_packages",
+    "internet_customer_accounts",
+    "cable_subscriptions"
+  ]
+}
