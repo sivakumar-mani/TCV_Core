@@ -7,6 +7,7 @@
   </div>
   <section class="filter-card">
     <label>C No<input [(ngModel)]="filters.customer_no" (keyup.enter)="load()" /></label
+    ><label>Net ID<input [(ngModel)]="filters.net_id" (keyup.enter)="load()" /></label
     ><label>Customer Name<input [(ngModel)]="filters.customer_name" (keyup.enter)="load()" /></label
     ><label
       >Area<select [(ngModel)]="filters.area_id" (change)="filters.street_id = ''">

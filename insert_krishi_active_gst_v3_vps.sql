@@ -4,7 +4,7 @@
 -- Requires CREATE ROUTINE permission. Pause subscription editing while running.
 -- Net ID matching ignores case and outer spaces. Tcv collector = Murugan K.
 -- Match an existing subscription by exact dates, then month/year, then sole customer subscription.
--- Missing customers are skipped and reported. Ambiguous matches or missing packages roll back changes.
+-- Ambiguous matches or missing customers/packages stop the import and roll back ALL changes.
 -- If the customer has no subscriptions, INSERT one using their active approved package.
 -- Existing customer/package/account data and existing approval/payment-mode metadata are preserved.
 -- Amount includes the workbook GST already. Paid => zero balance; Unpaid => full amount outstanding.
@@ -22,14 +22,11 @@ BEGIN
  DECLARE v_customer BIGINT; DECLARE v_subscription BIGINT; DECLARE v_package BIGINT;
  DECLARE v_collector INT; DECLARE v_count INT; DECLARE v_total INT;
  DECLARE updated_count INT DEFAULT 0; DECLARE inserted_count INT DEFAULT 0;
- DECLARE skipped_count INT DEFAULT 0;
  DECLARE problem VARCHAR(128);
  DECLARE workbook CURSOR FOR
- SELECT 'sky_Bhuvanaswari_T',8,2026,'2026-08-11',35,'2026-08-11','2026-09-15',885,NULL,'PENDING'
+ SELECT 'sky_Bhuvanaswari_T' AS net_id,8 AS mon,2026 AS yr,'2026-08-11' AS collected,35 AS days,'2026-08-11' AS starts,'2026-09-15' AS ends,885 AS amount,NULL AS source_balance,'PENDING' AS status
  UNION ALL
  SELECT 'sky_Kaveri_R',9,2026,'2026-09-10',35,'2026-09-10','2026-10-15',472,NULL,'PAID'
- UNION ALL
- SELECT 'sky_kirankumar',5,2026,'2026-05-14',215,'2026-05-14','2026-12-15',3540,NULL,'PAID'
  UNION ALL
  SELECT 'sky_Kumarappan_RM',8,2026,'2026-08-15',31,'2026-08-15','2026-09-15',1180,NULL,'PENDING'
  UNION ALL
@@ -378,7 +375,6 @@ BEGIN
  SELECT 'tcv_vasumathi',9,2026,'2026-09-05',191,'2026-09-05','2027-03-15',3540,0,'PAID';
  DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished=TRUE;
  DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
- SET @krishi_import_result='NOT COMPLETED', @krishi_updated=0, @krishi_inserted=0, @krishi_skipped=0, @krishi_missing_net_ids='';
  START TRANSACTION;
  SELECT COUNT(*),MIN(employee_id) INTO v_count,v_collector FROM employees
  WHERE LOWER(TRIM(first_name))='murugan' AND LOWER(TRIM(last_name))='k';
@@ -389,13 +385,8 @@ BEGIN
   IF finished THEN LEAVE import_rows; END IF;
   SELECT COUNT(*),MIN(internet_customer_id) INTO v_count,v_customer FROM internet_customers
    WHERE LOWER(TRIM(net_id)) COLLATE utf8mb4_unicode_ci=LOWER(CONVERT(v_net USING utf8mb4)) COLLATE utf8mb4_unicode_ci;
-  IF v_count=0 THEN
-   SET skipped_count=skipped_count+1;
-   SET @krishi_missing_net_ids=CONCAT_WS(', ',NULLIF(@krishi_missing_net_ids,''),v_net);
-   ITERATE import_rows;
-  END IF;
   IF v_count<>1 THEN
-   SET problem=CONCAT('Duplicate customer Net ID: ',v_net);
+   SET problem=CONCAT('Missing or duplicate customer Net ID: ',v_net);
    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT=problem;
   END IF;
   SELECT COUNT(*) INTO v_total FROM internet_subscriptions WHERE internet_customer_id=v_customer;
@@ -441,17 +432,12 @@ BEGIN
   END IF;
  END LOOP;
  CLOSE workbook;
- IF updated_count+inserted_count+skipped_count<>176 THEN
+ IF updated_count+inserted_count<>176 THEN
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Expected 176 processed subscriptions; rolled back';
  END IF;
  COMMIT;
- SET @krishi_import_result='APPLIED', @krishi_updated=updated_count, @krishi_inserted=inserted_count, @krishi_skipped=skipped_count;
+ SELECT 'APPLIED' AS result,updated_count AS existing_subscriptions_processed,inserted_count AS subscriptions_inserted;
 END$$
 DELIMITER ;
 CALL import_krishi_gst_v3();
 DROP PROCEDURE IF EXISTS import_krishi_gst_v3;
-
--- One result set outside CALL avoids per-customer results during phpMyAdmin import.
-SELECT @krishi_import_result AS result,@krishi_updated AS existing_subscriptions_processed,
- @krishi_inserted AS subscriptions_inserted,@krishi_skipped AS customers_not_found,
- @krishi_missing_net_ids AS missing_net_ids;

@@ -16,7 +16,7 @@ import { globalConstants } from '../../services/global-constants';
 export class NetSubscriptionPending {
   customers: any[] = [];
   lookups: any = {};
-  filters = { customer_no: '', customer_name: '', area_id: '', street_id: '' };
+  filters = { customer_no: '', net_id: '', customer_name: '', area_id: '', street_id: '' };
   selected: any = null;
   customer: any = null;
   saving = false;
@@ -73,7 +73,7 @@ export class NetSubscriptionPending {
     });
   }
   reset() {
-    this.filters = { customer_no: '', customer_name: '', area_id: '', street_id: '' };
+    this.filters = { customer_no: '', net_id: '', customer_name: '', area_id: '', street_id: '' };
     this.load();
   }
   open(c: any, s: any) {

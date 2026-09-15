@@ -98,7 +98,7 @@ export async function openInternetSubscriptionInvoicePdf(data: {
     text(219, 680, 9, customer?.full_name || '-', true);
     multiText(219, 665, 8, data.address, 34);
     text(219, 625, 8, `Registered Mobile: ${customer?.mobile_no || '-'}`, true);
-    [['Customer No', customer?.customer_code], ['User Name', customer?.net_id], ['Invoice No', invoiceNo],
+    [['Customer No', customer?.display_customer_no], ['User Name', customer?.net_id], ['Invoice No', invoiceNo],
       ['Billing Date', displayDate(invoiceDate)], ['Billing Period', `${displayDate(subscription?.start_date)} To`],
       ['', displayDate(subscription?.end_date)]].forEach(([label, value], index) => {
         text(397, 680 - index * 20, 8, label, false); text(468, 680 - index * 20, 8, value, index < 3);
@@ -120,7 +120,7 @@ export async function openInternetSubscriptionInvoicePdf(data: {
     text(left, 570, 9, customer?.full_name || '-', true);
     multiText(left, 556, 8, data.address, 62, 2);
     text(left, 524, 8, `Username: ${customer?.net_id || '-'}`, true);
-    text(left, 510, 8, `Subscriber ID: ${customer?.customer_code || '-'}`);
+    text(left, 510, 8, `Subscriber ID: ${customer?.display_customer_no || '-'}`);
     multiText(left, 496, 8, `Package: ${packageName}`, 62, 2);
     [['Invoice No.', invoiceNo], ['Invoice Date', displayDate(invoiceDate)],
       ['Reference', subscription?.internet_subscription_id],

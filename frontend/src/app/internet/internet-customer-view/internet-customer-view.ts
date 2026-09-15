@@ -527,7 +527,7 @@ export class InternetCustomerView {
     return Boolean(String(customer?.legacy_customer_no || '').trim());
   }
   customerNumber(customer = this.details.customer) {
-    return String(customer?.legacy_customer_no || '').trim() || String(customer?.customer_code || '').trim();
+    return customer?.display_customer_no || '-';
   }
   headerStatus() {
     const customer = this.details.customer || {},

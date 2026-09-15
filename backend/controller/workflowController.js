@@ -1,3 +1,4 @@
+const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const connection = require('../connection');
 const { ensureTransactionTable } = require('./transactionController');
 const { ensureCustomerSchema } = require('../utils/customerSchema');
@@ -238,7 +239,7 @@ const getWorkflowApprovals = async (req, res) => {
              JOIN customers c ON wa.module_name='CCTV_CUSTOMER' AND c.customer_id=wa.reference_id
              WHERE wa.workflow_status='PENDING'
              UNION ALL
-             SELECT wa.workflow_id, wa.module_name, wa.reference_id, wa.reference_no,
+             SELECT wa.workflow_id, wa.module_name, wa.reference_id, ${internetCustomerNumberSql('ic')} reference_no,
                     wa.workflow_status, wa.requested_at, wa.reviewed_at, wa.remarks,
                     CASE WHEN wa.module_name='INTERNET_CUSTOMER_UPDATE' THEN 'Internet Customer Update' ELSE 'Internet Customer' END AS subject,
                     NULL, NULL, ic.installed_date, NULL, ia.grand_total,

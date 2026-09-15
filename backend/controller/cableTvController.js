@@ -1,3 +1,4 @@
+const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const connection = require('../connection');
 const { ensureTransactionTable } = require('./transactionController');
 const {
@@ -1929,12 +1930,12 @@ const getPendingAccounts = async (req, res) => {
     if(status==='PENDING')internetFilters.push(`${internetOutstandingSql}>0 AND ${internetReceivedSql}<=0`);
     else if(status==='PARTIAL')internetFilters.push(`${internetOutstandingSql}>0 AND ${internetReceivedSql}>0`);
     else if(['PAID','RECEIVED'].includes(status))internetFilters.push(`${internetOutstandingSql}<=0`);
-    if(name){const search=`%${name}%`;internetFilters.push('(ic.full_name LIKE ? OR CAST(ic.customer_code AS CHAR) LIKE ? OR ic.legacy_customer_no LIKE ? OR ic.mobile_no LIKE ?)');internetValues.push(search,search,search,search);}
+    if(name){const search=`%${name}%`;internetFilters.push(`(ic.full_name LIKE ? OR ${internetCustomerNumberSql('ic')} LIKE ? OR ic.legacy_customer_no LIKE ? OR ic.mobile_no LIKE ?)`);internetValues.push(search,search,search,search);}
     if(startDate){internetFilters.push('COALESCE(ic.installed_date, DATE(ia.created_at))>=?');internetValues.push(startDate);}
     if(endDate){internetFilters.push('COALESCE(ic.installed_date, DATE(ia.created_at))<=?');internetValues.push(endDate);}
     const [internetSourceRows] = await db.query(
       `SELECT -(1000000000 + ia.internet_account_id) AS account_id, NULL approval_group_id,
-              ic.internet_customer_id AS cable_customer_id, ic.customer_code, ic.legacy_customer_no, ic.full_name, ic.mobile_no,
+              ic.internet_customer_id AS cable_customer_id, ${internetCustomerNumberSql('ic')} customer_code, NULL legacy_customer_no, ic.full_name, ic.mobile_no,
               ic.network_type AS network_name, NULL location_name, NULL area_name, NULL street_name,
               COALESCE(ic.installed_date, DATE(ia.created_at)) install_update_date,
               COALESCE(ic.installed_date, DATE(ia.created_at)) account_date, 'INTERNET' connection_type,

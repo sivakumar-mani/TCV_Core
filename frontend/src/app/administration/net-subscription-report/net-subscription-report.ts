@@ -151,7 +151,7 @@ export class NetSubscriptionReport {
         this.date(r.collect_date),
         r.collected_by_name || '-',
         r.renewed_by_name || '-',
-        r.customer_code,
+        r.display_customer_no,
         r.full_name,
         r.network_type,
         r.net_id,
@@ -178,7 +178,7 @@ export class NetSubscriptionReport {
     const body = this.rows
       .map(
         (r, i) =>
-          `<tr><td>${i + 1}</td><td>${this.date(r.collect_date)}</td><td>${r.collected_by_name || '-'}</td><td>${r.renewed_by_name || '-'}</td><td>${r.customer_code}</td><td>${r.full_name}</td><td>${r.network_type}</td><td>${this.month(r)}</td><td>${r.number_of_days}</td><td>${r.payment_mode}</td><td>${r.period_count}</td><td>${r.balance_amount}</td><td>${r.paid_amount}</td></tr>`,
+          `<tr><td>${i + 1}</td><td>${this.date(r.collect_date)}</td><td>${r.collected_by_name || '-'}</td><td>${r.renewed_by_name || '-'}</td><td>${r.display_customer_no}</td><td>${r.full_name}</td><td>${r.network_type}</td><td>${this.month(r)}</td><td>${r.number_of_days}</td><td>${r.payment_mode}</td><td>${r.period_count}</td><td>${r.balance_amount}</td><td>${r.paid_amount}</td></tr>`,
       )
       .join('');
     w.document.write(

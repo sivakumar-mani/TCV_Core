@@ -1,3 +1,4 @@
+const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const connection = require('../connection');
 
 const allowedStatuses = new Set(['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED']);
@@ -116,7 +117,7 @@ const resolveEmployeeId = async (db, req, requestedId) => {
 
 const complaintSelect = `
   SELECT c.*,
-         COALESCE(CAST(customer.customer_code AS CHAR), CAST(internet_customer.customer_code AS CHAR), CAST(service_customer.customer_id AS CHAR)) AS customer_code,
+         COALESCE(CAST(customer.customer_code AS CHAR), ${internetCustomerNumberSql('internet_customer')}, CAST(service_customer.customer_id AS CHAR)) AS customer_code,
          COALESCE(customer.full_name, internet_customer.full_name,
            NULLIF(TRIM(CONCAT_WS(' ', service_customer.salutation, service_customer.customer_name)), '')) AS customer_name,
          COALESCE(customer.mobile_no, internet_customer.mobile_no, service_customer.phone) AS customer_mobile,
@@ -158,7 +159,7 @@ const getComplaints = async (req, res) => {
     if (textOrNull(req.query.search)) {
       const search = `%${textOrNull(req.query.search)}%`;
       filters.push(`(c.complaint_no LIKE ? OR customer.customer_code LIKE ? OR customer.full_name LIKE ?
-        OR internet_customer.customer_code LIKE ? OR internet_customer.full_name LIKE ?
+        OR ${internetCustomerNumberSql('internet_customer')} LIKE ? OR internet_customer.full_name LIKE ?
         OR service_customer.customer_name LIKE ? OR service_customer.phone LIKE ?
         OR c.anonymous_name LIKE ? OR c.anonymous_mobile LIKE ? OR c.nature_of_complaint LIKE ?)`);
       values.push(search, search, search, search, search, search, search, search, search, search);
@@ -240,7 +241,7 @@ const getComplaintCustomers = async (req, res) => {
     if (type === 'NET') {
       const [rows] = await db.query(
         `SELECT c.internet_customer_id AS customer_id,
-                COALESCE(NULLIF(c.legacy_customer_no, ''), CAST(c.customer_code AS CHAR)) AS customer_code,
+                ${internetCustomerNumberSql('c')} AS customer_code,
                 c.full_name AS customer_name, c.mobile_no AS phone,
                 c.alternate_mobile_no AS alternate_phone,
                 CONCAT_WS(', ', c.door_no, s.street_name, a.area_name, l.location_name, c.city, c.pincode) AS address
