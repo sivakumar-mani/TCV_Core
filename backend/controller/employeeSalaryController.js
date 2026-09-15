@@ -87,8 +87,17 @@ const normalizeSalaryItems = (items = []) => {
   };
 };
 
+// Resolve ownership from the authenticated user's current employee assignment.
+const salaryReadScope = (res, column) => String(res.locals?.role || '').toUpperCase() === 'ADMIN'
+  ? { sql: '', values: [] }
+  : {
+      sql: `${column} = (SELECT employee_id FROM users WHERE user_id = ? LIMIT 1)`,
+      values: [res.locals?.userId || null]
+    };
+
 const getSalaries = async (req, res) => {
   try {
+    const scope = salaryReadScope(res, 'es.employee_id');
     const [salaries] = await connection.promise().query(
       `SELECT 
         es.salary_id,
@@ -112,7 +121,9 @@ const getSalaries = async (req, res) => {
         es.updated_at
       FROM employee_salary es
       JOIN employees e ON es.employee_id = e.employee_id
-      ORDER BY es.salary_year DESC, es.salary_month DESC`
+      ${scope.sql ? `WHERE ${scope.sql}` : ''}
+      ORDER BY es.salary_year DESC, es.salary_month DESC`,
+      scope.values
     );
     res.status(200).json({ data: salaries });
   } catch (error) {
@@ -128,6 +139,7 @@ const getSalaryById = async (req, res) => {
       return res.status(400).json({ error: 'Salary ID is required' });
     }
 
+    const scope = salaryReadScope(res, 'es.employee_id');
     const [salary] = await connection.promise().query(
       `SELECT 
         es.*,
@@ -136,8 +148,8 @@ const getSalaryById = async (req, res) => {
         e.last_name
       FROM employee_salary es
       JOIN employees e ON es.employee_id = e.employee_id
-      WHERE es.salary_id = ?`,
-      [salary_id]
+      WHERE es.salary_id = ? ${scope.sql ? `AND ${scope.sql}` : ''}`,
+      [salary_id, ...scope.values]
     );
 
     if (!salary.length) {
@@ -394,11 +406,12 @@ const getSalaryByEmployee = async (req, res) => {
       return res.status(400).json({ error: 'Employee ID is required' });
     }
 
+    const scope = salaryReadScope(res, 'employee_id');
     const [salaries] = await connection.promise().query(
       `SELECT * FROM employee_salary 
-       WHERE employee_id = ?
+       WHERE employee_id = ? ${scope.sql ? `AND ${scope.sql}` : ''}
        ORDER BY salary_year DESC, salary_month DESC`,
-      [employee_id]
+      [employee_id, ...scope.values]
     );
 
     res.status(200).json({ data: salaries });

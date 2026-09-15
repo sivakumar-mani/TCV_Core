@@ -10,6 +10,7 @@ import { CommonMethods } from '../shared/common-methods';
 import { InputFormField } from '../shared/input-form-field/input-form-field';
 import { ActionMenu } from '../shared/list-action-menu';
 import { SelectFormField } from '../shared/select-form-field/select-form-field';
+import { PermissionService } from '../services/permission.service';
 
 type SalaryItemType = 'EARNING' | 'DEDUCTION';
 
@@ -96,7 +97,8 @@ export class EmployeeSalary {
     private employeeService: EmployeeServices,
     private salaryService: EmployeeSalaryServices,
     private ngxLoader: NgxUiLoaderService,
-    private commonMethods: CommonMethods
+    private commonMethods: CommonMethods,
+    public permissions: PermissionService
   ) {}
 
   ngOnInit() {
@@ -384,7 +386,7 @@ export class EmployeeSalary {
     this.pdfRightText(commands, 547, 625, 10, 'Total');
 
     salary.items.forEach((item: any, index: number) => {
-      const y = tableTop - rowHeight * (index + 1) + 9;
+      const y = tableTop - rowHeight * (index + 2) + 9;
       this.pdfText(commands, 48, y, 9, String(index + 1));
       this.pdfText(commands, 88, y, 9, item.item_type);
       this.pdfText(commands, 158, y, 9, String(item.description || '').slice(0, 30));

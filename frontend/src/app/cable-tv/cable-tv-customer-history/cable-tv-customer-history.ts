@@ -365,6 +365,8 @@ export class CableTvCustomerHistory {
     }
     if (this.section === 'packages') {
       this.form = this.fb.group({
+        extra_packages: this.fb.array([]),
+        updated_date: [today, Validators.required],
         package_type: ['ADDON', Validators.required],
         package_id: [null, Validators.required],
         package_price: [0],
@@ -695,11 +697,7 @@ export class CableTvCustomerHistory {
     }
     if (this.section === 'subscriptions') {
       const billingBasis = String(row.billing_basis || 'MONTH').toUpperCase();
-      const paymentStatus = String(row.payment_status || 'PENDING').toUpperCase();
-      const receivedCount = Number(row.received_count) || 1;
-      const packageAmount = paymentStatus === 'PENDING'
-        ? (Number(row.amount) || 0) / receivedCount
-        : Number(row.master_package_price ?? row.package_price ?? row.amount) || 0;
+      const packageAmount = this.activeSubscriptionPackageAmount();
       this.form.patchValue({
         customer_package_id: Number(row.customer_package_id) || this.defaultCustomerPackageId(),
         subscription_month: Number(row.subscription_month) || Number(new Date().toISOString().slice(5, 7)),
@@ -801,6 +799,17 @@ export class CableTvCustomerHistory {
       return;
     }
     const payload = this.form.getRawValue();
+    if (this.section === 'packages' && !this.editId) {
+      const ids = [payload.package_id, ...payload.extra_packages.map((row: any) => row.package_id)].map(Number);
+      if ([payload, ...payload.extra_packages].filter((row: any) => row.package_type === 'ADDON').length > 1) {
+        this.commonMethods.handleError({ error: { message: 'Only one Addon is allowed' } });
+        return;
+      }
+      if (new Set(ids).size !== ids.length) {
+        this.commonMethods.handleError({ error: { message: 'The same package cannot be added twice' } });
+        return;
+      }
+    }
     if (
       this.section === 'stbs'
       && payload.issue_mode === 'FULL_SET'
@@ -824,6 +833,48 @@ export class CableTvCustomerHistory {
     });
   }
 
+  get extraPackages(): FormArray { return this.form.get('extra_packages') as FormArray; }
+
+  addPackageSelection() {
+    if (this.editId) return;
+    const row = this.fb.group({ package_type: ['ALACARTE', Validators.required], package_id: [null, Validators.required], package_price: [0], is_active: [1] });
+    row.get('package_type')?.valueChanges.subscribe(() => row.patchValue({ package_id: null, package_price: 0 }, { emitEvent: false }));
+    row.get('is_active')?.valueChanges.subscribe(() => this.selectExtraPackage(this.extraPackages.controls.indexOf(row)));
+    this.extraPackages.push(row);
+  }
+
+  selectExtraPackage(index: number) {
+    const row = this.extraPackages.at(index);
+    const pkg = this.packagesForType(row.get('package_type')?.value).find((item: any) => Number(item.package_id) === Number(row.get('package_id')?.value));
+    row.patchValue({ package_price: Number(row.get('is_active')?.value) === 1 ? Number(pkg?.price) || 0 : 0 }, { emitEvent: false });
+  }
+
+  packagesForType(type: any) {
+    return (this.lookups.packages || []).filter((item: any) => this.normalizePackageType(item.package_type) === type);
+  }
+
+  addonSelectedElsewhere(index: number) {
+    return (index !== -1 && this.form.get('package_type')?.value === 'ADDON')
+      || this.extraPackages.controls.some((row, i) => i !== index && row.get('package_type')?.value === 'ADDON');
+  }
+
+  removeUnsavedPackage(index: number) {
+    if (this.editId) return;
+    if (index >= 0) { this.extraPackages.removeAt(index); return; }
+    if (this.extraPackages.length) {
+      const row = this.extraPackages.at(0).getRawValue();
+      this.extraPackages.removeAt(0);
+      this.form.patchValue(row, { emitEvent: false });
+    } else {
+      this.form.patchValue({ package_id: null, package_price: 0 }, { emitEvent: false });
+    }
+  }
+
+  packageAlreadySelected(packageId: any, index: number) {
+    return (index !== -1 && Number(this.form.get('package_id')?.value) === Number(packageId))
+      || this.extraPackages.controls.some((row, i) => i !== index && Number(row.get('package_id')?.value) === Number(packageId));
+  }
+
   requestForSave(payload: any): any {
     if (this.section === 'connections') {
       return this.editId
@@ -838,7 +889,9 @@ export class CableTvCustomerHistory {
     if (this.section === 'packages') {
       return this.editId
         ? this.cableTvService.updateCustomerPackage(this.customerId, this.editId, payload)
-        : this.cableTvService.addCustomerPackage(this.customerId, payload);
+        : this.cableTvService.addCustomerPackage(this.customerId, {
+            packages: [payload, ...(payload.extra_packages || []).map((row: any) => ({ ...payload, ...row }))].map((row: any) => ({ ...row, start_date: undefined, end_date: undefined }))
+          });
     }
     return this.editId
       ? this.cableTvService.updateCustomerSubscription(this.customerId, this.editId, payload)
@@ -976,16 +1029,15 @@ export class CableTvCustomerHistory {
     return (this.details.customerPackages || []).find((item: any) => Number(item.customer_package_id) === Number(this.form?.get('customer_package_id')?.value));
   }
 
+  activeSubscriptionPackageAmount() {
+    return (this.details.customerPackages || [])
+      .filter((item: any) => Number(item.is_active) === 1 && String(item.approval_status || '').toUpperCase() === 'APPROVED')
+      .reduce((total: number, item: any) => total + (Number(item.package_price ?? item.master_package_price) || 0), 0);
+  }
+
   applySubscriptionPackage() {
     if (this.section !== 'subscriptions' || !this.form) return;
-    const selected = this.selectedCustomerPackage();
-    const masterPackage = (this.lookups.packages || []).find(
-      (item: any) => Number(item.package_id) === Number(selected?.package_id)
-    );
-    const packageAmount = Number(masterPackage?.price ?? selected?.master_package_price ?? selected?.package_price ?? selected?.amount ?? selected?.price)
-      || Number(this.form.get('package_amount')?.value)
-      || 0;
-    this.form.patchValue({ package_amount: packageAmount }, { emitEvent: false });
+    this.form.patchValue({ package_amount: this.activeSubscriptionPackageAmount() }, { emitEvent: false });
     this.calculateSubscription();
   }
 

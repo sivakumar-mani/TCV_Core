@@ -549,7 +549,7 @@ const ensureCableTvExtendedTables = async (db) => {
 
   const materialColumns = [
     ['updated_by_employee_id', 'ALTER TABLE cable_connection_materials ADD COLUMN updated_by_employee_id INT NULL AFTER issued_by_employee_id'],
-    ['updated_date', 'ALTER TABLE cable_connection_materials ADD COLUMN updated_date DATE NULL AFTER updated_by_employee_id']
+    ['updated_date', 'ALTER TABLE cable_connection_materials ADD COLUMN updated_date DATE NULL']
   ];
   for (const [columnName, alterSql] of materialColumns) {
     const [[column]] = await db.query(
@@ -563,6 +563,7 @@ const ensureCableTvExtendedTables = async (db) => {
 
   const packageColumns = [
     ['package_type', "ALTER TABLE cable_customer_packages ADD COLUMN package_type ENUM('ADDON','ALACARTE','BROADCASTER') NOT NULL DEFAULT 'ADDON' AFTER package_id"],
+    ['updated_date', 'ALTER TABLE cable_customer_packages ADD COLUMN updated_date DATE NULL'],
     ['updated_by_employee_id', 'ALTER TABLE cable_customer_packages ADD COLUMN updated_by_employee_id INT NULL AFTER is_active']
   ];
   for (const [columnName, alterSql] of packageColumns) {
@@ -3263,21 +3264,9 @@ const getCableCustomerById = async (req, res) => {
     );
     const [subscriptions] = await db.query(
       `SELECT sub.*,
-              CASE WHEN sub.payment_status = 'PENDING' THEN
-                ROUND(COALESCE(NULLIF((SELECT SUM(COALESCE(NULLIF(active_cp.package_price, 0), active_pkg.price, 0))
-                  FROM cable_customer_packages active_cp
-                  LEFT JOIN cable_package_master active_pkg ON active_pkg.package_id = active_cp.package_id
-                  WHERE active_cp.cable_customer_id = sub.cable_customer_id
-                    AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0), sub.amount)
-                  * COALESCE(NULLIF(sub.received_count, 0), 1), 0)
+              CASE WHEN sub.payment_status = 'PENDING' THEN ROUND(COALESCE((SELECT SUM(active_cp.package_price) FROM cable_customer_packages active_cp WHERE active_cp.cable_customer_id = sub.cable_customer_id AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0) * (CASE WHEN sub.billing_basis = 'DAY' THEN sub.number_of_days_or_months / DAY(LAST_DAY(sub.start_date)) ELSE COALESCE(NULLIF(sub.received_count, 0), 1) END), 0)
                 ELSE sub.amount END AS amount,
-              CASE WHEN sub.payment_status = 'PENDING' THEN
-                GREATEST(ROUND(COALESCE(NULLIF((SELECT SUM(COALESCE(NULLIF(active_cp.package_price, 0), active_pkg.price, 0))
-                  FROM cable_customer_packages active_cp
-                  LEFT JOIN cable_package_master active_pkg ON active_pkg.package_id = active_cp.package_id
-                  WHERE active_cp.cable_customer_id = sub.cable_customer_id
-                    AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0), sub.amount)
-                  * COALESCE(NULLIF(sub.received_count, 0), 1), 0) - COALESCE(sub.paid_amount, 0), 0)
+              CASE WHEN sub.payment_status = 'PENDING' THEN GREATEST(ROUND(COALESCE((SELECT SUM(active_cp.package_price) FROM cable_customer_packages active_cp WHERE active_cp.cable_customer_id = sub.cable_customer_id AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0) * (CASE WHEN sub.billing_basis = 'DAY' THEN sub.number_of_days_or_months / DAY(LAST_DAY(sub.start_date)) ELSE COALESCE(NULLIF(sub.received_count, 0), 1) END), 0) - COALESCE(sub.paid_amount, 0), 0)
                 WHEN sub.payment_status = 'PAID' THEN 0
                 ELSE sub.balance_amount END AS balance_amount,
               CASE WHEN sub.payment_status = 'PAID' AND COALESCE(sub.paid_amount, 0) <= 0
@@ -3330,6 +3319,25 @@ const addCableCustomer = async (req, res) => {
     await ensureCableTvExtendedTables(db);
     await db.beginTransaction();
     const payload = req.body;
+    const requiredNewFields = [
+      [payload.city, 'City'], [payload.pincode, 'Pincode'],
+      [payload.stb?.stb_type, 'STB Type'], [payload.stb?.stb_no, 'STB Number']
+    ];
+    const missingNewField = requiredNewFields.find(([value]) => !String(value ?? '').trim());
+    if (missingNewField) {
+      await db.rollback();
+      return res.status(400).json({ message: `${missingNewField[1]} is required` });
+    }
+    const newPackages = Array.isArray(payload.packages) ? payload.packages
+      : payload.package?.package_id ? [payload.package] : [];
+    if (!newPackages.length || newPackages.some(item => !Number(item.package_id))) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Select a package for every Package Details row' });
+    }
+    if (newPackages.some(item => !item.start_date || !item.end_date)) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Subscription start and end dates are required for every package' });
+    }
     const approvalStatus = approvalStatusFor(req, payload.approval_status);
     const createdBy = currentUserId(req);
     const networkId = Number(payload.network_id);
@@ -3383,6 +3391,10 @@ const addCableCustomer = async (req, res) => {
       req,
       payload.installed_by_employee_id || payload.connected_by_employee_id || payload.collected_by_employee_id
     );
+    if (!employeeId) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Installed By employee is required' });
+    }
     const stbStatus = String(payload.stb?.status || payload.status || 'ACTIVE').toUpperCase();
     const installedDate = payload.stb?.installed_date || payload.connection?.connection_date || new Date();
     const sourceId = await resolveSourceId(db, payload.source_id || payload.source_name);
@@ -4449,8 +4461,21 @@ const addCustomerPackage = async (req, res) => {
     await ensureCableTvExtendedTables(db);
     await db.beginTransaction();
     const cableCustomerId = Number(req.params.id);
-    const payload = req.body || {};
+    const input = req.body || {};
+    const rows = Array.isArray(input.packages) ? input.packages : [input];
+    if (!rows.length || rows.filter(row => normalizePackageType(row.package_type) === 'ADDON').length > 1) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Select packages; only one Addon is allowed per save' });
+    }
+    // Serialize package additions for this customer, including duplicate checks.
+    await db.query('SELECT cable_customer_id FROM cable_tv_customers WHERE cable_customer_id = ? FOR UPDATE', [cableCustomerId]);
     const { approvalGroupId, approvalStatus, createdBy } = await createApprovalGroup(db, req, 'PACKAGE_UPDATE');
+    for (const payload of rows) {
+    const updatedDate = payload.updated_date || new Date().toISOString().slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(updatedDate) || Number.isNaN(Date.parse(updatedDate)) || new Date(updatedDate).toISOString().slice(0, 10) !== updatedDate) {
+      await db.rollback();
+      return res.status(400).json({ message: 'Valid Updated Date is required' });
+    }
     const packageType = normalizePackageType(payload.package_type);
     const employeeId = await resolveEmployeeId(
       db,
@@ -4458,10 +4483,10 @@ const addCustomerPackage = async (req, res) => {
       req.res?.locals?.employee_id || payload.updated_by_employee_id
     );
     const [[pkg]] = await db.query(
-      'SELECT package_id, package_name, price FROM cable_package_master WHERE package_id = ? AND is_active = 1',
+      'SELECT package_id, package_name, package_type, price FROM cable_package_master WHERE package_id = ? AND is_active = 1',
       [payload.package_id]
     );
-    if (!pkg) {
+    if (!pkg || normalizePackageType(pkg.package_type) !== packageType) {
       await db.rollback();
       return res.status(400).json({ message: 'Selected package was not found or is inactive' });
     }
@@ -4479,8 +4504,9 @@ const addCustomerPackage = async (req, res) => {
       await db.rollback();
       return res.status(400).json({ message: 'This package is already active. Deactivate the previous package before adding it again.' });
     }
-    const packagePrice = money(payload.package_price ?? pkg?.price);
-    if (approvalStatus === 'APPROVED') {
+    const isActive = Number(payload.is_active ?? 1) === 1 ? 1 : 0;
+    const packagePrice = isActive ? money(payload.package_price ?? pkg?.price) : 0;
+    if (approvalStatus === 'APPROVED' && packageType === 'ADDON' && isActive) {
       await db.query(
         `UPDATE cable_customer_packages
          SET is_active = 0, package_price = 0, end_date = COALESCE(end_date, CURDATE()), updated_at = NOW()
@@ -4492,13 +4518,14 @@ const addCustomerPackage = async (req, res) => {
     await db.query(
       `INSERT INTO cable_customer_packages (
         approval_group_id, cable_customer_id, package_id, package_type, package_price, start_date, end_date,
-        is_active, updated_by_employee_id, approval_status, created_by_user_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        is_active, updated_by_employee_id, approval_status, created_by_user_id, updated_date
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         approvalGroupId, cableCustomerId, Number(payload.package_id), packageType, packagePrice,
-        payload.start_date || new Date(), nullable(payload.end_date), 1, employeeId, approvalStatus, createdBy
+        payload.start_date || updatedDate, nullable(payload.end_date), isActive, employeeId, approvalStatus, createdBy, updatedDate
       ]
     );
+    }
     await db.commit();
     return res.status(201).json({ message: 'Package details saved successfully' });
   } catch (error) {
@@ -4577,9 +4604,9 @@ const updateCustomerPackage = async (req, res) => {
     if (isActive) {
       await db.query(
         `UPDATE cable_subscriptions
-         SET amount = ROUND(? * COALESCE(NULLIF(received_count, 0), 1), 0),
+         SET amount = ROUND(? * (CASE WHEN billing_basis = 'DAY' THEN number_of_days_or_months / DAY(LAST_DAY(start_date)) ELSE COALESCE(NULLIF(received_count, 0), 1) END), 0),
              balance_amount = GREATEST(
-               ROUND(? * COALESCE(NULLIF(received_count, 0), 1), 0) - COALESCE(paid_amount, 0),
+               ROUND(? * (CASE WHEN billing_basis = 'DAY' THEN number_of_days_or_months / DAY(LAST_DAY(start_date)) ELSE COALESCE(NULLIF(received_count, 0), 1) END), 0) - COALESCE(paid_amount, 0),
                0
              ),
              updated_at = NOW()
@@ -4723,10 +4750,15 @@ const addCustomerSubscription = async (req, res) => {
       await db.rollback();
       return res.status(400).json({ message: 'Select an active approved package before adding the subscription' });
     }
-    const packageAmount = money(payload.package_amount ?? customerPackage?.package_price ?? customerPackage?.master_price);
+    const [[packageTotal]] = await db.query(
+      `SELECT COALESCE(SUM(package_price), 0) AS amount FROM cable_customer_packages
+       WHERE cable_customer_id = ? AND is_active = 1 AND approval_status = 'APPROVED'`,
+      [cableCustomerId]
+    );
+    const packageAmount = money(packageTotal.amount);
     const amount = billingBasis === 'DAY'
       ? money((packageAmount / monthDays) * numberOfDays)
-      : money(payload.amount || packageAmount);
+      : Math.round(packageAmount * receivedCount);
     const paidAmount = money(payload.paid_amount);
     if (paidAmount > amount) {
       await db.rollback();

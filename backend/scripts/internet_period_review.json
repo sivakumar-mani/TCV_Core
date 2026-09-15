@@ -1,0 +1,33 @@
+{
+  "missing_customers": [
+    "tcv_Archana",
+    "tcv_elumalai",
+    "tcv_ajithkumar",
+    "tcv_vasumathi",
+    "tcv_enbarasan",
+    "tcvn_nrkfreight",
+    "tcv_Venkatakrishnan",
+    "tcv_vignesh_r",
+    "tcv_maria",
+    "sky_kirankumar",
+    "tcv_ramesh_s",
+    "tcv_Jothi",
+    "tcv_diwakar",
+    "tcv_rinkesh",
+    "tcv_purushothaman",
+    "tcv_jagadesh",
+    "tcv_madhan_raj",
+    "tcv_eamimal_anusuya",
+    "tcv_thavaselvan",
+    "tcv_demo2"
+  ],
+  "unresolved_blank_periods": [
+    "tcv_Udaya_Kumar",
+    "tcv_vignesh_r",
+    "tcv_maria",
+    "tcvn_Elayaraja_K",
+    "tcv_kalaiselvi_a",
+    "tcv_kamal_r"
+  ],
+  "exact_date_matches": 0
+}

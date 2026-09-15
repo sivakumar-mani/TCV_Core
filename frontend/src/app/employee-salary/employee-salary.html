@@ -6,7 +6,7 @@
 </nav>
 
 <div class="salary-page">
-  <section class="salary-editor">
+  <section class="salary-editor" *ngIf="permissions.isAdmin()">
     <div class="page-header">
       <h1>{{ selectedSalaryId ? 'Edit Salary Slip' : 'Add Salary Slip' }}</h1>
       <div class="header-actions">

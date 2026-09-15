@@ -414,3 +414,24 @@ input[type='checkbox'] {
     grid-template-columns: 1fr;
   }
 }
+
+// Highlight data rows without counting the table heading or totals footer.
+.even-account-row:not(.selected-report-row) {
+  background: #f1f5f9;
+}
+
+:host td.account-total-cell {
+  background: #fef3c7;
+  color: #713f12;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.selected-report-row td.account-total-cell {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+:host td.account-connection-type-cell {
+  font-weight: 700 !important;
+}

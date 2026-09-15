@@ -72,6 +72,23 @@ export class CableTvCustomerForm {
       this.isEditMode = true;
       this.customerId = Number(id);
     }
+    if (this.isEditMode) {
+      for (const row of this.packages.controls) {
+        row.get('package_id')?.removeValidators(Validators.required);
+        row.get('package_id')?.updateValueAndValidity({ emitEvent: false });
+      }
+    }
+    if (!this.isEditMode) {
+      for (const path of ['pincode', 'installed_by_employee_id', 'stb.stb_type', 'stb.stb_no',
+        'subscription.start_date', 'subscription.expiry_date']) {
+        this.form.get(path)?.addValidators(Validators.required);
+        this.form.get(path)?.updateValueAndValidity({ emitEvent: false });
+      }
+      for (const row of this.packages.controls) {
+        row.get('package_id')?.addValidators(Validators.required);
+        row.get('package_id')?.updateValueAndValidity({ emitEvent: false });
+      }
+    }
     this.loadLookups();
   }
 
@@ -436,7 +453,7 @@ export class CableTvCustomerForm {
     const daysInMonth = this.daysInMonth(month, year);
     const endDate = this.toDateInput(data.end_date) || this.subscriptionExpiryDate(startDate);
     const row = this.fb.group({
-      package_id: [data.package_id || null],
+      package_id: [data.package_id || null, this.isEditMode ? [] : Validators.required],
       package_price: [data.package_price || 0],
       start_date: [startDate],
       end_date: [endDate],
@@ -824,6 +841,10 @@ export class CableTvCustomerForm {
   }
 
   submit() {
+    if (!this.isEditMode && !this.packages.length) {
+      this.commonMethods.handleError({ error: { message: 'Select at least one package before saving' } });
+      return;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;

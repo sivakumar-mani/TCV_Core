@@ -210,12 +210,24 @@
                       : packageStatusLabel(row) }}
               </span>
             </td>
-            <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete') || (section === 'packages' && canSection(section, 'create'))"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu">
+            <td class="actions" *ngIf="canSection(section, 'update') || canSection(section, 'delete') || (section === 'packages' && canSection(section, 'create'))">
+              <ng-container *ngIf="section === 'subscriptions'; else otherRowActions">
+                <button *ngIf="canEditRow(row)" type="button" class="table-icon-btn edit"
+                  [title]="permissions.isAdmin() ? 'Edit' : 'Update Payment'"
+                  [attr.aria-label]="permissions.isAdmin() ? 'Edit' : 'Update Payment'" (click)="edit(row)">
+                  <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                </button>
+                <button *ngIf="permissions.isAdmin() && canDeleteRow(row)" type="button" class="table-icon-btn delete"
+                  title="Delete" aria-label="Delete" (click)="delete(row)">
+                  <i class="bi bi-trash" aria-hidden="true"></i>
+                </button>
+              </ng-container>
+              <ng-template #otherRowActions><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu">
               <button mat-menu-item *ngIf="section === 'packages' && row.is_active == 1 && packageTypeLabel(row.package_type) === 'Addon' && canSection(section, 'update')" type="button" title="Deactivate" aria-label="Deactivate" (click)="deactivatePackage(row)">Deactivate</button>
               <button mat-menu-item *ngIf="section === 'packages' && canRemovePackage(row)" type="button" (click)="removePackage(row)">Remove</button>
               <button mat-menu-item *ngIf="canEditRow(row)" type="button" [title]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" [attr.aria-label]="section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit'" (click)="edit(row)">{{ section === 'subscriptions' && !permissions.isAdmin() ? 'Update Payment' : 'Edit' }}</button>
               <button mat-menu-item *ngIf="canDeleteRow(row)" type="button" title="Delete" aria-label="Delete" (click)="delete(row)">Delete</button>
-            </mat-menu></td>
+            </mat-menu></ng-template></td>
           </tr>
           <tr *ngIf="!rows.length"><td colspan="8" class="empty-row">No records added yet.</td></tr>
         </tbody>
@@ -388,16 +400,39 @@
         <div class="account-line total"><span>Total</span><strong>{{ stbTotal() | number:'1.2-2' }}</strong></div>
       </div>
 
-      <div class="form-grid" *ngIf="section === 'packages'">
-        <label>Package Type<select formControlName="package_type"><option *ngFor="let type of packageTypes" [ngValue]="type">{{ packageTypeLabel(type) }}</option></select></label>
-        <label>Package Name<select formControlName="package_id" (change)="selectPackage()"><option [ngValue]="null">Select package</option><option *ngFor="let item of filteredPackages" [ngValue]="item.package_id">{{ item.package_name }}</option></select></label>
-        <label>Package Price<input type="number" formControlName="package_price"></label>
-        <label>Start Date<input type="date" formControlName="start_date"></label>
-        <label>End Date<input type="date" formControlName="end_date"></label>
-        <label *ngIf="permissions.isAdmin()">Updated By<select formControlName="updated_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
-        <label *ngIf="!permissions.isAdmin()">Updated By<input type="text" [value]="permissions.username()" readonly></label>
-        <label>Status<select formControlName="is_active"><option [ngValue]="1">Active</option><option [ngValue]="0">Deactivate</option></select></label>
-      </div>
+      <section *ngIf="section === 'packages'" class="package-row-editor">
+        <div class="package-table-scroll">
+          <table class="package-entry-table">
+            <thead><tr><th scope="col">S.No</th><th scope="col">Package Type</th><th scope="col">Package Name</th><th scope="col">Rate</th><th scope="col" class="package-updated-date" *ngIf="!editId">Updated Date</th><th scope="col" *ngIf="editId">Start Date</th><th scope="col" *ngIf="editId">End Date</th><th scope="col">Updated By</th><th scope="col" class="package-status-column">Status</th><th scope="col" class="package-action-column" *ngIf="!editId">Action</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td><select aria-label="Package type" formControlName="package_type"><option *ngFor="let type of packageTypes" [ngValue]="type" [disabled]="!editId && type === 'ADDON' && addonSelectedElsewhere(-1)">{{ packageTypeLabel(type) }}</option></select></td>
+                <td><select aria-label="Package name" formControlName="package_id" (change)="selectPackage()"><option [ngValue]="null">Select package</option><option *ngFor="let item of filteredPackages" [ngValue]="item.package_id" [disabled]="!editId && packageAlreadySelected(item.package_id, -1)">{{ item.package_name }}</option></select></td>
+                <td><input aria-label="Rate" type="number" formControlName="package_price"></td>
+                <td *ngIf="!editId"><input aria-label="Updated date" type="date" formControlName="updated_date" required></td>
+                <td *ngIf="editId"><input aria-label="Start date" type="date" formControlName="start_date"></td>
+                <td *ngIf="editId"><input aria-label="End date" type="date" formControlName="end_date"></td>
+                <td><select *ngIf="permissions.isAdmin()" aria-label="Updated by" formControlName="updated_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select><span *ngIf="!permissions.isAdmin()">{{ permissions.username() }}</span></td>
+                <td><select aria-label="Status" formControlName="is_active"><option [ngValue]="1">Active</option><option [ngValue]="0">Deactivate</option></select></td>
+                <td *ngIf="!editId"><button type="button" class="package-row-remove" (click)="removeUnsavedPackage(-1)">Delete</button></td>
+              </tr>
+            </tbody>
+            <tbody formArrayName="extra_packages" *ngIf="!editId">
+              <tr *ngFor="let row of extraPackages.controls; let i = index" [formGroupName]="i">
+                <td>{{ i + 2 }}</td>
+                <td><select aria-label="Package type" formControlName="package_type"><option *ngFor="let type of packageTypes" [ngValue]="type" [disabled]="type === 'ADDON' && addonSelectedElsewhere(i)">{{ packageTypeLabel(type) }}</option></select></td>
+                <td><select aria-label="Package name" formControlName="package_id" (change)="selectExtraPackage(i)"><option [ngValue]="null">Select package</option><option *ngFor="let item of packagesForType(row.get('package_type')?.value)" [ngValue]="item.package_id" [disabled]="packageAlreadySelected(item.package_id, i)">{{ item.package_name }}</option></select></td>
+                <td><input aria-label="Rate" type="number" formControlName="package_price"></td>
+                <td>{{ form.get('updated_date')?.value | date:'dd-MM-yyyy' }}</td>
+                <td>Same as first row</td>
+                <td><select aria-label="Status" formControlName="is_active"><option [ngValue]="1">Active</option><option [ngValue]="0">Deactivate</option></select></td>
+                <td><button type="button" class="package-row-remove" (click)="removeUnsavedPackage(i)">Delete</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <div class="form-grid" *ngIf="section === 'subscriptions'">
         <label>Month / Year
@@ -444,8 +479,9 @@
         <label *ngIf="form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE'">Payment Reference<input type="text" formControlName="payment_reference"></label>
       </div>
 
-      <div class="form-actions">
+      <div class="form-actions" [class.package-form-actions]="section === 'packages'">
         <button type="button" class="secondary-btn" (click)="showModal = false">Cancel</button>
+        <button type="button" class="package-add-row-btn" *ngIf="section === 'packages' && !editId" (click)="addPackageSelection()">Add Row</button>
         <button type="button" class="primary-btn" (click)="save()">Save</button>
       </div>
     </section>
