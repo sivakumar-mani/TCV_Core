@@ -41,6 +41,7 @@ export async function openInternetSubscriptionInvoicePdf(data: {
   address: string;
 }) {
   const { kind, customer, subscription, package: packageRow } = data;
+  const customerName = String(customer?.full_name || '-').toUpperCase();
   const network = String(customer?.network_type || '').toUpperCase();
   const isKrishi = network === 'KRISHI';
   const amount = Number(subscription?.amount) || 0;
@@ -50,6 +51,10 @@ export async function openInternetSubscriptionInvoicePdf(data: {
   const invoicePrefix = kind === 'TCV' ? 'TCV-NET' : isKrishi ? 'KRISHI' : 'RAILWIRE';
   const invoiceNo = `${invoicePrefix}-${subscription?.subscription_year || ''}-${subscription?.internet_subscription_id || ''}`;
   const invoiceDate = subscription?.collect_date || subscription?.created_at || new Date();
+  const generatedAt = new Date();
+  const shortName = (String(customer?.full_name || '').trim().split(/\s+/)[0] || 'Customer')
+    .replace(/[<>:"/\\|?*\x00-\x1F]/g, '').replace(/[. ]+$/g, '').slice(0, 40) || 'Customer';
+  const downloadName = `${shortName}_Invoice_${String(generatedAt.getMonth() + 1).padStart(2, '0')}${generatedAt.getFullYear()}.pdf`;
   const packageName = packageRow?.package_name || 'Internet Subscription';
   let railwireLogo: Uint8Array | null = null;
   if (!isKrishi) {
@@ -84,7 +89,7 @@ export async function openInternetSubscriptionInvoicePdf(data: {
 
   if (kind === 'PROVIDER' && isKrishi) {
     rect(10, 12, 575, 818, '1 0 0', 2.2);
-    text(left, 792, 22, 'KRISHII FIBER', true, '0 .26 .58');
+    text(left, 792, 20, 'Krishiinet Infocom Pvt. Ltd.', true, '0 .26 .58');
     text(left, 779, 7, 'INTERNET, TV, OTT, VOIP', true, '0 .45 .27');
     text(255, 748, 15, 'Tax Invoice', true);
     line(left, 736, right, 736, '.15 .15 .15');
@@ -92,10 +97,11 @@ export async function openInternetSubscriptionInvoicePdf(data: {
     rect(left, 545, width, 171);
     line(214, 545, 214, 716); line(390, 545, 390, 716);
     text(47, 701, 9, 'Invoice From', true); text(223, 701, 9, 'Invoice To', true); text(399, 701, 9, 'Customer Information', true);
-    text(43, 680, 9, 'KRISHII FIBER', true);
-    multiText(43, 665, 8, '4 Agaram Main Road, Ranganathan Nagar Selaiyur, Tamil Nadu - 600073', 35);
+    text(43, 680, 9, 'Krishiinet Infocom Pvt. Ltd.', true);
+    multiText(43, 665, 8, '4, Agaram Main Road, Ranganathan Nagar, Selaiyur, Chennai - 600073', 35);
     text(43, 625, 8, 'GSTIN: 33AAGCK2549D1ZT');
-    text(219, 680, 9, customer?.full_name || '-', true);
+    text(43, 611, 8, 'HSN Code: 998422');
+    text(219, 680, 9, customerName, true);
     multiText(219, 665, 8, data.address, 34);
     text(219, 625, 8, `Registered Mobile: ${customer?.mobile_no || '-'}`, true);
     [['Customer No', customer?.display_customer_no], ['User Name', customer?.net_id], ['Invoice No', invoiceNo],
@@ -117,7 +123,7 @@ export async function openInternetSubscriptionInvoicePdf(data: {
     text(314, 648, 8, 'Payment Mode: Partner Recharge', true);
     text(314, 634, 8, 'Payment Collection Agency: Time Cable Vision');
     text(left, 585, 9, 'Billing Details', true);
-    text(left, 570, 9, customer?.full_name || '-', true);
+    text(left, 570, 9, customerName, true);
     multiText(left, 556, 8, data.address, 62, 2);
     text(left, 524, 8, `Username: ${customer?.net_id || '-'}`, true);
     text(left, 510, 8, `Subscriber ID: ${customer?.display_customer_no || '-'}`);
@@ -128,14 +134,18 @@ export async function openInternetSubscriptionInvoicePdf(data: {
       .forEach(([label, value], index) => { text(350, 570 - index * 22, 8, label, true); text(430, 570 - index * 22, 8, value); });
   } else {
     if (railwireLogo) logo(left, 764, 92, 57);
-    else text(left, 792, 17, isKrishi ? 'KRISHII FIBER' : 'RAILWIRE', true, isKrishi ? '0 .3 .58' : '0 .2 .38');
+    else text(left, 792, isKrishi ? 15 : 17, isKrishi ? 'Krishiinet Infocom Pvt. Ltd.' : 'RAILWIRE', true, isKrishi ? '0 .3 .58' : '0 .2 .38');
     text(376, 792, 17, 'TIME CABLE VISION', true, '.85 .12 0');
-    text(left, 777, 7, isKrishi ? 'Krishii Fiber Internet Pvt. Ltd.' : 'Railwire Franchise Partner');
+    if (isKrishi) {
+      text(left, 777, 8, '4, Agaram Main Road, Ranganathan Nagar,');
+      text(left, 765, 8, 'Selaiyur, Chennai - 600073');
+      text(left, 753, 8, 'GSTIN: 33AAGCK2549D1ZT    HSN Code: 998422');
+    } else text(left, 777, 7, 'Railwire Franchise Partner');
     text(376, 777, 7, 'No: 3/2, 2nd Street, Arkeeswarar Colony');
     text(376, 765, 7, 'Chrompet, Chennai - 600044');
     text(376, 753, 7, 'GSTIN: 33AAGCK2549D1ZT');
     line(left, 742, right, 742, '0 0 1');
-    text(left, 721, 10, customer?.full_name || '-', true);
+    text(left, 721, 10, customerName, true);
     multiText(left, 706, 8, data.address, 58, 2);
     text(left, 674, 8, `Registered Mobile: ${customer?.mobile_no || '-'}`);
     [['Invoice No', invoiceNo], ['Invoice Date', displayDate(invoiceDate)],
@@ -163,8 +173,24 @@ export async function openInternetSubscriptionInvoicePdf(data: {
   text(210, paymentY - 18, 8, `Paid: ${money(subscription?.paid_amount)}`);
   text(360, paymentY - 18, 8, `Balance: ${money(subscription?.balance_amount)}`);
   line(left, paymentY - 32, right, paymentY - 32);
-  text(left, paymentY - 54, 8, 'This is a computer generated invoice and does not require a signature.');
-  text(190, paymentY - 72, 9, 'Thank you for your prompt payment.', true);
+
+  // Shared payment instructions for both provider and TCV invoice downloads.
+  const bankY = paymentY - 52;
+  text(left, bankY, 10, 'Please transfer the amount:', true);
+  [
+    'CA No: 510909010042677',
+    'TIME CABLE VISION',
+    'CITY UNION BANK',
+    'IFSC: CIUB0000432',
+    'MICR Code: 600054082',
+    'Branch: New Colony Chrompet',
+    'City: Chennai',
+    'UPI PAYMENT NO.: 9884543540',
+  ].forEach((value, index) => text(left, bankY - 18 - index * 14, 9, value, index === 0 || index === 7));
+
+  line(left, bankY - 132, right, bankY - 132);
+  text(left, bankY - 152, 8, 'This is a computer generated invoice and does not require a signature.');
+  text(190, bankY - 170, 9, 'Thank you for your prompt payment.', true);
 
   const encoder = new TextEncoder();
   const encode = (value: string) => encoder.encode(value);
@@ -202,12 +228,11 @@ export async function openInternetSubscriptionInvoicePdf(data: {
     position += part.length;
   });
   const url = URL.createObjectURL(new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' }));
-  const popup = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!popup) {
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `${invoiceNo}.pdf`;
-    anchor.click();
-  }
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = downloadName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 60000);
 }

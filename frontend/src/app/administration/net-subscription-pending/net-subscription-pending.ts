@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { InternetCustomerServices } from '../../services/internet-customer-services';
@@ -14,6 +15,7 @@ import { globalConstants } from '../../services/global-constants';
   styleUrl: './net-subscription-pending.scss',
 })
 export class NetSubscriptionPending {
+  readonly assignCollector = inject(ActivatedRoute).snapshot.data['assignCollector'] === true;
   customers: any[] = [];
   lookups: any = {};
   filters = { customer_no: '', net_id: '', customer_name: '', area_id: '', street_id: '' };
@@ -64,7 +66,7 @@ export class NetSubscriptionPending {
   }
   load() {
     this.loader.start();
-    this.service.getPendingSubscriptions(this.filters).subscribe({
+    (this.assignCollector ? this.service.getUnassignedCollectors(this.filters) : this.service.getPendingSubscriptions(this.filters)).subscribe({
       next: (r) => {
         this.loader.stop();
         this.customers = r?.customers || [];
@@ -109,6 +111,14 @@ export class NetSubscriptionPending {
     };
     this.renewedChanged();
     this.selected = s;
+    if (this.assignCollector) {
+      this.form.renewed_by_value = s.renewed_by === 'ADMIN' ? 'ADMIN' : 'CUSTOMER';
+      this.form.payment_mode = s.payment_mode;
+      this.form.payment_reference = s.payment_reference || '';
+      this.form.collected_by_employee_id = this.permissions.isAdmin() ? (s.collected_by_employee_id || employee) : employee;
+      this.form.collect_date = this.permissions.isAdmin() ? (this.inputDate(s.collect_date) || this.today()) : this.today();
+      this.collectorChanged();
+    }
   }
   close() {
     if (!this.saving) {
@@ -143,8 +153,33 @@ export class NetSubscriptionPending {
     else this.form.period_value = 1;
     this.calculate();
   }
+  collectorChanged() { this.form.payment_mapped_employee_id = this.form.collected_by_employee_id; }
+  calculateAssignment() {
+    if (!this.selected || !this.form.start_date) return;
+    const f=this.form, end=new Date(`${f.start_date}T00:00:00Z`);
+    if (!Number.isFinite(end.getTime())) return;
+    const value=Number(f.period_value)||1,free=Number(f.free_period_value)||0;
+    if(f.period_unit==='DAYS')end.setUTCDate(end.getUTCDate()+value);
+    else end.setUTCMonth(end.getUTCMonth()+value*(f.period_unit==='YEAR'?12:1));
+    if(f.free_period_unit==='DAYS')end.setUTCDate(end.getUTCDate()+free);
+    else end.setUTCMonth(end.getUTCMonth()+free*(f.free_period_unit==='YEAR'?12:1));
+    end.setUTCDate(end.getUTCDate()-1);
+    f.end_date=end.toISOString().slice(0,10);
+    f.amount=Math.round(Number(this.selected.amount)*Number(f.period_count)/(Number(this.selected.period_count)||1));
+    this.paidChanged();
+  }
+  saveAssignment() {
+    if (this.saving || !this.selected) return;
+    this.collectorChanged();
+    this.saving=true;this.loader.start();
+    this.service.assignNetCollector(this.selected.internet_subscription_id,this.form).subscribe({
+      next:r=>{this.saving=false;this.loader.stop();this.snackbar.openSnackbar(r.message,'');this.close();this.load();},
+      error:e=>{this.saving=false;this.error(e);}
+    });
+  }
   calculate() {
     if (!this.selected) return;
+    if (this.assignCollector) { this.calculateAssignment(); return; }
     const f = this.form,
       network = String(this.customer?.network_type || '').toUpperCase(),
       value = Math.max(Number(f.period_value) || 1, 1),
@@ -186,6 +221,7 @@ export class NetSubscriptionPending {
     this.form.payment_mode = this.form.renewed_by_value === 'CUSTOMER' ? 'DASHBOARD' : (['CASH', 'ACCOUNT'].includes(this.form.payment_mode) ? this.form.payment_mode : 'CASH');
   }
   save() {
+    if (this.assignCollector) { this.saveAssignment(); return; }
     this.calculate();
     const received =
       (Number(this.form.paid_amount) || 0) - (Number(this.selected?.paid_amount) || 0);

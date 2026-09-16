@@ -1,3 +1,4 @@
+const { findCatvEnrollmentGroup } = require('./enrollmentAccountSync');
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const connection = require('../connection');
 const { ensureTransactionTable } = require('./transactionController');
@@ -4709,7 +4710,7 @@ const addCustomerSubscription = async (req, res) => {
     const payload = req.body || {};
     // Subscription collection is handled directly in the CATV Subscription list.
     // It does not require the general administrator workflow.
-    const approvalGroupId = null;
+    let approvalGroupId = null;
     const approvalStatus = 'APPROVED';
     const createdBy = currentUserId(req);
     const startDate = payload.start_date || new Date();
@@ -4727,6 +4728,7 @@ const addCustomerSubscription = async (req, res) => {
       await db.rollback();
       return res.status(400).json({ message: 'Subscription already exists for selected month and year' });
     }
+    approvalGroupId = await findCatvEnrollmentGroup(db, cableCustomerId, subscriptionMonth, subscriptionYear);
     const monthDays = Number(payload.days_in_month) || daysInMonth(subscriptionMonth, subscriptionYear);
     const expiryDate = payload.expiry_date || `${subscriptionYear}-${String(subscriptionMonth).padStart(2, '0')}-${monthDays}`;
     const billingBasis = String(payload.billing_basis || 'MONTH').toUpperCase();
@@ -4827,6 +4829,7 @@ const addCustomerSubscription = async (req, res) => {
        VALUES (${subscriptionColumns.map(() => '?').join(', ')})`,
       subscriptionValues
     );
+    await recalculateLinkedPendingAccount(db, approvalGroupId);
     await db.commit();
     return res.status(201).json({ message: 'Subscription details saved successfully' });
   } catch (error) {
@@ -4836,8 +4839,8 @@ const addCustomerSubscription = async (req, res) => {
 };
 
 const updateCustomerSubscription = async (req, res) => {
+  const db = connection.promise();
   try {
-    const db = connection.promise();
     await ensureCableTvExtendedTables(db);
     const subscriptionMonth = Number(req.body.subscription_month);
     const subscriptionYear = Number(req.body.subscription_year);
@@ -4930,6 +4933,9 @@ const updateCustomerSubscription = async (req, res) => {
       subscriptionId,
       cableCustomerId
     );
+    await db.beginTransaction();
+    const enrollmentGroup = existingSubscription.approval_group_id || await findCatvEnrollmentGroup(db, cableCustomerId, Number(existingSubscription.subscription_month), Number(existingSubscription.subscription_year), subscriptionId);
+    if (!existingSubscription.approval_group_id && enrollmentGroup) await db.query('UPDATE cable_subscriptions SET approval_group_id=? WHERE subscription_id=? AND cable_customer_id=? AND approval_group_id IS NULL',[enrollmentGroup,subscriptionId,cableCustomerId]);
     const [updateResult] = await db.query(
       `UPDATE cable_subscriptions
        SET ${setClauses.join(', ')}
@@ -4937,11 +4943,14 @@ const updateCustomerSubscription = async (req, res) => {
       values
     );
     if (!updateResult.affectedRows) {
+      await db.rollback();
       return res.status(404).json({ message: 'Subscription record not found for update' });
     }
-    await recalculateLinkedPendingAccount(db, existingSubscription.approval_group_id);
+    await recalculateLinkedPendingAccount(db, enrollmentGroup);
+    await db.commit();
     return res.json({ message: 'Subscription details updated successfully' });
   } catch (error) {
+    await db.rollback();
     return res.status(500).json({ message: 'Subscription update failed', error: error.message });
   }
 };

@@ -1,8 +1,8 @@
-<div class="page-shell">
+<div class="page-shell" [class.collector-page]="assignCollector">
   <div class="page-header">
     <div>
       <p class="eyebrow">Internet Accounts</p>
-      <h1>Net Subscription</h1>
+      <h1>{{ assignCollector ? 'Assign Net Collector' : 'Net Subscription' }}</h1>
     </div>
   </div>
   <section class="filter-card">
@@ -25,7 +25,7 @@
       ><button (click)="reset()">Reset</button>
     </div>
   </section>
-  <section class="list-card">
+  <section class="list-card" *ngIf="!assignCollector">
     <div class="summary">
       Total Net Subscription Customers: <strong>{{ customers.length }}</strong>
     </div>
@@ -68,6 +68,14 @@
         </tbody>
       </table>
     </div>
+  </section>
+  <section class="list-card" *ngIf="assignCollector">
+    <p>Paid subscriptions missing Collected By or Collected Date: <strong>{{ customers.length }}</strong></p>
+    <div class="scroll"><table class="collector-table">
+      <thead><tr><th>S No</th><th>C No</th><th>Customer Name / Net ID</th><th>Network</th><th>Month</th><th>Paid</th><th>Action</th></tr></thead>
+      <tbody><tr *ngFor="let row of customers;let i=index"><td>{{ i+1 }}</td><td>{{ row.display_customer_no }}</td><td>{{ row.full_name }}<br>{{ row.net_id }}</td><td>{{ row.network_type }}</td><td>{{ monthYear(row) }}</td><td>{{ row.paid_amount }}</td><td><button class="collector-edit" type="button" *ngIf="permissions.can('NET_SUBSCRIPTION', 'update')" (click)="open(row,row)" aria-label="Assign collector" title="Assign collector"><i class="bi bi-pencil" aria-hidden="true"></i></button></td></tr>
+      <tr *ngIf="!customers.length"><td colspan="7">No paid subscriptions awaiting collector assignment.</td></tr></tbody>
+    </table></div>
   </section>
   <div class="backdrop" *ngIf="selected">
     <section class="modal">
@@ -118,7 +126,7 @@
               <option value="MONTH">Month</option>
               <option value="DAYS">Days</option>
               <option value="YEAR">Year</option></select
-            ><input [(ngModel)]="form.period_count" disabled /></div></label
+            ><input type="number" min="0.0001" step="any" [(ngModel)]="form.period_count" [disabled]="!assignCollector" (ngModelChange)="calculateAssignment()" /></div></label
         ><label
           >Free No of Period
           <div class="inline">
@@ -132,7 +140,7 @@
               <option value="YEAR">Year</option>
             </select>
           </div></label
-        ><label>Start Date<input type="date" [(ngModel)]="form.start_date" disabled /></label
+        ><label>Start Date<input type="date" [(ngModel)]="form.start_date" [disabled]="!assignCollector" (ngModelChange)="calculateAssignment()" /></label
         ><label>End Date<input type="date" [(ngModel)]="form.end_date" disabled /></label
         ><label>Subscription Amount<input type="number" [(ngModel)]="form.amount" disabled /></label
         ><label
@@ -144,7 +152,7 @@
             (ngModelChange)="paidChanged()" /></label
         ><label>Balance<input type="number" [(ngModel)]="form.balance_amount" disabled /></label
         ><label
-          >Status<select [(ngModel)]="form.payment_status" [disabled]="!permissions.isAdmin()">
+          >Status<select [(ngModel)]="form.payment_status" [disabled]="assignCollector || !permissions.isAdmin()">
             <option value="PENDING">Unpaid</option>
             <option value="PARTIAL">Partial</option>
             <option value="PAID">Paid</option>
@@ -156,7 +164,7 @@
             [disabled]="!permissions.isAdmin()" /></label
         ><label
           >Collected By<select
-            [(ngModel)]="form.collected_by_employee_id"
+            [(ngModel)]="form.collected_by_employee_id" (ngModelChange)="assignCollector && collectorChanged()"
             [disabled]="!permissions.isAdmin()"
           >
             <option [ngValue]="null">Select employee</option>
@@ -165,13 +173,13 @@
             </option>
           </select></label
         ><label
-          >Renewed By<select [(ngModel)]="form.renewed_by_value" (ngModelChange)="renewedChanged()" [disabled]="!permissions.isAdmin()"><option value="CUSTOMER">Online</option><option value="ADMIN">Admin</option></select></label
+          >Renewed By<select [(ngModel)]="form.renewed_by_value" (ngModelChange)="renewedChanged()" [disabled]="assignCollector || !permissions.isAdmin()"><option value="CUSTOMER">Online</option><option value="ADMIN">Admin</option></select></label
         ><label
-          >Mode of Payment<select [(ngModel)]="form.payment_mode" [disabled]="!permissions.isAdmin() || form.renewed_by_value!=='ADMIN'"><option *ngIf="form.renewed_by_value==='CUSTOMER'" value="DASHBOARD">Dashboard</option><option *ngIf="form.renewed_by_value==='ADMIN'" value="CASH">Cash</option><option *ngIf="form.renewed_by_value==='ADMIN'" value="ACCOUNT">Account</option></select></label
-        ><label *ngIf="permissions.isAdmin()"
-          >Payment Reference<input [(ngModel)]="form.payment_reference" /></label
-        ><label *ngIf="permissions.isAdmin()"
-          >Payment Mapped Employee<select [(ngModel)]="form.payment_mapped_employee_id">
+          >Mode of Payment<select [(ngModel)]="form.payment_mode" [disabled]="assignCollector || !permissions.isAdmin() || form.renewed_by_value!=='ADMIN'"><option *ngIf="form.renewed_by_value==='CUSTOMER'" value="DASHBOARD">Dashboard</option><option *ngIf="form.renewed_by_value==='ADMIN'" value="CASH">Cash</option><option *ngIf="form.renewed_by_value==='ADMIN'" value="ACCOUNT">Account</option></select></label
+        ><label *ngIf="permissions.isAdmin() || assignCollector"
+          >Payment Reference<input [(ngModel)]="form.payment_reference" maxlength="150" /></label
+        ><label *ngIf="permissions.isAdmin() || assignCollector"
+          >Payment Mapped Employee<select [(ngModel)]="form.payment_mapped_employee_id" [disabled]="assignCollector">
             <option [ngValue]="null">Select employee</option>
             <option *ngFor="let e of employees" [ngValue]="e.employee_id">
               {{ e.employee_name }}

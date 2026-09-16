@@ -6,6 +6,8 @@ import { appConfig } from '../app-config';
 export class InternetCustomerServices {
   private http = inject(HttpClient);
   private endpoint = `${appConfig.apiUrl}/v1/internet`;
+  getUnassignedCollectors(filters:any) { return this.http.get<any>(`${this.endpoint}/assign-net-collector`, {params:filters}); }
+  assignNetCollector(id:number,data:any) { return this.http.patch<any>(`${this.endpoint}/assign-net-collector/${id}`,data); }
   getLookups() { return this.http.get<any>(`${this.endpoint}/lookups`); }
   getCustomers() { return this.http.get<any[]>(`${this.endpoint}/customers`); }
   getCustomer(id: number) { return this.http.get<any>(`${this.endpoint}/customers/${id}`); }

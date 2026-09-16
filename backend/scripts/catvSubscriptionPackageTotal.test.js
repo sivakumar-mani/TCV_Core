@@ -29,7 +29,7 @@ async function add(total, body={}) {
   if(sql.includes('INSERT INTO cable_subscriptions')) inserted=Object.fromEntries(sql.match(/\(([^)]+)\)/)[1].split(',').map((k,i)=>[k.trim(),values[i]]));
   return [[]];
  }};
- const ctx={connection:{promise:()=>db},ensureCableTvExtendedTables:async()=>{},currentUserId:()=>1,money:v=>Number(v)||0,daysInMonth:()=>31,inclusiveDays:()=>31,subscriptionBillingDays:()=>20,resolveEmployeeId:async()=>1,isAdmin:()=>false,existingColumns:async()=>new Set(['received_count']),dateOnly:v=>new Date(v).toISOString().slice(0,10),nullable:v=>v||null};
+ const ctx={findCatvEnrollmentGroup:async()=>null,recalculateLinkedPendingAccount:async()=>{},connection:{promise:()=>db},ensureCableTvExtendedTables:async()=>{},currentUserId:()=>1,money:v=>Number(v)||0,daysInMonth:()=>31,inclusiveDays:()=>31,subscriptionBillingDays:()=>20,resolveEmployeeId:async()=>1,isAdmin:()=>false,existingColumns:async()=>new Set(['received_count']),dateOnly:v=>new Date(v).toISOString().slice(0,10),nullable:v=>v||null};
  vm.createContext(ctx);vm.runInContext(controller.slice(controller.indexOf('const addCustomerSubscription ='),controller.indexOf('const updateCustomerSubscription ='))+';this.add=addCustomerSubscription;',ctx);
  const res={status(c){this.code=c;return this;},json(b){this.body=b;return this;}};
  await ctx.add({params:{id:1},body:{customer_package_id:1,subscription_month:10,subscription_year:2026,start_date:'2026-10-01',expiry_date:'2026-10-31',billing_basis:'MONTH',number_of_days_or_months:1,received_count:1,amount:4,package_amount:4,paid_amount:0,...body}},res);

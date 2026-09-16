@@ -1,8 +1,10 @@
 const express=require('express');
 const auth=require('../services/authendication');
-const {internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,updateInternetCustomerRouter,deleteInternetCustomerRouter,previewInternetSubscriptionAppend,appendInternetSubscriptions,previewCashAdminCorrection,applyCashAdminCorrection,getInternetSubscriptionReport}=require('../controller/internetCustomerController');
+const {getUnassignedNetCollectors,assignNetCollector,internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,updateInternetCustomerRouter,deleteInternetCustomerRouter,previewInternetSubscriptionAppend,appendInternetSubscriptions,previewCashAdminCorrection,applyCashAdminCorrection,getInternetSubscriptionReport}=require('../controller/internetCustomerController');
 const router=express.Router(); router.use(auth.authendicateToken);
 const allowPermissionGrantedAdminOperation=(req,res,next)=>{res.locals.role='ADMIN';next();};
+router.get('/assign-net-collector',auth.requirePermission('NET_SUBSCRIPTION'),getUnassignedNetCollectors);
+router.patch('/assign-net-collector/:id',auth.requirePermissionAction('NET_SUBSCRIPTION','can_update'),assignNetCollector);
 router.get('/subscription-dues/lookups',auth.requirePermission('NET_SUBSCRIPTION'),internetLookups);
 router.get('/subscription-dues',auth.requirePermission('NET_SUBSCRIPTION'),getPendingInternetSubscriptions);
 router.patch('/subscription-dues/:id/receive',auth.requirePermissionAction('NET_SUBSCRIPTION','can_update'),receiveInternetSubscriptionPayment);

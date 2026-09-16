@@ -107,6 +107,12 @@ export const routes: Routes = [
             data:{ expectedRole:['admin'] }
          },
          {
+            path:'assign-net-collector',
+            loadComponent: ()=> import('./administration/net-subscription-pending/net-subscription-pending').then(n => n.NetSubscriptionPending),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'], assignCollector:true }
+        },
+         {
             path:'net-subscription-pending',
             loadComponent: ()=> import('./administration/net-subscription-pending/net-subscription-pending').then(n => n.NetSubscriptionPending),
             canActivate:[RouteGuard],
