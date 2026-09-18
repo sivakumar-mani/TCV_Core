@@ -134,9 +134,10 @@ export class CableTvCustomerView {
 
   periodCount(row: any) {
     const basis = String(row.billing_basis || '').toLowerCase();
-    const count = basis === 'day' && row.start_date
-      ? this.subscriptionBillingDays(row.start_date)
-      : Number(row.number_of_days_or_months || 0);
+    const count = Number(row.number_of_days_or_months) > 0 ? Number(row.number_of_days_or_months)
+      : basis === 'day' && row.start_date
+        ? this.subscriptionBillingDays(row.start_date)
+        : 0;
     return count ? `${count} ${basis}${count === 1 ? '' : 's'}` : '-';
   }
 

@@ -20,6 +20,79 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
 })
 export class QuotationForm implements OnDestroy {
   quotationForm!: FormGroup;
+  isTemplateMode = false;
+  templates: any[] = [];
+  templatesLoading = false;
+  templatesLoadFailed = false;
+  templateId?: number;
+  templateBusy = false;
+  private templateRequest = 0;
+
+  loadTemplates() {
+    this.templatesLoading = true;
+    this.templatesLoadFailed = false;
+    this.quotationService.getTemplates().subscribe({
+      next: rows => { this.templates = rows; this.templatesLoading = false; },
+      error: error => {
+        this.templatesLoading = false;
+        this.templatesLoadFailed = true;
+        this.commonMethods.handleError(error);
+      }
+    });
+  }
+
+  newTemplate() {
+    this.templateId = undefined;
+    this.quotationForm.get('template_name')?.reset('');
+    this.items.clear();
+    this.productSearchTerms = [];
+    this.addItem();
+  }
+
+  selectTemplate(event: Event) {
+    const id = Number((event.target as HTMLSelectElement).value);
+    this.openTemplate(id);
+  }
+
+  openTemplate(id: number) {
+    if (!id || this.templateBusy) return;
+    const request = ++this.templateRequest;
+    this.templateBusy = true;
+    this.quotationService.getTemplate(id).subscribe({
+      next: data => {
+        if (request !== this.templateRequest) return;
+        this.templateBusy = false;
+        this.closeProductDropdown();
+        this.items.clear();
+        this.productSearchTerms = [];
+        data.items.forEach((item: any) => this.addItem(item));
+        if (this.isTemplateMode) {
+          this.templateId = id;
+          this.quotationForm.get('template_name')?.setValue(data.template_name);
+        }
+
+      },
+      error: error => {
+        if (request !== this.templateRequest) return;
+        this.templateBusy = false;
+        this.commonMethods.handleError(error);
+      }
+    });
+  }
+
+  saveTemplate() {
+    if (this.quotationForm.invalid || this.templateBusy) return;
+    this.templateBusy = true;
+    this.quotationService.saveTemplate(this.quotationForm.getRawValue(), this.templateId).subscribe({
+      next: response => {
+        this.templateBusy = false;
+        this.commonMethods.handleTokenAndMessage(response);
+        this.loadTemplates();
+        this.newTemplate();
+      },
+      error: error => { this.templateBusy = false; this.commonMethods.handleError(error); }
+    });
+  }
   customers: any[] = [];
   employees: any[] = [];
   products: any[] = [];
@@ -48,11 +121,23 @@ export class QuotationForm implements OnDestroy {
   ) {}
 
   ngOnInit() {
+    this.isTemplateMode = this.router.url.split('?')[0] === '/quotation-templates';
     this.buildForm();
+    if (this.isTemplateMode) {
+      this.quotationForm.get('customer_id')?.clearValidators();
+      this.quotationForm.get('customer_id')?.updateValueAndValidity();
+      this.quotationForm.get('template_name')?.setValidators([Validators.required, Validators.maxLength(150), Validators.pattern(/\S/)]);
+      this.quotationForm.get('template_name')?.updateValueAndValidity();
+      this.loadProducts();
+      this.loadTemplates();
+      document.addEventListener('scroll', this.handleAnyScroll, true);
+      return;
+    }
     this.loadCustomers();
     this.loadEmployees();
     this.loadProducts();
     this.initializeForm();
+    if (!this.isEditMode && !this.isPreviewMode) this.loadTemplates();
     document.addEventListener('scroll', this.handleAnyScroll, true);
   }
 
@@ -86,6 +171,7 @@ export class QuotationForm implements OnDestroy {
 
   buildForm() {
     this.quotationForm = this.fb.group({
+      template_name: [''],
       quotation_no: [{ value: '', disabled: true }],
       quotation_date: [this.today(), Validators.required],
       valid_until: [''],
@@ -409,7 +495,8 @@ export class QuotationForm implements OnDestroy {
   }
 
   saveDraft() {
-    this.saveQuotation('DRAFT');
+    if (this.isTemplateMode) this.saveTemplate();
+    else if (!this.templateBusy) this.saveQuotation('DRAFT');
   }
 
   saveQuotation(status: 'DRAFT' | 'APPROVED' | 'SENT' = 'DRAFT') {
@@ -697,12 +784,19 @@ export class QuotationForm implements OnDestroy {
     const numberText = this.quoteNumber(value, 2);
     const numberWidth = numberText.length * size * 0.52;
     const symbolSize = size * 0.78;
-    const symbolText = `${negative ? '- ' : ''}₹`;
-    const symbolWidth = symbolText.length * symbolSize * 0.52;
+    const symbolWidth = symbolSize * 0.62;
     const numberX = Number((rightX - numberWidth).toFixed(2));
     const symbolX = Number((numberX - symbolWidth - 3).toFixed(2));
-    this.pdfTextColor(commands, symbolX, y + 0.4, symbolSize, symbolText, 0.47, 0.47, 0.47);
+    if (negative) this.pdfTextColor(commands, symbolX - symbolSize * 0.8, y + 0.4, symbolSize, '-', 0.47, 0.47, 0.47);
+    this.pdfRupeeSymbol(commands, symbolX, y + 0.4, symbolSize);
     this.pdfText(commands, numberX, y, size, numberText);
+  }
+
+  pdfRupeeSymbol(commands: string[], x: number, y: number, size: number) {
+    // Helvetica has no rupee glyph. Use PDF paths instead of UTF-8 text bytes.
+    commands.push(`q ${size} 0 0 ${size} ${x} ${y} cm 0.47 0.47 0.47 RG 0.065 w 1 J 1 j ` +
+      '0.04 0.72 m 0.58 0.72 l S 0.04 0.51 m 0.58 0.51 l S ' +
+      '0.18 0.72 m 0.51 0.72 0.51 0.31 0.08 0.31 c 0.51 0.01 l S Q');
   }
 
   pdfLine(commands: string[], x1: number, y1: number, x2: number, y2: number) {
@@ -727,7 +821,7 @@ export class QuotationForm implements OnDestroy {
   }
 
   escapePdf(value: string) {
-    return value.replace(/[^\x20-\x7E₹]/g, '').replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+    return value.replace(/₹/g, 'Rs.').replace(/[^\x20-\x7E]/g, '').replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
   }
 
   pdfByteLength(value: string) {

@@ -11,7 +11,7 @@
 <div class="quotation-page">
   <div class="page-header no-print">
     <div>
-      <h1>{{ isPreviewMode ? 'Quotation Preview' : isEditMode ? 'Edit Quotation' : 'Add Quotation' }}</h1>
+      <h1>{{ isTemplateMode ? 'Quotation Templates' : isPreviewMode ? 'Quotation Preview' : isEditMode ? 'Edit Quotation' : 'Add Quotation' }}</h1>
       <p *ngIf="quotation">Status: <strong>{{ quotation.quotation_status }}</strong> | Version: <strong>{{ quotation.quotation_version }}</strong></p>
     </div>
     <div class="header-actions">
@@ -26,8 +26,30 @@
     </div>
   </div>
 
+  <section *ngIf="isTemplateMode" class="form-section" aria-labelledby="saved-templates-heading">
+    <div class="section-title-row">
+      <h2 id="saved-templates-heading">Created Templates</h2>
+      <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="templatesLoading || templateBusy" (click)="loadTemplates()">Refresh</button>
+    </div>
+    <p *ngIf="templatesLoading" role="status">Loading templates...</p>
+    <p *ngIf="templatesLoadFailed" class="alert alert-warning" role="alert">Unable to load templates. Please try Refresh.</p>
+    <p *ngIf="!templatesLoading && !templatesLoadFailed && templates.length === 0" class="text-muted">No templates created yet. Create your first template below.</p>
+    <div *ngIf="templates.length" class="table-responsive">
+      <table class="table table-sm align-middle">
+        <thead><tr><th scope="col">S.No</th><th scope="col">Template Name</th><th scope="col" class="text-end">Action</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let template of templates; let i = index" [class.table-active]="templateId === template.template_id">
+            <td>{{ i + 1 }}</td>
+            <td>{{ template.template_name }} <span *ngIf="templateId === template.template_id" class="badge bg-primary ms-2">Editing</span></td>
+            <td class="text-end"><button type="button" class="btn btn-sm btn-outline-primary" [disabled]="templateBusy" [attr.aria-label]="'Edit ' + template.template_name" (click)="openTemplate(template.template_id)">Edit</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <form *ngIf="!isPreviewMode" [formGroup]="quotationForm" (ngSubmit)="saveDraft()">
-    <section class="form-section">
+    <section *ngIf="!isTemplateMode" class="form-section">
       <h2>Quotation Header</h2>
       <div class="grid-2-col mt-4">
         <app-input-form-field [label]="'Quotation No'" [type]="'text'" [readonly]="true"
@@ -65,6 +87,22 @@
         <app-textarea-form-field [label]="'Remarks'" [rows]="3"
           [control]="$any(quotationForm.controls['remarks'])"></app-textarea-form-field>
       </div>
+    </section>
+
+    <section *ngIf="isTemplateMode || !isEditMode" class="form-section">
+      <ng-container *ngIf="!isTemplateMode">
+      <label for="quotation-template">Quotation Template</label>
+      <select id="quotation-template" class="form-select" [disabled]="templateBusy" (change)="selectTemplate($event)">
+        <option value="">Select template</option>
+        <option *ngFor="let template of templates" [value]="template.template_id">{{ template.template_name }}</option>
+      </select>
+      </ng-container>
+      <p *ngIf="!isTemplateMode" class="text-muted mt-2">Selecting a template replaces the items below with its saved items and selling prices. Quantities can be changed.</p>
+      <ng-container *ngIf="isTemplateMode">
+        <button type="button" class="btn btn-outline-primary my-3" [disabled]="templateBusy" (click)="newTemplate()">New Template</button>
+        <app-input-form-field [label]="'Template Name'" [type]="'text'" [formControl]="$any(quotationForm.controls['template_name'])"></app-input-form-field>
+        <p class="text-muted mt-2">Use a unique name. Saved items and selling prices are copied into the quotation when this template is selected.</p>
+      </ng-container>
     </section>
 
     <section class="form-section">
@@ -154,7 +192,7 @@
 
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
-      <button type="submit" class="btn btn-primary" [disabled]="quotationForm.invalid">Save as Draft</button>
+      <button type="submit" class="btn btn-primary" [disabled]="quotationForm.invalid || templateBusy">{{ isTemplateMode ? 'Save Template' : 'Save as Draft' }}</button>
     </div>
   </form>
 

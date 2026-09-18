@@ -545,11 +545,12 @@ const approveWorkflow = async (req, res) => {
                 'cable_tv_customers',
                 'cable_customer_accounts',
                 'cable_connections',
+                // Billing approval is independent of installation account receipt.
+                'cable_customer_packages',
+                'cable_subscriptions',
                 ...(!waitForAccountReceipt ? [
                     'cable_connection_materials',
                     'cable_customer_stbs',
-                    'cable_customer_packages',
-                    'cable_subscriptions',
                     'cable_customer_stb_accessories'
                 ] : [])
             ];

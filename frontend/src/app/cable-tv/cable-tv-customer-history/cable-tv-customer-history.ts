@@ -1062,7 +1062,9 @@ export class CableTvCustomerHistory {
     const dayEndDate = basis === 'DAY'
       ? this.form.get('expiry_date')?.value || this.monthLastDate(month, year)
       : this.monthLastDate(month, year);
-    const dayCount = basis === 'DAY' ? this.subscriptionBillingDays(startDate) : rawPeriodCount;
+    const dayCount = basis === 'DAY'
+      ? (this.editId ? this.inclusiveDayCount(startDate, dayEndDate) : this.subscriptionBillingDays(startDate))
+      : rawPeriodCount;
     const periodCount = basis === 'DAY' ? dayCount : rawPeriodCount;
     const receivedCount = basis === 'YEAR'
       ? rawPeriodCount * 12
@@ -1156,9 +1158,10 @@ export class CableTvCustomerHistory {
     startDate?: string
   ) {
     const unit = String(basis || 'MONTH').toLowerCase();
-    const count = unit === 'day' && startDate
-      ? this.subscriptionBillingDays(this.dateInputValue(startDate))
-      : Number(value) || 1;
+    const count = Number(value) > 0 ? Number(value)
+      : unit === 'day' && startDate
+        ? this.subscriptionBillingDays(this.dateInputValue(startDate))
+        : 1;
     const label = unit === 'day' ? 'Days' : unit === 'year' ? 'Year' : 'Month';
     return `${count}${label}`;
   }

@@ -12,6 +12,13 @@ const {
   deleteQuotation
 } = require('../controller/quotationController');
 
+const templates = require('../controller/quotationTemplateController');
+const { requireAdmin } = require('../services/authendication');
+router.get('/templates', templates.list);
+router.get('/templates/:id', templates.get);
+router.post('/templates', requireAdmin, templates.save);
+router.put('/templates/:id', requireAdmin, templates.save);
+
 router.get('/', getQuotations);
 router.get('/get', getQuotations);
 router.get('/next-no', getNextQuotationNo);

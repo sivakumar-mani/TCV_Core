@@ -11,6 +11,12 @@ export class QuotationServices {
   private endpoint = `${this.url}/v1/quotations`;
   private headers = new HttpHeaders().set('content-type', 'application/json');
 
+  getTemplates() { return this.http.get<any[]>(`${this.endpoint}/templates`); }
+  getTemplate(id: number) { return this.http.get<any>(`${this.endpoint}/templates/${id}`); }
+  saveTemplate(data: any, id?: number) {
+    return id ? this.http.put(`${this.endpoint}/templates/${id}`, data) : this.http.post(`${this.endpoint}/templates`, data);
+  }
+
   getQuotations() {
     return this.http.get(this.endpoint);
   }

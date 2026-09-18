@@ -59,6 +59,12 @@ export const routes: Routes = [
             }
         },
          {
+            path:'quotation-templates',
+            loadComponent: () => import('./quotations/quotation-form/quotation-form').then(n => n.QuotationForm),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin'] }
+        },
+        {
             path:'role-permissions',
             loadComponent: ()=> import('./administration/role-permissions/role-permissions').then(n => n.RolePermissions),
             canActivate:[RouteGuard],
