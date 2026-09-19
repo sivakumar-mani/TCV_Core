@@ -166,7 +166,15 @@ const getComplaints = async (req, res) => {
     }
     const [rows] = await db.query(
       `${complaintSelect} ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
-       ORDER BY c.registered_at DESC, c.complaint_id DESC`,
+       ORDER BY CASE c.status
+                  WHEN 'OPEN' THEN 0
+                  WHEN 'IN_PROGRESS' THEN 1
+                  WHEN 'PENDING' THEN 2
+                  WHEN 'HOLD' THEN 3
+                  WHEN 'COMPLETED' THEN 4
+                  ELSE 5
+                END,
+                c.registered_at DESC, c.complaint_id DESC`,
       values
     );
     return res.json(rows);
