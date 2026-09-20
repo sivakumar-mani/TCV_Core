@@ -338,6 +338,12 @@ export const routes: Routes = [
                 expectedRole:['admin']
             }
         },
+        {
+            path:'stock-quick-view',
+            loadComponent: ()=> import('./stock/stock-quick-view/stock-quick-view').then(n => n.StockQuickView),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin'] }
+        },
          {
             path:'quotations',
             loadComponent: ()=> import('./quotations/quotation-list/quotation-list').then(n => n.QuotationList),

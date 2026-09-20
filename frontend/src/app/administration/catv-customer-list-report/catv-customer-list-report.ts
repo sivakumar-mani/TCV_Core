@@ -99,7 +99,21 @@ export class CatvCustomerListReport {
     popup.document.close();
   }
 
+  exportExcel() {
+    const headers = ['S.No', 'Date', 'C No / Old C No', 'Customer Name', 'STB No', 'New STB', 'Paid', 'Balance'];
+    const data = this.rows.map((row, index) => [index + 1, '', this.customerNumber(row), row.full_name, row.stb_no || '', '', '', '']);
+    data.push(['', '', `Total Customers: ${this.summary.total_records}`, '', '', '', '', '']);
+    const csv = [headers, ...data].map(columns => columns.map(value => this.csvValue(value)).join(',')).join('\r\n');
+    const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'CATV_Customer_List_Report.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
   private titleCase(value: string) { return value.toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase()); }
+  private csvValue(value: any) { return `"${String(value ?? '').replace(/"/g, '""')}"`; }
   private escape(value: any) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] || char)); }
   private error(message: string) { this.snackbar.openSnackbar(message, globalConstants.errorRegex); }
   private handleError(error: any) { this.loader.stop(); this.error(error?.error?.message || error?.message || 'Report request failed'); }

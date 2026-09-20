@@ -1,0 +1,34 @@
+<div class="quick-view">
+  <header class="quick-header">
+    <div><p class="eyebrow">INVENTORY</p><h1>Stock in Hand</h1></div>
+    <div class="summary">
+      <div class="summary-card available"><span>IN STOCK</span><strong>{{ count('available') }}</strong></div>
+      <div class="summary-card low"><span>LOW</span><strong>{{ count('low') }}</strong></div>
+      <div class="summary-card unavailable"><span>NOT AVAILABLE</span><strong>{{ count('unavailable') }}</strong></div>
+    </div>
+  </header>
+
+  <div class="tools">
+    <input type="search" [(ngModel)]="search" aria-label="Search brand or product" placeholder="Search brand or product">
+    <div class="filters" aria-label="Stock status filters">
+      <button *ngFor="let option of ['all', 'available', 'low', 'unavailable']" type="button"
+        [class.selected]="filter === option" [attr.aria-pressed]="filter === option"
+        (click)="filter = $any(option)">{{ option === 'all' ? 'All' : option === 'unavailable' ? 'Not available' : option | titlecase }}</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th class="brand-column">BRAND</th><th class="product-column">PRODUCT NAME</th><th class="unit-column">UNIT</th><th class="quantity">AVAILABLE</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let row of visibleRows" [class]="status(row)">
+          <td class="brand">{{ row.brand_name || '—' }}</td>
+          <td><span class="product">{{ row.product_name }}</span><small>{{ row.product_code }}</small></td>
+          <td class="unit">{{ row.unit || '—' }}</td>
+          <td class="quantity"><strong>{{ row.available_qty | number:'1.0-2' }}</strong><span class="badge">{{ status(row) === 'available' ? 'Available' : status(row) === 'low' ? 'Low stock' : 'Not available' }}</span></td>
+        </tr>
+        <tr *ngIf="!visibleRows.length"><td colspan="4" class="empty">No matching stock found.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

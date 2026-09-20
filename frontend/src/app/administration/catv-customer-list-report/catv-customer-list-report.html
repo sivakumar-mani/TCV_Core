@@ -18,7 +18,7 @@
   </section>
 
   <section class="report-card">
-    <div class="report-toolbar"><div><strong>Network: {{ networkLabel }}</strong><span>Area: {{ areaLabel }}</span><span>Street: {{ streetLabel }}</span><span>Status: {{ statusLabel }}</span></div><div class="export-actions"><button type="button" class="icon-action" (click)="printReport()">Print</button></div></div>
+    <div class="report-toolbar"><div><strong>Network: {{ networkLabel }}</strong><span>Area: {{ areaLabel }}</span><span>Street: {{ streetLabel }}</span><span>Status: {{ statusLabel }}</span></div><div class="export-actions"><button type="button" class="icon-action" (click)="printReport()">Print</button><button type="button" class="icon-action excel" title="Export to Excel" (click)="exportExcel()">Excel</button></div></div>
     <div class="table-scroll"><table class="customer-list-table"><thead><tr><th class="fit-column">S.No</th><th class="date-column">Date</th><th class="fit-column">C No / Old C No</th><th class="fit-column">Customer Name</th><th class="fit-column">STB No</th><th class="manual-column">New STB</th><th class="write-column">Paid</th><th class="write-column">Balance</th></tr></thead><tbody>
       <tr *ngFor="let row of pageRows; let i = index"><td class="fit-column">{{ (page - 1) * pageSize + i + 1 }}</td><td class="date-column"></td><td class="fit-column">{{ customerNumber(row) }}</td><td class="fit-column">{{ row.full_name }}</td><td class="fit-column">{{ row.stb_no }}</td><td class="manual-column"></td><td class="write-column"></td><td class="write-column"></td></tr>
       <tr *ngIf="!pageRows.length"><td colspan="8" class="empty">No CATV customers found.</td></tr>
