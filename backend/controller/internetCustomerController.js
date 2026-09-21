@@ -404,10 +404,11 @@ const updateInternetCustomerInformation = async (req,res) => {
     if(!isAdmin(req)) return res.status(403).json({message:'Administrator permission is required'});
     const db=connection.promise(); await ensureInternetSchema(db); const id=Number(req.params.id); const payload=req.body||{};
     const network=String(payload.network_type||'').toUpperCase(), fullName=String(payload.full_name||'').trim(), netId=String(payload.net_id||'').trim();
+    const password=String(payload.network_password||'').trim();
     const mobile=String(payload.mobile_no||'').trim(), alternate=String(payload.alternate_mobile_no||'').trim();
     const aadhaar=String(payload.aadhaar_no||'').trim(), source=String(payload.source_name||'').trim();
     const installedBy=intOrNull(payload.installed_by_employee_id);
-    if(!id||!['KRISHI','RAILWIRE','DMNET'].includes(network)||!fullName||!netId||!/^\d{10}$/.test(mobile)||
+    if(!id||!['KRISHI','RAILWIRE','DMNET'].includes(network)||!fullName||!netId||!password||!/^\d{10}$/.test(mobile)||
       (alternate&&!/^\d{10}$/.test(alternate))||(aadhaar&&!/^\d{12}$/.test(aadhaar))||
       !['Customer Approach Office','Direct','Customer Approach Engineer'].includes(source)||!installedBy) {
       return res.status(400).json({message:'Enter valid required customer information'});
@@ -419,7 +420,7 @@ const updateInternetCustomerInformation = async (req,res) => {
     if(duplicateNetId) return res.status(409).json({message:'Net ID is already assigned to another Internet customer'});
     const [[employee]]=await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1',[installedBy]);
     if(!employee) return res.status(400).json({message:'Select an active Installed By employee'});
-    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,id]);
+    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,password,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,id]);
     if(!result.affectedRows) return res.status(404).json({message:'Internet customer not found'});
     return res.json({message:'Internet customer information updated successfully'});
   } catch(error){return res.status(500).json({message:'Internet customer information update failed',error:error.message});}

@@ -129,6 +129,7 @@ export class InternetCustomerView {
           network_type: r.customer?.network_type,
           full_name: r.customer?.full_name,
           net_id: r.customer?.net_id,
+          network_password: r.customer?.network_password || '',
           mobile_no: r.customer?.mobile_no,
           alternate_mobile_no: r.customer?.alternate_mobile_no || '',
           aadhaar_no: r.customer?.aadhaar_no || '',
