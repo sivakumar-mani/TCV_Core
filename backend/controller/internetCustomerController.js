@@ -408,11 +408,18 @@ const updateInternetCustomerInformation = async (req,res) => {
     const mobile=String(payload.mobile_no||'').trim(), alternate=String(payload.alternate_mobile_no||'').trim();
     const aadhaar=String(payload.aadhaar_no||'').trim(), source=String(payload.source_name||'').trim();
     const installedBy=intOrNull(payload.installed_by_employee_id);
-    if(!id||!['KRISHI','RAILWIRE','DMNET'].includes(network)||!fullName||!netId||!password||!/^\d{10}$/.test(mobile)||
-      (alternate&&!/^\d{10}$/.test(alternate))||(aadhaar&&!/^\d{12}$/.test(aadhaar))||
-      !['Customer Approach Office','Direct','Customer Approach Engineer'].includes(source)||!installedBy) {
-      return res.status(400).json({message:'Enter valid required customer information'});
-    }
+    const validationErrors = [];
+    if(!id) validationErrors.push('Select a valid customer');
+    if(!['KRISHI','RAILWIRE','DMNET'].includes(network)) validationErrors.push('Select a valid Network');
+    if(!fullName) validationErrors.push('Full Name is required');
+    if(!netId) validationErrors.push('Net ID is required');
+    if(!password) validationErrors.push('Password is required');
+    if(!/^\d{10}$/.test(mobile)) validationErrors.push('Mobile No must contain exactly 10 digits');
+    if(alternate&&!/^\d{10}$/.test(alternate)) validationErrors.push('Alternate Mobile must contain exactly 10 digits');
+    if(aadhaar&&!/^\d{12}$/.test(aadhaar)) validationErrors.push('Aadhaar No must contain exactly 12 digits');
+    if(!['Customer Approach Office','Direct','Customer Approach Engineer'].includes(source)) validationErrors.push('Select a valid Source');
+    if(!installedBy) validationErrors.push('Select an Installed By employee');
+    if(validationErrors.length) return res.status(400).json({message:validationErrors.join('; ')});
     const [[customer]]=await db.query('SELECT approval_status FROM internet_customers WHERE internet_customer_id=?',[id]);
     if(!customer) return res.status(404).json({message:'Internet customer not found'});
     if(customer.approval_status!=='APPROVED') return res.status(409).json({message:'Approve the Internet customer workflow before updating customer information'});
