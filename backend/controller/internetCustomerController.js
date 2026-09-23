@@ -1,5 +1,6 @@
 const { findNetEnrollmentAccount, syncNetEnrollmentAccount } = require('./enrollmentAccountSync');
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
+const { saveEnrollment, routerStockType } = require('./internetEnrollment');
 const connection = require('../connection');
 const { ensureTransactionTable } = require('./transactionController');
 
@@ -142,6 +143,8 @@ const initializeInternetSchema = async (db) => {
   }
   for (const [table, column, definition] of [
     ['internet_subscriptions', 'initial_account_id', 'BIGINT NULL'],
+    ['internet_customers', 'email', 'VARCHAR(254) NULL'],
+    ['internet_connection_materials', 'discount', 'DECIMAL(12,2) NOT NULL DEFAULT 0'],
     ['internet_customer_routers', 'initial_account_id', 'BIGINT NULL'],
     ['internet_connections', 'initial_account_id', 'BIGINT NULL'],
     ['internet_connection_materials', 'initial_account_id', 'BIGINT NULL'],
@@ -278,7 +281,7 @@ const internetLookups = async (req, res) => {
     const [areas] = areaResult;
     const [streets] = streetResult;
     const [employees] = employeeResult;
-    return res.json({ packages, routers, products, locations, areas, streets, employees, logged_in_employee_id: employeeId, is_admin: isAdmin(req),
+    return res.json({ packages, routers: routers.map(row => ({ ...row, router_type: routerStockType(row.product_name) })), products, locations, areas, streets, employees, logged_in_employee_id: employeeId, is_admin: isAdmin(req),
       networks: ['KRISHI','RAILWIRE','DMNET'], sources: ['Customer Approach Office','Direct','Customer Approach Engineer'] });
   } catch (error) { return res.status(500).json({ message: 'Internet customer lookups failed', error: error.message }); }
 };
@@ -365,6 +368,7 @@ const subscriptionDates = (network, startValue) => {
 
 const saveInternetCustomer = async (req, res) => {
   const db = connection.promise();
+  if (!Number(req.params.id || 0)) return saveEnrollment(req, res, { db, ensureInternetSchema, isAdmin, resolveLoggedInEmployeeId, validateAddress, userId, subscriptionRenewal });
   try {
     await ensureInternetSchema(db); await db.beginTransaction(); const payload=req.body||{}; const id=Number(req.params.id||0);
     const network=String(payload.network_type||'').toUpperCase();

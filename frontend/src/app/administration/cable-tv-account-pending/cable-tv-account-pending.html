@@ -101,7 +101,7 @@
         <td>{{ item.customer_paid_amount }}</td>
         <td>{{ reportBalance(item) | number:'1.2-2' }}</td>
         <td>{{ item.due_date ? (item.due_date | date:'dd-MM-yyyy') : '-' }}</td>
-        <td><span class="status-badge" [attr.data-status]="reportPaymentStatus(item)" [class.paid]="reportPaymentStatus(item) === 'PAID'">{{ reportPaymentStatus(item) }}</span></td>
+        <td><span class="status-badge" [attr.data-status]="reportPaymentStatus(item)" [class.paid]="reportPaymentStatus(item) === 'PAID'">{{ reportPaymentStatus(item) }}</span><small *ngIf="item.connection_type === 'INTERNET' && item.enrollment_approval_status">Approval: {{ item.enrollment_approval_status }}</small></td>
         <td *ngIf="permissions.isAdmin()" class="action-cell"><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu">
           <button mat-menu-item *ngIf="item.account_status === 'PENDING' || item.account_status === 'PARTIAL'" type="button"
             (click)="openPayment(item)">Payment</button>
@@ -182,7 +182,7 @@
               <td>{{ item.material_cost | number:'1.2-2' }}<span *ngIf="item.material_discount"> - {{ item.material_discount | number:'1.2-2' }}</span><small *ngIf="item.material_sale_detail">{{ item.material_sale_detail }}</small></td>
               <td>{{ reportBalance(item) | number:'1.2-2' }}</td>
               <td class="account-total-cell">{{ item.grand_total | number:'1.2-2' }}</td>
-              <td>{{ reportPaymentStatus(item) }}</td>
+              <td>{{ reportPaymentStatus(item) }}<small *ngIf="item.connection_type === 'INTERNET' && item.enrollment_approval_status">Approval: {{ item.enrollment_approval_status }}</small></td>
             </tr>
             <tr class="report-total-row">
               <td colspan="6">Grand Total ({{ accounts.length }} records)</td>

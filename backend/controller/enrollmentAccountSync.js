@@ -33,7 +33,7 @@ const syncNetEnrollmentAccount = async (db, accountId, removedComponent = null) 
     (SELECT SUM(connection_charge-connection_discount+labour_service_charge) FROM internet_connections WHERE initial_account_id=?) connections,
     (SELECT SUM(connection_charge) FROM internet_connections WHERE initial_account_id=?) connection_amount,
     (SELECT SUM(labour_service_charge) FROM internet_connections WHERE initial_account_id=?) labor_amount,
-    (SELECT SUM(amount) FROM internet_connection_materials WHERE initial_account_id=?) materials`,Array(6).fill(accountId));
+    (SELECT SUM(amount+COALESCE(discount,0)) FROM internet_connection_materials WHERE initial_account_id=?) materials`,Array(6).fill(accountId));
   // Null totals preserve historical components whose original detail rows are not linked.
   const number=v=>Number(v)||0,round=v=>Math.round(v);
   const subscription=totals.subscriptions===null&&removedComponent!=='subscriptions'?number(a.subscription_amount):number(totals.subscriptions);

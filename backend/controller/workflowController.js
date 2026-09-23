@@ -601,6 +601,9 @@ const approveWorkflow = async (req, res) => {
         } else if (workflow.module_name === 'INTERNET_CUSTOMER') {
             await conn.query("UPDATE internet_customers SET approval_status='APPROVED', updated_at=NOW() WHERE internet_customer_id=?", [workflow.reference_id]);
             await conn.query("UPDATE internet_customer_accounts SET approval_status='APPROVED', updated_at=NOW() WHERE internet_customer_id=?", [workflow.reference_id]);
+            for (const table of ['internet_customer_packages','internet_customer_routers','internet_connections','internet_subscriptions']) {
+                await conn.query(`UPDATE ${table} SET approval_status='APPROVED' WHERE internet_customer_id=? AND approval_status='PENDING'`, [workflow.reference_id]);
+            }
         } else if (workflow.module_name === 'INTERNET_CUSTOMER_UPDATE') {
             const [pendingPackages] = await conn.query("SELECT internet_customer_package_id FROM internet_customer_packages WHERE internet_customer_id=? AND approval_status='PENDING' ORDER BY internet_customer_package_id DESC FOR UPDATE", [workflow.reference_id]);
             if (pendingPackages.length) {

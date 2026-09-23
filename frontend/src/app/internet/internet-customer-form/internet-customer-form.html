@@ -15,7 +15,7 @@
             <option *ngFor="let n of lookups.networks" [value]="n">{{ n }}</option>
           </select></label
         ><label>Full Name<input formControlName="full_name" /></label
-        ><label>Netid<input formControlName="net_id" /></label
+        ><label>Email ID *<input type="email" formControlName="email" [readOnly]="!!id" autocomplete="email" /><small class="field-error" *ngIf="form.get('email')?.touched && form.get('email')?.invalid">Enter a valid email ID.</small></label><label>Netid<input formControlName="net_id" /></label
         ><label>Password<input type="password" formControlName="network_password" /></label>
         <label>Door No<input formControlName="door_no" /></label
         ><label
@@ -56,7 +56,7 @@
         <h2>Package Details</h2>
         <button type="button" (click)="addPackage()">Add Row</button>
       </div>
-      <div class="package-labels">
+      <ng-container *ngIf="id">      <div class="package-labels">
         <span>Package</span><span>Price</span><span>GST %</span
         ><span>Package Price (Incl. GST)</span><span>Amount</span><span></span>
       </div>
@@ -77,6 +77,25 @@
             readonly
           /><button type="button" class="remove" (click)="remove(packages, i)">×</button>
         </div>
+      </div></ng-container>
+      <div *ngIf="!id" class="package-table-scroll">
+        <table class="enrollment-package-table" aria-label="Package Details">
+          <thead><tr><th scope="col" class="package-name-column">Package *</th><th scope="col">Amount (Excl. GST)</th><th scope="col">GST %</th><th scope="col">GST Amount</th><th scope="col">SGST %</th><th scope="col">SGST Amount</th><th scope="col">CGST %</th><th scope="col">CGST Amount</th><th scope="col">Total (Incl. GST)</th><th scope="col">Action</th></tr></thead>
+          <tbody formArrayName="packages">
+            <tr *ngFor="let row of packages.controls; let i=index" [formGroupName]="i">
+              <td class="package-name-column"><p-select formControlName="package_id" [options]="filteredPackages()" optionLabel="package_name" optionValue="package_id" placeholder="Select package" ariaLabel="Package" [filter]="true" filterBy="package_name,package_code" appendTo="body" (onChange)="selectPackage(i)"></p-select></td>
+              <td><input type="number" formControlName="base_price" aria-label="Amount (Excl. GST)" readonly /></td>
+              <td><input type="number" formControlName="gst_percent" aria-label="GST %" readonly /></td>
+              <td><input type="number" formControlName="gst_amount" aria-label="GST Amount" readonly /></td>
+              <td><input type="number" formControlName="sgst_percent" aria-label="SGST %" readonly /></td>
+              <td><input type="number" formControlName="sgst_amount" aria-label="SGST Amount" readonly /></td>
+              <td><input type="number" formControlName="cgst_percent" aria-label="CGST %" readonly /></td>
+              <td><input type="number" formControlName="cgst_amount" aria-label="CGST Amount" readonly /></td>
+              <td><input type="number" formControlName="package_price" aria-label="Total (Incl. GST)" readonly /></td>
+              <td><button type="button" class="remove package-remove" aria-label="Remove package" (click)="remove(packages,i)">&times;</button></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
     <section>
@@ -84,6 +103,7 @@
         <h2>Router Details</h2>
         <button type="button" (click)="addRouter()">Add Row</button>
       </div>
+      <div [class.enrollment-router-layout]="!id">
       <div class="router-labels">
         <span>Type</span><span>Router</span><span>Category</span><span>HSN</span><span>Qty</span
         ><span>Unit</span><span>Rate</span><span>Discount</span><span>Amount</span
@@ -91,16 +111,16 @@
       </div>
       <div formArrayName="routers" class="rows">
         <div
-          class="row router"
+          [class.row]="!!id" [class.router]="!!id" [class.enrollment-router-row]="!id"
           *ngFor="let r of routers.controls; let i = index"
           [formGroupName]="i"
         >
-          <select formControlName="router_type">
+          <select formControlName="router_type" (change)="!id && changeRouterType(i)">
             <option>NEW</option>
             <option>SERVICED</option>
             <option>RETURNED</option></select
-          ><p-select formControlName="product_id" [options]="filteredRouters()" optionLabel="product_name" optionValue="product_id" placeholder="Router" [filter]="true" filterBy="product_name,hsn_code" appendTo="body" (onChange)="selectRouter(i)"><ng-template #item let-x><span>{{ x.product_name }} (Stock: {{ x.available_qty }})</span></ng-template></p-select
-          ><select formControlName="usage_category" (change)="calcRouter(i)">
+          ><p-select formControlName="product_id" [options]="filteredRouters(i)" optionLabel="product_name" optionValue="product_id" placeholder="Router" [filter]="true" filterBy="product_name,hsn_code" appendTo="body" (onChange)="selectRouter(i)"><ng-template #item let-x><span>{{ x.product_name }} (Stock: {{ x.available_qty }})</span></ng-template></p-select
+          ><select formControlName="usage_category" (change)="changeRouterCategory(i)">
             <option value="CUSTOMER_PAID">Customer Paid</option>
             <option value="FREE_USE">Free Use</option></select
           ><input formControlName="hsn_code" placeholder="HSN" readonly /><input
@@ -110,18 +130,19 @@
           /><input formControlName="unit" readonly /><input
             type="number"
             formControlName="rate"
-            readonly
-          /><input type="number" formControlName="discount" readonly /><input
+            [readOnly]="!!id || !lookups.is_admin || r.get('usage_category')?.value === 'FREE_USE'" (input)="calcRouter(i)" min="0"
+          /><input type="number" formControlName="discount" [readOnly]="!!id || r.get('usage_category')?.value === 'FREE_USE'" min="0" (input)="calcRouter(i)" /><input
             type="number"
             formControlName="amount"
             readonly
           /><button type="button" class="remove" (click)="remove(routers, i)">×</button>
         </div>
       </div>
+      </div>
     </section>
     <section formGroupName="connection">
       <h2>Connection Details</h2>
-      <div class="grid">
+      <div class="grid" [class.enrollment-connection-row]="!id">
         <label>Connection Date<input type="date" formControlName="connection_date" /></label
         ><label
           >Connection Type<select formControlName="connection_type">
@@ -152,9 +173,10 @@
         <h2>Used Materials</h2>
         <button type="button" (click)="addMaterial()">Add Row</button>
       </div>
+      <div class="material-labels"><span>Product name</span><span>Item details</span><span>Qty</span><span>Unit</span><span>Rate</span><span *ngIf="!id">Discount</span><span>Amount</span><span>Action</span></div>
       <div formArrayName="materials" class="rows">
         <div
-          class="row material"
+          class="row material" [class.enrollment-material]="!id"
           *ngFor="let r of materials.controls; let i = index"
           [formGroupName]="i"
         >
@@ -165,9 +187,9 @@
             (input)="calcMaterial(i)"
           /><input formControlName="unit" /><input
             type="number"
-            formControlName="unit_rate"
+            formControlName="unit_rate" [readOnly]="!id && !lookups.is_admin && !!r.get('product_id')?.value"
             (input)="calcMaterial(i)"
-          /><input type="number" formControlName="amount" readonly /><button
+          /><input *ngIf="!id" type="number" formControlName="discount" min="0" (input)="calcMaterial(i)" /><input type="number" formControlName="amount" readonly /><button
             type="button"
             class="remove"
             (click)="remove(materials, i)"
@@ -177,7 +199,7 @@
         </div>
       </div>
     </section>
-    <section formGroupName="subscription">
+    <section *ngIf="id" formGroupName="subscription">
       <h2>Subscription Details</h2>
       <div class="grid">
         <label
@@ -214,6 +236,27 @@
         amount.
       </p>
     </section>
+    <section *ngIf="!id" formGroupName="subscription">
+      <h2>Subscription Details</h2>
+      <div class="grid subscription-grid">
+        <label>Month / Year *<div class="field-pair"><select formControlName="month" (change)="changeSubscriptionMonth()"><option *ngFor="let name of monthNames;let i=index" [ngValue]="i+1">{{name}}</option></select><select formControlName="year" (change)="changeSubscriptionMonth()"><option *ngFor="let year of years" [ngValue]="year">{{year}}</option></select></div></label>
+        <label>No Of Period / Count *<div class="field-triple"><select formControlName="period_value" (change)="calculateSubscription()"><option *ngFor="let n of form.get('subscription.period_unit')?.value === 'DAYS' ? dayValues : periodValues" [ngValue]="n">{{n}}</option></select><select formControlName="period_unit" (change)="changePeriodUnit()"><option value="MONTH">Month</option><option value="DAYS">Days</option><option value="YEAR">Year</option></select><input formControlName="period_count" readonly /></div></label>
+        <label>Free No Of Period *<div class="field-pair"><select formControlName="free_period_value" (change)="calculateSubscription()"><option *ngFor="let n of form.get('subscription.free_period_unit')?.value === 'DAYS' ? freeDayValues : freeValues" [ngValue]="n">{{n}}</option></select><select formControlName="free_period_unit" (change)="changePeriodUnit(true)"><option value="MONTH">Month</option><option value="DAYS">Days</option><option value="YEAR">Year</option></select></div></label>
+        <label>Start Date *<input type="date" formControlName="start_date" (change)="calculateSubscription()" /></label>
+        <label>End Date *<input type="date" formControlName="end_date" [min]="form.get('subscription.start_date')?.value" (change)="total()" /></label>
+        <label>Subscription Amount<input type="number" formControlName="subscription_amount" readonly /></label>
+        <label>Paid Amount *<input type="number" formControlName="paid_amount" min="0" [max]="form.get('subscription.subscription_amount')?.value" (input)="total()" /></label>
+        <label>Balance<input type="number" formControlName="balance_amount" readonly /></label>
+        <label>Status *<select formControlName="payment_status" (change)="changeSubscriptionStatus()"><option value="PENDING">Unpaid</option><option value="PARTIAL">Partial</option><option value="PAID">Paid</option></select></label>
+        <label>Collected Date *<input type="date" formControlName="collect_date" /></label>
+        <label>Collected By *<p-select formControlName="collected_by_employee_id" [options]="lookups.employees || []" optionLabel="employee_name" optionValue="employee_id" [disabled]="lookups.is_admin === false" [filter]="true" appendTo="body" placeholder="Select employee"></p-select></label>
+        <label>Renewed By *<select formControlName="renewed_by_value" (change)="changeRenewedBy()" [attr.disabled]="lookups.is_admin === false ? true : null"><option value="ADMIN">Admin</option><option value="CUSTOMER">Online</option></select></label>
+        <label>Mode Of Payment *<select formControlName="payment_mode" [attr.disabled]="lookups.is_admin === false ? true : null"><ng-container *ngIf="form.get('subscription.renewed_by_value')?.value === 'ADMIN'"><option value="CASH">Cash</option><option value="ACCOUNT">Account</option></ng-container><option *ngIf="form.get('subscription.renewed_by_value')?.value === 'CUSTOMER'" value="DASHBOARD">Dashboard</option></select></label>
+        <label>Payment Reference *<input formControlName="payment_reference" maxlength="150" /></label>
+        <label>Payment Mapped Employee *<p-select formControlName="payment_mapped_employee_id" [options]="lookups.employees || []" optionLabel="employee_name" optionValue="employee_id" [disabled]="lookups.is_admin === false" [filter]="true" appendTo="body" placeholder="Select employee"></p-select></label>
+      </div>
+      <p class="hint">Free periods extend the end date without increasing the amount. Customer payment is included in Account Details; office receipt is tracked in Pending Accounts.</p>
+    </section>
     <section formGroupName="account">
       <h2>Account Details</h2>
       <div class="account-summary">
@@ -221,7 +264,7 @@
           <div class="account-head"><span>Description</span><span>Amount</span></div>
           <div class="account-row">
             <span>Router Amount</span
-            ><span>{{ form.get('account.router_amount')?.value | number: '1.0-0' }}</span>
+            ><span>{{ ((form.get('account.router_amount')?.value || 0) + (form.get('account.router_discount')?.value || 0)) | number: '1.2-2' }}</span>
           </div>
           <div class="account-row editable-row">
             <span>Router Discount</span
@@ -229,29 +272,30 @@
           </div>
           <div class="account-row">
             <span>Router Payable Amount</span
-            ><span>{{ form.get('account.router_amount')?.value | number: '1.0-0' }}</span>
+            ><span>{{ form.get('account.router_amount')?.value | number: '1.2-2' }}</span>
           </div>
           <div class="account-row">
             <span>Connection Charge</span
-            ><span>{{ form.get('account.connection_amount')?.value | number: '1.0-0' }}</span>
+            ><span>{{ form.get('account.connection_amount')?.value | number: '1.2-2' }}</span>
           </div>
           <div class="account-row">
             <span>Connection Discount</span
-            ><span>- {{ form.get('account.connection_discount')?.value | number: '1.0-0' }}</span>
+            ><span>- {{ form.get('account.connection_discount')?.value | number: '1.2-2' }}</span>
           </div>
+          <div class="account-row"><span>Labor/Service Charge</span><span>{{ form.get('account.labor_amount')?.value | number: '1.2-2' }}</span></div>
           <div class="account-row">
             <span>Material Charge</span
-            ><span>{{ form.get('account.material_cost')?.value | number: '1.0-0' }}</span>
+            ><span>{{ form.get('account.material_cost')?.value | number: '1.2-2' }}</span>
           </div>
           <div class="account-row editable-row">
             <span>Material Discount</span
             ><span
-              ><input type="number" formControlName="material_discount" (input)="total()"
+              ><input type="number" formControlName="material_discount" [readOnly]="!id" (input)="total()"
             /></span>
           </div>
           <div class="account-row">
-            <span>Monthly Subscription Amount</span
-            ><span>{{ form.get('account.subscription_amount')?.value | number: '1.0-0' }}</span>
+            <span>Subscription Amount</span
+            ><span>{{ form.get('account.subscription_amount')?.value | number: '1.2-2' }}</span>
           </div>
         </div>
         <div class="account-totals">
@@ -277,7 +321,7 @@
     </section>
     <div class="actions">
       <button type="button" class="secondary" routerLink="/internet/customers">Cancel</button
-      ><button type="button" (click)="save()">{{ id ? 'Update' : 'Save' }} Customer</button>
+      ><button type="button" (click)="save()" [disabled]="saving">{{ saving ? 'Saving?' : id ? 'Update Customer' : lookups.is_admin ? 'Save Customer' : 'Submit for Approval' }}</button>
     </div>
   </form>
 </div>

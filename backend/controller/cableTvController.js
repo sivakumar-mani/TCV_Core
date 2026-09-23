@@ -1941,13 +1941,13 @@ const getPendingAccounts = async (req, res) => {
               COALESCE(ic.installed_date, DATE(ia.created_at)) install_update_date,
               COALESCE(ic.installed_date, DATE(ia.created_at)) account_date, 'INTERNET' connection_type,
               COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), e.employee_code) installed_by_name,
-              NULL received_by_name, ia.router_amount AS stb_amount, ia.router_discount AS stb_discount,
+              NULL received_by_name, ia.router_amount + ia.router_discount AS stb_amount, ia.router_discount AS stb_discount,
               ia.connection_amount, ia.labor_amount, ia.material_cost, ia.material_discount,
               ia.subscription_amount, ia.grand_total AS sub_total, 0 discount, ia.overall_discount,
               ia.grand_total, ia.customer_paid_amount, ia.office_received_amount, ia.office_balance_amount,
               GREATEST(ia.grand_total-ia.office_received_amount,0) balance_amount, ia.account_status,
               COALESCE(pay.cash_received,0) cash_received, COALESCE(pay.online_received,0) online_received,
-              ia.created_at, NULL material_sale_detail, ia.due_date
+              ia.created_at, NULL material_sale_detail, ia.due_date, ia.approval_status AS enrollment_approval_status
        FROM internet_customer_accounts ia
        JOIN internet_customers ic ON ic.internet_customer_id=ia.internet_customer_id
        LEFT JOIN employees e ON e.employee_id=ic.installed_by_employee_id
@@ -1958,7 +1958,7 @@ const getPendingAccounts = async (req, res) => {
     );
     const internetRows = internetSourceRows.map(item => {
       for (const key of ['stb_amount','stb_discount','connection_amount','labor_amount','material_cost','material_discount','subscription_amount','sub_total','overall_discount','grand_total','customer_paid_amount','office_received_amount','office_balance_amount','balance_amount','cash_received','online_received']) {
-        item[key] = Math.round(money(item[key]));
+        item[key] = Number(money(item[key]).toFixed(2));
       }
       return item;
     });
