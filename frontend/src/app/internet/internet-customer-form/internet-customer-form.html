@@ -15,7 +15,7 @@
             <option *ngFor="let n of lookups.networks" [value]="n">{{ n }}</option>
           </select></label
         ><label>Full Name<input formControlName="full_name" /></label
-        ><label>Email ID *<input type="email" formControlName="email" [readOnly]="!!id" autocomplete="email" /><small class="field-error" *ngIf="form.get('email')?.touched && form.get('email')?.invalid">Enter a valid email ID.</small></label><label>Netid<input formControlName="net_id" /></label
+        ><label>Netid<input formControlName="net_id" /></label
         ><label>Password<input type="password" formControlName="network_password" /></label>
         <label>Door No<input formControlName="door_no" /></label
         ><label
@@ -28,6 +28,7 @@
         <label>State<input formControlName="state" /></label
         ><label>City/District<input formControlName="city" /></label
         ><label>Pincode<input formControlName="pincode" maxlength="10" /></label
+        ><label>Email ID *<input type="email" formControlName="email" [readOnly]="!!id" autocomplete="email" /><small class="field-error" *ngIf="form.get('email')?.touched && form.get('email')?.invalid">Enter a valid email ID.</small></label
         ><label>Mobile No<input formControlName="mobile_no" maxlength="10" /></label
         ><label
           >Alternate Mobile<input formControlName="alternate_mobile_no" maxlength="10" /></label
@@ -119,7 +120,7 @@
             <option>NEW</option>
             <option>SERVICED</option>
             <option>RETURNED</option></select
-          ><p-select formControlName="product_id" [options]="filteredRouters(i)" optionLabel="product_name" optionValue="product_id" placeholder="Router" [filter]="true" filterBy="product_name,hsn_code" appendTo="body" (onChange)="selectRouter(i)"><ng-template #item let-x><span>{{ x.product_name }} (Stock: {{ x.available_qty }})</span></ng-template></p-select
+          ><p-select formControlName="router_stock_key" [options]="filteredRouters(i)" optionLabel="product_name" optionValue="stock_key" placeholder="Router" [filter]="true" filterBy="product_name,hsn_code" appendTo="body" (onChange)="selectRouter(i)"><ng-template #item let-x><span>{{ x.product_name }} (Stock: {{ x.available_qty }})</span></ng-template></p-select
           ><select formControlName="usage_category" (change)="changeRouterCategory(i)">
             <option value="CUSTOMER_PAID">Customer Paid</option>
             <option value="FREE_USE">Free Use</option></select

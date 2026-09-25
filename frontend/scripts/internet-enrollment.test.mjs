@@ -28,6 +28,14 @@ test('subscription free periods, manual dates and collection date survive unrela
   const f=form(),s=f.form.get('subscription');s.patchValue({free_period_value:1});f.calculateSubscription();assert.equal(s.get('end_date').value,'2026-11-15');assert.equal(s.get('subscription_amount').value,590);
   s.patchValue({end_date:'2026-11-20',collect_date:'2026-09-21'});f.form.get('connection.labour_service_charge').setValue(50);f.total();assert.equal(s.get('end_date').value,'2026-11-20');assert.equal(s.get('collect_date').value,'2026-09-21');assert.equal(f.form.get('account.grand_total').value,640);
 });
+test('staff router dropdown uses logged-in stock even if installer field differs',()=>{
+  const f=form();f.lookups.is_admin=false;f.lookups.logged_in_employee_id=9;
+  f.form.patchValue({installed_by_employee_id:10},{emitEvent:false});
+  assert.deepEqual(Array.from(f.filteredRouters(0),x=>x.product_id),[20]);
+  f.lookups.logged_in_employee_id=null;
+  assert.equal(f.filteredRouters(0).length,0);
+});
+
 test('router type/employee filters, editable discount and free-use reset',()=>{
   const f=form(),r=f.routers.at(0);assert.deepEqual(Array.from(f.filteredRouters(0),x=>x.product_id),[20]);r.patchValue({product_id:20});f.selectRouter(0);r.patchValue({discount:100});f.calcRouter(0);assert.equal(r.get('amount').value,900);
   r.patchValue({usage_category:'FREE_USE'});f.changeRouterCategory(0);assert.equal(r.get('rate').value,0);assert.equal(r.get('discount').value,0);assert.equal(r.get('amount').value,0);
@@ -47,3 +55,10 @@ test('email and all requested subscription input fields are required on enrollme
   const f=form();for(const name of ['email','subscription.start_date','subscription.end_date','subscription.collect_date','subscription.payment_reference','subscription.payment_mapped_employee_id']){const c=f.form.get(name),v=c.value;c.setValue('');assert.equal(c.valid,false,name);c.setValue(v);}
   const old=form(1);old.form.get('email').setValue('');assert.equal(old.form.get('email').valid,true);
 });
+
+ test('issued router selection carries its source and clears it when type changes',()=>{
+ const f=form();f.lookups.routers.push({product_id:25,stock_key:'issue:77',material_movement_id:77,employee_id:9,router_type:'NEW',selling_price:2000});
+ const r=f.routers.at(0);r.patchValue({router_stock_key:'issue:77'});f.selectRouter(0);
+ assert.equal(r.get('product_id').value,25);assert.equal(r.get('material_movement_id').value,77);
+ f.changeRouterType(0);assert.equal(r.get('material_movement_id').value,null);
+ });

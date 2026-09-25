@@ -93,11 +93,11 @@
         <tbody>
           <tr *ngFor="let x of details.subscriptions">
             <td>{{ monthName(x.subscription_month) }} - {{ x.subscription_year }}</td>
-            <td>{{ x.collect_date | date: 'dd-MM-yyyy' }}</td>
+            <td class="subscription-date">{{ x.collect_date | date: 'dd-MM-yyyy' }}</td>
             <td>{{ x.collected_by_name || '-' }}</td>
             <td>{{ subscriptionDays(x.start_date, x.end_date) }} Days</td>
-            <td>{{ x.start_date | date: 'dd-MM-yyyy' }}</td>
-            <td>{{ x.end_date | date: 'dd-MM-yyyy' }}</td>
+            <td class="subscription-date">{{ x.start_date | date: 'dd-MM-yyyy' }}</td>
+            <td class="subscription-date">{{ x.end_date | date: 'dd-MM-yyyy' }}</td>
             <td>{{ x.amount | number: '1.0-0' }}</td>
             <td>{{ x.balance_amount | number: '1.2-2' }}</td>
             <td>

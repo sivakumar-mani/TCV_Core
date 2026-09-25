@@ -20,6 +20,9 @@ async function save(admin, p=payload(), options={}) {
     if(sql.includes('MAX(customer_code)'))return [[{next_code:2001}]];
     if(sql.includes('FROM internet_customers WHERE net_id'))return [[]];
     if(sql.includes('FROM internet_package_master'))return [[{price:500,provider_category:'KRISHI'}]];
+    if(sql.includes('FROM technician_material_sale_adjustments'))return [[]];
+    if(sql.includes('SELECT ri.qty'))return [[{qty:options.allocated||0}]];
+    if(sql.includes('FROM technician_material_movements m'))return [options.noStock?[]:[{product_name:'General Optinet Router Single Band 2.4GHz',selling_price:2000,available_qty:1}]];
     if(sql.includes('FROM technician_material_stock'))return [options.noStock?[]:[{product_name:options.routerName||'Router',hsn_code:'1',unit:'PCS',selling_price:1000,available_qty:2}]];
     if(sql.includes('FROM products'))return [[{product_name:'Cable',unit:'M',selling_price:50}]];
     if(sql.startsWith('INSERT'))return [{insertId:sql.includes('internet_customer_packages')?12:sql.includes('internet_customer_accounts')?13:11}];
@@ -91,3 +94,14 @@ test('approving enrollment approves its components without marking office paymen
   for(const table of ['internet_customer_packages','internet_customer_routers','internet_connections','internet_subscriptions'])assert.ok(calls.some(x=>x.sql.startsWith(`UPDATE ${table} SET approval_status='APPROVED'`)&&x.args[0]===11));
   assert.ok(!calls.some(x=>/office_received_amount=|account_status='PAID'/.test(x.sql)));
 });
+
+ test('issued sale router reserves the issue without deducting technician stock or changing sale money',async()=>{
+   const p=payload();p.routers[0].material_movement_id=77;
+   const r=await save(false,p);assert.equal(r.res.code,201);
+   assert.equal(r.inserted('internet_router_material_issues')[0].material_movement_id,77);
+   assert.ok(!r.calls.some(c=>c.sql.startsWith('UPDATE technician_material_stock')));
+   assert.ok(!r.calls.some(c=>c.sql.startsWith('UPDATE technician_material_movements')));
+   const query=r.calls.find(c=>c.sql.includes('FROM technician_material_movements m'));
+   assert.deepEqual(query.args,[77,9,20]);
+   const used=await save(false,p,{allocated:1});assert.equal(used.res.code,400);assert.ok(used.rolledBack);
+ });

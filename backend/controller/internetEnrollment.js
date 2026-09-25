@@ -1,4 +1,5 @@
 // New enrollment only. Existing customer edits and renewals retain their own workflows.
+const { routerProductSql, ensureRouterIssues } = require('./internetRouterStock');
 const fail = message => { throw Object.assign(new Error(message), { status: 400 }); };
 const text = value => String(value ?? '').trim();
 // Stock is keyed by employee/product, with no condition dimension. Condition-specific
@@ -48,6 +49,7 @@ async function saveEnrollment(req, res, deps) {
   const { db, ensureInternetSchema, isAdmin, resolveLoggedInEmployeeId, validateAddress, userId, subscriptionRenewal } = deps;
   try {
     await ensureInternetSchema(db);
+    await ensureRouterIssues(db);
     await db.beginTransaction();
     const p = req.body || {}, admin = isAdmin(req), network = text(p.network_type).toUpperCase();
     const email = text(p.email);
@@ -109,15 +111,27 @@ async function saveEnrollment(req, res, deps) {
     let routerTotal = 0, routerDiscount = 0;
     for (const item of routers) {
       if (!['NEW','SERVICED','RETURNED'].includes(item.router_type)) fail('Select a router type');
-      const [[stock]] = await db.query(`SELECT p.product_name,p.hsn_code,p.unit,p.selling_price,ts.available_qty FROM technician_material_stock ts JOIN products p ON p.product_id=ts.product_id JOIN categories c ON c.category_id=p.category_id WHERE ts.employee_id=? AND ts.product_id=? AND ts.available_qty>0 AND p.status='ACTIVE' AND (LOWER(c.category_name)='router' OR LOWER(COALESCE(c.slug,'')) LIKE 'internet%') FOR UPDATE`, [employee,item.product_id]);
+      const issueId = Number(item.material_movement_id)||null;
+      const [[stock]] = issueId ? await db.query(`SELECT p.product_name,p.hsn_code,p.unit,p.selling_price,
+        m.qty AS available_qty FROM technician_material_movements m
+        JOIN products p ON p.product_id=m.product_id JOIN categories c ON c.category_id=p.category_id
+        WHERE m.material_movement_id=? AND m.employee_id=? AND m.product_id=?
+        AND m.movement_type='SALE' AND m.sale_status='ISSUED' AND p.status='ACTIVE'
+        AND ${routerProductSql} FOR UPDATE`,[issueId,employee,item.product_id]) : await db.query(`SELECT p.product_name,p.hsn_code,p.unit,p.selling_price,ts.available_qty FROM technician_material_stock ts JOIN products p ON p.product_id=ts.product_id JOIN categories c ON c.category_id=p.category_id WHERE ts.employee_id=? AND ts.product_id=? AND ts.available_qty>0 AND p.status='ACTIVE' AND ${routerProductSql} FOR UPDATE`, [employee,item.product_id]);
       if (!stock) fail('Select an issued router assigned to the installer');
+      if(issueId) {
+        const [adjustments]=await db.query('SELECT qty FROM technician_material_sale_adjustments WHERE material_movement_id=? FOR UPDATE',[issueId]);
+        const [allocations]=await db.query(`SELECT ri.qty FROM internet_router_material_issues ri JOIN internet_customer_routers ir ON ir.internet_router_id=ri.internet_router_id WHERE ri.material_movement_id=? FOR UPDATE`,[issueId]);
+        stock.available_qty=Number(stock.available_qty)-[...adjustments,...allocations].reduce((sum,r)=>sum+Number(r.qty),0);
+      }
       if (routerStockType(stock.product_name) !== item.router_type) fail('Select an issued router matching the selected type');
       const charge = routerCharges(item, stock.selling_price, admin);
       if (charge.qty > Number(stock.available_qty)) fail('Router quantity exceeds issued stock');
       routerTotal = money(routerTotal + charge.amount); routerDiscount = money(routerDiscount + charge.discount);
-      await db.query(`INSERT INTO internet_customer_routers(internet_customer_id,router_type,usage_category,product_id,hsn_code,qty,unit,rate,discount,amount,approval_status,stock_processed,updated_by_employee_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, [customerId,item.router_type,item.usage_category,item.product_id,stock.hsn_code,charge.qty,stock.unit||'PCS',charge.rate,charge.discount,charge.amount,approval,1,employee]);
+      const [routerResult] = await db.query(`INSERT INTO internet_customer_routers(internet_customer_id,router_type,usage_category,product_id,hsn_code,qty,unit,rate,discount,amount,approval_status,stock_processed,updated_by_employee_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`, [customerId,item.router_type,item.usage_category,item.product_id,stock.hsn_code,charge.qty,stock.unit||'PCS',charge.rate,charge.discount,charge.amount,approval,1,employee]);
       // Reserve issued inventory once at submission, as in the existing enrollment path.
-      await db.query('UPDATE technician_material_stock SET available_qty=available_qty-? WHERE employee_id=? AND product_id=?', [charge.qty,employee,item.product_id]);
+      if(issueId) await db.query('INSERT INTO internet_router_material_issues(internet_router_id,material_movement_id,qty) VALUES(?,?,?)',[routerResult.insertId,issueId,charge.qty]);
+      else await db.query('UPDATE technician_material_stock SET available_qty=available_qty-? WHERE employee_id=? AND product_id=?', [charge.qty,employee,item.product_id]);
     }
     const conn = p.connection || {};
     const connectionCharge = nonnegative(conn.connection_charge ?? 0, 'Connection charge'), connectionDiscount = nonnegative(conn.connection_discount ?? 0, 'Connection discount'), labor = nonnegative(conn.labour_service_charge ?? 0, 'Labor charge');

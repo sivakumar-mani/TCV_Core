@@ -1,3 +1,4 @@
+const { ensureRouterIssues, allocatedRouterQty } = require('./internetRouterStock');
 const connection = require('../connection');
 
 const movementTypes = new Set(['ISSUE', 'SALE', 'FAULT', 'RETURN']);
@@ -22,6 +23,7 @@ const resolveEmployeeId = async (db, req, requested) => {
 };
 
 const ensureMaterialSalesTables = async db => {
+  await ensureRouterIssues(db);
   await db.query(`
     CREATE TABLE IF NOT EXISTS technician_material_stock (
       technician_material_stock_id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -245,7 +247,7 @@ const getIssuedMaterialSales = async (req, res) => {
       `SELECT m.*, p.product_name, p.unit,
               COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), e.employee_code) AS employee_name,
               COALESCE(catv.full_name, service.customer_name, m.anonymous_name) AS customer_name,
-              GREATEST(m.qty - COALESCE(a.adjusted_qty, 0), 0) AS available_adjustment_qty
+              GREATEST(m.qty - COALESCE(a.adjusted_qty, 0) - ${allocatedRouterQty('m')}, 0) AS available_adjustment_qty
        FROM technician_material_movements m
        JOIN products p ON p.product_id = m.product_id
        JOIN employees e ON e.employee_id = m.employee_id
@@ -316,7 +318,8 @@ const requestMaterialSaleAdjustment = async (req, res) => {
       `SELECT COALESCE(SUM(qty), 0) AS qty FROM technician_material_sale_adjustments
        WHERE material_movement_id = ? FOR UPDATE`, [movementId]
     );
-    const availableQty = Number((num(sale.qty) - num(used.qty)).toFixed(2));
+    const [[allocated]] = await db.query(`SELECT ${allocatedRouterQty('m')} AS qty FROM technician_material_movements m WHERE m.material_movement_id=?`,[movementId]);
+    const availableQty = Number((num(sale.qty) - num(used.qty) - num(allocated.qty)).toFixed(2));
     if (qty > availableQty) throw Object.assign(new Error(`Quantity cannot exceed available quantity ${availableQty}`), { statusCode: 409 });
     await db.query(
       `INSERT INTO technician_material_sale_adjustments
@@ -611,7 +614,7 @@ const markMaterialSaleSold = async (req, res) => {
     const cableCustomerId = customerType === 'CATV' ? id(req.body.cable_customer_id) : null;
     const serviceCustomerId = ['NET', 'CCTV'].includes(customerType) ? id(req.body.service_customer_id) : null;
     const employeeId = await resolveEmployeeId(db, req, null);
-    const conditions = ["material_movement_id = ?", "movement_type = 'SALE'", "sale_status = 'ISSUED'"];
+    const conditions = ["material_movement_id = ?", "movement_type = 'SALE'", "sale_status = 'ISSUED'", `${allocatedRouterQty('technician_material_movements')}=0`];
     const values = [customerType, cableCustomerId, serviceCustomerId, movementId];
     if (!isAdmin(req)) { conditions.push('employee_id = ?'); values.push(employeeId); }
     const [result] = await db.query(
@@ -827,10 +830,13 @@ const correctIssuedMaterial = async (req, res) => {
   const db = connection.promise();
   let started = false;
   try {
+    await ensureRouterIssues(db);
     await db.beginTransaction(); started = true;
     const [[sale]] = await db.query('SELECT * FROM technician_material_movements WHERE material_movement_id = ? FOR UPDATE', [movementId]);
     const fail = (message, statusCode = 409) => { throw Object.assign(new Error(message), { statusCode }); };
     if (!sale) fail('Material issue not found', 404);
+    const [[allocated]] = await db.query(`SELECT ${allocatedRouterQty('m')} AS qty FROM technician_material_movements m WHERE m.material_movement_id=?`,[movementId]);
+    if(num(allocated.qty)>0) fail('Cannot correct material assigned to an Internet customer');
     if (sale.movement_type !== 'SALE' || sale.sale_status !== 'ISSUED') fail('Only issued materials can be corrected');
     const [payments] = await db.query('SELECT material_sale_payment_id FROM technician_material_sale_payments WHERE material_movement_id = ? FOR UPDATE', [movementId]);
     const [adjustments] = await db.query('SELECT material_sale_adjustment_id FROM technician_material_sale_adjustments WHERE material_movement_id = ? FOR UPDATE', [movementId]);

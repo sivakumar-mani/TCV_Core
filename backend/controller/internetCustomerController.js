@@ -1,6 +1,7 @@
 const { findNetEnrollmentAccount, syncNetEnrollmentAccount } = require('./enrollmentAccountSync');
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const { saveEnrollment, routerStockType } = require('./internetEnrollment');
+const { routerProductSql, ensureRouterIssues, availableRouterIssueQty } = require('./internetRouterStock');
 const connection = require('../connection');
 const { ensureTransactionTable } = require('./transactionController');
 
@@ -30,6 +31,11 @@ const userId = (req) => Number(req.res?.locals?.userId || req.res?.locals?.user_
 const resolveLoggedInEmployeeId = async (db, req) => {
   const tokenEmployeeId = intOrNull(req.res?.locals?.employee_id);
   if (tokenEmployeeId) return tokenEmployeeId;
+  const loggedInUserId = userId(req);
+  if (loggedInUserId) {
+    const [[account]] = await db.query('SELECT employee_id FROM users WHERE user_id = ? AND is_active = 1', [loggedInUserId]);
+    return intOrNull(account?.employee_id);
+  }
   const username = req.res?.locals?.username || req.res?.locals?.userName;
   if (!username) return null;
   const [[employee]] = await db.query(
@@ -45,6 +51,7 @@ const dateOnly = (value) => {
 };
 
 const initializeInternetSchema = async (db) => {
+  await ensureRouterIssues(db);
   await db.query(`CREATE TABLE IF NOT EXISTS internet_customers (
     internet_customer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     customer_code INT NOT NULL, legacy_customer_no VARCHAR(100) NULL, network_type ENUM('KRISHI','RAILWIRE','DMNET') NOT NULL,
@@ -251,6 +258,7 @@ const ensureInternetSchema = async (db) => {
 const internetLookups = async (req, res) => {
   try {
     const db = connection.promise(); await ensureInternetSchema(db);
+    await ensureRouterIssues(db);
     const employeeId = await resolveLoggedInEmployeeId(db, req);
     const packageQuery = db.query(`SELECT *, provider_category AS internet_network_type,
       ROUND(CASE WHEN price_including_gst > 0 THEN price_including_gst ELSE price + (price * gst_percent / 100) END, 2) AS total_price
@@ -263,7 +271,7 @@ const internetLookups = async (req, res) => {
       JOIN categories c ON c.category_id = p.category_id
       WHERE ts.available_qty > 0 ${routerEmployeeFilter}
         AND p.status = 'ACTIVE'
-        AND (LOWER(c.category_name) = 'router' OR LOWER(COALESCE(c.slug, '')) LIKE 'internet%')
+        AND ${routerProductSql}
       ORDER BY p.product_name`, isAdmin(req)?[]:[employeeId]) : [[]];
     const [packageResult, routerResult, productResult, locationResult, areaResult, streetResult, employeeResult] = await Promise.all([
       packageQuery,
@@ -274,6 +282,13 @@ const internetLookups = async (req, res) => {
       db.query('SELECT * FROM cable_streets WHERE is_active = 1 ORDER BY street_name'),
       db.query("SELECT employee_id, employee_code, CONCAT_WS(' ', first_name, last_name) employee_name FROM employees WHERE is_active = 1 ORDER BY first_name")
     ]);
+    const [issuedRouters] = (isAdmin(req)||employeeId) ? await db.query(`SELECT p.product_id,p.product_name,p.hsn_code,p.unit,p.selling_price,
+      m.employee_id,m.material_movement_id,${availableRouterIssueQty} AS available_qty
+      FROM technician_material_movements m JOIN products p ON p.product_id=m.product_id
+      JOIN categories c ON c.category_id=p.category_id
+      WHERE m.movement_type='SALE' AND m.sale_status='ISSUED' AND p.status='ACTIVE'
+      AND ${routerProductSql} ${isAdmin(req)?'':'AND m.employee_id=?'}
+      HAVING available_qty>0 ORDER BY p.product_name,m.material_movement_id`,isAdmin(req)?[]:[employeeId]) : [[]];
     const [packages] = packageResult;
     const [routers] = routerResult;
     const [products] = productResult;
@@ -281,7 +296,7 @@ const internetLookups = async (req, res) => {
     const [areas] = areaResult;
     const [streets] = streetResult;
     const [employees] = employeeResult;
-    return res.json({ packages, routers: routers.map(row => ({ ...row, router_type: routerStockType(row.product_name) })), products, locations, areas, streets, employees, logged_in_employee_id: employeeId, is_admin: isAdmin(req),
+    return res.json({ packages, issued_routers: issuedRouters.map(row=>({...row,stock_key:`issue:${row.material_movement_id}`,router_type:routerStockType(row.product_name)})), routers: routers.map(row => ({ ...row, stock_key: row.material_movement_id ? `issue:${row.material_movement_id}` : `stock:${row.product_id}`, router_type: routerStockType(row.product_name) })), products, locations, areas, streets, employees, logged_in_employee_id: employeeId, is_admin: isAdmin(req),
       networks: ['KRISHI','RAILWIRE','DMNET'], sources: ['Customer Approach Office','Direct','Customer Approach Engineer'] });
   } catch (error) { return res.status(500).json({ message: 'Internet customer lookups failed', error: error.message }); }
 };
@@ -627,7 +642,7 @@ const updateInternetCustomerRouter = async (req,res) => {
 };
 
 const deleteInternetCustomerRouter = async (req,res) => {
-  const db=connection.promise();try{if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});await ensureInternetSchema(db);await db.beginTransaction();const customerId=Number(req.params.id),routerId=Number(req.params.routerId);const [[row]]=await db.query('SELECT * FROM internet_customer_routers WHERE internet_router_id=? AND internet_customer_id=? FOR UPDATE',[routerId,customerId]);if(!row)throw Object.assign(new Error('Internet router detail not found'),{status:404});const [[latest]]=await db.query("SELECT internet_router_id FROM internet_customer_routers WHERE internet_customer_id=? AND approval_status<>'REJECTED' ORDER BY internet_router_id DESC LIMIT 1",[customerId]);if(Number(latest?.internet_router_id)!==routerId)throw Object.assign(new Error('Only the latest router history row can be deleted'),{status:409});if(row.stock_processed){const reason=String(row.update_reason||'INSTALL').toUpperCase(),employeeId=Number(row.updated_by_employee_id);if(reason==='RETURNED'){for(const [productId,qty] of [[row.product_id,row.returned_router_qty],[row.returned_adapter_product_id,row.returned_adapter_qty]]){if(!productId||Number(qty)<=0)continue;const [stock]=await db.query('UPDATE technician_material_stock SET available_qty=available_qty-? WHERE employee_id=? AND product_id=? AND available_qty>=?',[qty,employeeId,productId,qty]);if(!stock.affectedRows)throw Object.assign(new Error('Returned router stock is no longer available to reverse this entry'),{status:409});}}else if(['INSTALL','REPLACED'].includes(reason)){await db.query('INSERT INTO technician_material_stock(employee_id,product_id,available_qty) VALUES(?,?,?) ON DUPLICATE KEY UPDATE available_qty=available_qty+VALUES(available_qty)',[employeeId,row.product_id,row.qty]);}}await db.query('DELETE FROM internet_customer_routers WHERE internet_router_id=? AND internet_customer_id=?',[routerId,customerId]);await syncNetEnrollmentAccount(db,row.initial_account_id,'routers');await db.commit();return res.json({message:'Internet router detail deleted successfully'});}catch(error){try{await db.rollback();}catch(_e){}return res.status(error.status||500).json({message:error.message||'Internet router delete failed'});}
+  const db=connection.promise();try{if(!isAdmin(req))return res.status(403).json({message:'Administrator permission is required'});await ensureInternetSchema(db);await db.beginTransaction();const customerId=Number(req.params.id),routerId=Number(req.params.routerId);const [[row]]=await db.query('SELECT * FROM internet_customer_routers WHERE internet_router_id=? AND internet_customer_id=? FOR UPDATE',[routerId,customerId]);if(!row)throw Object.assign(new Error('Internet router detail not found'),{status:404});const [[latest]]=await db.query("SELECT internet_router_id FROM internet_customer_routers WHERE internet_customer_id=? AND approval_status<>'REJECTED' ORDER BY internet_router_id DESC LIMIT 1",[customerId]);if(Number(latest?.internet_router_id)!==routerId)throw Object.assign(new Error('Only the latest router history row can be deleted'),{status:409});const [[issueLink]]=await db.query('SELECT material_movement_id FROM internet_router_material_issues WHERE internet_router_id=?',[routerId]);if(row.stock_processed&&!issueLink){const reason=String(row.update_reason||'INSTALL').toUpperCase(),employeeId=Number(row.updated_by_employee_id);if(reason==='RETURNED'){for(const [productId,qty] of [[row.product_id,row.returned_router_qty],[row.returned_adapter_product_id,row.returned_adapter_qty]]){if(!productId||Number(qty)<=0)continue;const [stock]=await db.query('UPDATE technician_material_stock SET available_qty=available_qty-? WHERE employee_id=? AND product_id=? AND available_qty>=?',[qty,employeeId,productId,qty]);if(!stock.affectedRows)throw Object.assign(new Error('Returned router stock is no longer available to reverse this entry'),{status:409});}}else if(['INSTALL','REPLACED'].includes(reason)){await db.query('INSERT INTO technician_material_stock(employee_id,product_id,available_qty) VALUES(?,?,?) ON DUPLICATE KEY UPDATE available_qty=available_qty+VALUES(available_qty)',[employeeId,row.product_id,row.qty]);}}await db.query('DELETE FROM internet_customer_routers WHERE internet_router_id=? AND internet_customer_id=?',[routerId,customerId]);await syncNetEnrollmentAccount(db,row.initial_account_id,'routers');await db.commit();return res.json({message:'Internet router detail deleted successfully'});}catch(error){try{await db.rollback();}catch(_e){}return res.status(error.status||500).json({message:error.message||'Internet router delete failed'});}
 };
 
 const internetAppendPeriod=(monthValue,yearValue)=>{const month=Number(monthValue),year=Number(yearValue);if(!Number.isInteger(month)||month<1||month>12||!Number.isInteger(year)||year<2000||year>2200)return null;const startDate=`${year}-${String(month).padStart(2,'0')}-01`,endDate=dateOnly(new Date(year,month,0));return{month,year,startDate,endDate,days:new Date(year,month,0).getDate()};};
