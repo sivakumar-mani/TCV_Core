@@ -82,6 +82,12 @@ export const routes: Routes = [
             canActivate:[RouteGuard],
             data:{ expectedRole:['admin'] }
         },
+        {
+            path:'internet-packages',
+            loadComponent: ()=> import('./administration/internet-packages/internet-packages').then(n => n.InternetPackages),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin'] }
+        },
          {
             path:'cable-tv-stbs',
             loadComponent: ()=> import('./administration/cable-tv-stbs/cable-tv-stbs').then(n => n.CableTvStbs),

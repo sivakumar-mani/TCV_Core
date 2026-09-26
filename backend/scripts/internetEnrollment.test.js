@@ -19,7 +19,7 @@ async function save(admin, p=payload(), options={}) {
     if(sql.includes('FROM employees'))return [[{employee_id:args[0]}]];
     if(sql.includes('MAX(customer_code)'))return [[{next_code:2001}]];
     if(sql.includes('FROM internet_customers WHERE net_id'))return [[]];
-    if(sql.includes('FROM internet_package_master'))return [[{price:500,provider_category:'KRISHI'}]];
+    if(sql.includes('FROM internet_package_master'))return [[{price:options.packagePrice ?? 500,provider_category:'KRISHI'}]];
     if(sql.includes('FROM technician_material_sale_adjustments'))return [[]];
     if(sql.includes('SELECT ri.qty'))return [[{qty:options.allocated||0}]];
     if(sql.includes('FROM technician_material_movements m'))return [options.noStock?[]:[{product_name:'General Optinet Router Single Band 2.4GHz',selling_price:2000,available_qty:1}]];
@@ -34,6 +34,69 @@ async function save(admin, p=payload(), options={}) {
   const inserted=table=>calls.filter(x=>x.sql.startsWith(`INSERT INTO ${table}(`)).map(x=>Object.fromEntries(x.sql.match(/\(([^)]+)\)/)[1].split(',').map((col,i)=>[col,x.args[i]])));
   return {calls,res,committed,rolledBack,inserted};
 }
+test('zero account automatically approves staff enrollment and settles account without workflow',async()=>{
+  const p=payload();p.routers=[];p.materials=[];
+  Object.assign(p.connection,{connection_charge:0,connection_discount:0,labour_service_charge:0});
+  Object.assign(p.subscription,{paid_amount:0,payment_status:'PAID'});
+  Object.assign(p.account,{overall_discount:0,customer_paid_amount:0});
+  const r=await save(false,p,{packagePrice:0});assert.equal(r.res.code,201);assert.ok(r.committed);
+  assert.equal(r.res.body.approval_status,'APPROVED');assert.equal(r.res.body.account_status,'PAID');
+  const account=r.inserted('internet_customer_accounts')[0];
+  assert.equal(account.approval_status,'APPROVED');assert.equal(account.account_status,'PAID');
+  assert.equal(account.grand_total,0);assert.equal(account.balance_amount,0);assert.equal(account.office_balance_amount,0);assert.equal(account.office_received_amount,0);
+  assert.ok(!r.calls.some(c=>c.sql.includes('INSERT INTO workflow_approvals')));
+  for(const table of ['internet_customers','internet_customer_packages','internet_customer_routers','internet_connections','internet_subscriptions']){
+    const update=r.calls.find(c=>c.sql.startsWith(`UPDATE ${table} SET approval_status='APPROVED'`));assert.ok(update,table);assert.deepEqual(update.args,[11]);
+  }
+});
+test('online paid subscription with no other charges automatically settles the zero account',async()=>{
+  const p=payload();p.routers=[];p.materials=[];
+  Object.assign(p.connection,{connection_charge:0,connection_discount:0,labour_service_charge:0});
+  Object.assign(p.subscription,{renewed_by_value:'CUSTOMER',payment_mode:'DASHBOARD',paid_amount:590,payment_status:'PAID'});
+  Object.assign(p.account,{overall_discount:0,customer_paid_amount:0});
+  const r=await save(true,p);assert.equal(r.res.code,201);assert.equal(r.res.body.account_status,'PAID');
+  assert.equal(r.inserted('internet_subscriptions')[0].paid_amount,590);
+  assert.equal(r.inserted('internet_customer_accounts')[0].grand_total,0);
+});
+test('nonzero fully paid accounts and fully discounted charges do not bypass workflow',async()=>{
+  for(const discounted of [false,true]){
+    const p=payload();p.routers=[];p.materials=[];
+    Object.assign(p.connection,{connection_charge:discounted?100:0,connection_discount:discounted?100:0,labour_service_charge:0});
+    Object.assign(p.subscription,{paid_amount:discounted?0:590,payment_status:'PAID'});
+    Object.assign(p.account,{overall_discount:0,customer_paid_amount:discounted?0:590});
+    const r=await save(false,p,{packagePrice:discounted?0:500});assert.equal(r.res.code,201);
+    assert.equal(r.res.body.approval_status,'PENDING');assert.equal(r.res.body.account_status,'PENDING');
+    assert.ok(r.calls.some(c=>c.sql.includes('INSERT INTO workflow_approvals')));
+  }
+});
+test('admin fully collected enrollment is settled immediately without workflow',async()=>{
+  const p=payload();p.account.customer_paid_amount=1590;
+  const r=await save(true,p);assert.equal(r.res.code,201);
+  const account=r.inserted('internet_customer_accounts')[0];
+  assert.equal(account.account_status,'PAID');assert.equal(account.approval_status,'APPROVED');
+  assert.equal(account.office_received_amount,1590);assert.equal(account.office_balance_amount,0);assert.equal(account.balance_amount,0);
+  assert.ok(!r.calls.some(c=>c.sql.includes('INSERT INTO workflow_approvals')));
+});
+test('Online Paid subscription stays paid but is excluded from pending account totals and balances',async()=>{
+  const p=payload();
+  p.subscription.renewed_by_value='CUSTOMER';p.subscription.payment_mode='DASHBOARD';
+  p.subscription.paid_amount=590;p.subscription.payment_status='PAID';
+  p.account.customer_paid_amount=0;
+  const r=await save(true,p);assert.equal(r.res.code,201);assert.ok(r.committed);
+  const sub=r.inserted('internet_subscriptions')[0];
+  assert.equal(sub.amount,590);assert.equal(sub.paid_amount,590);assert.equal(sub.balance_amount,0);assert.equal(sub.payment_status,'PAID');
+  const account=r.inserted('internet_customer_accounts')[0];
+  assert.equal(account.subscription_amount,0);assert.equal(account.grand_total,1000);
+  assert.equal(account.customer_paid_amount,0);assert.equal(account.balance_amount,1000);assert.equal(account.office_balance_amount,1000);
+});
+test('cash Paid and Online Partial subscriptions retain existing account treatment',async()=>{
+  for(const online of [false,true]){
+    const p=payload();p.subscription.renewed_by_value=online?'CUSTOMER':'ADMIN';p.subscription.payment_mode=online?'DASHBOARD':'CASH';
+    p.subscription.paid_amount=online?100:590;p.subscription.payment_status=online?'PARTIAL':'PAID';p.account.customer_paid_amount=p.subscription.paid_amount;
+    const r=await save(true,p);assert.equal(r.res.code,201);
+    const account=r.inserted('internet_customer_accounts')[0];assert.equal(account.subscription_amount,590);assert.equal(account.grand_total,1590);assert.equal(account.office_balance_amount,1590);assert.equal(account.balance_amount,1590-p.subscription.paid_amount);
+  }
+});
 test('staff enrollment recomputes prices, saves dates and payments, includes labor/discounts and remains pending office receipt',async()=>{
   const p=payload();p.installed_by_employee_id=999;p.routers[0].rate=1;p.materials[0].unit_rate=1;
   const r=await save(false,p);assert.equal(r.res.code,201);assert.ok(r.committed);

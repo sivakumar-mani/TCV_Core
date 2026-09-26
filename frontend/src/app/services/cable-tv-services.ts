@@ -117,6 +117,9 @@ export class CableTvServices {
   addPackage(data: any) {
     return this.http.post(`${this.endpoint}/masters/packages`, data, { headers: this.jsonHeaders });
   }
+  updatePackage(packageId: number, data: any) {
+    return this.http.patch(`${this.endpoint}/masters/packages/${packageId}`, data, { headers: this.jsonHeaders });
+  }
 
   addStbMaster(data: any) {
     return this.http.post(`${this.endpoint}/masters/stbs`, data, { headers: this.jsonHeaders });

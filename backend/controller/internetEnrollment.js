@@ -82,7 +82,7 @@ async function saveEnrollment(req, res, deps) {
     if (!mapped) fail('Select an active payment mapped employee');
     const [[duplicate]] = await db.query('SELECT internet_customer_id FROM internet_customers WHERE net_id=? LIMIT 1', [text(p.net_id)]);
     if (duplicate) throw Object.assign(new Error('Net ID already exists'), { status: 409 });
-    const approval = admin ? 'APPROVED' : 'PENDING';
+    let approval = admin ? 'APPROVED' : 'PENDING';
     const [[next]] = await db.query('SELECT COALESCE(MAX(customer_code),2000)+1 next_code FROM internet_customers');
     const [created] = await db.query(`INSERT INTO internet_customers(customer_code,network_type,full_name,net_id,network_password,door_no,location_id,area_id,street_id,state,city,pincode,mobile_no,alternate_mobile_no,aadhaar_no,source_name,installed_by_employee_id,installed_date,status,created_by_user_id,email,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
       [next.next_code,network,text(p.full_name),text(p.net_id),text(p.network_password)||null,p.door_no,p.location_id,p.area_id,p.street_id,p.state||'Tamil Nadu',p.city||address.city,p.pincode||address.pincode,p.mobile_no,text(p.alternate_mobile_no)||null,text(p.aadhaar_no)||null,p.source_name||'Direct',employee,installedDate,'ACTIVE',userId(req),email,approval]);
@@ -152,15 +152,30 @@ async function saveEnrollment(req, res, deps) {
       await db.query(`INSERT INTO internet_connection_materials(internet_customer_id,product_id,item_name,qty,unit,unit_rate,discount,amount) VALUES(?,?,?,?,?,?,?,?)`, [customerId,Number(item.product_id)||null,text(item.item_name)||product?.product_name||'Material',qty,product?.unit||item.unit||'PCS',rate,discount,money(gross-discount)]);
     }
     const overallDiscount = nonnegative(p.account?.overall_discount ?? 0, 'Overall discount');
-    const subtotal = money(routerTotal+connectionCharge-connectionDiscount+labor+materialGross-materialDiscount+subscriptionTotal);
+    const onlinePaid = renewal.renewedBy === 'CUSTOMER' && renewal.paymentMode === 'DASHBOARD' && status === 'PAID';
+    const accountSubscription = onlinePaid ? 0 : subscriptionTotal;
+    const accountSubscriptionPaid = onlinePaid ? 0 : subscriptionPaid;
+    const subtotal = money(routerTotal+connectionCharge-connectionDiscount+labor+materialGross-materialDiscount+accountSubscription);
     if (overallDiscount > subtotal) fail('Overall discount cannot exceed the total');
-    const grand = money(subtotal-overallDiscount), paid = nonnegative(p.account?.customer_paid_amount ?? subscriptionPaid, 'Customer paid amount');
-    if (paid < subscriptionPaid || paid > grand) fail('Customer paid amount must include subscription payment and cannot exceed the total');
-    const [account] = await db.query(`INSERT INTO internet_customer_accounts(internet_customer_id,account_source,router_amount,router_discount,connection_amount,labor_amount,material_cost,material_discount,subscription_amount,overall_discount,grand_total,customer_paid_amount,office_received_amount,office_balance_amount,balance_amount,account_status,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [customerId,'CONNECTION',routerTotal,routerDiscount,connectionCharge,labor,materialGross,materialDiscount,subscriptionTotal,overallDiscount,grand,paid,0,grand,money(grand-paid),'PENDING',approval]);
+    const grand = money(subtotal-overallDiscount), paid = nonnegative(p.account?.customer_paid_amount ?? accountSubscriptionPaid, 'Customer paid amount');
+    if (paid < accountSubscriptionPaid || paid > grand) fail('Customer paid amount must include subscription payment and cannot exceed the total');
+    // Only a genuinely zero-value account bypasses approval; paid-off or
+    // discounted nonzero charges keep their existing approval/receipt workflow.
+    const zeroAccount = [routerTotal,routerDiscount,connectionCharge,connectionDiscount,labor,materialGross,materialDiscount,accountSubscription,overallDiscount,grand,paid].every(value => value === 0);
+    const adminSettled = admin && money(grand-paid) === 0;
+    const accountStatus = zeroAccount || adminSettled ? 'PAID' : 'PENDING';
+    const officeReceived = adminSettled ? paid : 0;
+    if (zeroAccount) {
+      approval = 'APPROVED';
+      for (const table of ['internet_customers','internet_customer_packages','internet_customer_routers','internet_connections','internet_subscriptions']) {
+        await db.query(`UPDATE ${table} SET approval_status='APPROVED' WHERE internet_customer_id=? AND approval_status='PENDING'`, [customerId]);
+      }
+    }
+    const [account] = await db.query(`INSERT INTO internet_customer_accounts(internet_customer_id,account_source,router_amount,router_discount,connection_amount,labor_amount,material_cost,material_discount,subscription_amount,overall_discount,grand_total,customer_paid_amount,office_received_amount,office_balance_amount,balance_amount,account_status,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [customerId,'CONNECTION',routerTotal,routerDiscount,connectionCharge,labor,materialGross,materialDiscount,accountSubscription,overallDiscount,grand,paid,officeReceived,money(grand-officeReceived),money(grand-paid),accountStatus,approval]);
     for (const table of ['internet_subscriptions','internet_customer_routers','internet_connections','internet_connection_materials']) await db.query(`UPDATE ${table} SET initial_account_id=? WHERE internet_customer_id=? AND initial_account_id IS NULL`, [account.insertId,customerId]);
-    if (!admin) await db.query(`INSERT INTO workflow_approvals(module_name,reference_id,reference_no,workflow_status,requested_by_employee_id,remarks) VALUES('INTERNET_CUSTOMER',?,?,'PENDING',?,'Internet customer approval')`, [customerId,String(customerId),loggedEmployee]);
+    if (!admin && !zeroAccount) await db.query(`INSERT INTO workflow_approvals(module_name,reference_id,reference_no,workflow_status,requested_by_employee_id,remarks) VALUES('INTERNET_CUSTOMER',?,?,'PENDING',?,'Internet customer approval')`, [customerId,String(customerId),loggedEmployee]);
     await db.commit();
-    return res.status(201).json({ message: admin ? 'Internet customer saved successfully' : 'Internet customer sent for admin approval', internet_customer_id:customerId,approval_status:approval,account_status:'PENDING' });
+    return res.status(201).json({ message: approval === 'APPROVED' ? 'Internet customer saved successfully' : 'Internet customer sent for admin approval', internet_customer_id:customerId,approval_status:approval,account_status:accountStatus });
   } catch (error) {
     try { await db.rollback(); } catch (_) {}
     return res.status(error.code === 'ER_DUP_ENTRY' ? 409 : error.status || 500).json({ message:error.code === 'ER_DUP_ENTRY' ? 'Customer code or Net ID already exists; please retry' : error.message || 'Internet customer save failed' });

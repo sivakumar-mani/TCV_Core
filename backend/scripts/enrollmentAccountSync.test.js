@@ -26,6 +26,19 @@ test('deleting the last linked router clears its component instead of retaining 
 });
 test('settled or missing accounts are not recalculated',async()=>{assert.equal((await sync({},null,false)).length,1);});
 
+test('recalculation excludes only Online Paid amounts, including when all subscriptions are excluded',async()=>{
+ const {DatabaseSync}=require('node:sqlite');const db=new DatabaseSync(':memory:');
+ try {
+  db.exec(`CREATE TABLE internet_subscriptions(initial_account_id INT,amount REAL,renewed_by TEXT,payment_mode TEXT,payment_status TEXT);
+  INSERT INTO internet_subscriptions VALUES(1,590,'CUSTOMER','DASHBOARD','PAID'),(1,200,'ADMIN','CASH','PAID'),(1,300,'CUSTOMER','DASHBOARD','PARTIAL'),(1,400,'CUSTOMER','DASHBOARD','PENDING'),(2,590,'CUSTOMER','DASHBOARD','PAID');`);
+  const calls=await sync({subscriptions:0,routers:null,connections:null,connection_amount:null,labor_amount:null,materials:null});
+  const sql=calls[1].sql.match(/\(SELECT SUM\(CASE[\s\S]+?\) subscriptions/)[0].slice(1,-15);
+  assert.equal(Object.values(db.prepare(sql).get(1))[0],900);
+  assert.equal(Object.values(db.prepare(sql).get(2))[0],0);
+  assert.equal(calls[2].params[0],0);assert.equal(calls[2].params[5],800);
+ } finally { db.close(); }
+});
+
 test('SQL eligibility includes only the first enrolment month and excludes renewals and closed/imported accounts',async()=>{
  const {DatabaseSync}=require('node:sqlite');const database=new DatabaseSync(':memory:');
  database.function('MONTH',v=>Number(String(v).slice(5,7)));database.function('YEAR',v=>Number(String(v).slice(0,4)));

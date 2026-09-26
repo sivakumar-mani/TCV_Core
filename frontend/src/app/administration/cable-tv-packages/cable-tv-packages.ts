@@ -5,6 +5,7 @@ import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { CableTvServices } from '../../services/cable-tv-services';
 import { Snackbar } from '../../services/snackbar';
 import { globalConstants } from '../../services/global-constants';
+import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-packages',
@@ -17,13 +18,16 @@ export class CableTvPackages {
   packageSearch = '';
   packageForm!: FormGroup;
   showPackageModal = false;
+  editingPackageId: number | null = null;
+  saving = false;
   packageTypes = ['MSO_PACKAGE', 'ADDON', 'ALACARTE', 'BROADCAST'];
 
   constructor(
     private fb: FormBuilder,
     private cableTvService: CableTvServices,
     private ngxLoader: NgxUiLoaderService,
-    private snackbar: Snackbar
+    private snackbar: Snackbar,
+    public permissions: PermissionService
   ) {}
 
   ngOnInit() {
@@ -67,25 +71,37 @@ export class CableTvPackages {
     });
   }
 
-  openPackageModal() {
-    this.packageForm.reset({ package_type: 'MSO_PACKAGE', service_category: 'CATV', internet_network_type: null, price: 0, gst_percent: 0, price_including_gst: 0 });
+  openPackageModal(item?: any) {
+    this.editingPackageId = item?.package_id ?? null;
+    this.packageForm.reset(item ? { ...item, price: Number(item.price) } : { package_type: 'MSO_PACKAGE', service_category: 'CATV', internet_network_type: null, price: 0, gst_percent: 0, price_including_gst: 0 }, { emitEvent: false });
+    for (const field of ['package_type', 'service_category', 'internet_network_type']) {
+      if (item) this.packageForm.get(field)?.disable({ emitEvent: false });
+      else this.packageForm.get(field)?.enable({ emitEvent: false });
+    }
     this.showPackageModal = true;
   }
 
   closePackageModal() {
+    if (this.saving) return;
     this.showPackageModal = false;
   }
 
   savePackage() {
+    if (this.saving) return;
     if (this.packageForm.invalid) {
       this.packageForm.markAllAsTouched();
       return;
     }
 
     this.ngxLoader.start();
-    this.cableTvService.addPackage(this.packageForm.value).subscribe({
+    this.saving = true;
+    const request = this.editingPackageId
+      ? this.cableTvService.updatePackage(this.editingPackageId, this.packageForm.getRawValue())
+      : this.cableTvService.addPackage(this.packageForm.value);
+    request.subscribe({
       next: (response: any) => {
         this.ngxLoader.stop();
+        this.saving = false;
         this.snackbar.openSnackbar(response?.message || 'Package saved successfully', '');
         this.closePackageModal();
         this.loadPackages();
@@ -105,6 +121,7 @@ export class CableTvPackages {
   }
 
   private handleError(error: any) {
+    this.saving = false;
     this.ngxLoader.stop();
     this.snackbar.openSnackbar(error?.error?.message || globalConstants.genericError, globalConstants.errorRegex);
   }

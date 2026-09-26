@@ -1,0 +1,36 @@
+<section class="page-shell">
+  <div class="page-header"><h1>Internet Package List</h1><button type="button" (click)="open()">Add Package</button></div>
+  <p *ngIf="message" class="alert alert-success" role="status">{{ message }}</p>
+  <p *ngIf="error && !showModal" class="alert alert-danger" role="alert">{{ error }} <button type="button" (click)="load()">Retry</button></p>
+  <div class="package-panel">
+    <label class="search-field">Search packages<input type="search" placeholder="Name, code or provider" (input)="search = $any($event.target).value"></label>
+    <p *ngIf="loading" role="status">Loading packages...</p>
+    <div class="table-responsive" *ngIf="!loading">
+      <table><thead><tr><th>Provider</th><th>Code</th><th>Package</th><th>Price before GST</th><th>GST %</th><th>Price including GST</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody><tr *ngFor="let pkg of filteredPackages">
+          <td>{{ pkg.provider_category }}</td><td>{{ pkg.package_code || '-' }}</td><td>{{ pkg.package_name }}</td>
+          <td>{{ pkg.price | number:'1.2-2' }}</td><td>{{ pkg.gst_percent | number:'1.2-2' }}</td><td>{{ pkg.price_including_gst | number:'1.2-2' }}</td>
+          <td>{{ +pkg.is_active ? 'Active' : 'Inactive' }}</td><td><button type="button" (click)="open(pkg)" [attr.aria-label]="'Edit ' + pkg.package_name">Edit</button></td>
+        </tr><tr *ngIf="!filteredPackages.length"><td colspan="8" class="empty-row">No packages found.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<div class="modal-backdrop" *ngIf="showModal">
+  <form class="modal-panel" [formGroup]="form" (ngSubmit)="save()" role="dialog" aria-modal="true" aria-labelledby="internet-package-title">
+    <div class="modal-header"><h2 id="internet-package-title">{{ editingId ? 'Edit' : 'Add' }} Internet Package</h2><button type="button" (click)="close()" [disabled]="saving" aria-label="Close">×</button></div>
+    <div class="entry-form">
+      <p *ngIf="error" class="package-field alert alert-danger" role="alert">{{ error }}</p>
+      <label class="package-field">Package name<input formControlName="package_name" maxlength="255" required></label>
+      <label>Provider<select formControlName="provider_category"><option value="KRISHI">KRISHI</option><option value="RAILWIRE">RAILWIRE</option><option value="DMNET">DMNET</option><option *ngIf="editingId && form.controls.provider_category.value === 'LEGACY'" value="LEGACY">LEGACY</option></select></label>
+      <label>Package code<input formControlName="package_code" maxlength="50"></label>
+      <label>Price before GST<input type="number" formControlName="price" min="0" step="0.01" required></label>
+      <label>GST %<input type="number" formControlName="gst_percent" min="0" max="100" step="0.01" required></label>
+      <label class="package-field">Price including GST<output>{{ total | number:'1.2-2' }}</output></label>
+      <label class="package-field">Description<input formControlName="description"></label>
+      <p class="package-field" *ngIf="editingId">Changes apply to the package master. Existing subscription amounts and payments are preserved.</p>
+      <p class="package-field text-danger" *ngIf="form.invalid && form.touched">Enter a package name, valid price and GST between 0 and 100.</p>
+    </div>
+    <div class="modal-actions"><button type="button" class="secondary-btn" (click)="close()" [disabled]="saving">Cancel</button><button type="submit" [disabled]="saving">{{ saving ? 'Saving...' : 'Save Package' }}</button></div>
+  </form>
+</div>

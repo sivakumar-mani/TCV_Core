@@ -1579,6 +1579,37 @@ const addPackage = async (req, res) => {
   }
 };
 
+const updatePackage = async (req, res) => {
+  try {
+    const id = Number(req.params.packageId);
+    const name = String(req.body.package_name || '').trim();
+    const price = Number(req.body.price);
+    if (!Number.isSafeInteger(id) || id <= 0 || !name || name.length > 255 ||
+        req.body.price == null || req.body.price === '' || !Number.isFinite(price) || price < 0) {
+      return res.status(400).json({ message: 'Enter a valid package name and non-negative price' });
+    }
+    const db = connection.promise();
+    await ensureCableTvExtendedTables(db);
+    const [[existing]] = await db.query('SELECT * FROM cable_package_master WHERE package_id = ?', [id]);
+    if (!existing) return res.status(404).json({ message: 'Package not found' });
+    const [[duplicate]] = await db.query(
+      'SELECT package_id FROM cable_package_master WHERE package_name = ? AND package_type = ? AND service_category = ? AND package_id <> ? LIMIT 1',
+      [name, existing.package_type, existing.service_category, id]
+    );
+    if (duplicate) return res.status(409).json({ message: 'Package already exists for selected type' });
+    const basePrice = money(price);
+    const gst = existing.service_category === 'INTERNET' ? 18 : 0;
+    // Classification and customer billing snapshots remain unchanged.
+    await db.query(
+      'UPDATE cable_package_master SET package_name = ?, price = ?, gst_percent = ?, price_including_gst = ?, description = ? WHERE package_id = ?',
+      [name, basePrice, gst, gst ? money(basePrice * 1.18) : 0, nullable(req.body.description), id]
+    );
+    return res.json({ message: 'Package updated successfully' });
+  } catch (error) {
+    return res.status(error.code === 'ER_DUP_ENTRY' ? 409 : 500).json({ message: error.code === 'ER_DUP_ENTRY' ? 'Package already exists for selected type' : 'Cable TV package update failed' });
+  }
+};
+
 const addStbMaster = async (req, res) => {
   try {
     const db = connection.promise();
@@ -4987,6 +5018,7 @@ module.exports = {
   updateLocationInfo,
   deleteLocationInfo,
   addPackage,
+  updatePackage,
   addStbMaster,
   updateStbMaster,
   deleteStbMaster,

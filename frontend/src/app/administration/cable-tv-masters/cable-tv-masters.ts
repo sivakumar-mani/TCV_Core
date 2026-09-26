@@ -157,7 +157,7 @@ export class CableTvMasters {
       if (!networkMap.has(networkKey)) {
         networkMap.set(networkKey, {
           key: `network:${networkKey}`,
-          expanded: true,
+          expanded: false,
           data: {
             level: 'network',
             network_id: network.network_id,
@@ -186,7 +186,7 @@ export class CableTvMasters {
       if (!postalNode) {
         postalNode = {
           key: postalKey,
-          expanded: true,
+          expanded: false,
           data: {
             level: 'postal',
             network_id: network.network_id,
@@ -205,7 +205,7 @@ export class CableTvMasters {
       const areaKey = `area:${area.area_id}`;
       const areaNode: TreeNode = {
         key: areaKey,
-        expanded: true,
+        expanded: false,
         data: {
           level: 'area',
           network_id: area.network_id,

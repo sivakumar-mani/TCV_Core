@@ -28,7 +28,7 @@ const syncNetEnrollmentAccount = async (db, accountId, removedComponent = null) 
   const [[a]]=await db.query(`SELECT * FROM internet_customer_accounts WHERE internet_account_id=? AND account_source='CONNECTION' AND account_status IN ('PENDING','PARTIAL') AND approval_status<>'REJECTED' FOR UPDATE`,[accountId]);
   if (!a) return;
   const [[totals]]=await db.query(`SELECT
-    (SELECT SUM(amount) FROM internet_subscriptions WHERE initial_account_id=?) subscriptions,
+    (SELECT SUM(CASE WHEN renewed_by='CUSTOMER' AND payment_mode='DASHBOARD' AND payment_status='PAID' THEN 0 ELSE amount END) FROM internet_subscriptions WHERE initial_account_id=?) subscriptions,
     (SELECT SUM(amount) FROM internet_customer_routers WHERE initial_account_id=?) routers,
     (SELECT SUM(connection_charge-connection_discount+labour_service_charge) FROM internet_connections WHERE initial_account_id=?) connections,
     (SELECT SUM(connection_charge) FROM internet_connections WHERE initial_account_id=?) connection_amount,

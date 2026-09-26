@@ -23,7 +23,7 @@ export class Sidebar {
     { label: 'HR Process', icon: 'bi-person-badge', items: [['Employees', '/employees', 'EMPLOYEES'], ['Employee Attendance', '/employee-attendance', 'EMPLOYEE_ATTENDANCE'], ['Employee Salary', '/employee-salary', 'EMPLOYEE_SALARY']] },
     { label: 'Accounts', icon: 'bi-bank', items: [['Transactions', '/transactions', 'TRANSACTIONS'], ['Pending Accounts', '/cable-tv-account-pending', 'CABLE_TV_ACCOUNTS'], ['LO Accounts', '/lo-accounts', 'LO_ACCOUNTS'], ['CATV Subscription', '/cable-tv-subscription-pending', 'CABLE_TV_SUBSCRIPTION_DUES'], ['Net Subscription', '/net-subscription-pending', 'NET_SUBSCRIPTION'], ['Assign Net Collector', '/assign-net-collector', 'NET_SUBSCRIPTION'], ['Append CATV Subscriptions', '/cable-tv-subscription-append', 'CABLE_TV_SUBSCRIPTION_GENERATE'], ['Append Net Subscriptions', '/net-subscription-append', 'NET_SUBSCRIPTION_APPEND']] },
     { label: 'Reports', icon: 'bi-bar-chart', items: [['CATV Customer List Report', '/catv-customer-list-report', 'CATV_CUSTOMER_LIST_REPORT'], ['CATV Subscription Report', '/cable-tv-subscription-report', 'CABLE_TV_SUBSCRIPTION_REPORT'], ['STB Payment Report', '/stb-payment-report', 'STB_PAYMENT_REPORT'], ['Net Subscription Report', '/net-subscription-report', 'NET_SUBSCRIPTION_REPORT'], ['Complaint Report', '/complaint-report', 'CABLE_TV_COMPLAINT_REPORT'], ['Material Sales Report', '/material-sales-report', 'MATERIAL_SALES']] },
-    { label: 'Administration', icon: 'bi-shield-lock', items: [['Workflow Approvals', '/workflow-approval', 'WORKFLOW_APPROVAL'], ['Net Cash/Admin Correction', '/net-cash-admin-correction', 'INTERNET_CUSTOMERS', 'ADMIN'], ['Location Info', '/cable-tv-masters', 'CABLE_TV_MASTERS'], ['Package List', '/cable-tv-packages', 'CABLE_TV_PACKAGES'], ['STB Master', '/cable-tv-stbs', 'CABLE_TV_STBS'], ['Quotation Templates', '/quotation-templates', 'QUOTATIONS', 'ADMIN'], ['Users', '/users', 'USERS'], ['Role Permissions', '/role-permissions', 'ROLE_PERMISSIONS'], ['Audit Logs', '/audit-logs', 'AUDIT_LOGS']] }
+    { label: 'Administration', icon: 'bi-shield-lock', items: [['Workflow Approvals', '/workflow-approval', 'WORKFLOW_APPROVAL'], ['Net Cash/Admin Correction', '/net-cash-admin-correction', 'INTERNET_CUSTOMERS', 'ADMIN'], ['Location Info', '/cable-tv-masters', 'CABLE_TV_MASTERS'], ['Package List', '/cable-tv-packages', 'CABLE_TV_PACKAGES'], ['Internet Package List', '/internet-packages', 'CABLE_TV_PACKAGES', 'ADMIN'], ['STB Master', '/cable-tv-stbs', 'CABLE_TV_STBS'], ['Quotation Templates', '/quotation-templates', 'QUOTATIONS', 'ADMIN'], ['Users', '/users', 'USERS'], ['Role Permissions', '/role-permissions', 'ROLE_PERMISSIONS'], ['Audit Logs', '/audit-logs', 'AUDIT_LOGS']] }
   ];
   constructor(public permissions: PermissionService) {}
   visible(group: any) { return group.items.some((item: string[]) => this.itemVisible(item)); }
@@ -45,7 +45,7 @@ export class Sidebar {
       '/net-subscription-report': 'bi-wifi',
       '/complaint-report': 'bi-clipboard-data',
       '/net-cash-admin-correction': 'bi-cash-coin',
-      '/cable-tv-masters': 'bi-geo-alt', '/cable-tv-packages': 'bi-box-seam', '/cable-tv-stbs': 'bi-router-fill',
+      '/internet-packages': 'bi-wifi', '/cable-tv-masters': 'bi-geo-alt', '/cable-tv-packages': 'bi-box-seam', '/cable-tv-stbs': 'bi-router-fill',
       '/users': 'bi-person-gear', '/role-permissions': 'bi-shield-lock', '/audit-logs': 'bi-journal-text'
     };
     return icons[route] || 'bi-circle-fill';

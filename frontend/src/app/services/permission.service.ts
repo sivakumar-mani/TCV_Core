@@ -60,6 +60,7 @@ export class PermissionService {
   }
 
   canRoute(path: string): boolean {
+    if (path.split('?')[0] === '/internet-packages') return this.isAdmin();
     if (path.split('?')[0] === '/quotation-templates') return this.isAdmin();
     const key = this.keyForRoute(path);
     const updateRoute = ['/edit', '/review', '/material-issue'].some(part => path.includes(part));
