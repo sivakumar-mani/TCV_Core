@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -14,7 +15,7 @@ type Section = 'customer' | 'connections' | 'stbs' | 'packages' | 'subscriptions
 
 @Component({
   selector: 'app-cable-tv-customer-history',
-  imports: [MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './cable-tv-customer-history.html',
   styleUrl: './cable-tv-customer-history.scss'
 })

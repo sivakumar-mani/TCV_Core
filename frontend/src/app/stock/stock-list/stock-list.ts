@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ColDef } from 'ag-grid-community';
@@ -9,7 +10,7 @@ import { CommonMethods } from '../../shared/common-methods';
 
 @Component({
   selector: 'app-stock-list',
-  imports: [CommonModule, AgGridList],
+  imports: [ApiSelectDirective, CommonModule, AgGridList],
   templateUrl: './stock-list.html',
   styleUrl: './stock-list.scss',
 })

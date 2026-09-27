@@ -10,12 +10,12 @@
     ><label>Net ID<input [(ngModel)]="filters.net_id" (keyup.enter)="load()" /></label
     ><label>Customer Name<input [(ngModel)]="filters.customer_name" (keyup.enter)="load()" /></label
     ><label
-      >Area<select [(ngModel)]="filters.area_id" (change)="filters.street_id = ''">
+      >Area<select appApiSelect [(ngModel)]="filters.area_id" (change)="filters.street_id = ''">
         <option value="">All Areas</option>
         <option *ngFor="let x of areas" [value]="x.area_id">{{ x.area_name }}</option>
       </select></label
     ><label
-      >Street<select [(ngModel)]="filters.street_id">
+      >Street<select appApiSelect [(ngModel)]="filters.street_id">
         <option value="">All Streets</option>
         <option *ngFor="let x of streets" [value]="x.street_id">{{ x.street_name }}</option>
       </select></label
@@ -163,7 +163,7 @@
             [(ngModel)]="form.collect_date"
             [disabled]="!permissions.isAdmin()" /></label
         ><label
-          >Collected By<select
+          >Collected By<select appApiSelect
             [(ngModel)]="form.collected_by_employee_id" (ngModelChange)="assignCollector && collectorChanged()"
             [disabled]="!permissions.isAdmin()"
           >
@@ -179,7 +179,7 @@
         ><label *ngIf="permissions.isAdmin() || assignCollector"
           >Payment Reference<input [(ngModel)]="form.payment_reference" maxlength="150" /></label
         ><label *ngIf="permissions.isAdmin() || assignCollector"
-          >Payment Mapped Employee<select [(ngModel)]="form.payment_mapped_employee_id" [disabled]="assignCollector">
+          >Payment Mapped Employee<select appApiSelect [(ngModel)]="form.payment_mapped_employee_id" [disabled]="assignCollector">
             <option [ngValue]="null">Select employee</option>
             <option *ngFor="let e of employees" [ngValue]="e.employee_id">
               {{ e.employee_name }}

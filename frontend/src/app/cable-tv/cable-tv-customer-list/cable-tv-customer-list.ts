@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +13,7 @@ import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-customer-list',
-  imports: [CommonModule, FormsModule, AgGridList],
+  imports: [ApiSelectDirective, CommonModule, FormsModule, AgGridList],
   templateUrl: './cable-tv-customer-list.html',
   styleUrl: './cable-tv-customer-list.scss'
 })

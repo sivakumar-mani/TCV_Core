@@ -17,7 +17,7 @@
       <h2>Customer Details</h2>
       <div class="form-grid">
         <label>Network
-          <select formControlName="network_id">
+          <select appApiSelect formControlName="network_id">
             <option [ngValue]="null">Select network</option>
             <option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">{{ network.network_name }}</option>
           </select>
@@ -29,19 +29,19 @@
           <input type="text" formControlName="door_no">
         </label>
         <label>Postal Area
-          <select formControlName="location_id">
+          <select appApiSelect formControlName="location_id">
             <option [ngValue]="null">Select postal area</option>
             <option *ngFor="let location of filteredPostalAreas" [ngValue]="location.location_id">{{ location.location_name }}</option>
           </select>
         </label>
         <label>Location
-          <select formControlName="area_id">
+          <select appApiSelect formControlName="area_id">
             <option [ngValue]="null">Select location</option>
             <option *ngFor="let area of filteredAreas" [ngValue]="area.area_id">{{ area.area_name }}</option>
           </select>
         </label>
         <label>Street
-          <select formControlName="street_id">
+          <select appApiSelect formControlName="street_id">
             <option [ngValue]="null">Select street</option>
             <option *ngFor="let street of filteredStreets" [ngValue]="street.street_id">{{ street.street_name }}</option>
           </select>
@@ -62,13 +62,13 @@
           <input type="tel" maxlength="12" formControlName="aadhaar_no">
         </label>
         <label>Source
-          <select formControlName="source_id">
+          <select appApiSelect formControlName="source_id">
             <option [ngValue]="null">Select source</option>
             <option *ngFor="let source of lookups.sources || sourceOptions" [ngValue]="source.source_id">{{ source.source_name }}</option>
           </select>
         </label>
         <label *ngIf="permissions.isAdmin()">Installed By
-          <select formControlName="installed_by_employee_id">
+          <select appApiSelect formControlName="installed_by_employee_id">
             <option [ngValue]="null">Select employee</option>
             <option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>
@@ -136,13 +136,13 @@
           </select>
         </label>
         <label>Installed MSO
-          <select formControlName="installed_mso_id">
+          <select appApiSelect formControlName="installed_mso_id">
             <option [ngValue]="null">Select MSO</option>
             <option *ngFor="let mso of lookups.installedMsos || []" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
           </select>
         </label>
         <label>Exchange Original MSO
-          <select formControlName="exchange_original_mso_id">
+          <select appApiSelect formControlName="exchange_original_mso_id">
             <option [ngValue]="null">Fresh</option>
             <option *ngFor="let mso of lookups.msos || []" [ngValue]="mso.mso_id">{{ mso.mso_name }}</option>
           </select>
@@ -212,7 +212,7 @@
           <span>Product</span><span>Item</span><span>Qty</span><span>Unit</span><span>Rate</span><span>Amount</span><span></span>
         </div>
         <div *ngFor="let row of materials.controls; let i = index" [formGroupName]="i" class="material-row">
-          <select formControlName="product_id" (change)="selectMaterialProduct(i)">
+          <select appApiSelect formControlName="product_id" (change)="selectMaterialProduct(i)">
             <option [ngValue]="null">Select product</option>
             <option *ngFor="let product of lookups.products || []" [ngValue]="product.product_id" [disabled]="isMaterialSelected(product.product_id, i)">{{ product.product_name }}</option>
           </select>
@@ -236,7 +236,7 @@
           <span>Package</span><span>Price</span><span>Start</span><span>End</span><span>Period</span><span>Amount</span><span></span>
         </div>
         <div *ngFor="let row of packages.controls; let i = index" [formGroupName]="i" class="package-row">
-          <select formControlName="package_id" (change)="selectPackage(i)">
+          <select appApiSelect formControlName="package_id" (change)="selectPackage(i)">
             <option [ngValue]="null">Select package</option>
             <option *ngFor="let item of lookups.packages || []" [ngValue]="item.package_id" [disabled]="isPackageSelected(item.package_id, i)">{{ item.package_name }} - {{ item.package_type }}</option>
           </select>

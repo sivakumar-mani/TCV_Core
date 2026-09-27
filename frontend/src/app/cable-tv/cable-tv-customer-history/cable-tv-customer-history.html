@@ -66,7 +66,7 @@
     </div>
     <div class="form-grid" [formGroup]="form">
       <label>Network
-        <select formControlName="network_id">
+        <select appApiSelect formControlName="network_id">
           <option [ngValue]="null">Select Network</option>
           <option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">
             {{ network.network_code || network.network_name }}
@@ -78,13 +78,13 @@
       <label>Alternate Mobile<input type="text" maxlength="10" formControlName="alternate_mobile_no"></label>
       <label>Aadhaar No<input type="text" maxlength="12" formControlName="aadhaar_no"></label>
       <label>Source
-        <select formControlName="source_id">
+        <select appApiSelect formControlName="source_id">
           <option [ngValue]="null">Select Source</option>
           <option *ngFor="let source of lookups.sources || []" [ngValue]="source.source_id">{{ source.source_name }}</option>
         </select>
       </label>
       <label>Installed By
-        <select formControlName="installed_by_employee_id">
+        <select appApiSelect formControlName="installed_by_employee_id">
           <option [ngValue]="null">Select Employee</option>
           <option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">
             {{ employee.employee_name }}
@@ -257,18 +257,18 @@
       <div class="form-grid" *ngIf="section === 'connections'">
         <label>Connection Date<input type="date" formControlName="connection_date"></label>
         <label>Connection Type<select formControlName="connection_type"><option *ngFor="let type of connectionTypes" [ngValue]="type">{{ connectionTypeLabel(type) }}</option></select></label>
-        <label>Network<select formControlName="network_id"><option [ngValue]="null">Select network</option><option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">{{ network.network_name }}</option></select></label>
+        <label>Network<select appApiSelect formControlName="network_id"><option [ngValue]="null">Select network</option><option *ngFor="let network of lookups.networks || []" [ngValue]="network.network_id">{{ network.network_name }}</option></select></label>
         <label *ngIf="isLocationChange">Door No<input type="text" formControlName="new_door_no" placeholder="Enter new door no"></label>
         <label *ngIf="isLocationChange">Postal Area
-          <select formControlName="new_location_id"><option [ngValue]="null">Select postal area</option><option *ngFor="let location of locationChangePostalAreas" [ngValue]="location.location_id">{{ location.location_name }}</option></select>
+          <select appApiSelect formControlName="new_location_id"><option [ngValue]="null">Select postal area</option><option *ngFor="let location of locationChangePostalAreas" [ngValue]="location.location_id">{{ location.location_name }}</option></select>
         </label>
         <label *ngIf="isLocationChange">Location
-          <select formControlName="new_area_id"><option [ngValue]="null">Select location</option><option *ngFor="let area of locationChangeAreas" [ngValue]="area.area_id">{{ area.area_name }}</option></select>
+          <select appApiSelect formControlName="new_area_id"><option [ngValue]="null">Select location</option><option *ngFor="let area of locationChangeAreas" [ngValue]="area.area_id">{{ area.area_name }}</option></select>
         </label>
         <label *ngIf="isLocationChange">Street
-          <select formControlName="new_street_id"><option [ngValue]="null">Select street</option><option *ngFor="let street of locationChangeStreets" [ngValue]="street.street_id">{{ street.street_name }}</option></select>
+          <select appApiSelect formControlName="new_street_id"><option [ngValue]="null">Select street</option><option *ngFor="let street of locationChangeStreets" [ngValue]="street.street_id">{{ street.street_name }}</option></select>
         </label>
-        <label *ngIf="permissions.isAdmin()">Installed By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin()">Installed By<select appApiSelect formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Installed By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label>Connection Charge<input type="number" formControlName="connection_charge"></label>
         <label>Labor Charge<input type="number" formControlName="labour_service_charge"></label>
@@ -279,7 +279,7 @@
         <div class="section-title-row"><h2>Material Details</h2><button type="button" class="secondary-btn small" (click)="addMaterialRow()">Add Row</button></div>
         <div formArrayName="materials" class="material-table">
           <div *ngFor="let row of materials.controls; let i = index" [formGroupName]="i" class="material-row">
-            <select formControlName="product_id" (change)="selectMaterialProduct(i)"><option [ngValue]="null">Product</option><option *ngFor="let product of lookups.products || []" [ngValue]="product.product_id">{{ product.product_name }}</option></select>
+            <select appApiSelect formControlName="product_id" (change)="selectMaterialProduct(i)"><option [ngValue]="null">Product</option><option *ngFor="let product of lookups.products || []" [ngValue]="product.product_id">{{ product.product_name }}</option></select>
             <input type="text" formControlName="item_name" placeholder="Item">
             <input type="number" formControlName="qty" (input)="calculateMaterialAmount(i)">
             <input type="text" formControlName="unit">
@@ -315,7 +315,7 @@
             <option *ngFor="let reason of availableStbReasons" [ngValue]="reason">{{ reasonLabel(reason) }}</option>
           </select>
         </label>
-        <label *ngIf="permissions.isAdmin()">Installed/Attended By<select formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin()">Installed/Attended By<select appApiSelect formControlName="installed_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Installed/Attended By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label class="wide-field">Remarks<textarea formControlName="remarks" maxlength="500" rows="1"></textarea><small>{{ form.get('remarks')?.value?.length || 0 }}/500</small></label>
       </div>
@@ -323,7 +323,7 @@
       <div class="form-grid" *ngIf="section === 'stbs' && showStbIssueDetails">
         <label>STB Type<select formControlName="stb_type"><option *ngFor="let type of stbTypes" [ngValue]="type">{{ type }}</option></select></label>
         <label>New STB Number
-          <select formControlName="stb_master_id" (change)="selectStbMaster()">
+          <select appApiSelect formControlName="stb_master_id" (change)="selectStbMaster()">
             <option [ngValue]="null">Select STB</option>
             <option *ngFor="let stb of filteredStbMasters" [ngValue]="stb.stb_master_id">
               {{ stb.stb_number }} - {{ stb.box_type }} - {{ stb.stock_type }} - {{ stb.mso_name }}
@@ -408,12 +408,12 @@
               <tr>
                 <td>1</td>
                 <td><select aria-label="Package type" formControlName="package_type"><option *ngFor="let type of packageTypes" [ngValue]="type" [disabled]="!editId && type === 'ADDON' && addonSelectedElsewhere(-1)">{{ packageTypeLabel(type) }}</option></select></td>
-                <td><select aria-label="Package name" formControlName="package_id" (change)="selectPackage()"><option [ngValue]="null">Select package</option><option *ngFor="let item of filteredPackages" [ngValue]="item.package_id" [disabled]="!editId && packageAlreadySelected(item.package_id, -1)">{{ item.package_name }}</option></select></td>
+                <td><select appApiSelect aria-label="Package name" formControlName="package_id" (change)="selectPackage()"><option [ngValue]="null">Select package</option><option *ngFor="let item of filteredPackages" [ngValue]="item.package_id" [disabled]="!editId && packageAlreadySelected(item.package_id, -1)">{{ item.package_name }}</option></select></td>
                 <td><input aria-label="Rate" type="number" formControlName="package_price"></td>
                 <td *ngIf="!editId"><input aria-label="Updated date" type="date" formControlName="updated_date" required></td>
                 <td *ngIf="editId"><input aria-label="Start date" type="date" formControlName="start_date"></td>
                 <td *ngIf="editId"><input aria-label="End date" type="date" formControlName="end_date"></td>
-                <td><select *ngIf="permissions.isAdmin()" aria-label="Updated by" formControlName="updated_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select><span *ngIf="!permissions.isAdmin()">{{ permissions.username() }}</span></td>
+                <td><select appApiSelect *ngIf="permissions.isAdmin()" aria-label="Updated by" formControlName="updated_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select><span *ngIf="!permissions.isAdmin()">{{ permissions.username() }}</span></td>
                 <td><select aria-label="Status" formControlName="is_active"><option [ngValue]="1">Active</option><option [ngValue]="0">Deactivate</option></select></td>
                 <td *ngIf="!editId"><button type="button" class="package-row-remove" (click)="removeUnsavedPackage(-1)">Delete</button></td>
               </tr>
@@ -422,7 +422,7 @@
               <tr *ngFor="let row of extraPackages.controls; let i = index" [formGroupName]="i">
                 <td>{{ i + 2 }}</td>
                 <td><select aria-label="Package type" formControlName="package_type"><option *ngFor="let type of packageTypes" [ngValue]="type" [disabled]="type === 'ADDON' && addonSelectedElsewhere(i)">{{ packageTypeLabel(type) }}</option></select></td>
-                <td><select aria-label="Package name" formControlName="package_id" (change)="selectExtraPackage(i)"><option [ngValue]="null">Select package</option><option *ngFor="let item of packagesForType(row.get('package_type')?.value)" [ngValue]="item.package_id" [disabled]="packageAlreadySelected(item.package_id, i)">{{ item.package_name }}</option></select></td>
+                <td><select appApiSelect aria-label="Package name" formControlName="package_id" (change)="selectExtraPackage(i)"><option [ngValue]="null">Select package</option><option *ngFor="let item of packagesForType(row.get('package_type')?.value)" [ngValue]="item.package_id" [disabled]="packageAlreadySelected(item.package_id, i)">{{ item.package_name }}</option></select></td>
                 <td><input aria-label="Rate" type="number" formControlName="package_price"></td>
                 <td>{{ form.get('updated_date')?.value | date:'dd-MM-yyyy' }}</td>
                 <td>Same as first row</td>
@@ -471,11 +471,11 @@
         </label>
         <label *ngIf="permissions.isAdmin()">Collected Date<input type="date" formControlName="collect_date"></label>
         <label *ngIf="!permissions.isAdmin()">Collected Date<input type="date" formControlName="collect_date" readonly></label>
-        <label *ngIf="permissions.isAdmin()">Collected By<select formControlName="collected_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin()">Collected By<select appApiSelect formControlName="collected_by_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Collected By<input type="text" [value]="loggedInEmployeeName" disabled></label>
         <label *ngIf="permissions.isAdmin()">Mode of Payment<select formControlName="payment_mode"><option *ngFor="let mode of paymentModes" [ngValue]="mode">{{ mode }}</option></select></label>
         <label *ngIf="!permissions.isAdmin()">Mode of Payment<input type="text" formControlName="payment_mode"></label>
-        <label *ngIf="permissions.isAdmin() && (form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE')">Payment Mapped Employee<select formControlName="payment_mapped_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
+        <label *ngIf="permissions.isAdmin() && (form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE')">Payment Mapped Employee<select appApiSelect formControlName="payment_mapped_employee_id"><option [ngValue]="null">Select employee</option><option *ngFor="let employee of lookups.employees || []" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option></select></label>
         <label *ngIf="form.get('payment_mode')?.value === 'ONLINE' || form.get('payment_mode')?.value === 'OFFICE'">Payment Reference<input type="text" formControlName="payment_reference"></label>
       </div>
 

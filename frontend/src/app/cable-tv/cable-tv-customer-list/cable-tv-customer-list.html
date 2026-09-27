@@ -7,7 +7,7 @@
       <input type="search" [(ngModel)]="filters.oldCustomerNo" (ngModelChange)="applyFilters()" placeholder="Old C No">
     </label>
     <label>Network
-      <select [(ngModel)]="filters.networkId" (ngModelChange)="onNetworkChange()">
+      <select appApiSelect [(ngModel)]="filters.networkId" (ngModelChange)="onNetworkChange()">
         <option value="">All Networks</option>
         <option *ngFor="let network of lookups.networks || []" [value]="network.network_id">{{ network.network_code || network.network_name }}</option>
       </select>

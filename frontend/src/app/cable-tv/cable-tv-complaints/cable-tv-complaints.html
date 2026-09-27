@@ -29,7 +29,7 @@
       </select>
     </label>
     <label>Assigned To
-      <select [(ngModel)]="filters.assigned_employee_id">
+      <select appApiSelect [(ngModel)]="filters.assigned_employee_id">
         <option value="">All technicians</option>
         <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
       </select>
@@ -91,7 +91,7 @@
             <input type="search" [(ngModel)]="customerSearch" placeholder="Search cust no, name, mobile or address">
           </label>
           <label class="wide">Select Customer *
-            <select [(ngModel)]="complaint.customer_id" size="5" class="search-select">
+            <select appApiSelect [(ngModel)]="complaint.customer_id" size="5" class="search-select">
               <option [ngValue]="null">Select customer</option>
               <option *ngFor="let customer of registrationCustomers" [ngValue]="customer.customer_id">
                 {{ customer.customer_code }} - {{ customer.customer_name }} - {{ customer.phone }} - {{ customerAddress(customer) }}
@@ -152,7 +152,7 @@
             <input type="search" [(ngModel)]="mapCustomerSearch" placeholder="Search cust no, name, mobile or address">
           </label>
           <label class="wide">Map Customer
-            <select [ngModel]="mappedCustomerId()" (ngModelChange)="selectMappedCustomer($event)" size="5" class="search-select">
+            <select appApiSelect [ngModel]="mappedCustomerId()" (ngModelChange)="selectMappedCustomer($event)" size="5" class="search-select">
               <option [ngValue]="null">Keep anonymous</option>
               <option *ngFor="let customer of mappingCustomers" [ngValue]="customer.customer_id">
                 {{ customer.customer_code }} - {{ customer.customer_name }} - {{ customer.phone }} - {{ customerAddress(customer) }}
@@ -161,7 +161,7 @@
           </label>
         </ng-container>
         <label>Assigned Technician *
-          <select [(ngModel)]="attempt.assigned_employee_id">
+          <select appApiSelect [(ngModel)]="attempt.assigned_employee_id">
             <option [ngValue]="null">Select technician</option>
             <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>

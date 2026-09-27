@@ -92,7 +92,7 @@
     <section *ngIf="isTemplateMode || !isEditMode" class="form-section">
       <ng-container *ngIf="!isTemplateMode">
       <label for="quotation-template">Quotation Template</label>
-      <select id="quotation-template" class="form-select" [disabled]="templateBusy" (change)="selectTemplate($event)">
+      <select appApiSelect id="quotation-template" class="form-select" [disabled]="templateBusy" (change)="selectTemplate($event)">
         <option value="">Select template</option>
         <option *ngFor="let template of templates" [value]="template.template_id">{{ template.template_name }}</option>
       </select>

@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -9,7 +10,7 @@ import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-customer-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [ApiSelectDirective, CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './cable-tv-customer-form.html',
   styleUrl: './cable-tv-customer-form.scss'
 })

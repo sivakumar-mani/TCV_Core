@@ -19,7 +19,7 @@
 
   <div class="ledger-filter">
     <label class="form-label">Ledger Product Filter</label>
-    <select class="form-control" [value]="selectedProductId || ''" (change)="filterLedger($any($event.target).value || null)">
+    <select appApiSelect class="form-control" [value]="selectedProductId || ''" (change)="filterLedger($any($event.target).value || null)">
       <option value="">All products</option>
       <option *ngFor="let product of products" [value]="product.product_id">
         {{ product.product_code }} - {{ product.product_name }}

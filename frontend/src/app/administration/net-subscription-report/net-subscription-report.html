@@ -2,7 +2,7 @@
   <header><h1>Net Subscription Report</h1></header>
   <section class="filter-card">
     <label
-      >Collected By<select
+      >Collected By<select appApiSelect
         *ngIf="permissions.isAdmin()"
         [(ngModel)]="filters.collected_by_employee_id"
       >
@@ -12,7 +12,7 @@
         </option></select
       ><input *ngIf="!permissions.isAdmin()" [value]="collectorLabel" disabled /></label
     ><label
-      >Renewed By<select [(ngModel)]="filters.renewed_by_employee_id">
+      >Renewed By<select appApiSelect [(ngModel)]="filters.renewed_by_employee_id">
         <option value="">All Employees</option>
         <option *ngFor="let e of employees" [value]="e.employee_id">
             {{ e.employee_name }}

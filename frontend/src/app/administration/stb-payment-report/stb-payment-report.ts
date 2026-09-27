@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +7,7 @@ import { Snackbar } from '../../services/snackbar';
 import { globalConstants } from '../../services/global-constants';
 @Component({
   selector: 'app-stb-payment-report',
-  imports: [CommonModule, FormsModule],
+  imports: [ApiSelectDirective, CommonModule, FormsModule],
   templateUrl: './stb-payment-report.html',
   styleUrl: '../cable-tv-subscription-report/cable-tv-subscription-report.scss',
 })

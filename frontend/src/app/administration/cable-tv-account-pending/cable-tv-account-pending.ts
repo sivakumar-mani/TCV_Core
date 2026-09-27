@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -12,7 +13,7 @@ import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-cable-tv-account-pending',
-  imports: [MatMenuModule, CommonModule, FormsModule],
+  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule],
   templateUrl: './cable-tv-account-pending.html',
   styleUrl: './cable-tv-account-pending.scss'
 })

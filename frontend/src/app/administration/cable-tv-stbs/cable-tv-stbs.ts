@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -11,7 +12,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-cable-tv-stbs',
-  imports: [MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './cable-tv-stbs.html',
   styleUrl: './cable-tv-stbs.scss'
 })

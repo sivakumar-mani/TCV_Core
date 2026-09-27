@@ -5,7 +5,7 @@
     <div class="table-scroll"><table class="entry-table"><thead><tr><th>Movement Date</th><th>Technician</th><th>Material</th><th>Qty</th><th>Price</th><th>Comm.</th><th>Total</th><th>Remark</th><th>Action</th></tr></thead><tbody>
       <tr *ngFor="let row of saleRows; let index=index">
         <td><input type="date" [(ngModel)]="row.movement_date"></td>
-        <td><select [(ngModel)]="row.employee_id" (ngModelChange)="onTechnicianChange(row)" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{employee.employee_name}}</option></select></td>
+        <td><select appApiSelect [(ngModel)]="row.employee_id" (ngModelChange)="onTechnicianChange(row)" [disabled]="!permissions.isAdmin()"><option [ngValue]="null">Select technician</option><option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{employee.employee_name}}</option></select></td>
         <td><input type="search" [(ngModel)]="row.material_search" (input)="selectProduct(row)" (change)="selectProduct(row)" [attr.list]="'material-options-' + index" placeholder="Search product name"><datalist [id]="'material-options-' + index"><option *ngFor="let product of products" [value]="materialLabel(product,row)"></option></datalist></td>
         <td><input type="number" min="0.01" step="0.01" [max]="availableQty(row.product_id)" [(ngModel)]="row.qty"></td>
         <td><input type="number" min="0" [(ngModel)]="row.unit_price" [readonly]="!permissions.isAdmin()"></td>
@@ -39,8 +39,8 @@
   <div class="modal-header"><h2>Edit Issued Material</h2><button class="secondary" [disabled]="correctingIssue" (click)="editingIssue = null">Close</button></div>
   <form (ngSubmit)="saveIssue()"><div class="form-grid">
     <label>Movement Date<input name="date" type="date" required [(ngModel)]="editingIssue.movement_date"></label>
-    <label>Technician<select name="employee" required [(ngModel)]="editingIssue.employee_id"><option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{employee.employee_name}}</option></select></label>
-    <label>Material<select name="product" required [(ngModel)]="editingIssue.product_id"><option *ngFor="let product of products" [ngValue]="product.product_id">{{product.product_name}}</option></select></label>
+    <label>Technician<select appApiSelect name="employee" required [(ngModel)]="editingIssue.employee_id"><option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{employee.employee_name}}</option></select></label>
+    <label>Material<select appApiSelect name="product" required [(ngModel)]="editingIssue.product_id"><option *ngFor="let product of products" [ngValue]="product.product_id">{{product.product_name}}</option></select></label>
     <label>Quantity<input name="qty" type="number" required min="0.01" step="0.01" [(ngModel)]="editingIssue.qty"></label>
     <label>Price<input name="price" type="number" required min="0" step="0.01" [(ngModel)]="editingIssue.unit_price"></label>
     <label>Commission<input name="commission" type="number" required min="0" step="0.01" [max]="editingIssue.unit_price" [(ngModel)]="editingIssue.commission_amount"></label>

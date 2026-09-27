@@ -11,7 +11,7 @@
       </select>
     </label>
     <label>Technician
-      <select [(ngModel)]="filters.assigned_employee_id">
+      <select appApiSelect [(ngModel)]="filters.assigned_employee_id">
         <option value="">All Technicians</option>
         <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
       </select>

@@ -70,7 +70,7 @@
 
       <form [formGroup]="locationInfoForm" class="entry-form">
         <label>Network
-          <select formControlName="network_id">
+          <select appApiSelect formControlName="network_id">
             <option [ngValue]="null">Select network</option>
             <option *ngFor="let network of networkOptions" [ngValue]="network.network_id">
               {{ network.network_label }}
@@ -78,7 +78,7 @@
           </select>
         </label>
         <label>Postal Area
-          <select formControlName="location_id" (change)="selectPostalArea()">
+          <select appApiSelect formControlName="location_id" (change)="selectPostalArea()">
             <option [ngValue]="null">Select postal area</option>
             <option *ngFor="let postalArea of masters.locations" [ngValue]="postalArea.location_id">
               {{ postalArea.location_name }}

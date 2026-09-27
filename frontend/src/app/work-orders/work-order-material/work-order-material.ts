@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -13,7 +14,7 @@ import { downloadSimplePdf } from '../../shared/simple-pdf';
 
 @Component({
   selector: 'app-work-order-material',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, MatDialogModule, InputFormField, SelectFormField],
+  imports: [ApiSelectDirective, CommonModule, ReactiveFormsModule, RouterLink, MatDialogModule, InputFormField, SelectFormField],
   templateUrl: './work-order-material.html',
   styleUrl: './work-order-material.scss',
 })

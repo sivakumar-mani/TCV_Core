@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -10,7 +11,7 @@ import { openInternetSubscriptionInvoicePdf } from '../../shared/internet-subscr
 
 @Component({
   selector: 'app-internet-customer-view',
-  imports: [MatMenuModule, CommonModule, FormsModule],
+  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule],
   templateUrl: './internet-customer-view.html',
   styleUrl: './internet-customer-view.scss',
 })
@@ -20,6 +21,7 @@ export class InternetCustomerView {
   customerForm: any = {};
   historyForm: any = {};
   customerSearchNo = '';
+  packageSearch = '';
   netIdSearch = '';
   id = 0;
   activeTab = 'subscription';
@@ -201,6 +203,7 @@ export class InternetCustomerView {
   openAdd() {
     if (!this.canUpdate()) return;
     this.editingPackageId = null;
+    this.packageSearch = '';
     this.editingRouterId = null;
     this.editingConnectionId = null;
     this.editingConnectionWasNew = false;
@@ -496,6 +499,16 @@ export class InternetCustomerView {
   newAreaChanged(){this.historyForm.new_street_id=null;}
   editRouter(row: any) { if(!this.lookups.is_admin)return;this.activeTab='router';this.editingRouterId=Number(row.internet_router_id);this.historyForm={...row,reason_remarks:row.reason_remarks||row.remarks||'',update_reason:row.update_reason||'INSTALL'};this.showHistoryModal=true; }
   deleteRouter(row: any) { if(!this.lookups.is_admin||!window.confirm('Delete this Internet router history entry?'))return;this.api.deleteRouter(this.id,Number(row.internet_router_id)).subscribe({next:(r)=>{this.common.handleTokenAndMessage(r);this.load();},error:(e)=>this.common.handleError(e)}); }
+  filteredPackages() {
+    const network = String(this.details.customer?.network_type || '').trim().toUpperCase();
+    const search = this.packageSearch.trim().toLowerCase();
+    return (this.lookups.packages || []).filter((pkg: any) =>
+      network && String(pkg.internet_network_type || pkg.provider_category || '').trim().toUpperCase() === network &&
+      (pkg.is_active == null || Number(pkg.is_active) === 1) &&
+      (!search || String(pkg.package_name || '').toLowerCase().includes(search) ||
+        String(pkg.package_code || '').toLowerCase().includes(search) || Number(pkg.package_id) === Number(this.historyForm.package_id))
+    );
+  }
   selectedPackagePrice() {
     const pkg = (this.lookups.packages || []).find((x: any) => Number(x.package_id) === Number(this.historyForm.package_id));
     return Math.round(Number(pkg?.total_price ?? pkg?.price_including_gst ?? pkg?.price) || 0);
@@ -513,6 +526,7 @@ export class InternetCustomerView {
   }
   editPackage(row: any) {
     if (!this.lookups.is_admin) return;
+    this.packageSearch = '';
     this.activeTab = 'package'; this.editingPackageId = Number(row.internet_customer_package_id);
     this.historyForm = { package_id: Number(row.package_id), start_date: this.inputDate(row.start_date), end_date: this.inputDate(row.end_date), customer_paid_amount: 0 };
     this.showHistoryModal = true;

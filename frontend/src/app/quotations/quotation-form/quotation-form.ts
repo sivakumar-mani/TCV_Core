@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -14,7 +15,7 @@ import { TextareaFormField } from '../../shared/textarea-form-field/textarea-for
 
 @Component({
   selector: 'app-quotation-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField],
+  imports: [ApiSelectDirective, CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField],
   templateUrl: './quotation-form.html',
   styleUrl: './quotation-form.scss',
 })

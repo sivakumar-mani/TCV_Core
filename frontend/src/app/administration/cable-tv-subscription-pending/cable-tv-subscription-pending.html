@@ -17,13 +17,13 @@
       <input type="search" [(ngModel)]="filters.customer_name" (keyup.enter)="loadPendingSubscriptions()" placeholder="Enter customer name">
     </label>
     <label>Area Name
-      <select [(ngModel)]="filters.area_id" (change)="areaChanged()">
+      <select appApiSelect [(ngModel)]="filters.area_id" (change)="areaChanged()">
         <option value="">All Areas</option>
         <option *ngFor="let area of areas" [value]="area.area_id">{{ area.area_name }}</option>
       </select>
     </label>
     <label>Street Name
-      <select [(ngModel)]="filters.street_id">
+      <select appApiSelect [(ngModel)]="filters.street_id">
         <option value="">All Streets</option>
         <option *ngFor="let street of streets" [value]="street.street_id">{{ street.street_name }}</option>
       </select>
@@ -127,7 +127,7 @@
 
         <label>Collected Date<input type="date" [(ngModel)]="paymentForm.collected_date" [disabled]="!permissions.isAdmin()"></label>
         <label>Collected By
-          <select [(ngModel)]="paymentForm.received_by_employee_id" [disabled]="!permissions.isAdmin()">
+          <select appApiSelect [(ngModel)]="paymentForm.received_by_employee_id" [disabled]="!permissions.isAdmin()">
             <option [ngValue]="null">Select employee</option>
             <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>

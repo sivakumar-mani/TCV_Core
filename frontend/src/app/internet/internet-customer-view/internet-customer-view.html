@@ -301,7 +301,7 @@
           <option *ngFor="let x of lookups.sources" [value]="x">{{ x }}</option>
         </select></label
       ><label
-        >Installed By<select [(ngModel)]="customerForm.installed_by_employee_id">
+        >Installed By<select appApiSelect [(ngModel)]="customerForm.installed_by_employee_id">
           <option [ngValue]="null">Select Employee</option>
           <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
             {{ x.employee_name }}
@@ -321,7 +321,7 @@
     </div>
   </section>
   <div class="modal-backdrop" *ngIf="showHistoryModal">
-    <section class="history-modal" [class.connection-modal]="activeTab === 'connection'">
+    <section class="history-modal" [class.connection-modal]="activeTab === 'connection'" [class.package-modal]="activeTab === 'package'">
       <div class="modal-title">
         <h2 *ngIf="activeTab !== 'package'">
           {{ activeTab === 'connection' && editingConnectionId ? 'Edit' : 'Add' }}
@@ -340,7 +340,7 @@
       </div>
       <div class="edit-grid" *ngIf="activeTab === 'subscription'">
         <label
-          >Package<select [(ngModel)]="historyForm.internet_customer_package_id">
+          >Package<select appApiSelect [(ngModel)]="historyForm.internet_customer_package_id">
             <option [ngValue]="null">Select Package</option>
             <option *ngFor="let x of details.packages" [ngValue]="x.internet_customer_package_id">
               {{ x.package_name }}
@@ -369,7 +369,7 @@
             <option value="FREE_USE">Free Use</option>
           </select></label
         ><label
-          >Router<select [(ngModel)]="historyForm.product_id" [disabled]="!!editingRouterId || latestRouter()?.router_status === 'ACTIVE'">
+          >Router<select appApiSelect [(ngModel)]="historyForm.product_id" [disabled]="!!editingRouterId || latestRouter()?.router_status === 'ACTIVE'">
             <option [ngValue]="null">Select Router</option>
             <option *ngFor="let x of routerOptions()" [ngValue]="x.product_id">
               {{ x.product_name }}
@@ -398,22 +398,22 @@
           >Connection Type<select required [(ngModel)]="historyForm.connection_type" (ngModelChange)="connectionTypeChanged()">
             <option *ngFor="let type of connectionTypes()" [value]="type">{{ connectionTypeLabel(type) }}</option>
           </select></label
-        ><label>Network<select required [(ngModel)]="historyForm.network_type"><option value="KRISHI">KRISHI</option><option value="RAILWIRE">RAILWIRE</option><option value="DMNET">DMNET</option></select></label><label>Installed By<select [(ngModel)]="historyForm.installed_by_employee_id" [disabled]="!lookups.is_admin"><option [ngValue]="null">Select employee</option><option *ngFor="let e of lookups.employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></label
+        ><label>Network<select required [(ngModel)]="historyForm.network_type"><option value="KRISHI">KRISHI</option><option value="RAILWIRE">RAILWIRE</option><option value="DMNET">DMNET</option></select></label><label>Installed By<select appApiSelect [(ngModel)]="historyForm.installed_by_employee_id" [disabled]="!lookups.is_admin"><option [ngValue]="null">Select employee</option><option *ngFor="let e of lookups.employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></label
         ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'">Connection Charge<input type="number" [(ngModel)]="historyForm.connection_charge" /></label
         ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'"
           >Labor Charge<input
             type="number"
             [(ngModel)]="historyForm.labour_service_charge" /></label
-        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">Postal Area<select [(ngModel)]="historyForm.new_location_id" (ngModelChange)="newLocationChanged()"><option [ngValue]="null">Select Location</option><option *ngFor="let x of lookups.locations" [ngValue]="x.location_id">{{x.location_name}}</option></select></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">Postal Area<select appApiSelect [(ngModel)]="historyForm.new_location_id" (ngModelChange)="newLocationChanged()"><option [ngValue]="null">Select Location</option><option *ngFor="let x of lookups.locations" [ngValue]="x.location_id">{{x.location_name}}</option></select></label
         ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Door No<input [(ngModel)]="historyForm.new_door_no" /></label
-        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">Location<select [(ngModel)]="historyForm.new_area_id" (ngModelChange)="newAreaChanged()"><option [ngValue]="null">Select Area</option><option *ngFor="let x of locationAreas()" [ngValue]="x.area_id">{{x.area_name}}</option></select></label
-        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Street<select [(ngModel)]="historyForm.new_street_id"><option [ngValue]="null">Select Street</option><option *ngFor="let x of locationStreets()" [ngValue]="x.street_id">{{x.street_name}}</option></select></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">Location<select appApiSelect [(ngModel)]="historyForm.new_area_id" (ngModelChange)="newAreaChanged()"><option [ngValue]="null">Select Area</option><option *ngFor="let x of locationAreas()" [ngValue]="x.area_id">{{x.area_name}}</option></select></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Street<select appApiSelect [(ngModel)]="historyForm.new_street_id"><option [ngValue]="null">Select Street</option><option *ngFor="let x of locationStreets()" [ngValue]="x.street_id">{{x.street_name}}</option></select></label
         ><label>Remarks<input [(ngModel)]="historyForm.remarks" /></label>
       </div>
       <div class="connection-details" *ngIf="activeTab === 'connection' && historyForm.connection_type !== 'DISCONNECT'">
         <div class="connection-section-title"><h3>Material Details</h3><button type="button" (click)="addConnectionMaterial()">Add Row</button></div>
         <div class="connection-material" *ngFor="let row of historyForm.materials; let i=index">
-          <select aria-label="Product" [(ngModel)]="row.product_id" (ngModelChange)="selectConnectionMaterial(row)"><option [ngValue]="null">Product</option><option *ngFor="let p of lookups.products" [ngValue]="p.product_id">{{p.product_name}}</option></select>
+          <select appApiSelect aria-label="Product" [(ngModel)]="row.product_id" (ngModelChange)="selectConnectionMaterial(row)"><option [ngValue]="null">Product</option><option *ngFor="let p of lookups.products" [ngValue]="p.product_id">{{p.product_name}}</option></select>
           <input aria-label="Item" placeholder="Item" [(ngModel)]="row.item_name" />
           <input aria-label="Quantity" type="number" min="0.01" [(ngModel)]="row.qty" />
           <input aria-label="Unit" [(ngModel)]="row.unit" />
@@ -436,9 +436,10 @@
       </div>
       <div class="edit-grid" *ngIf="activeTab === 'package'">
         <label
-          >Package Name<select [(ngModel)]="historyForm.package_id">
+          >Package Name
+          <select appApiSelect aria-label="Package Name" [(ngModel)]="historyForm.package_id">
             <option [ngValue]="null">Select Package</option>
-            <option *ngFor="let x of lookups.packages" [ngValue]="x.package_id" [disabled]="isPackageUnavailable(x.package_id)">
+            <option *ngFor="let x of filteredPackages()" [ngValue]="x.package_id" [disabled]="isPackageUnavailable(x.package_id)">
               {{ x.package_name }}
             </option>
           </select></label
@@ -463,7 +464,7 @@
       </div>
       <div class="subscription-grid">
         <label
-          >Package<select
+          >Package<select appApiSelect
             [(ngModel)]="historyForm.internet_customer_package_id"
             (ngModelChange)="calculateSubscription()"
           >
@@ -550,7 +551,7 @@
             [(ngModel)]="historyForm.collect_date"
             [disabled]="!lookups.is_admin" /></label
         ><label
-          >Collected By<select
+          >Collected By<select appApiSelect
             [(ngModel)]="historyForm.collected_by_employee_id"
             [disabled]="!lookups.is_admin"
           >
@@ -565,7 +566,7 @@
           >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin || historyForm.renewed_by_value!=='ADMIN'"><option *ngIf="historyForm.renewed_by_value==='CUSTOMER'" value="DASHBOARD">Dashboard</option><option *ngIf="historyForm.renewed_by_value==='ADMIN'" value="CASH">Cash</option><option *ngIf="historyForm.renewed_by_value==='ADMIN'" value="ACCOUNT">Account</option></select></label
         ><label>Payment Reference<input [(ngModel)]="historyForm.payment_reference" /></label
         ><label
-          >Payment Mapped Employee<select [(ngModel)]="historyForm.payment_mapped_employee_id">
+          >Payment Mapped Employee<select appApiSelect [(ngModel)]="historyForm.payment_mapped_employee_id">
             <option [ngValue]="null">Select employee</option>
             <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
               {{ x.employee_name }}
@@ -672,7 +673,7 @@
             [(ngModel)]="historyForm.collect_date"
             [disabled]="!lookups.is_admin" /></label
         ><label
-          >Collected By<select
+          >Collected By<select appApiSelect
             [(ngModel)]="historyForm.collected_by_employee_id"
             [disabled]="!lookups.is_admin"
           >
@@ -687,7 +688,7 @@
           >Mode of Payment<select [(ngModel)]="historyForm.payment_mode" [disabled]="!lookups.is_admin || historyForm.renewed_by_value!=='ADMIN'"><option *ngIf="historyForm.renewed_by_value==='CUSTOMER'" value="DASHBOARD">Dashboard</option><option *ngIf="historyForm.renewed_by_value==='ADMIN'" value="CASH">Cash</option><option *ngIf="historyForm.renewed_by_value==='ADMIN'" value="ACCOUNT">Account</option></select></label
         ><label *ngIf="lookups.is_admin">Payment Reference<input [(ngModel)]="historyForm.payment_reference" /></label
         ><label *ngIf="lookups.is_admin"
-          >Payment Mapped Employee<select [(ngModel)]="historyForm.payment_mapped_employee_id">
+          >Payment Mapped Employee<select appApiSelect [(ngModel)]="historyForm.payment_mapped_employee_id">
             <option [ngValue]="null">Select employee</option>
             <option *ngFor="let x of lookups.employees" [ngValue]="x.employee_id">
               {{ x.employee_name }}

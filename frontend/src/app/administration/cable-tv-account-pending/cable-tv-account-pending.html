@@ -47,7 +47,7 @@
       </select>
     </label>
     <label>Installed By
-      <select [(ngModel)]="installedByFilter" [disabled]="!permissions.isAdmin()">
+      <select appApiSelect [(ngModel)]="installedByFilter" [disabled]="!permissions.isAdmin()">
         <option value="">All employees</option>
         <option *ngFor="let employee of employees" [value]="employee.employee_id">
           {{ employee.employee_name }}
@@ -230,7 +230,7 @@
         <div class="display-field calculation"><span>Balance</span><strong>{{ paymentBalance | number:'1.2-2' }}</strong></div>
         <label *ngIf="paymentBalance > 0">Due Date<input type="date" [(ngModel)]="paymentForm.due_date"></label>
         <label>Received By
-          <select [(ngModel)]="paymentForm.received_by_employee_id">
+          <select appApiSelect [(ngModel)]="paymentForm.received_by_employee_id">
             <option [ngValue]="null">{{ loggedInAdminName }} (Logged-in user)</option>
             <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">
               {{ employee.employee_name }}

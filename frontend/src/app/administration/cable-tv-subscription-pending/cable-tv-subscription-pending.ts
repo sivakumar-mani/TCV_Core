@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +10,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-cable-tv-subscription-pending',
-  imports: [CommonModule, FormsModule],
+  imports: [ApiSelectDirective, CommonModule, FormsModule],
   templateUrl: './cable-tv-subscription-pending.html',
   styleUrl: './cable-tv-subscription-pending.scss'
 })

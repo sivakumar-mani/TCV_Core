@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Component, inject } from '@angular/core';
@@ -10,7 +11,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-net-subscription-pending',
-  imports: [CommonModule, FormsModule],
+  imports: [ApiSelectDirective, CommonModule, FormsModule],
   templateUrl: './net-subscription-pending.html',
   styleUrl: './net-subscription-pending.scss',
 })

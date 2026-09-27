@@ -2,8 +2,8 @@
   <section class="filter-card">
     <label>Start Date<input type="date" [(ngModel)]="filters.start_date"></label>
     <label>End Date<input type="date" [(ngModel)]="filters.end_date" [min]="filters.start_date"></label>
-    <label>Technician<select [(ngModel)]="filters.employee_id"><option value="">All technicians</option><option *ngFor="let employee of employees" [value]="employee.employee_id">{{employee.employee_name}}</option></select></label>
-    <label>Issued By<select [(ngModel)]="filters.issued_by_employee_id"><option value="">All issuers</option><option *ngFor="let employee of employees" [value]="employee.employee_id">{{employee.employee_name}}</option></select></label>
+    <label>Technician<select appApiSelect [(ngModel)]="filters.employee_id"><option value="">All technicians</option><option *ngFor="let employee of employees" [value]="employee.employee_id">{{employee.employee_name}}</option></select></label>
+    <label>Issued By<select appApiSelect [(ngModel)]="filters.issued_by_employee_id"><option value="">All issuers</option><option *ngFor="let employee of employees" [value]="employee.employee_id">{{employee.employee_name}}</option></select></label>
     <label>Status<select [(ngModel)]="filters.status"><option value="">All statuses</option><option value="ISSUED">Issued</option><option value="SOLD">Sold</option></select></label>
     <div class="filter-actions"><button class="primary" (click)="load()">Search</button><button class="secondary" (click)="clear()">Clear</button></div>
   </section>

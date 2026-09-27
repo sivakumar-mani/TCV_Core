@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -17,7 +18,7 @@ import { downloadSimplePdf } from '../../shared/simple-pdf';
 
 @Component({
   selector: 'app-work-order-form',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField, SelectModule],
+  imports: [ApiSelectDirective, CommonModule, ReactiveFormsModule, RouterLink, InputFormField, SelectFormField, TextareaFormField, SelectModule],
   templateUrl: './work-order-form.html',
   styleUrl: './work-order-form.scss',
 })

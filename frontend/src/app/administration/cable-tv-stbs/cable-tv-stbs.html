@@ -29,7 +29,7 @@
         </select>
       </label>
       <label>Assigned Employee
-        <select [(ngModel)]="filters.employeeId" (ngModelChange)="resetPage()">
+        <select appApiSelect [(ngModel)]="filters.employeeId" (ngModelChange)="resetPage()">
           <option value="">All employees</option>
           <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
         </select>
@@ -65,7 +65,7 @@
         <td class="assignment-cell">
           <div class="assignment-control">
             <strong>{{ item.assigned_employee_name || 'Unassigned' }}</strong>
-            <select [value]="item.assigned_employee_id || ''" (change)="assignStb(item, $any($event.target).value)" [disabled]="!canAssign(item)">
+            <select appApiSelect [value]="item.assigned_employee_id || ''" (change)="assignStb(item, $any($event.target).value)" [disabled]="!canAssign(item)">
               <option value="">Select employee</option>
               <option *ngFor="let employee of employees" [value]="employee.employee_id">{{ employee.employee_name }}</option>
             </select>
@@ -128,7 +128,7 @@
           <input type="number" formControlName="full_set_amount">
         </label>
         <label>Assigned Employee
-          <select formControlName="assigned_employee_id">
+          <select appApiSelect formControlName="assigned_employee_id">
             <option [ngValue]="null">Unassigned</option>
             <option *ngFor="let employee of employees" [ngValue]="employee.employee_id">{{ employee.employee_name }}</option>
           </select>

@@ -1,3 +1,4 @@
+import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -12,7 +13,7 @@ import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-complaints',
-  imports: [MatMenuModule, CommonModule, FormsModule],
+  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule],
   templateUrl: './cable-tv-complaints.html',
   styleUrl: './cable-tv-complaints.scss'
 })

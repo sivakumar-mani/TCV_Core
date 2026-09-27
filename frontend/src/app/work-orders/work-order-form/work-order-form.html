@@ -28,7 +28,7 @@
         </div>
         <div class="col-md-3">
           <label class="form-label">Quotation</label>
-          <select class="form-control" formControlName="quotation_id" (change)="onQuotationChange()" [attr.disabled]="isEditMode || !workOrderForm.get('customer_id')?.value ? true : null">
+          <select appApiSelect class="form-control" formControlName="quotation_id" (change)="onQuotationChange()" [attr.disabled]="isEditMode || !workOrderForm.get('customer_id')?.value ? true : null">
             <option value="">Direct work order</option>
             <option *ngFor="let quotation of customerQuotations" [value]="quotation.quotation_id">
               {{ quotation.quotation_no }} - {{ quotation.customer_name }}

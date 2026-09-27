@@ -2,14 +2,14 @@
   <header><h1>STB Payment Report</h1></header>
   <section class="filter-card">
     <label
-      >Collector Name<select [(ngModel)]="filters.collected_by_employee_id">
+      >Collector Name<select appApiSelect [(ngModel)]="filters.collected_by_employee_id">
         <option value="">All Collectors</option>
         <option *ngFor="let e of employees" [value]="e.employee_id">
             {{ e.employee_name }}
         </option>
       </select></label
     ><label
-      >Network Type<select [(ngModel)]="filters.network_id">
+      >Network Type<select appApiSelect [(ngModel)]="filters.network_id">
         <option value="">All</option>
         <option *ngFor="let n of networks" [value]="n.network_id">
           {{ n.network_code || n.network_name }}
