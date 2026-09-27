@@ -64,7 +64,7 @@
           : activeTab === 'router'
             ? 'Router'
             : activeTab === 'connection'
-              ? 'Connection'
+              ? 'Connection Details'
               : 'Package'
       }}
     </button>
@@ -197,7 +197,7 @@
         <tbody>
           <tr *ngFor="let x of details.connections">
             <td>{{ x.connection_date | date: 'dd-MM-yyyy' }}</td>
-            <td>{{ x.connection_type }}</td>
+            <td>{{ connectionTypeLabel(x.connection_type) }}</td>
             <td>{{ x.installed_by_name || details.customer?.installed_by_name || '-' }}</td>
             <td>{{ x.old_address || '-' }}</td>
             <td>{{ x.new_address || address() }}</td>
@@ -209,12 +209,13 @@
               <button mat-menu-item
 
                 type="button"
-                [disabled]="!canUpdate()"
-                (click)="editHistory()"
+                [disabled]="!lookups.is_admin"
+                (click)="editConnection(x)"
               >
                 Update
               </button>
-            </mat-menu></td>
+                          <button mat-menu-item type="button" [disabled]="!lookups.is_admin" (click)="deleteConnection(x)">Delete</button>
+</mat-menu></td>
           </tr>
           <tr *ngIf="!details.connections?.length">
             <td colspan="10" class="empty">No connection details</td>
@@ -320,17 +321,17 @@
     </div>
   </section>
   <div class="modal-backdrop" *ngIf="showHistoryModal">
-    <section class="history-modal">
+    <section class="history-modal" [class.connection-modal]="activeTab === 'connection'">
       <div class="modal-title">
         <h2 *ngIf="activeTab !== 'package'">
-          Add
+          {{ activeTab === 'connection' && editingConnectionId ? 'Edit' : 'Add' }}
           {{
             activeTab === 'subscription'
               ? 'Subscription'
               : activeTab === 'router'
                 ? 'Router'
                 : activeTab === 'connection'
-                  ? 'Connection'
+                  ? 'Connection Details'
                   : 'Package'
           }}
         </h2>
@@ -391,24 +392,47 @@
           <label>Payment Mode<select [(ngModel)]="historyForm.refund_payment_mode"><option value="CASH">Cash</option><option value="ONLINE">Online</option><option value="OTHER">Others</option></select></label>
         </div>
       </div>
-      <div class="edit-grid" *ngIf="activeTab === 'connection'">
-        <label>Date<input type="date" [(ngModel)]="historyForm.connection_date" /></label
+      <div class="edit-grid connection-grid" *ngIf="activeTab === 'connection'">
+        <label>Connection Date<input required type="date" [(ngModel)]="historyForm.connection_date" /></label
         ><label
-          >Type<select [(ngModel)]="historyForm.connection_type" (ngModelChange)="connectionTypeChanged()">
-            <option *ngFor="let type of connectionTypes()" [value]="type">{{ type.replace('_',' ') }}</option>
+          >Connection Type<select required [(ngModel)]="historyForm.connection_type" (ngModelChange)="connectionTypeChanged()">
+            <option *ngFor="let type of connectionTypes()" [value]="type">{{ connectionTypeLabel(type) }}</option>
           </select></label
-        ><label>Installed By<input [value]="details.customer?.installed_by_name || '-'" disabled /></label
-        ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'">Charge<input type="number" [(ngModel)]="historyForm.connection_charge" /></label
-        ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'">Discount<input type="number" [(ngModel)]="historyForm.connection_discount" /></label
+        ><label>Network<select required [(ngModel)]="historyForm.network_type"><option value="KRISHI">KRISHI</option><option value="RAILWIRE">RAILWIRE</option><option value="DMNET">DMNET</option></select></label><label>Installed By<select [(ngModel)]="historyForm.installed_by_employee_id" [disabled]="!lookups.is_admin"><option [ngValue]="null">Select employee</option><option *ngFor="let e of lookups.employees" [ngValue]="e.employee_id">{{e.employee_name}}</option></select></label
+        ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'">Connection Charge<input type="number" [(ngModel)]="historyForm.connection_charge" /></label
         ><label *ngIf="historyForm.connection_type !== 'DISCONNECT'"
-          >Labor/Service Charge<input
+          >Labor Charge<input
             type="number"
             [(ngModel)]="historyForm.labour_service_charge" /></label
-        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Location<select [(ngModel)]="historyForm.new_location_id" (ngModelChange)="newLocationChanged()"><option [ngValue]="null">Select Location</option><option *ngFor="let x of lookups.locations" [ngValue]="x.location_id">{{x.location_name}}</option></select></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">Postal Area<select [(ngModel)]="historyForm.new_location_id" (ngModelChange)="newLocationChanged()"><option [ngValue]="null">Select Location</option><option *ngFor="let x of lookups.locations" [ngValue]="x.location_id">{{x.location_name}}</option></select></label
         ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Door No<input [(ngModel)]="historyForm.new_door_no" /></label
-        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Area<select [(ngModel)]="historyForm.new_area_id" (ngModelChange)="newAreaChanged()"><option [ngValue]="null">Select Area</option><option *ngFor="let x of locationAreas()" [ngValue]="x.area_id">{{x.area_name}}</option></select></label
+        ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">Location<select [(ngModel)]="historyForm.new_area_id" (ngModelChange)="newAreaChanged()"><option [ngValue]="null">Select Area</option><option *ngFor="let x of locationAreas()" [ngValue]="x.area_id">{{x.area_name}}</option></select></label
         ><label *ngIf="historyForm.connection_type === 'LOCATION_CHANGE'">New Street<select [(ngModel)]="historyForm.new_street_id"><option [ngValue]="null">Select Street</option><option *ngFor="let x of locationStreets()" [ngValue]="x.street_id">{{x.street_name}}</option></select></label
         ><label>Remarks<input [(ngModel)]="historyForm.remarks" /></label>
+      </div>
+      <div class="connection-details" *ngIf="activeTab === 'connection' && historyForm.connection_type !== 'DISCONNECT'">
+        <div class="connection-section-title"><h3>Material Details</h3><button type="button" (click)="addConnectionMaterial()">Add Row</button></div>
+        <div class="connection-material" *ngFor="let row of historyForm.materials; let i=index">
+          <select aria-label="Product" [(ngModel)]="row.product_id" (ngModelChange)="selectConnectionMaterial(row)"><option [ngValue]="null">Product</option><option *ngFor="let p of lookups.products" [ngValue]="p.product_id">{{p.product_name}}</option></select>
+          <input aria-label="Item" placeholder="Item" [(ngModel)]="row.item_name" />
+          <input aria-label="Quantity" type="number" min="0.01" [(ngModel)]="row.qty" />
+          <input aria-label="Unit" [(ngModel)]="row.unit" />
+          <input aria-label="Rate" type="number" min="0" [(ngModel)]="row.unit_rate" />
+          <input aria-label="Amount" [value]="row.qty * row.unit_rate | number:'1.2-2'" readonly />
+          <button type="button" aria-label="Remove material" (click)="historyForm.materials.splice(i,1)">x</button>
+        </div>
+        <div class="connection-box"><h3>Additional Info</h3><div class="edit-grid">
+          <label>Customer Paid<input type="number" min="0" [(ngModel)]="historyForm.customer_paid_amount" /></label>
+          <label>Balance<input [value]="connectionTotal() - historyForm.customer_paid_amount | number:'1.2-2'" readonly /></label>
+          <label>Overall Discount<input type="number" min="0" [(ngModel)]="historyForm.overall_discount" /></label>
+        </div></div>
+        <div class="connection-box connection-account"><h3>Account Details</h3>
+          <p><span>Connection Charge</span><strong>{{historyForm.connection_charge | number:'1.2-2'}}</strong></p>
+          <p><span>Labor Charge</span><strong>{{historyForm.labour_service_charge | number:'1.2-2'}}</strong></p>
+          <p><span>Material Charge</span><strong>{{connectionMaterialTotal() | number:'1.2-2'}}</strong></p>
+          <p><span>Overall Discount</span><strong>- {{historyForm.overall_discount | number:'1.2-2'}}</strong></p>
+          <p><span>Total</span><strong>{{connectionTotal() | number:'1.2-2'}}</strong></p>
+        </div>
       </div>
       <div class="edit-grid" *ngIf="activeTab === 'package'">
         <label

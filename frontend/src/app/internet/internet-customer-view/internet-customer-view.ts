@@ -34,6 +34,8 @@ export class InternetCustomerView {
   showSubscriptionPeriodModal = false;
   editingSubscriptionId: number | null = null;
   editingPackageId: number | null = null;
+  editingConnectionId: number | null = null;
+  editingConnectionWasNew = false;
   editingRouterId: number | null = null;
   readonly today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
     .toISOString()
@@ -200,6 +202,8 @@ export class InternetCustomerView {
     if (!this.canUpdate()) return;
     this.editingPackageId = null;
     this.editingRouterId = null;
+    this.editingConnectionId = null;
+    this.editingConnectionWasNew = false;
     const end = new Date(`${this.today}T00:00:00Z`);
     end.setUTCDate(end.getUTCDate() + 29);
     this.historyForm =
@@ -207,6 +211,10 @@ export class InternetCustomerView {
         ? { router_type: this.latestRouter()?.router_type || 'NEW', update_reason: this.latestRouter()?.router_status === 'ACTIVE' ? 'FAULT' : 'REPLACED', usage_category: this.latestRouter()?.usage_category || 'CUSTOMER_PAID', product_id: this.latestRouter()?.router_status === 'ACTIVE' ? this.latestRouter()?.product_id : null, qty: Number(this.latestRouter()?.qty) || 1, returned_router: false, returned_adapter: false, returned_adapter_product_id: this.returnedAdapter()?.product_id || null, refund_amount: 0, refund_payment_mode: 'CASH', reason_remarks: '' }
         : this.activeTab === 'connection'
           ? {
+              network_type: this.details.customer?.network_type,
+              installed_by_employee_id: this.lookups.logged_in_employee_id,
+              materials: [{product_id:null,item_name:'',qty:1,unit:'PCS',unit_rate:0}],
+              overall_discount: 0, customer_paid_amount: 0,
               connection_date: this.today,
               connection_type: this.latestConnection()?.connection_status === 'DISCONNECTED' ? 'RECONNECTION' : 'DISCONNECT',
               connection_charge: 0,
@@ -349,8 +357,22 @@ export class InternetCustomerView {
     if (!this.lookups.is_admin) { this.historyForm.renewed_by_value = 'ADMIN'; this.historyForm.payment_mode = 'CASH'; }
     this.historyForm.payment_mode = this.historyForm.renewed_by_value === 'CUSTOMER' ? 'DASHBOARD' : (['CASH', 'ACCOUNT'].includes(this.historyForm.payment_mode) ? this.historyForm.payment_mode : 'CASH');
   }
+  editConnection(row:any){
+    if(!this.lookups.is_admin)return;
+    this.api.getConnection(this.id,Number(row.internet_connection_id)).subscribe({next:(detail)=>{
+      this.activeTab='connection';this.editingConnectionId=Number(row.internet_connection_id);this.editingConnectionWasNew=detail.connection_type==='NEW';
+      this.historyForm={...detail,connection_date:String(detail.connection_date||'').slice(0,10),network_type:detail.network_type||this.details.customer?.network_type,installed_by_employee_id:detail.installed_by_employee_id||this.details.customer?.installed_by_employee_id};this.showHistoryModal=true;
+    },error:e=>this.common.handleError(e)});
+  }
+  deleteConnection(row:any){
+    if(!this.lookups.is_admin||!window.confirm('Delete this connection entry? Its previous customer status/address will be restored where recorded.'))return;
+    this.api.deleteConnection(this.id,Number(row.internet_connection_id)).subscribe({next:r=>{this.common.handleTokenAndMessage(r);this.load();},error:e=>this.common.handleError(e)});
+  }
   saveHistory() {
     if (this.savingHistory) return;
+    if(this.activeTab==='connection'&&this.editingConnectionId){
+      this.savingHistory=true;this.api.updateConnection(this.id,this.editingConnectionId,this.historyForm).subscribe({next:r=>{this.savingHistory=false;this.showHistoryModal=false;this.editingConnectionId=null;this.common.handleTokenAndMessage(r);this.load();},error:e=>{this.savingHistory=false;this.common.handleError(e);}});return;
+    }
     if (this.activeTab === 'router' && !String(this.historyForm.reason_remarks || '').trim()) {
       this.common.handleError({error:{message:'Reason remarks are required'}});return;
     }
@@ -459,8 +481,13 @@ export class InternetCustomerView {
   routerStatusForReason() { return ['INSTALL','REPLACED'].includes(this.historyForm.update_reason) ? 'ACTIVE' : ['DISCONNECT','UPGRADE'].includes(this.historyForm.update_reason) ? 'DISCONNECTED' : this.historyForm.update_reason; }
   routerPaymentStatus(row: any) { return ['FAULT','DISCONNECT','UPGRADE'].includes(String(row?.update_reason || '').toUpperCase()) ? 'NA' : (this.details.account?.account_status || 'PENDING'); }
   latestConnection(){return (this.details.connections||[]).find((x:any)=>x.approval_status!=='REJECTED');}
-  connectionTypes(){return this.latestConnection()?.connection_status==='DISCONNECTED'?['RECONNECTION']:['DISCONNECT','LOCATION_CHANGE'];}
-  connectionTypeChanged(){if(this.historyForm.connection_type==='DISCONNECT')Object.assign(this.historyForm,{connection_charge:0,connection_discount:0,labour_service_charge:0});}
+  connectionTypes(){return this.editingConnectionWasNew?['NEW','RECONNECTION','DISCONNECT','LOCATION_CHANGE']:['RECONNECTION','DISCONNECT','LOCATION_CHANGE'];}
+  connectionTypeLabel(type:string){return type==='RECONNECTION'?'Reactive':type==='LOCATION_CHANGE'?'Location change':type==='DISCONNECT'?'Disconnect':type;}
+  addConnectionMaterial(){this.historyForm.materials.push({product_id:null,item_name:'',qty:1,unit:'PCS',unit_rate:0});}
+  selectConnectionMaterial(row:any){const p=(this.lookups.products||[]).find((x:any)=>Number(x.product_id)===Number(row.product_id));if(p)Object.assign(row,{item_name:p.product_name,unit:p.unit||'PCS',unit_rate:Number(p.selling_price)||0});}
+  connectionMaterialTotal(){return (this.historyForm.materials||[]).reduce((sum:number,x:any)=>sum+Number(x.qty||0)*Number(x.unit_rate||0),0);}
+  connectionTotal(){return Math.max(0,Number(this.historyForm.connection_charge||0)+Number(this.historyForm.labour_service_charge||0)+this.connectionMaterialTotal()-Number(this.historyForm.overall_discount||0));}
+  connectionTypeChanged(){if(this.historyForm.connection_type==='DISCONNECT')Object.assign(this.historyForm,{connection_charge:0,connection_discount:0,labour_service_charge:0,overall_discount:0,customer_paid_amount:0,materials:[]});}
   connectionPaymentStatus(row:any){const total=Number(row?.connection_charge||0)+Number(row?.labour_service_charge||0)-Number(row?.connection_discount||0);return row?.connection_type==='DISCONNECT'||total<=0?'NA':String(this.details.account?.account_status||'PENDING').toUpperCase();}
   connectionStatus(row:any){return row?.approval_status==='PENDING'?'Waiting Approval':(row?.connection_status||'ACTIVE');}
   locationAreas(){return (this.lookups.areas||[]).filter((x:any)=>Number(x.location_id)===Number(this.historyForm.new_location_id));}
@@ -539,6 +566,9 @@ export class InternetCustomerView {
       return 'Rejected';
     if (customer.approval_status !== 'APPROVED' || account.approval_status !== 'APPROVED')
       return 'Waiting Approval';
+    if((this.details.connections||[]).some((x:any)=>x.approval_status==='PENDING'))return 'Waiting Approval';
+    if((this.details.connections||[]).some((x:any)=>x.approval_status==='APPROVED' && ['RECONNECTION','LOCATION_CHANGE','DISCONNECT'].includes(x.connection_type)))return customer.status==='ACTIVE'?'Active':'Disconnected';
+    if(customer.status==='INACTIVE')return 'Disconnected';
     return account.account_status === 'PAID' ? 'Active' : 'Pending Payment';
   }
   monthName(value: any) {

@@ -15,6 +15,9 @@ export class InternetCustomerServices {
   updateCustomer(id: number, data: any) { return this.http.put<any>(`${this.endpoint}/customers/${id}`, data); }
   updateCustomerInformation(id: number, data: any) { return this.http.patch<any>(`${this.endpoint}/customers/${id}/information`, data); }
   addCustomerHistory(id: number, section: string, data: any) { return this.http.post<any>(`${this.endpoint}/customers/${id}/${section}`, data); }
+  getConnection(id:number,rowId:number){return this.http.get<any>(`${this.endpoint}/customers/${id}/connections/${rowId}`);}
+  updateConnection(id:number,rowId:number,data:any){return this.http.patch<any>(`${this.endpoint}/customers/${id}/connections/${rowId}`,data);}
+  deleteConnection(id:number,rowId:number){return this.http.delete<any>(`${this.endpoint}/customers/${id}/connections/${rowId}`);}
   getComplaints(id: number) { return this.http.get<any[]>(`${this.endpoint}/customers/${id}/complaints`); }
   addComplaint(id: number, data: any) { return this.http.post<any>(`${this.endpoint}/customers/${id}/complaints`, data); }
   getSubscriptionLookups() { return this.http.get<any>(`${this.endpoint}/subscription-dues/lookups`); }

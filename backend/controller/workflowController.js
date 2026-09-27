@@ -1,3 +1,4 @@
+const { applyInternetConnection } = require('./internetConnectionDetails');
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const connection = require('../connection');
 const { ensureTransactionTable } = require('./transactionController');
@@ -632,9 +633,7 @@ const approveWorkflow = async (req, res) => {
                 await conn.query(`UPDATE ${table} SET approval_status='APPROVED' WHERE internet_customer_id=? AND approval_status='PENDING'`,[workflow.reference_id]);
             }
             const [[latestConnection]]=await conn.query("SELECT * FROM internet_connections WHERE internet_customer_id=? AND approval_status='APPROVED' ORDER BY internet_connection_id DESC LIMIT 1",[workflow.reference_id]);
-            if(latestConnection?.connection_type==='DISCONNECT')await conn.query("UPDATE internet_customers SET status='INACTIVE',updated_at=NOW() WHERE internet_customer_id=?",[workflow.reference_id]);
-            else if(latestConnection?.connection_type==='RECONNECTION')await conn.query("UPDATE internet_customers SET status='ACTIVE',updated_at=NOW() WHERE internet_customer_id=?",[workflow.reference_id]);
-            else if(latestConnection?.connection_type==='LOCATION_CHANGE')await conn.query("UPDATE internet_customers SET door_no=?,location_id=?,area_id=?,street_id=?,updated_at=NOW() WHERE internet_customer_id=?",[latestConnection.new_door_no,latestConnection.new_location_id,latestConnection.new_area_id,latestConnection.new_street_id,workflow.reference_id]);
+            if(latestConnection)await applyInternetConnection(conn,workflow.reference_id,latestConnection);
             await conn.query("UPDATE internet_customer_accounts SET approval_status='APPROVED',updated_at=NOW() WHERE internet_customer_id=? AND approval_status='PENDING' AND COALESCE(account_source,'LEGACY')<>'PACKAGE'",[workflow.reference_id]);
         } else if (workflow.module_name === 'MATERIAL_ISSUE') {
             const [issues] = await conn.query('SELECT * FROM work_order_material_issues WHERE issue_id = ? FOR UPDATE', [workflow.reference_id]);

@@ -1,3 +1,4 @@
+const { connectionDetails, applyInternetConnection, validateConnectionNetwork } = require('./internetConnectionDetails');
 const { findNetEnrollmentAccount, syncNetEnrollmentAccount } = require('./enrollmentAccountSync');
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const { saveEnrollment, routerStockType } = require('./internetEnrollment');
@@ -154,6 +155,8 @@ const initializeInternetSchema = async (db) => {
     ['internet_connection_materials', 'discount', 'DECIMAL(12,2) NOT NULL DEFAULT 0'],
     ['internet_customer_routers', 'initial_account_id', 'BIGINT NULL'],
     ['internet_connections', 'initial_account_id', 'BIGINT NULL'],
+    ['internet_connections', 'network_type', 'VARCHAR(20) NULL'],
+    ['internet_connections', 'previous_customer_state', 'TEXT NULL'],
     ['internet_connection_materials', 'initial_account_id', 'BIGINT NULL'],
     ['internet_customers', 'approval_status', "ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING' AFTER status"],
     ['internet_customer_accounts', 'approval_status', "ENUM('PENDING','APPROVED','REJECTED') NOT NULL DEFAULT 'PENDING' AFTER account_status"],
@@ -313,7 +316,9 @@ const getInternetCustomers = async (_req, res) => {
         WHEN EXISTS(SELECT 1 FROM workflow_approvals wa WHERE wa.module_name='INTERNET_CUSTOMER_UPDATE' AND wa.reference_id=c.internet_customer_id AND wa.workflow_status='PENDING') THEN 'Waiting Approval'
         WHEN COALESCE(c.approval_status, 'PENDING') <> 'APPROVED'
           OR COALESCE(acc.approval_status, 'PENDING') <> 'APPROVED' THEN 'Waiting Approval'
+        WHEN EXISTS(SELECT 1 FROM internet_connections ic WHERE ic.internet_customer_id=c.internet_customer_id AND ic.approval_status='APPROVED' AND ic.connection_type IN ('RECONNECTION','LOCATION_CHANGE','DISCONNECT')) THEN CASE WHEN c.status='ACTIVE' THEN 'Active' ELSE 'Disconnected' END
         WHEN COALESCE(acc.account_status, 'PENDING') IN ('PENDING','PARTIAL') THEN 'Pending Payment'
+        WHEN c.status='INACTIVE' THEN 'Disconnected'
         WHEN acc.account_status = 'PAID' THEN 'Active'
         ELSE c.status
       END AS status,
@@ -464,7 +469,7 @@ const addInternetCustomerHistory = async (req,res) => {
     if(section!=='subscriptions'&&latest?.account_status!=='PAID')throw Object.assign(new Error('Receive the pending account payment before adding details'),{status:409});
     const employeeId=isAdmin(req)?intOrNull(p.updated_by_employee_id||p.installed_by_employee_id)||await resolveLoggedInEmployeeId(db,req):await resolveLoggedInEmployeeId(db,req);
     if(!employeeId)throw Object.assign(new Error('Logged-in user is not mapped to an employee'),{status:400});
-    const approval=isAdmin(req)?'APPROVED':'PENDING';let routerAmount=0,connectionAmount=0,laborAmount=0,subscriptionAmount=0,updatedRouterId=null,noPaymentRouterUpdate=false,noPaymentConnectionUpdate=false;
+    const approval=isAdmin(req)?'APPROVED':'PENDING';let routerAmount=0,connectionAmount=0,laborAmount=0,subscriptionAmount=0,updatedRouterId=null,noPaymentRouterUpdate=false,noPaymentConnectionUpdate=false,connectionData=null,connectionId=null;
     if(section==='routers'){
       const [[latestRouter]]=await db.query("SELECT product_id,router_status,approval_status FROM internet_customer_routers WHERE internet_customer_id=? AND approval_status<>'REJECTED' ORDER BY internet_router_id DESC LIMIT 1 FOR UPDATE",[customerId]);
       const reason=String(p.update_reason||(latestRouter?'':'INSTALL')).toUpperCase(),disconnectReasons=new Set(['DISCONNECT','FAULT','DAMAGED','UPGRADE','RETURNED']),isStatusUpdate=Boolean(latestRouter)&&disconnectReasons.has(reason),isReplacement=reason==='REPLACED';
@@ -489,11 +494,19 @@ const addInternetCustomerHistory = async (req,res) => {
     }else if(section==='connections'){
       const [[latestConnection]]=await db.query("SELECT connection_status,approval_status FROM internet_connections WHERE internet_customer_id=? AND approval_status<>'REJECTED' ORDER BY internet_connection_id DESC LIMIT 1 FOR UPDATE",[customerId]);
       if(latestConnection?.approval_status==='PENDING')throw Object.assign(new Error('Approve the pending connection update before adding another'),{status:409});
-      const type=String(p.connection_type||'').toUpperCase();if(latestConnection?.connection_status==='ACTIVE'&&!['DISCONNECT','LOCATION_CHANGE'].includes(type))throw Object.assign(new Error('Active connection can only be disconnected or location changed'),{status:409});if(latestConnection?.connection_status==='DISCONNECTED'&&type!=='RECONNECTION')throw Object.assign(new Error('Disconnected connection can only be reconnected'),{status:409});
-      connectionAmount=type==='DISCONNECT'?0:money(p.connection_charge);laborAmount=type==='DISCONNECT'?0:money(p.labour_service_charge);const discount=type==='DISCONNECT'?0:money(p.connection_discount),chargeable=Math.max(connectionAmount+laborAmount-discount,0);noPaymentConnectionUpdate=chargeable<=0;
+      const [[installer]]=await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1',[employeeId]);
+      if(!installer)throw Object.assign(new Error('Select an active installed-by employee'),{status:400});
+      connectionData=connectionDetails(p);
+      const connectionNetwork=String(p.network_type||customer.network_type).toUpperCase();
+      if(connectionNetwork!==customer.network_type)await validateConnectionNetwork(db,customerId,connectionNetwork);
+      const {type,charge:connectionCharge,labor,discount,total:chargeable}=connectionData;
+      if(!p.connection_date || !dateOnly(p.connection_date))throw Object.assign(new Error('Select a valid connection date'),{status:400});
+      connectionAmount=connectionCharge;laborAmount=labor;noPaymentConnectionUpdate=chargeable<=0;
       let oldAddress=null,newAddress=null,newDoorNo=null,newLocationId=null,newAreaId=null,newStreetId=null;if(type==='LOCATION_CHANGE'){newDoorNo=textOrNull(p.new_door_no);newLocationId=intOrNull(p.new_location_id);newAreaId=intOrNull(p.new_area_id);newStreetId=intOrNull(p.new_street_id);const [[mapping]]=await db.query(`SELECT l.location_name,a.area_name,s.street_name,l.city,l.pincode FROM cable_locations l JOIN cable_areas a ON a.location_id=l.location_id JOIN cable_streets s ON s.area_id=a.area_id WHERE l.location_id=? AND a.area_id=? AND s.street_id=? LIMIT 1`,[newLocationId,newAreaId,newStreetId]);if(!newDoorNo||!mapping)throw Object.assign(new Error('Enter Door No and select a valid Location, Area and Street'),{status:400});const [[currentAddress]]=await db.query(`SELECT l.location_name,a.area_name,s.street_name FROM internet_customers c LEFT JOIN cable_locations l ON l.location_id=c.location_id LEFT JOIN cable_areas a ON a.area_id=c.area_id LEFT JOIN cable_streets s ON s.street_id=c.street_id WHERE c.internet_customer_id=?`,[customerId]);oldAddress=[customer.door_no,currentAddress?.street_name,currentAddress?.area_name,currentAddress?.location_name,customer.city,customer.pincode].filter(Boolean).join(', ');newAddress=[newDoorNo,mapping.street_name,mapping.area_name,mapping.location_name,mapping.city,mapping.pincode].filter(Boolean).join(', ');}
-      const connectionStatus=type==='DISCONNECT'?'DISCONNECTED':'ACTIVE';await db.query('INSERT INTO internet_connections(internet_customer_id,connection_date,connection_type,connection_status,installed_by_employee_id,old_address,new_address,new_door_no,new_location_id,new_area_id,new_street_id,connection_charge,connection_discount,labour_service_charge,remarks,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[customerId,dateOnly(p.connection_date),type,connectionStatus,employeeId,oldAddress,newAddress,newDoorNo,newLocationId,newAreaId,newStreetId,connectionAmount,discount,laborAmount,textOrNull(p.remarks),approval]);
-      if(isAdmin(req)){if(type==='DISCONNECT')await db.query("UPDATE internet_customers SET status='INACTIVE',updated_at=NOW() WHERE internet_customer_id=?",[customerId]);else if(type==='RECONNECTION')await db.query("UPDATE internet_customers SET status='ACTIVE',updated_at=NOW() WHERE internet_customer_id=?",[customerId]);else await db.query("UPDATE internet_customers SET door_no=?,location_id=?,area_id=?,street_id=?,updated_at=NOW() WHERE internet_customer_id=?",[newDoorNo,newLocationId,newAreaId,newStreetId,customerId]);}
+      const connectionStatus=type==='DISCONNECT'?'DISCONNECTED':'ACTIVE';const [connectionResult]=await db.query('INSERT INTO internet_connections(internet_customer_id,connection_date,connection_type,connection_status,installed_by_employee_id,old_address,new_address,new_door_no,new_location_id,new_area_id,new_street_id,connection_charge,connection_discount,labour_service_charge,remarks,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',[customerId,dateOnly(p.connection_date),type,connectionStatus,employeeId,oldAddress,newAddress,newDoorNo,newLocationId,newAreaId,newStreetId,connectionAmount,discount,laborAmount,textOrNull(p.remarks),approval]);
+      connectionId=connectionResult.insertId;
+      await db.query('UPDATE internet_connections SET network_type=?,previous_customer_state=? WHERE internet_connection_id=?',[connectionNetwork,JSON.stringify({status:customer.status,network_type:customer.network_type,door_no:customer.door_no,location_id:customer.location_id,area_id:customer.area_id,street_id:customer.street_id,city:customer.city,pincode:customer.pincode}),connectionId]);
+      if(isAdmin(req))await applyInternetConnection(db,customerId,{connection_type:type,network_type:connectionNetwork,new_door_no:newDoorNo,new_location_id:newLocationId,new_area_id:newAreaId,new_street_id:newStreetId});
     }else if(section==='packages'){
       const [[pkg]]=await db.query("SELECT package_id,price,gst_percent,price_including_gst,provider_category AS internet_network_type FROM internet_package_master WHERE package_id=? AND is_active=1",[Number(p.package_id)]);if(!pkg)throw Object.assign(new Error('Select an active Internet package'),{status:400});if(pkg.internet_network_type&&pkg.internet_network_type!==customer.network_type)throw Object.assign(new Error(`Select only ${customer.network_type} packages for this customer`),{status:400});
       const [[duplicatePackage]]=await db.query("SELECT internet_customer_package_id FROM internet_customer_packages WHERE internet_customer_id=? AND package_id=? AND approval_status<>'REJECTED' AND (is_active=1 OR approval_status='PENDING') LIMIT 1",[customerId,pkg.package_id]);if(duplicatePackage)throw Object.assign(new Error('This package is already assigned to the customer'),{status:409});
@@ -519,8 +532,14 @@ const addInternetCustomerHistory = async (req,res) => {
       if(initialAccountId){await db.query('UPDATE internet_subscriptions SET initial_account_id=? WHERE internet_subscription_id=?',[initialAccountId,subscriptionResult.insertId]);await syncNetEnrollmentAccount(db,initialAccountId);}
       p.customer_paid_amount=paid;
     }
+    if(connectionData && (connectionData.total>0 || connectionData.materials.length)){
+      const d=connectionData,office=isAdmin(req)?d.paid:0;
+      const [account]=await db.query(`INSERT INTO internet_customer_accounts(internet_customer_id,account_source,connection_amount,labor_amount,material_cost,overall_discount,grand_total,customer_paid_amount,office_received_amount,office_balance_amount,balance_amount,account_status,approval_status) VALUES(?,'CONNECTION',?,?,?,?,?,?,?,?,?,?,?)`,[customerId,d.charge,d.labor,d.material,d.discount,d.total,d.paid,office,d.total-office,d.total-d.paid,d.total===d.paid?'PAID':d.paid>0?'PARTIAL':'PENDING',approval]);
+      await db.query('UPDATE internet_connections SET initial_account_id=? WHERE internet_connection_id=?',[account.insertId,connectionId]);
+      for(const item of d.materials)await db.query('INSERT INTO internet_connection_materials(internet_customer_id,product_id,item_name,qty,unit,unit_rate,amount,initial_account_id) VALUES(?,?,?,?,?,?,?,?)',[customerId,item.product_id,item.item_name,item.qty,item.unit,item.rate,item.amount,account.insertId]);
+    }
     const grand=money(routerAmount+connectionAmount+laborAmount+subscriptionAmount),paid=money(p.customer_paid_amount),balance=Math.max(grand-paid,0);
-    if(!['subscriptions','packages'].includes(section)&&!noPaymentRouterUpdate&&!noPaymentConnectionUpdate)await db.query('INSERT INTO internet_customer_accounts(internet_customer_id,account_source,router_amount,connection_amount,labor_amount,subscription_amount,grand_total,customer_paid_amount,office_received_amount,office_balance_amount,balance_amount,account_status,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',[customerId,section.slice(0,-1).toUpperCase(),routerAmount,connectionAmount,laborAmount,subscriptionAmount,grand,paid,0,grand,balance,'PENDING',approval]);
+    if(!['subscriptions','packages','connections'].includes(section)&&!noPaymentRouterUpdate&&!noPaymentConnectionUpdate)await db.query('INSERT INTO internet_customer_accounts(internet_customer_id,account_source,router_amount,connection_amount,labor_amount,subscription_amount,grand_total,customer_paid_amount,office_received_amount,office_balance_amount,balance_amount,account_status,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',[customerId,section.slice(0,-1).toUpperCase(),routerAmount,connectionAmount,laborAmount,subscriptionAmount,grand,paid,0,grand,balance,'PENDING',approval]);
     if(!isAdmin(req)){const workflowRemarks=updatedRouterId?`Internet customer router update:${updatedRouterId}`:`Internet customer ${section.replace(/s$/,'')} update`;await db.query(`INSERT INTO workflow_approvals(module_name,reference_id,reference_no,workflow_status,requested_by_employee_id,remarks) VALUES('INTERNET_CUSTOMER_UPDATE',?,?,'PENDING',?,?) ON DUPLICATE KEY UPDATE workflow_status='PENDING',requested_by_employee_id=VALUES(requested_by_employee_id),reviewed_at=NULL,remarks=VALUES(remarks)`,[customerId,String(customer.customer_code),employeeId,workflowRemarks]);}
     await db.commit();return res.status(201).json({message:isAdmin(req)?'Internet customer detail added successfully':'Internet customer update sent for admin approval'});
   }catch(error){try{await db.rollback();}catch(_e){}return res.status(error.status||500).json({message:error.message||'Internet customer detail save failed'});}
