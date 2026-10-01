@@ -33,5 +33,5 @@ export class InternetCustomerServices {
   previewSubscriptionAppend(month:number,year:number){return this.http.get<any>(`${this.endpoint}/subscriptions/append-preview`,{params:{subscription_month:month,subscription_year:year}});}
   appendSubscriptions(data:any){return this.http.post<any>(`${this.endpoint}/subscriptions/append`,data);}
   previewCashAdminCorrection(netIds:string,month:number,year:number,selection: {renewed_by_value:string;payment_mode:string;payment_status:string}){return this.http.post<any>(`${this.endpoint}/subscriptions/cash-admin-correction/preview`,{net_ids:netIds,subscription_month:month,subscription_year:year,...selection});}
-  applyCashAdminCorrection(netIds:string,month:number,year:number,selection: {renewed_by_value:string;payment_mode:string;payment_status:string}){return this.http.post<any>(`${this.endpoint}/subscriptions/cash-admin-correction/apply`,{net_ids:netIds,subscription_month:month,subscription_year:year,...selection});}
+  applyCashAdminCorrection(netIds:string,month:number,year:number,selection: {renewed_by_value:string;payment_mode:string;payment_status:string},customerIds:number[]){return this.http.post<any>(`${this.endpoint}/subscriptions/cash-admin-correction/apply`,{customer_ids:customerIds,net_ids:netIds,subscription_month:month,subscription_year:year,...selection});}
 }

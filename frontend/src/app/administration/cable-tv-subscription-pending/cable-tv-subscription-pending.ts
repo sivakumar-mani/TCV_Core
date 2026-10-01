@@ -123,6 +123,28 @@ export class CableTvSubscriptionPending {
     });
   }
 
+  exportCsv() {
+    if (!this.customers.length) return;
+    const headers = ['S No', 'C No', 'Old C No', 'Customer Name', 'STB Number', 'Package Amount', 'Balance Month'];
+    const rows = this.customers.map((customer, index) => [
+      index + 1, customer.customer_code, customer.legacy_customer_no || '-', customer.full_name,
+      customer.stb_no || '-', Math.round(Number(customer.package_amount) || 0),
+      (customer.pending_months || []).map((month: any) => this.monthLabel(month.subscription_month, month.subscription_year)).join(', ')
+    ]);
+    const csv = [headers, ...rows].map(row => row.map(value => {
+      let text = String(value ?? '');
+      if (/^[\s]*[=+@-]/.test(text) && text !== '-') text = "'" + text;
+      return '"' + text.replace(/"/g, '""') + '"';
+    }).join(',')).join('\r\n');
+    const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = `CATV_Pending_Subscriptions_${this.today()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   areaChanged() {
     this.filters.street_id = '';
   }

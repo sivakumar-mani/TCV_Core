@@ -184,6 +184,7 @@ const getWorkflowApprovals = async (req, res) => {
                             WHEN 'REACTIVATE' THEN 'STB - Reactivate'
                             WHEN 'RETURNED' THEN 'STB - Returned'
                             WHEN 'REPLACED' THEN 'STB - Replaced'
+                            WHEN 'STB_SWAP' THEN 'STB - STB Swap'
                             WHEN 'DISCONNECT' THEN 'STB - Disconnect'
                             WHEN 'FAULT' THEN 'STB - Fault'
                             WHEN 'DAMAGED' THEN 'STB - Damaged'
@@ -439,7 +440,7 @@ const approveWorkflow = async (req, res) => {
                      LIMIT 1 FOR UPDATE`,
                     [stb.cable_customer_id, stb.customer_stb_id]
                 );
-                if (reason === 'RETURNED' || reason === 'REPLACED') {
+                if (reason === 'RETURNED' || reason === 'REPLACED' || reason === 'STB_SWAP') {
                     const returnedMasterIds = (reason === 'RETURNED'
                         ? [stb.stb_master_id, ...previousActive.map((item) => item.stb_master_id)]
                         : previousActive.map((item) => item.stb_master_id)

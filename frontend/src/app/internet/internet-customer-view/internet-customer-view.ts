@@ -176,6 +176,10 @@ export class InternetCustomerView {
       this.details.account?.account_status === 'PAID'
     );
   }
+  canAddHistory() {
+    if (this.activeTab === 'connection') return this.details.customer?.approval_status === 'APPROVED';
+    return this.canUpdate();
+  }
   searchCustomerByNumber() {
     const customerNo = this.customerSearchNo.trim();
     const netId = this.netIdSearch.trim().toLowerCase();
@@ -201,7 +205,7 @@ export class InternetCustomerView {
     if (this.canUpdate()) this.router.navigate(['/internet/customers/edit', this.id]);
   }
   openAdd() {
-    if (!this.canUpdate()) return;
+    if (!this.canAddHistory()) return;
     this.editingPackageId = null;
     this.packageSearch = '';
     this.editingRouterId = null;
@@ -266,7 +270,7 @@ export class InternetCustomerView {
   calculateSubscription(preserveEditedDates = false) {
     if (this.activeTab !== 'subscription') return;
     // A payment edit must not reprice the existing subscription or its period.
-    if (preserveEditedDates && this.editingSubscriptionId) {
+    if (preserveEditedDates) {
       const f = this.historyForm;
       const amount = Math.max(Number(f.amount) || 0, 0);
       const paid = Math.max(Math.min(Math.round(Number(f.paid_amount) || 0), amount), 0);
@@ -299,7 +303,7 @@ export class InternetCustomerView {
       },
       '',
     );
-    if (this.editingSubscriptionId && f.start_date) {
+    if ((this.editingSubscriptionId || f.manual_start_date) && f.start_date) {
       start = new Date(`${f.start_date}T00:00:00Z`);
     } else if (maximumEndDate) {
       start = new Date(`${maximumEndDate}T00:00:00Z`);
@@ -340,7 +344,7 @@ export class InternetCustomerView {
       internet_customer_package_id: pkg?.internet_customer_package_id || null,
       period_count: Number(count.toFixed(4)),
       start_date: start.toISOString().slice(0, 10),
-      end_date: preserveEditedDates && this.editingSubscriptionId && this.lookups.is_admin && /^\d{4}-\d{2}-\d{2}$/.test(String(f.end_date || '')) ? f.end_date : end.toISOString().slice(0, 10),
+      end_date: f.manual_end_date && /^\d{4}-\d{2}-\d{2}$/.test(String(f.end_date || '')) ? f.end_date : end.toISOString().slice(0, 10),
       amount,
       customer_paid_amount: paid,
       balance_amount: balance,

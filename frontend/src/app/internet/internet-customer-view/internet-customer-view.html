@@ -56,7 +56,7 @@
     </button>
   </nav>
   <div class="add-history-bar" *ngIf="activeTab !== 'customer'">
-    <button type="button" [disabled]="!canUpdate()" (click)="openAdd()">
+    <button type="button" [disabled]="!canAddHistory()" (click)="openAdd()">
       Add
       {{
         activeTab === 'subscription'
@@ -524,8 +524,8 @@
             min="0"
             [(ngModel)]="historyForm.additional_years"
             (ngModelChange)="calculateSubscription()" /></label
-        ><label>Start Date<input type="date" [disabled]="!lookups.is_admin || !editingSubscriptionId" [(ngModel)]="historyForm.start_date" /></label
-        ><label>End Date<input type="date" [disabled]="!lookups.is_admin || !editingSubscriptionId" [(ngModel)]="historyForm.end_date" /></label
+        ><label>Start Date<input type="date" [disabled]="!!editingSubscriptionId && !lookups.is_admin" [(ngModel)]="historyForm.start_date" (ngModelChange)="historyForm.manual_start_date = true; calculateSubscription()" /></label
+        ><label>End Date<input type="date" [disabled]="!!editingSubscriptionId && !lookups.is_admin" [(ngModel)]="historyForm.end_date" (ngModelChange)="historyForm.manual_end_date = true" /></label
         ><label
           >Subscription Amount<input
             type="number"
@@ -646,8 +646,8 @@
               <option value="YEAR">Year</option>
             </select></span
           ></label
-        ><label>Start Date<input type="date" [disabled]="!lookups.is_admin || !editingSubscriptionId" [(ngModel)]="historyForm.start_date" /></label
-        ><label>End Date<input type="date" [disabled]="!lookups.is_admin || !editingSubscriptionId" [(ngModel)]="historyForm.end_date" /></label
+        ><label>Start Date<input type="date" [disabled]="!!editingSubscriptionId && !lookups.is_admin" [(ngModel)]="historyForm.start_date" (ngModelChange)="historyForm.manual_start_date = true; calculateSubscription()" /></label
+        ><label>End Date<input type="date" [disabled]="!!editingSubscriptionId && !lookups.is_admin" [(ngModel)]="historyForm.end_date" (ngModelChange)="historyForm.manual_end_date = true" /></label
         ><label
           >Subscription Amount<input
             type="number"

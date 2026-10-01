@@ -14,12 +14,12 @@ test('non-admin payload cannot override Admin/Cash', () => {
  const result=context().renewal(false,{renewed_by_value:'CUSTOMER',payment_mode:'ACCOUNT'});
  assert.equal(result.renewedBy,'ADMIN');assert.equal(result.paymentMode,'CASH');
 });
-async function correction(admin, status='PAID') {
+async function correction(admin, status='PAID', customerIds=[7]) {
  const calls=[]; const db={beginTransaction:async()=>{},commit:async()=>{},rollback:async()=>{},query:async(sql,params)=>{calls.push({sql,params});return [{affectedRows:1}];}};
- const ctx=context({connection:{promise:()=>db},isAdmin:()=>admin,ensureInternetSchema:async()=>{},parseNetIds:()=>['net1'],cashAdminCorrectionRows:async()=>({customers:[{internet_customer_id:7,subscription_count:1}],month:9,year:2026,unmatched_net_ids:[]})});
+ const ctx=context({connection:{promise:()=>db},isAdmin:()=>admin,ensureInternetSchema:async()=>{},parseNetIds:()=>['net1'],cashAdminCorrectionRows:async()=>({customers:[{internet_customer_id:7,subscription_count:1},{internet_customer_id:8,subscription_count:1}],month:9,year:2026,unmatched_net_ids:[]})});
  vm.runInContext(source.slice(source.indexOf('const applyCashAdminCorrection='),source.indexOf('const getInternetSubscriptionReport ='))+';this.apply=applyCashAdminCorrection;',ctx);
  const res={status(code){this.code=code;return this;},json(body){this.body=body;return this;}};
- await ctx.apply({body:{renewed_by_value:'ADMIN',payment_mode:'ACCOUNT',payment_status:status}},res);
+ await ctx.apply({body:{renewed_by_value:'ADMIN',payment_mode:'ACCOUNT',payment_status:status,customer_ids:customerIds}},res);
  return {calls,res};
 }
 test('bulk correction updates only matched existing subscriptions in selected period and preserves collector',async()=>{
@@ -34,4 +34,12 @@ test('bulk correction updates only matched existing subscriptions in selected pe
 test('bulk correction rejects non-admin and missing status without writes',async()=>{
  const denied=await correction(false);assert.equal(denied.res.code,403);assert.equal(denied.calls.length,0);
  const invalid=await correction(true,'');assert.equal(invalid.res.code,400);assert.equal(invalid.calls.length,0);
+});
+
+test('correction rejects missing, empty and out-of-preview selection without writes',async()=>{
+ for(const ids of [null,[],[99],[7,99]]){const r=await correction(true,'PAID',ids);assert.equal(r.res.code,400);assert.equal(r.calls.length,0);}
+});
+test('correction selects individual or all checked customers only',async()=>{
+ const one=await correction(true,'PAID',[8]);assert.deepEqual(Array.from(one.calls[0].params).slice(5),[8,9,2026]);
+ const all=await correction(true,'PAID',[7,8,7]);assert.deepEqual(Array.from(all.calls[0].params).slice(5),[7,8,9,2026]);
 });

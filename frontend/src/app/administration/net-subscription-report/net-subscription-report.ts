@@ -73,12 +73,14 @@ export class NetSubscriptionReport {
         : 'ALL';
   }
   get paymentTotals() {
-    const totals: Record<string, number> = {};
+    const totals: Record<string, number> = { CASH: 0 };
     this.rows.forEach((r) => {
-      const m = String(r.payment_mode || 'DASHBOARD').toUpperCase();
+      const m = String(r.payment_mode || 'DASHBOARD').trim().toUpperCase();
       totals[m] = (totals[m] || 0) + Number(r.paid_amount || 0);
     });
-    return Object.entries(totals).map(([mode, amount]) => ({ mode, amount }));
+    return Object.entries(totals).map(([mode, amount]) => ({
+      mode, amount, label: `${mode.charAt(0)}${mode.slice(1).toLowerCase()} Amount`,
+    }));
   }
   load() {
     if (
@@ -164,6 +166,10 @@ export class NetSubscriptionReport {
         r.paid_amount,
       ]),
     ];
+    this.paymentTotals.forEach(item => {
+      lines.push([...Array(12).fill(''), item.label, item.amount]);
+    });
+    lines.push([...Array(10).fill(''), 'Grand Total', this.summary.total_count, this.summary.total_balance, this.summary.total_amount]);
     const csv = lines
       .map((x) => x.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
       .join('\r\n');
@@ -182,8 +188,12 @@ export class NetSubscriptionReport {
           `<tr><td>${i + 1}</td><td>${this.date(r.collect_date)}</td><td>${r.collected_by_name || '-'}</td><td>${r.renewed_by_name || '-'}</td><td>${r.display_customer_no}</td><td>${r.full_name}</td><td>${r.network_type}</td><td>${this.month(r)}</td><td>${r.number_of_days}</td><td>${r.payment_mode}</td><td>${r.period_count}</td><td>${r.balance_amount}</td><td>${r.paid_amount}</td></tr>`,
       )
       .join('');
+    const totals = this.paymentTotals.map(item => {
+      const label = item.label.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]!));
+      return `<tr><td colspan="12">${label}</td><td>${item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td></tr>`;
+    }).join('');
     w.document.write(
-      `<html><head><title>Net Subscription Report</title><style>body{font-family:Arial;margin:22px}table{border-collapse:collapse;width:100%}th{background:#0878ee;color:white}th,td{border:1px solid #bbb;padding:7px}</style></head><body><h1>Net Subscription Report</h1><p>Collected By: ${this.collectorLabel} | Network: ${this.filters.network_type || 'ALL'} | Period: ${this.date(this.filters.start_date)} to ${this.date(this.filters.end_date)}</p><table><thead><tr><th>S.No</th><th>Date</th><th>Collected By</th><th>Renewed By</th><th>C No</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead><tbody>${body}</tbody></table><script>window.onload=()=>window.print();<\/script></body></html>`,
+      `<html><head><title>Net Subscription Report</title><style>body{font-family:Arial;margin:22px}table{border-collapse:collapse;width:100%}th{background:#0878ee;color:white}th,td{border:1px solid #bbb;padding:7px}</style></head><body><h1>Net Subscription Report</h1><p>Collected By: ${this.collectorLabel} | Network: ${this.filters.network_type || 'ALL'} | Period: ${this.date(this.filters.start_date)} to ${this.date(this.filters.end_date)}</p><table><thead><tr><th>S.No</th><th>Date</th><th>Collected By</th><th>Renewed By</th><th>C No</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead><tbody>${body}</tbody><tfoot>${totals}<tr><td colspan="10">Grand Total</td><td>${this.summary.total_count}</td><td>${this.summary.total_balance}</td><td>${this.summary.total_amount}</td></tr></tfoot></table><script>window.onload=()=>window.print();<\/script></body></html>`,
     );
     w.document.close();
   }

@@ -3,7 +3,7 @@
     <div><h1>Net Cash/Admin Correction</h1><p>Bulk-correct existing subscriptions without changing the staff member who collects the amount.</p></div>
   </header>
 
-  <div class="alert"><strong>Correction:</strong> Existing subscriptions for the supplied Net IDs and selected month/year will receive the selected renewal, payment mode and status. Paid sets the paid amount to the full subscription amount; Unpaid sets it to zero. Collected By remains unchanged.</div>
+  <div class="alert"><strong>Correction:</strong> Existing subscriptions for the checked customers and selected month/year will receive the selected renewal, payment mode and status. Paid sets the paid amount to the full subscription amount; Unpaid sets it to zero. Collected By remains unchanged.</div>
 
   <div class="period-selector">
     <label>Subscription Month
@@ -34,7 +34,7 @@
     <div class="summary">
       <span>Selected Period <b>{{ monthNames[(preview.month || subscriptionMonth) - 1] }} {{ preview.year || subscriptionYear }}</b></span>
       <span>Matched Customers <b>{{ preview.customers?.length || 0 }}</b></span>
-      <span>Subscriptions in Period <b>{{ preview.subscription_count || 0 }}</b></span>
+      <span>Months <b>{{ preview.subscription_count || 0 }}</b></span>
       <span>Unmatched Net IDs <b>{{ preview.unmatched_net_ids?.length || 0 }}</b></span>
     </div>
 
@@ -42,16 +42,17 @@
 
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Net ID</th><th>Customer Name</th><th>Network</th><th>Subscriptions in Period</th><th>Subscription Amount</th><th>Already Locked</th></tr></thead>
+        <thead><tr><th><input type="checkbox" aria-label="Select all eligible customers" [checked]="allSelected" [indeterminate]="selectedCustomers.length > 0 && !allSelected" [disabled]="applying || !eligibleCustomers.length" (change)="toggleAll($any($event.target).checked)" /></th><th>Net ID</th><th>Customer Name</th><th>Network</th><th>Months</th><th>Subscription Amount</th><th>Payment Status</th><th>Mode of Payment</th><th>Already Locked</th></tr></thead>
         <tbody>
           <tr *ngFor="let row of preview.customers">
+            <td><input type="checkbox" [attr.aria-label]="'Select ' + row.net_id" [checked]="selectedIds.has(+row.internet_customer_id)" [disabled]="applying || !+row.subscription_count" (change)="toggleCustomer(row, $any($event.target).checked)" /></td>
             <td>{{ row.net_id }}</td><td class="title-case">{{ row.full_name }}</td><td>{{ row.network_type }}</td>
-            <td>{{ row.subscription_count }}</td><td>{{ row.subscription_amount | number:'1.2-2' }}</td><td>{{ row.locked_count }}</td>
+            <td>{{ row.subscription_count }}</td><td>{{ row.subscription_amount | number:'1.2-2' }}</td><td>{{ row.payment_status || 'No subscriptions' }}</td><td>{{ row.payment_mode || '-' }}</td><td>{{ row.locked_count }}</td>
           </tr>
-          <tr *ngIf="!preview.customers?.length"><td colspan="6" class="empty">No matching customers found.</td></tr>
+          <tr *ngIf="!preview.customers?.length"><td colspan="9" class="empty">No matching customers found.</td></tr>
         </tbody>
       </table>
     </div>
-    <div class="apply"><button type="button" class="danger" [disabled]="applying || !preview.subscription_count" (click)="applyChanges()">{{ applying ? 'Applying...' : 'Apply Correction' }}</button></div>
+    <div class="apply"><span>{{ selectedCustomers.length }} customers / {{ selectedSubscriptionCount }} subscriptions selected</span><button type="button" class="danger" [disabled]="applying || loading || !selectedSubscriptionCount" (click)="applyChanges()">{{ applying ? 'Applying...' : 'Apply Correction' }}</button></div>
   </ng-container>
 </section>

@@ -10,12 +10,12 @@ test('disconnect clears charges and invalid totals/types fail',()=>{
  assert.equal(connectionDetails({connection_type:'DISCONNECT',connection_charge:500,materials:[{}]}).total,0);
  for(const patch of [{connection_type:'NEW'},{connection_charge:-1},{overall_discount:101},{customer_paid_amount:101}])assert.throws(()=>connectionDetails({connection_type:'RECONNECTION',connection_charge:100,...patch}));
 });
-async function run(type,admin=true,pending=false,extra={}){
+async function run(type,admin=true,pending=false,extra={},accountStatus='PAID',section='connections'){
  const calls=[];let committed=false,rolled=false;
  const db={beginTransaction:async()=>{},commit:async()=>{committed=true},rollback:async()=>{rolled=true},query:async(sql,args)=>{
  calls.push({sql,args});
  if(sql.startsWith('SELECT * FROM internet_customers'))return [[{internet_customer_id:865,customer_code:2765,status:'INACTIVE',network_type:'RAILWIRE'}]];
- if(sql.startsWith('SELECT account_status'))return [[{account_status:'PAID'}]];
+ if(sql.startsWith('SELECT account_status'))return [accountStatus===null?[]:[{account_status:accountStatus}]];
  if(sql.startsWith('SELECT connection_status'))return [[{connection_status:'DISCONNECTED',approval_status:pending?'PENDING':'APPROVED'}]];
  if(sql.startsWith('SELECT employee_id'))return [[{employee_id:2}]];
  if(sql.startsWith('SELECT l.location_name'))return [[{city:'Chennai',pincode:'600044'}]];
@@ -25,7 +25,7 @@ async function run(type,admin=true,pending=false,extra={}){
  const context={connection:{promise:()=>db},ensureInternetSchema:async()=>{},connectionDetails,applyInternetConnection,isAdmin:()=>admin,intOrNull:v=>Number(v)||null,resolveLoggedInEmployeeId:async()=>2,money:v=>Math.round(Number(v)||0),dateOnly:v=>v,textOrNull:v=>v||null,userId:()=>1};
  vm.runInNewContext(source.slice(start,end)+'\nthis.handler=addInternetCustomerHistory;',context);
  const res={code:200,status(n){this.code=n;return this},json(v){this.body=v;return this}};
- await context.handler({params:{id:865,section:'connections'},body:{connection_type:type,connection_date:'2026-09-27',new_door_no:'1',new_location_id:3,new_area_id:4,new_street_id:5,connection_charge:100,customer_paid_amount:100,...extra}},res);
+ await context.handler({params:{id:865,section},body:{connection_type:type,connection_date:'2026-09-27',new_door_no:'1',new_location_id:3,new_area_id:4,new_street_id:5,connection_charge:100,customer_paid_amount:100,...extra}},res);
  return {calls,res,committed,rolled};
 }
 test('admin reactive and disconnect update only Internet customer status',async()=>{
@@ -51,3 +51,19 @@ test('connection materials persist with one matching account and server totals',
  assert.equal(accounts.length,1);assert.equal(accounts[0].args[5],190);
  const material=r.calls.find(x=>x.sql.startsWith('INSERT INTO internet_connection_materials'));assert.equal(material.args[6],60);assert.equal(material.args[7],42);
 });
+
+ test('connection additions allow outstanding or absent accounts without clearing existing balances',async()=>{
+  for(const status of ['PENDING','PARTIAL',null])for(const admin of [true,false])for(const type of ['RECONNECTION','DISCONNECT','LOCATION_CHANGE']){
+   const r=await run(type,admin,false,{},status);
+   assert.equal(r.res.code,201,r.res.body.message);assert.ok(r.committed);
+   assert.ok(!r.calls.some(x=>x.sql.startsWith('UPDATE internet_customer_accounts')));
+   assert.equal(r.calls.some(x=>x.sql.includes('INSERT INTO workflow_approvals')),!admin);
+   assert.equal(r.calls.filter(x=>x.sql.startsWith('INSERT INTO internet_customer_accounts')).length,type==='DISCONNECT'?0:1);
+  }
+ });
+ test('pending connection approval and other sections retain their guards with unpaid accounts',async()=>{
+  const pending=await run('RECONNECTION',true,true,{},'PENDING');assert.equal(pending.res.code,409);assert.match(pending.res.body.message,/pending connection update/);
+  for(const section of ['routers','packages']){
+   const r=await run('RECONNECTION',true,false,{},'PENDING',section);assert.equal(r.res.code,409);assert.match(r.res.body.message,/pending account payment/);assert.ok(r.rolled);assert.ok(!r.committed);
+  }
+ });

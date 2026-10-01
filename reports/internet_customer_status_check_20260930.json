@@ -1,0 +1,20 @@
+{
+  "source": "VPS dump Sep 29 2026 12:40",
+  "requested": 95,
+  "results": [
+    {
+      "requested_net_id": "tn.senthil.kl",
+      "internet_customer_id": 885,
+      "customer_code": 2471,
+      "current_status": "INACTIVE",
+      "result": "STATUS MISMATCH"
+    },
+    {
+      "requested_net_id": "tn.suresh.pranav",
+      "internet_customer_id": null,
+      "customer_code": null,
+      "current_status": null,
+      "result": "NOT FOUND"
+    }
+  ]
+}

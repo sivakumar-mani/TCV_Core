@@ -936,7 +936,7 @@ const reconcileMissingStbAmounts = async (db, cableCustomerId) => {
      LEFT JOIN cable_stb_master sm ON sm.stb_master_id = stb.stb_master_id
      WHERE 1 = 1 ${customerFilter}
        AND (
-         UPPER(COALESCE(stb.update_reason, '')) = 'REPLACED'
+         UPPER(COALESCE(stb.update_reason, '')) IN ('REPLACED', 'STB_SWAP')
          OR (COALESCE(stb.update_reason, '') = '' AND UPPER(COALESCE(stb.stb_type, '')) = 'NEW')
        )
        AND stb.approval_status = 'APPROVED'
@@ -4006,15 +4006,15 @@ const addCustomerStb = async (req, res) => {
     const { approvalGroupId, approvalStatus, createdBy } = await createApprovalGroup(db, req, 'STB_UPDATE');
     const employeeId = await resolveEmployeeId(db, req, payload.installed_by_employee_id || payload.entered_by_employee_id);
     const updateReason = String(payload.reason || payload.update_reason || '').toUpperCase();
-    const activeReasons = new Set(['FAULT', 'DAMAGED', 'BROKEN', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED']);
-    const disconnectedReasons = new Set(['REACTIVATE', 'REPLACED']);
+    const activeReasons = new Set(['FAULT', 'DAMAGED', 'BROKEN', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED', 'STB_SWAP']);
+    const disconnectedReasons = new Set(['REACTIVATE', 'REPLACED', 'STB_SWAP']);
     if (!activeReasons.has(updateReason) && !disconnectedReasons.has(updateReason)) {
       await db.rollback();
       return res.status(400).json({ message: 'Invalid STB update reason' });
     }
     const remarks = textOrNull(payload.remarks || payload.reason_remarks);
     const updatedDate = payload.updated_date || payload.installed_date || new Date();
-    const isReplacement = updateReason === 'REPLACED';
+    const isReplacement = ['REPLACED', 'STB_SWAP'].includes(updateReason);
     const isReactivate = updateReason === 'REACTIVATE';
     const isReturn = updateReason === 'RETURNED';
     const faultReasons = new Set(['FAULT', 'DAMAGED', 'BROKEN', 'BURNT']);
@@ -4041,11 +4041,11 @@ const addCustomerStb = async (req, res) => {
     const currentStatus = String(activeStbs[0]?.status || '').toUpperCase();
     if (currentStatus === 'ACTIVE' && !activeReasons.has(updateReason)) {
       await db.rollback();
-      return res.status(400).json({ message: 'Active STB can only be disconnected, faulted, vacated, lost, outstation or returned' });
+      return res.status(400).json({ message: 'Active STB can only be disconnected, faulted, vacated, lost, outstation, returned or swapped' });
     }
     if (currentStatus && currentStatus !== 'ACTIVE' && !disconnectedReasons.has(updateReason) && !isReturn) {
       await db.rollback();
-      return res.status(400).json({ message: 'Disconnected STB can only be Reactivated, Replaced or Returned' });
+      return res.status(400).json({ message: 'Disconnected STB can only be Reactivated, Replaced, Returned or Swapped' });
     }
 
     if (!isReplacement) {

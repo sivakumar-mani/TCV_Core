@@ -95,7 +95,7 @@
         </tbody>
         <tfoot>
           <tr class="payment-mode-total" *ngFor="let x of paymentTotals">
-            <td colspan="13">{{ x.mode }} Amount</td>
+            <td colspan="13">{{ x.label }}</td>
             <td class="number">
               <strong>{{ x.amount | number: '1.0-0' }}</strong>
             </td>

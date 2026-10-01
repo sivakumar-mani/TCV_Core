@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+import ts from 'typescript';
+const source=fs.readFileSync(new URL('../src/app/administration/net-cash-admin-correction/net-cash-admin-correction.ts',import.meta.url),'utf8');
+const ctx=vm.createContext({confirm:()=>true});
+vm.runInContext(ts.transpileModule(source.slice(source.indexOf('export class NetCashAdminCorrection')).replace('export class','class'),{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText+';this.Form=NetCashAdminCorrection;',ctx);
+let calls=[];
+const form=new ctx.Form({applyCashAdminCorrection:(...args)=>{calls.push(args);return {subscribe(){}}}},{});
+form.preview={customers:[{internet_customer_id:1,subscription_count:2},{internet_customer_id:2,subscription_count:1},{internet_customer_id:3,subscription_count:0}]};
+assert.equal(form.selectedSubscriptionCount,0);form.applyChanges();assert.equal(calls.length,0);
+form.toggleAll(true);assert.equal(form.allSelected,true);assert.equal(form.selectedSubscriptionCount,3);assert.equal(form.selectedIds.has(3),false);
+form.toggleCustomer(form.preview.customers[0],false);assert.equal(form.allSelected,false);assert.equal(form.selectedSubscriptionCount,1);
+form.applyChanges();assert.deepEqual(Array.from(calls[0][4]),[2]);
+form.periodChanged();assert.equal(form.preview,null);assert.equal(form.selectedIds.size,0);
+console.log('Passed: select all, individual selection, ineligible rows, selected-only payload, empty selection and reset.');

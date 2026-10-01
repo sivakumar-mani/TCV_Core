@@ -71,8 +71,8 @@ export class CableTvCustomerHistory {
   readonly packageTypes = ['ADDON', 'ALACARTE', 'BROADCASTER'];
   readonly stbTypes = ['NEW', 'SERVICED', 'RETURNED'];
   readonly stbStatuses = ['ACTIVE', 'RETRIEVED', 'FAULT', 'DISCONNECTED', 'UPGRADE', 'RETURNED', 'FAULTY', 'REPLACED'];
-  readonly activeStbReasons = ['FAULT', 'DAMAGED', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED'];
-  readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED', 'RETURNED'];
+  readonly activeStbReasons = ['FAULT', 'DAMAGED', 'BURNT', 'DISCONNECT', 'VACATED', 'STB_LOST', 'OUTSTATION', 'RETURNED', 'STB_SWAP'];
+  readonly disconnectedStbReasons = ['REACTIVATE', 'REPLACED', 'RETURNED', 'STB_SWAP'];
   readonly months = Array.from({ length: 12 }, (_value, index) => ({
     value: index + 1,
     label: new Date(2026, index, 1).toLocaleString('en-US', { month: 'long' })
@@ -185,7 +185,7 @@ export class CableTvCustomerHistory {
   get headerStbNo() { return this.latestStb.stb_no || '-'; }
   get headerDate() { return this.latestStb.installed_date || this.latestConnection.connection_date || this.customer.installation_date || ''; }
   get isReactivateReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'REACTIVATE'; }
-  get isReplacementReason() { return String(this.form?.get('reason')?.value || '').toUpperCase() === 'REPLACED'; }
+  get isReplacementReason() { return ['REPLACED', 'STB_SWAP'].includes(String(this.form?.get('reason')?.value || '').toUpperCase()); }
   get isFullSetIssue() { return String(this.form?.get('issue_mode')?.value || '').toUpperCase() === 'FULL_SET'; }
   get showStbIssueDetails() { return this.isReplacementReason || this.editingInitialStb; }
   get showStbChargeDetails() { return this.isReactivateReason || this.showStbIssueDetails; }
@@ -1454,6 +1454,7 @@ export class CableTvCustomerHistory {
   }
 
   reasonLabel(reason: string) {
+    if (String(reason || '').toUpperCase() === 'STB_SWAP') return 'STB Swap';
     if (String(reason || '').toUpperCase() === 'BROKEN') return 'Broken';
     if (String(reason || '').toUpperCase() === 'DAMAGED') return 'Damaged';
     return String(reason || '').replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
