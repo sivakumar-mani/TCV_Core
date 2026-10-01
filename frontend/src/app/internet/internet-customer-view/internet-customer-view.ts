@@ -3,11 +3,13 @@ import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { firstValueFrom } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InternetCustomerServices } from '../../services/internet-customer-services';
 import { WorkflowServices } from '../../services/workflow-services';
 import { CommonMethods } from '../../shared/common-methods';
-import { openInternetSubscriptionInvoicePdf } from '../../shared/internet-subscription-invoice-pdf';
+import { buildInternetSubscriptionInvoicePdf, internetSubscriptionInvoiceNumber, openInternetSubscriptionInvoicePdf } from '../../shared/internet-subscription-invoice-pdf';
 
 @Component({
   selector: 'app-internet-customer-view',
@@ -16,6 +18,15 @@ import { openInternetSubscriptionInvoicePdf } from '../../shared/internet-subscr
   styleUrl: './internet-customer-view.scss',
 })
 export class InternetCustomerView {
+  invoiceEmail: any = null;
+  invoiceEmailSubscription: any = null;
+  invoiceEmailKind: 'TCV' | 'PROVIDER' = 'TCV';
+  invoiceEmailPreview: SafeResourceUrl | null = null;
+  invoiceEmailLoading = false;
+  invoiceEmailSending = false;
+  private invoiceEmailUrl = '';
+  private invoiceEmailBlob: Blob | null = null;
+  private invoiceEmailVersion = 0;
   details: any = {};
   lookups: any = {};
   customerForm: any = {};
@@ -73,6 +84,7 @@ export class InternetCustomerView {
     private api: InternetCustomerServices,
     private workflows: WorkflowServices,
     private common: CommonMethods,
+    private sanitizer: DomSanitizer,
   ) {
     this.id = Number(route.snapshot.paramMap.get('id'));
     this.reviewMode = route.snapshot.queryParamMap.get('review') === 'true';
@@ -135,6 +147,7 @@ export class InternetCustomerView {
           net_id: r.customer?.net_id,
           network_password: r.customer?.network_password || '',
           mobile_no: r.customer?.mobile_no,
+          email: r.customer?.email || '',
           alternate_mobile_no: r.customer?.alternate_mobile_no || '',
           aadhaar_no: r.customer?.aadhaar_no || '',
           source_name: r.customer?.source_name,
@@ -389,7 +402,7 @@ export class InternetCustomerView {
     }
     if (this.activeTab === 'subscription' && this.editingSubscriptionId) {
       this.savingHistory = true;
-      this.api.updateSubscription(this.id, this.editingSubscriptionId, this.historyForm).subscribe({
+      this.api.updateSubscription(this.id, this.editingSubscriptionId, this.subscriptionEditPayload()).subscribe({
         next: (r) => { this.savingHistory = false; this.showSubscriptionPeriodModal = false; this.editingSubscriptionId = null; this.common.handleTokenAndMessage(r); this.load(); },
         error: (e) => { this.savingHistory = false; this.common.handleError(e); }
       });
@@ -420,12 +433,21 @@ export class InternetCustomerView {
       },
     });
   }
+  subscriptionEditPayload() {
+    const { invoice_no, ...payload } = this.historyForm;
+    const row = (this.details.subscriptions || []).find((item: any) => Number(item.internet_subscription_id) === this.editingSubscriptionId);
+    if (this.lookups.is_admin && String(invoice_no || '').trim() !== internetSubscriptionInvoiceNumber('PROVIDER', this.details.customer, row)) {
+      payload.invoice_no = String(invoice_no || '').trim() || null;
+    }
+    return payload;
+  }
   editSubscription(row: any) {
     if (!this.canEditSubscription(row)) return;
     this.activeTab = 'subscription';
     this.editingSubscriptionId = Number(row.internet_subscription_id);
     const renewed = row.renewed_by === 'ADMIN' ? 'ADMIN' : 'CUSTOMER';
     this.historyForm = {
+      invoice_no: internetSubscriptionInvoiceNumber('PROVIDER', this.details.customer, row),
       subscription_month: Number(row.subscription_month), subscription_year: Number(row.subscription_year),
       period_value: Number(row.period_value) || 1, period_unit: row.billing_basis || 'MONTH',
       period_count: Number(row.period_count) || 1, free_period_value: Number(row.free_period_value) || 0,
@@ -444,7 +466,7 @@ export class InternetCustomerView {
     return Boolean(this.lookups.is_admin) || String(row?.payment_status || '').toUpperCase() !== 'PAID';
   }
   showSubscriptionActions() {
-    return Boolean(this.lookups.is_admin) || (this.details.subscriptions || []).some((row: any) => this.canEditSubscription(row));
+    return Boolean(this.details.subscriptions?.length) || Boolean(this.lookups.is_admin);
   }
   subscriptionStatusLabel(row: any) {
     const status = String(row?.payment_status || 'PENDING').toUpperCase();
@@ -605,6 +627,68 @@ export class InternetCustomerView {
     return packages.find(
       (row: any) => Number(row.internet_customer_package_id) === Number(subscription?.internet_customer_package_id),
     ) || packages.find((row: any) => Number(row.is_active) === 1) || packages[0] || {};
+  }
+  async previewSubscriptionEmail(subscription: any) {
+    if (this.invoiceEmailSending || this.invoiceEmailLoading) return;
+    this.closeInvoiceEmail();
+    this.invoiceEmailSubscription = subscription;
+    this.invoiceEmailKind = 'TCV';
+    this.invoiceEmailLoading = true;
+    const version = this.invoiceEmailVersion;
+    try {
+      const email = await firstValueFrom(this.api.previewSubscriptionEmail(this.id, Number(subscription.internet_subscription_id)));
+      if (version !== this.invoiceEmailVersion) return;
+      this.invoiceEmail = email;
+      await this.refreshInvoiceEmailPreview();
+    } catch (error) {
+      if (version === this.invoiceEmailVersion) { this.closeInvoiceEmail(); this.common.handleError(error); }
+    } finally { if (version === this.invoiceEmailVersion) this.invoiceEmailLoading = false; }
+  }
+  async refreshInvoiceEmailPreview() {
+    const version = ++this.invoiceEmailVersion;
+    this.invoiceEmailLoading = true;
+    this.invoiceEmailBlob = null;
+    this.invoiceEmailPreview = null;
+    if (this.invoiceEmailUrl) URL.revokeObjectURL(this.invoiceEmailUrl);
+    this.invoiceEmailUrl = '';
+    try {
+      const pdf = await buildInternetSubscriptionInvoicePdf({ kind: this.invoiceEmailKind,
+        customer: this.details.customer || {}, subscription: this.invoiceEmailSubscription,
+        package: this.subscriptionPackage(this.invoiceEmailSubscription), address: this.address() });
+      if (version !== this.invoiceEmailVersion) return;
+      this.invoiceEmailBlob = pdf.blob;
+      this.invoiceEmailUrl = URL.createObjectURL(pdf.blob);
+      this.invoiceEmailPreview = this.sanitizer.bypassSecurityTrustResourceUrl(this.invoiceEmailUrl);
+    } catch (error) {
+      if (version === this.invoiceEmailVersion) this.common.handleError({ error: { message: 'Unable to generate invoice preview' } });
+    } finally { if (version === this.invoiceEmailVersion) this.invoiceEmailLoading = false; }
+  }
+  sendInvoiceEmail() {
+    if (this.invoiceEmailSending || this.invoiceEmailLoading || !this.invoiceEmailBlob || !this.invoiceEmail) return;
+    const data = new FormData();
+    data.append('invoice', this.invoiceEmailBlob, 'invoice.pdf');
+    data.append('preview_to', this.invoiceEmail.to);
+    data.append('preview_period', this.invoiceEmail.period);
+    this.invoiceEmailSending = true;
+    this.api.sendSubscriptionEmail(this.id, Number(this.invoiceEmailSubscription.internet_subscription_id), data).subscribe({
+      next: result => { this.invoiceEmailSending = false; this.closeInvoiceEmail(); this.common.handleTokenAndMessage(result); },
+      error: error => { this.invoiceEmailSending = false; this.common.handleError(error); }
+    });
+  }
+  closeInvoiceEmail() {
+    if (this.invoiceEmailSending) return;
+    ++this.invoiceEmailVersion;
+    if (this.invoiceEmailUrl) URL.revokeObjectURL(this.invoiceEmailUrl);
+    this.invoiceEmailUrl = '';
+    this.invoiceEmailPreview = null;
+    this.invoiceEmailBlob = null;
+    this.invoiceEmail = null;
+    this.invoiceEmailSubscription = null;
+    this.invoiceEmailLoading = false;
+  }
+  ngOnDestroy() {
+    ++this.invoiceEmailVersion;
+    if (this.invoiceEmailUrl) URL.revokeObjectURL(this.invoiceEmailUrl);
   }
   openSubscriptionInvoice(subscription: any, invoiceType: string) {
     if (!invoiceType) return;

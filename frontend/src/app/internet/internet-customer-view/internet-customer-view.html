@@ -111,7 +111,7 @@
                 <option value="TCV">TCV Invoice</option>
               </select>
             </td>
-            <td *ngIf="showSubscriptionActions()" class="row-actions"><button *ngIf="canEditSubscription(x)" type="button" (click)="editSubscription(x)" aria-label="Edit subscription" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></button><button *ngIf="lookups.is_admin" type="button" (click)="deleteSubscription(x)" aria-label="Delete subscription" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button></td>
+            <td *ngIf="showSubscriptionActions()" class="row-actions"><button type="button" (click)="previewSubscriptionEmail(x)" [disabled]="invoiceEmailLoading || invoiceEmailSending" aria-label="Preview and email invoice" title="Preview and email invoice"><i class="bi bi-envelope" aria-hidden="true"></i></button><button *ngIf="canEditSubscription(x)" type="button" (click)="editSubscription(x)" aria-label="Edit subscription" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></button><button *ngIf="lookups.is_admin" type="button" (click)="deleteSubscription(x)" aria-label="Delete subscription" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button></td>
           </tr>
           <tr *ngIf="!details.subscriptions?.length">
             <td [attr.colspan]="showSubscriptionActions() ? 11 : 10" class="empty">No subscription details</td>
@@ -291,6 +291,7 @@
       ><label>Net ID<input [(ngModel)]="customerForm.net_id" /></label
       ><label>Password<input type="password" required [(ngModel)]="customerForm.network_password" /></label
       ><label>Mobile No<input maxlength="10" [(ngModel)]="customerForm.mobile_no" /></label
+      ><label>Email<input type="email" maxlength="254" [(ngModel)]="customerForm.email" /></label
       ><label
         >Alternate Mobile<input
           maxlength="10"
@@ -582,6 +583,31 @@
       </div>
     </section>
   </div>
+  <div class="modal-backdrop" *ngIf="invoiceEmailSubscription">
+    <section class="history-modal subscription-modal invoice-email-modal" role="dialog" aria-modal="true" aria-labelledby="invoice-email-title">
+      <div class="modal-title">
+        <h2 id="invoice-email-title">Preview and Send Invoice</h2>
+        <button type="button" [disabled]="invoiceEmailSending" (click)="closeInvoiceEmail()">Close</button>
+      </div>
+      <p *ngIf="invoiceEmailLoading" role="status">Preparing invoice preview...</p>
+      <ng-container *ngIf="invoiceEmail">
+        <p><strong>From:</strong> {{ invoiceEmail.from }}<br /><strong>To:</strong> {{ invoiceEmail.to }}</p>
+        <label>Invoice
+          <select [(ngModel)]="invoiceEmailKind" (ngModelChange)="refreshInvoiceEmailPreview()" [disabled]="invoiceEmailLoading || invoiceEmailSending">
+            <option value="TCV">TCV Invoice</option>
+            <option *ngIf="details.customer?.network_type === 'KRISHI' || details.customer?.network_type === 'RAILWIRE'" value="PROVIDER">{{ details.customer?.network_type === 'KRISHI' ? 'Krishi' : 'Railwire' }} Invoice</option>
+          </select>
+        </label>
+        <p><strong>Subject:</strong> {{ invoiceEmail.subject }}</p>
+        <pre class="invoice-email-message">{{ invoiceEmail.text }}</pre>
+        <iframe *ngIf="invoiceEmailPreview" [src]="invoiceEmailPreview" title="Invoice PDF preview" class="invoice-email-preview"></iframe>
+      </ng-container>
+      <div class="form-actions">
+        <button type="button" class="back" [disabled]="invoiceEmailSending" (click)="closeInvoiceEmail()">Cancel</button>
+        <button type="button" class="approve" [disabled]="invoiceEmailLoading || invoiceEmailSending || !invoiceEmailPreview" (click)="sendInvoiceEmail()">{{ invoiceEmailSending ? 'Sending...' : 'Send Email' }}</button>
+      </div>
+    </section>
+  </div>
   <div class="modal-backdrop" *ngIf="showSubscriptionPeriodModal">
     <section class="history-modal subscription-modal">
       <div class="modal-title">
@@ -589,6 +615,9 @@
         <button type="button" (click)="showSubscriptionPeriodModal = false">Close</button>
       </div>
       <div class="subscription-grid">
+        <label *ngIf="editingSubscriptionId">Invoice No
+          <input type="text" maxlength="100" [(ngModel)]="historyForm.invoice_no" [readonly]="!lookups.is_admin" />
+        </label>
         <label
           >Month / Year<span class="inline-fields"
             ><select

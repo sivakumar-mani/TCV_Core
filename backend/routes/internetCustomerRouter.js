@@ -2,6 +2,12 @@ const express=require('express');
 const auth=require('../services/authendication');
 const {getUnassignedNetCollectors,assignNetCollector,internetLookups,getInternetCustomers,getInternetCustomer,saveInternetCustomer,getInternetComplaints,addInternetComplaint,updateInternetCustomerInformation,addInternetCustomerHistory,getPendingInternetSubscriptions,receiveInternetSubscriptionPayment,updateInternetSubscription,deleteInternetSubscription,updateInternetCustomerPackage,deleteInternetCustomerPackage,updateInternetCustomerRouter,deleteInternetCustomerRouter,previewInternetSubscriptionAppend,appendInternetSubscriptions,previewCashAdminCorrection,applyCashAdminCorrection,getInternetSubscriptionReport}=require('../controller/internetCustomerController');
 const router=express.Router(); router.use(auth.authendicateToken);
+const invoiceEmail = require('../controller/internetSubscriptionEmail')(require('../connection'), require('../controller/internetCustomerController').ensureInternetSchema);
+const invoiceUpload = require('multer')({ storage: require('multer').memoryStorage(), limits: { fileSize: 4 * 1024 * 1024, files: 1, fields: 2 } }).single('invoice');
+router.get('/customers/:id/subscriptions/:subscriptionId/email-preview', auth.requirePermissionAction('INTERNET_CUSTOMERS', 'can_view'), invoiceEmail.preview);
+router.post('/customers/:id/subscriptions/:subscriptionId/email', auth.requirePermissionAction('INTERNET_CUSTOMERS', 'can_view'), (req, res, next) => {
+  invoiceUpload(req, res, error => error ? res.status(400).json({ message: 'Attach one PDF invoice under 4 MB' }) : next());
+}, invoiceEmail.send);
 const internetPackages=require('../controller/internetPackageController');
 router.get('/packages',auth.requireAdmin,internetPackages.listPackages);
 router.post('/packages',auth.requireAdmin,internetPackages.savePackage);

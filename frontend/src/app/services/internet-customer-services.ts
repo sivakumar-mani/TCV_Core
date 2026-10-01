@@ -24,6 +24,8 @@ export class InternetCustomerServices {
   getPendingSubscriptions(filters: any) { return this.http.get<any>(`${this.endpoint}/subscription-dues`, { params: filters }); }
   receiveSubscriptionPayment(id: number, data: any) { return this.http.patch<any>(`${this.endpoint}/subscription-dues/${id}/receive`, data); }
   updateSubscription(customerId: number, subscriptionId: number, data: any) { return this.http.patch<any>(`${this.endpoint}/customers/${customerId}/subscriptions/${subscriptionId}`, data); }
+  previewSubscriptionEmail(customerId: number, subscriptionId: number) { return this.http.get<any>(`${this.endpoint}/customers/${customerId}/subscriptions/${subscriptionId}/email-preview`); }
+  sendSubscriptionEmail(customerId: number, subscriptionId: number, data: FormData) { return this.http.post<any>(`${this.endpoint}/customers/${customerId}/subscriptions/${subscriptionId}/email`, data); }
   deleteSubscription(customerId: number, subscriptionId: number) { return this.http.delete<any>(`${this.endpoint}/customers/${customerId}/subscriptions/${subscriptionId}`); }
   updatePackage(customerId: number, packageRowId: number, data: any) { return this.http.patch<any>(`${this.endpoint}/customers/${customerId}/packages/${packageRowId}`, data); }
   deletePackage(customerId: number, packageRowId: number) { return this.http.delete<any>(`${this.endpoint}/customers/${customerId}/packages/${packageRowId}`); }

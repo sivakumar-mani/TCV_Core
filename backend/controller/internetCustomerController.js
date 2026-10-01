@@ -151,6 +151,7 @@ const initializeInternetSchema = async (db) => {
   }
   for (const [table, column, definition] of [
     ['internet_subscriptions', 'initial_account_id', 'BIGINT NULL'],
+    ['internet_subscriptions', 'invoice_no', 'VARCHAR(100) NULL'],
     ['internet_customers', 'email', 'VARCHAR(254) NULL'],
     ['internet_connection_materials', 'discount', 'DECIMAL(12,2) NOT NULL DEFAULT 0'],
     ['internet_customer_routers', 'initial_account_id', 'BIGINT NULL'],
@@ -430,6 +431,8 @@ const updateInternetCustomerInformation = async (req,res) => {
     const network=String(payload.network_type||'').toUpperCase(), fullName=String(payload.full_name||'').trim(), netId=String(payload.net_id||'').trim();
     const password=String(payload.network_password||'').trim();
     const mobile=String(payload.mobile_no||'').trim(), alternate=String(payload.alternate_mobile_no||'').trim();
+    const hasEmail = Object.prototype.hasOwnProperty.call(payload, 'email');
+    const email = String(payload.email || '').trim();
     const aadhaar=String(payload.aadhaar_no||'').trim(), source=String(payload.source_name||'').trim();
     const installedBy=intOrNull(payload.installed_by_employee_id);
     const validationErrors = [];
@@ -440,6 +443,7 @@ const updateInternetCustomerInformation = async (req,res) => {
     if(!password) validationErrors.push('Password is required');
     if(!/^\d{10}$/.test(mobile)) validationErrors.push('Mobile No must contain exactly 10 digits');
     if(alternate&&!/^\d{10}$/.test(alternate)) validationErrors.push('Alternate Mobile must contain exactly 10 digits');
+    if(hasEmail && ((payload.email != null && typeof payload.email !== 'string') || (email && (email.length > 254 || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(email))))) validationErrors.push('Enter a valid Email address');
     if(aadhaar&&!/^\d{12}$/.test(aadhaar)) validationErrors.push('Aadhaar No must contain exactly 12 digits');
     if(!['Customer Approach Office','Direct','Customer Approach Engineer'].includes(source)) validationErrors.push('Select a valid Source');
     if(!installedBy) validationErrors.push('Select an Installed By employee');
@@ -451,7 +455,7 @@ const updateInternetCustomerInformation = async (req,res) => {
     if(duplicateNetId) return res.status(409).json({message:'Net ID is already assigned to another Internet customer'});
     const [[employee]]=await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1',[installedBy]);
     if(!employee) return res.status(400).json({message:'Select an active Installed By employee'});
-    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,password,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,id]);
+    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,${hasEmail ? 'email=?,' : ''}updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,password,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,...(hasEmail ? [email || null] : []),id]);
     if(!result.affectedRows) return res.status(404).json({message:'Internet customer not found'});
     return res.json({message:'Internet customer information updated successfully'});
   } catch(error){return res.status(500).json({message:'Internet customer information update failed',error:error.message});}
@@ -612,6 +616,11 @@ const updateInternetSubscription = async (req,res) => {
     await ensureInternetSchema(db);const customerId=Number(req.params.id),subscriptionId=Number(req.params.subscriptionId),p=req.body||{};
     const [[row]]=await db.query('SELECT internet_subscription_id,payment_status,cash_admin_locked,initial_account_id,subscription_month,subscription_year FROM internet_subscriptions WHERE internet_subscription_id=? AND internet_customer_id=?',[subscriptionId,customerId]);if(!row)return res.status(404).json({message:'Internet subscription not found'});
     if(!isAdmin(req)&&String(row.payment_status).toUpperCase()==='PAID')return res.status(409).json({message:'Paid subscriptions can only be edited by an administrator'});
+    const hasInvoiceNo = Object.prototype.hasOwnProperty.call(p, 'invoice_no');
+    if (hasInvoiceNo && !isAdmin(req)) return res.status(403).json({message:'Only an administrator can edit the invoice number'});
+    const invoiceNo = hasInvoiceNo ? textOrNull(p.invoice_no) : null;
+    if (hasInvoiceNo && p.invoice_no !== null && typeof p.invoice_no !== 'string') return res.status(400).json({message:'Enter a valid invoice number'});
+    if (invoiceNo && (invoiceNo.length > 100 || /[^\x20-\x7E]/.test(invoiceNo))) return res.status(400).json({message:'Invoice number must contain at most 100 printable characters'});
     const employeeId=await resolveLoggedInEmployeeId(db,req);if(!isAdmin(req)&&!employeeId)return res.status(400).json({message:'Logged-in user is not mapped to an employee'});
     const start=dateOnly(p.start_date),end=dateOnly(p.end_date),amount=money(p.amount),paid=Math.min(Math.max(money(p.paid_amount),0),amount);if(!start||!end||end<start||amount<0)return res.status(400).json({message:'Enter valid subscription dates and amount'});
     const balance=money(Math.max(amount-paid,0)),status=balance===0?'PAID':paid>0?'PARTIAL':'PENDING',basis=['MONTH','DAYS','YEAR'].includes(String(p.period_unit||'').toUpperCase())?String(p.period_unit).toUpperCase():'MONTH',freeUnit=['MONTH','DAYS','YEAR'].includes(String(p.free_period_unit||'').toUpperCase())?String(p.free_period_unit).toUpperCase():'MONTH';
@@ -620,6 +629,7 @@ const updateInternetSubscription = async (req,res) => {
     const initialAccountId=row.initial_account_id||await findNetEnrollmentAccount(db,customerId,row.subscription_month,row.subscription_year,subscriptionId);
     if(!row.initial_account_id&&initialAccountId)await db.query('UPDATE internet_subscriptions SET initial_account_id=? WHERE internet_subscription_id=? AND internet_customer_id=?',[initialAccountId,subscriptionId,customerId]);
     await db.query(`UPDATE internet_subscriptions SET subscription_month=?,subscription_year=?,billing_basis=?,period_value=?,period_count=?,free_period_value=?,free_period_unit=?,start_date=?,end_date=?,collect_date=?,collected_by_employee_id=?,renewed_by=?,renewed_by_employee_id=?,payment_mode=?,payment_reference=?,payment_mapped_employee_id=?,amount=?,paid_amount=?,balance_amount=?,payment_status=? WHERE internet_subscription_id=? AND internet_customer_id=?`,[Number(p.subscription_month),Number(p.subscription_year),basis,Number(p.period_value)||1,Number(p.period_count)||1,Number(p.free_period_value)||0,freeUnit,start,end,collectDate,collectedBy,renewedBy,renewedEmployee,paymentMode,isAdmin(req)?textOrNull(p.payment_reference):null,isAdmin(req)?intOrNull(p.payment_mapped_employee_id):null,amount,paid,balance,status,subscriptionId,customerId]);
+    if (hasInvoiceNo) await db.query('UPDATE internet_subscriptions SET invoice_no=? WHERE internet_subscription_id=? AND internet_customer_id=?', [invoiceNo, subscriptionId, customerId]);
     await syncNetEnrollmentAccount(db,initialAccountId);await db.commit();
     return res.json({message:'Internet subscription updated successfully'});
   }catch(error){await db.rollback();return res.status(error.status||500).json({message:error.message||'Internet subscription update failed'});}

@@ -42,3 +42,30 @@ test('administrator and approval requirements are preserved', async () => {
     assert.equal(res.code, status); assert.equal(writes.length, 0);
   }
 });
+
+test('customer email is trimmed and saved only for the requested customer', async () => {
+  const { res, writes } = await run({ email: ' customer@example.com ' });
+  assert.equal(res.code, 200);
+  assert.equal(writes.length, 1);
+  assert.match(writes[0].sql, /email=\?,updated_at=NOW\(\) WHERE internet_customer_id=\?/);
+  assert.deepEqual(Array.from(writes[0].params).slice(-2), ['customer@example.com', 799]);
+});
+
+test('omitted email is preserved and explicitly blank email can be cleared', async () => {
+  const unchanged = await run();
+  assert.doesNotMatch(unchanged.writes[0].sql, /email=/);
+  for (const email of ['', '   ', null]) {
+    const result = await run({ email });
+    assert.equal(result.res.code, 200);
+    assert.equal(result.writes[0].params.at(-2), null);
+  }
+});
+
+test('invalid email is rejected without changing customer information', async () => {
+  for (const email of ['bad', 'a@example.com,b@example.com', 'a\nb@example.com', 'x'.repeat(250) + '@example.com', {}, 123]) {
+    const { res, writes } = await run({ email });
+    assert.equal(res.code, 400);
+    assert.match(res.body.message, /valid Email/);
+    assert.equal(writes.length, 0);
+  }
+});

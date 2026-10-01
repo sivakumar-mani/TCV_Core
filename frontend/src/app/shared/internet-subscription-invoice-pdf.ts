@@ -1,5 +1,12 @@
 type InvoiceKind = 'PROVIDER' | 'TCV';
 
+export function internetSubscriptionInvoiceNumber(kind: InvoiceKind, customer: any, subscription: any) {
+  const saved = String(subscription?.invoice_no || '').trim();
+  if (saved) return saved;
+  const prefix = kind === 'TCV' ? 'TCV-NET' : String(customer?.network_type || '').toUpperCase() === 'KRISHI' ? 'KRISHI' : 'RAILWIRE';
+  return `${prefix}-${subscription?.subscription_year || ''}-${subscription?.internet_subscription_id || ''}`;
+}
+
 const byteLength = (value: string) => new TextEncoder().encode(value).length;
 const escapePdf = (value: unknown) => String(value ?? '-')
   .replace(/[^\x20-\x7E]/g, '')
@@ -33,7 +40,7 @@ const wrap = (value: unknown, maxCharacters: number, maxLines = 3) => {
   return (lines.length ? lines : ['-']).slice(0, maxLines);
 };
 
-export async function openInternetSubscriptionInvoicePdf(data: {
+export async function buildInternetSubscriptionInvoicePdf(data: {
   kind: InvoiceKind;
   customer: any;
   subscription: any;
@@ -48,8 +55,7 @@ export async function openInternetSubscriptionInvoicePdf(data: {
   const gstRate = Number(packageRow?.gst_percent) || 18;
   const taxable = amount / (1 + gstRate / 100);
   const halfTax = (amount - taxable) / 2;
-  const invoicePrefix = kind === 'TCV' ? 'TCV-NET' : isKrishi ? 'KRISHI' : 'RAILWIRE';
-  const invoiceNo = `${invoicePrefix}-${subscription?.subscription_year || ''}-${subscription?.internet_subscription_id || ''}`;
+  const invoiceNo = internetSubscriptionInvoiceNumber(kind, customer, subscription);
   const invoiceDate = subscription?.collect_date || subscription?.created_at || new Date();
   const generatedAt = new Date();
   const shortName = (String(customer?.full_name || '').trim().split(/\s+/)[0] || 'Customer')
@@ -227,10 +233,15 @@ export async function openInternetSubscriptionInvoicePdf(data: {
     pdfBytes.set(part, position);
     position += part.length;
   });
-  const url = URL.createObjectURL(new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' }));
+  return { blob: new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' }), filename: downloadName };
+}
+
+export async function openInternetSubscriptionInvoicePdf(data: Parameters<typeof buildInternetSubscriptionInvoicePdf>[0]) {
+  const { blob, filename } = await buildInternetSubscriptionInvoicePdf(data);
+  const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
-  anchor.download = downloadName;
+  anchor.download = filename;
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();
