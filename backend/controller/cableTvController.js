@@ -668,6 +668,7 @@ const postStockMovement = async (db, {
   referenceNo,
   qtyIn = 0,
   qtyOut = 0,
+  deferInsufficientStock = false,
   unitCost = null,
   remarks = null,
   employeeId = null
@@ -691,6 +692,7 @@ const postStockMovement = async (db, {
   const currentQty = money(stockRows[0]?.available_qty);
   const nextQty = currentQty + inQty - outQty;
   if (nextQty < 0) {
+    if (deferInsufficientStock) return false;
     const error = new Error(
       `Insufficient stock for ${productName || `accessory product ${product}`}. Available: ${currentQty}, required: ${outQty}`
     );
@@ -710,6 +712,7 @@ const postStockMovement = async (db, {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [product, transactionType, transactionId || null, referenceNo || null, inQty, outQty, nextQty, unitCost, remarks, employeeId]
   );
+  return true;
 };
 
 const ensureUsedAccessoryProduct = async (db, sourceProductId) => {
@@ -2886,6 +2889,7 @@ const receiveAccount = async (req, res) => {
       ]
     );
 
+    const pendingStockAccessories = [];
     if (paymentStatus === 'PAID') {
       const [pendingAccessories] = await db.query(
         `SELECT acc.stb_accessory_id, acc.customer_stb_id, acc.product_id, acc.accessory_name,
@@ -2897,21 +2901,31 @@ const receiveAccount = async (req, res) => {
         [account.approval_group_id]
       );
       for (const accessory of pendingAccessories) {
-        await postStockMovement(db, {
+        const issued = await postStockMovement(db, {
           productId: accessory.product_id,
           productName: accessory.accessory_name,
           transactionId: accessory.stb_accessory_id,
           referenceNo: `CTV-STB-${accessory.customer_stb_id}`,
           qtyOut: accessory.qty,
+          deferInsufficientStock: true,
           unitCost: money(accessory.purchase_price),
           remarks: 'CATV STB accessory issued after account receipt',
           employeeId: accessory.issued_by_employee_id || currentUserId(req)
         });
+        if (issued === false) {
+          pendingStockAccessories.push(accessory.accessory_name);
+          continue;
+        }
+        await db.query(
+          `UPDATE cable_customer_stb_accessories SET approval_status = 'APPROVED'
+           WHERE stb_accessory_id = ? AND approval_group_id = ? AND approval_status = 'PENDING'`,
+          [accessory.stb_accessory_id, account.approval_group_id]
+        );
       }
 
       for (const table of [
         'cable_connections', 'cable_connection_materials', 'cable_customer_stbs',
-        'cable_customer_packages', 'cable_subscriptions', 'cable_customer_stb_accessories'
+        'cable_customer_packages', 'cable_subscriptions'
       ]) {
         await db.query(
           `UPDATE ${table}
@@ -2930,7 +2944,10 @@ const receiveAccount = async (req, res) => {
 
     await db.commit();
     return res.json({
-      message: paymentStatus === 'PAID' ? 'Payment received in full' : 'Partial payment recorded',
+      message: paymentStatus === 'PAID'
+        ? `Payment received in full${pendingStockAccessories.length ? '. Accessories pending stock: ' + pendingStockAccessories.join(', ') : ''}`
+        : 'Partial payment recorded',
+      pending_stock_accessories: pendingStockAccessories,
       payment_status: paymentStatus,
       received_amount: receivedAmount,
       balance_amount: newBalance
