@@ -69,3 +69,20 @@ test('invalid email is rejected without changing customer information', async ()
     assert.equal(writes.length, 0);
   }
 });
+
+test('additional emails are trimmed, saved, preserved when omitted, and clearable', async () => {
+  const saved = await run({ additional_emails: ' billing@example.com ; owner@example.com ' });
+  assert.equal(saved.res.code, 200);
+  assert.equal(saved.writes[0].params.at(-2), 'billing@example.com, owner@example.com');
+  assert.equal(saved.writes[0].params.at(-1), 799);
+  assert.doesNotMatch((await run()).writes[0].sql, /additional_emails=/);
+  const cleared = await run({ additional_emails: '' });
+  assert.equal(cleared.res.code, 200); assert.equal(cleared.writes[0].params.at(-2), null);
+});
+
+test('invalid additional recipients are rejected without writes', async () => {
+  for (const additional_emails of ['bad', 'a@example.com,', 'a@example.com\r\nBcc: b@example.com', ['a@example.com'], Array(21).fill('a@example.com').join(',')]) {
+    const result = await run({ additional_emails });
+    assert.equal(result.res.code, 400); assert.equal(result.writes.length, 0);
+  }
+});

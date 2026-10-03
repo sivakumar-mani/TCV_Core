@@ -3,10 +3,10 @@ const assert = require('node:assert/strict');
 const factory = require('../controller/internetSubscriptionEmail');
 const sender = 'tcvadmin@timecablevision.in';
 const row = { email: 'customer@example.com', start_date: '2026-10-01', end_date: '2026-10-31' };
-function setup(record = row, env = { INVOICE_EMAIL_USER: sender, INVOICE_EMAIL_PASSWORD: 'test-only' }, failure = false) {
+function setup(record = row, env = { INVOICE_EMAIL_USER: sender, INVOICE_EMAIL_PASSWORD: 'test-only' }, failure = false, accepted = [record?.email]) {
   const sent = [], queries = [], transports = [];
   const handler = factory({ promise: () => ({ query: async (sql, params) => { queries.push({ sql, params }); return [record ? [record] : []]; } }) }, async () => {},
-    { createTransport: options => { transports.push(options); return { sendMail: async mail => { sent.push(mail); if (failure) throw failure === true ? new Error('SMTP failure') : failure; return { accepted: [record.email] }; } }; } }, env);
+    { createTransport: options => { transports.push(options); return { sendMail: async mail => { sent.push(mail); if (failure) throw failure === true ? new Error('SMTP failure') : failure; return { accepted }; } }; } }, env);
   const req = { params: { id: 480, subscriptionId: 12 }, body: { preview_to: row.email, preview_period: '01-10-2026 to 31-10-2026', to: 'attacker@example.com' }, file: { mimetype: 'application/pdf', buffer: Buffer.from('%PDF-1.4\npreview content') } };
   const res = () => ({ code: 200, status(code) { this.code = code; return this; }, json(body) { this.body = body; return this; } });
   return { handler, sent, queries, transports, req, res };
@@ -52,7 +52,7 @@ test('MilesWeb uses STARTTLS on 587 and implicit TLS on 465 with dedicated crede
     const res = s.res(); await s.handler.send(s.req, res);
     assert.equal(res.code, 200);
     const options = s.transports[0];
-    assert.equal(options.host, 'timecablevision.in');
+    assert.equal(options.host, 'server.timecablevision.in');
     assert.equal(options.port, port); assert.equal(options.secure, port === 465);
     assert.equal(options.requireTLS, true);
     assert.deepEqual(options.auth, { user: sender, pass: 'mailbox-test' });
@@ -81,5 +81,26 @@ test('SMTP failures identify safe corrective action without exposing server resp
     assert.equal(res.code, 502); assert.match(res.body.message, expected);
     assert.doesNotMatch(res.body.message, /secret-test/);
     assert.equal(s.transports[0].tls?.rejectUnauthorized, undefined);
+  }
+});
+
+test('multiple saved recipients are previewed, deduplicated and all must be accepted', async () => {
+  const record = { ...row, additional_emails: 'billing@example.com; CUSTOMER@example.com' };
+  for (const [accepted, expected] of [[[row.email, 'billing@example.com'], 200], [[row.email], 502]]) {
+    const s = setup(record, undefined, false, accepted), preview = s.res();
+    await s.handler.preview(s.req, preview);
+    assert.equal(preview.body.to, 'CUSTOMER@example.com, billing@example.com');
+    s.req.body.preview_to = preview.body.to;
+    const res = s.res(); await s.handler.send(s.req, res);
+    assert.equal(res.code, expected);
+    assert.equal(s.sent[0].to, preview.body.to);
+  }
+});
+
+test('changed or invalid additional emails cannot be sent using an old preview', async () => {
+  for (const [additional_emails, expected] of [['billing@example.com', 409], ['bad', 400], ['billing@example.com\r\nBcc: other@example.com', 400]]) {
+    const s = setup({ ...row, additional_emails }), res = s.res();
+    await s.handler.send(s.req, res);
+    assert.equal(res.code, expected); assert.equal(s.sent.length, 0);
   }
 });

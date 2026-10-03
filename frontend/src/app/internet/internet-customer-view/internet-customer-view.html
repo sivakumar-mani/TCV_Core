@@ -291,7 +291,8 @@
       ><label>Net ID<input [(ngModel)]="customerForm.net_id" /></label
       ><label>Password<input type="password" required [(ngModel)]="customerForm.network_password" /></label
       ><label>Mobile No<input maxlength="10" [(ngModel)]="customerForm.mobile_no" /></label
-      ><label>Email<input type="email" maxlength="254" [(ngModel)]="customerForm.email" /></label
+      ><label>Primary Email<input type="email" maxlength="254" [(ngModel)]="customerForm.email" /></label
+      ><label>Additional Invoice Emails<textarea rows="3" maxlength="5120" [(ngModel)]="customerForm.additional_emails" placeholder="accounts@example.com, manager@example.com"></textarea><small>Separate addresses with commas. Invoices go to the primary email and all additional emails (maximum 20).</small></label
       ><label
         >Alternate Mobile<input
           maxlength="10"

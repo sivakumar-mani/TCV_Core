@@ -148,6 +148,7 @@ export class InternetCustomerView {
           network_password: r.customer?.network_password || '',
           mobile_no: r.customer?.mobile_no,
           email: r.customer?.email || '',
+          additional_emails: r.customer?.additional_emails || '',
           alternate_mobile_no: r.customer?.alternate_mobile_no || '',
           aadhaar_no: r.customer?.aadhaar_no || '',
           source_name: r.customer?.source_name,

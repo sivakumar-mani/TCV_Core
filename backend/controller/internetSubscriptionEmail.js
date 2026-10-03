@@ -22,12 +22,13 @@ module.exports = (connection, ensureSchema, mailer = nodemailer, env = process.e
   async function details(req) {
     const db = connection.promise();
     await ensureSchema(db);
-    const [[row]] = await db.query(`SELECT c.email, s.start_date, s.end_date
+    const [[row]] = await db.query(`SELECT c.email, c.additional_emails, s.start_date, s.end_date
       FROM internet_subscriptions s JOIN internet_customers c ON c.internet_customer_id=s.internet_customer_id
       WHERE s.internet_subscription_id=? AND s.internet_customer_id=?`, [Number(req.params.subscriptionId), Number(req.params.id)]);
     if (!row) throw Object.assign(new Error('Internet subscription not found'), { status: 404 });
-    const to = String(row.email || '').trim();
-    if (!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(to)) throw Object.assign(new Error('Please register a valid customer email before sending the invoice'), { status: 400 });
+    const addresses = [String(row.email || '').trim(), ...String(row.additional_emails || '').split(/[,;]/).map(value => value.trim())].filter(Boolean);
+    if (!addresses.length || addresses.length > 21 || addresses.some(value => value.length > 254 || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(value))) throw Object.assign(new Error('Please register valid customer email addresses before sending the invoice'), { status: 400 });
+    const to = [...new Map(addresses.map(value => [value.toLowerCase(), value])).values()].join(', ');
     const start = dateLabel(row.start_date), end = dateLabel(row.end_date);
     if (!start || !end) throw Object.assign(new Error('Subscription billing dates are required'), { status: 400 });
     const period = `${start} to ${end}`;
@@ -49,7 +50,7 @@ module.exports = (connection, ensureSchema, mailer = nodemailer, env = process.e
         if (!req.file || req.file.mimetype !== 'application/pdf' || req.file.buffer.subarray(0, 5).toString() !== '%PDF-') return res.status(400).json({ message: 'A PDF invoice attachment is required' });
         const user = String(env.INVOICE_EMAIL_USER || sender).trim().toLowerCase();
         const pass = env.INVOICE_EMAIL_PASSWORD;
-        const host = String(env.INVOICE_SMTP_HOST || 'timecablevision.in').trim();
+        const host = String(env.INVOICE_SMTP_HOST || 'server.timecablevision.in').trim();
         const port = Number(env.INVOICE_SMTP_PORT || 587);
         if (user !== sender || !pass) return res.status(503).json({ message: 'Invoice email is not configured. Set INVOICE_EMAIL_PASSWORD to the MilesWeb mailbox password for tcvadmin@timecablevision.in on the server.' });
         if (!host || ![587, 465].includes(port)) return res.status(503).json({ message: 'Configure INVOICE_SMTP_HOST and INVOICE_SMTP_PORT (587 for STARTTLS or 465 for SSL/TLS).' });
@@ -58,7 +59,8 @@ module.exports = (connection, ensureSchema, mailer = nodemailer, env = process.e
         const result = await transport.sendMail({ from: { name: 'TIME CABLE VISION', address: sender }, to: email.to,
           subject: email.subject, text: email.text,
           attachments: [{ filename: `Internet_Invoice_${Number(req.params.subscriptionId)}.pdf`, content: req.file.buffer, contentType: 'application/pdf' }] });
-        if (!result.accepted?.some(address => String(address).toLowerCase() === email.to.toLowerCase())) throw new Error('Recipient not accepted');
+        const accepted = new Set((result.accepted || []).map(address => String(address).toLowerCase()));
+        if (!email.to.split(', ').every(address => accepted.has(address.toLowerCase()))) throw new Error('Not all recipients accepted');
         return res.json({ message: `Invoice email sent successfully to ${email.to}` });
       } catch (error) {
         return res.status(error.status || 502).json({ message: error.status ? error.message : smtpErrorMessage(error) });

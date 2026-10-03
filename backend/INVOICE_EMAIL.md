@@ -2,10 +2,12 @@
 
 The Subscription Details envelope action previews the email and PDF before the user clicks Send Email. The recipient and billing period are read from the saved customer/subscription. The attachment is the same PDF shown in the preview.
 
+In Customer Information, save a primary email and optionally up to 20 Additional Invoice Emails separated by commas. Invoice previews and sends include all saved addresses, with case-insensitive duplicates removed. Every recipient must be accepted by SMTP before the application reports success; on partial acceptance, check delivery logs before retrying to avoid duplicate invoices. The existing schema initializer adds the nullable `additional_emails` column without changing primary emails.
+
 Set these server environment variables (do not put credentials in frontend code or commit them):
 
 ```dotenv
-INVOICE_SMTP_HOST=timecablevision.in
+INVOICE_SMTP_HOST=server.timecablevision.in
 INVOICE_SMTP_PORT=587
 INVOICE_EMAIL_USER=tcvadmin@timecablevision.in
 INVOICE_EMAIL_PASSWORD="<MilesWeb mailbox password>"

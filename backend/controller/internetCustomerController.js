@@ -153,6 +153,7 @@ const initializeInternetSchema = async (db) => {
     ['internet_subscriptions', 'initial_account_id', 'BIGINT NULL'],
     ['internet_subscriptions', 'invoice_no', 'VARCHAR(100) NULL'],
     ['internet_customers', 'email', 'VARCHAR(254) NULL'],
+    ['internet_customers', 'additional_emails', 'TEXT NULL'],
     ['internet_connection_materials', 'discount', 'DECIMAL(12,2) NOT NULL DEFAULT 0'],
     ['internet_customer_routers', 'initial_account_id', 'BIGINT NULL'],
     ['internet_connections', 'initial_account_id', 'BIGINT NULL'],
@@ -433,9 +434,12 @@ const updateInternetCustomerInformation = async (req,res) => {
     const mobile=String(payload.mobile_no||'').trim(), alternate=String(payload.alternate_mobile_no||'').trim();
     const hasEmail = Object.prototype.hasOwnProperty.call(payload, 'email');
     const email = String(payload.email || '').trim();
+    const hasAdditionalEmails = Object.prototype.hasOwnProperty.call(payload, 'additional_emails');
+    const additionalEmails = typeof payload.additional_emails === 'string' ? payload.additional_emails.split(/[,;]/).map(value => value.trim()) : [];
     const aadhaar=String(payload.aadhaar_no||'').trim(), source=String(payload.source_name||'').trim();
     const installedBy=intOrNull(payload.installed_by_employee_id);
     const validationErrors = [];
+    if (hasAdditionalEmails && (typeof payload.additional_emails !== 'string' || (payload.additional_emails.trim() && (additionalEmails.length > 20 || additionalEmails.some(value => value.length > 254 || !/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(value)))))) validationErrors.push('Enter valid additional email addresses separated by commas (maximum 20)');
     if(!id) validationErrors.push('Select a valid customer');
     if(!['KRISHI','RAILWIRE','DMNET'].includes(network)) validationErrors.push('Select a valid Network');
     if(!fullName) validationErrors.push('Full Name is required');
@@ -455,7 +459,7 @@ const updateInternetCustomerInformation = async (req,res) => {
     if(duplicateNetId) return res.status(409).json({message:'Net ID is already assigned to another Internet customer'});
     const [[employee]]=await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1',[installedBy]);
     if(!employee) return res.status(400).json({message:'Select an active Installed By employee'});
-    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,${hasEmail ? 'email=?,' : ''}updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,password,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,...(hasEmail ? [email || null] : []),id]);
+    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,${hasEmail ? 'email=?,' : ''}${hasAdditionalEmails ? 'additional_emails=?,' : ''}updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,password,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,...(hasEmail ? [email || null] : []),...(hasAdditionalEmails ? [additionalEmails.filter(Boolean).join(', ') || null] : []),id]);
     if(!result.affectedRows) return res.status(404).json({message:'Internet customer not found'});
     return res.json({message:'Internet customer information updated successfully'});
   } catch(error){return res.status(500).json({message:'Internet customer information update failed',error:error.message});}
