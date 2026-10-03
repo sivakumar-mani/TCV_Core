@@ -3,21 +3,35 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import ts from 'typescript';
 const source = fs.readFileSync(new URL('../src/app/shared/internet-subscription-invoice-pdf.ts', import.meta.url), 'utf8');
-let blob;
+let blob, downloadedName;
 const context = vm.createContext({ exports: {}, TextEncoder, Blob, URL: { createObjectURL: value => { blob = value; return 'blob:test'; } },
-  document: { createElement: () => ({ click() {}, remove() {} }), body: { appendChild() {} } },
+  document: { createElement: () => ({ click() { downloadedName = this.download; }, remove() {} }), body: { appendChild() {} } },
   window: { setTimeout() {} }, fetch: async () => ({ ok: false })
 });
 vm.runInContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, context);
 const { internetSubscriptionInvoiceNumber: number, openInternetSubscriptionInvoicePdf: download } = context.exports;
-for (const network_type of ['KRISHI', 'RAILWIRE']) {
+for (const network_type of ['KRISHI', 'RAILWIRE', 'DMNET']) {
   for (const kind of ['PROVIDER', 'TCV']) {
-    const customer = { network_type };
-    const subscription = { subscription_year: 2026, internet_subscription_id: 12 };
-    assert.equal(number(kind, customer, subscription), `${kind === 'TCV' ? 'TCV-NET' : network_type}-2026-12`);
+    const customer = { network_type, full_name: 'magnum customer' };
+    const subscription = { subscription_year: 2026, internet_subscription_id: 12,
+      start_date: '2026-09-15', end_date: '2026-10-14', collect_date: '2026-10-03',
+      created_at: '2026-10-02', amount: 1657, payment_status: 'PENDING', paid_amount: 0, balance_amount: 1657 };
+    assert.equal(number(kind, customer, subscription), `${kind === 'TCV' ? 'TCV-NET' : network_type === 'KRISHI' ? 'KRISHI' : 'RAILWIRE'}-2026-12`);
     subscription.invoice_no = 'CUSTOM/2026-12';
     await download({ kind, customer, subscription, package: {}, address: '' });
-    assert.ok((await blob.text()).includes('(CUSTOM/2026-12)'));
+    const pdf = await blob.text();
+    assert.ok(pdf.includes('(CUSTOM/2026-12)'));
+    assert.ok(pdf.includes('(15-09-2026)'));
+    assert.ok(!pdf.includes('03-10-2026') && !pdf.includes('02-10-2026'));
+    assert.ok(!/Payment Details|Status:|Paid:|Balance:/.test(pdf));
+    assert.ok(pdf.includes('(***This is computer generated receipt no signature required ***)'));
+    assert.equal(downloadedName, 'magnum_Invoice_Sep2026.pdf');
+    const bankY = (kind === 'PROVIDER' ? network_type === 'KRISHI' ? 500 : 455 : 635) - 135;
+    assert.ok(pdf.includes(`38 ${bankY + 16} m 557 ${bankY + 16} l`));
+    assert.ok(pdf.includes(`${(38 + 557 - 27.734 * 8) / 2} ${bankY - 152} Td`));
+    assert.ok(pdf.includes(`${(38 + 557 - 17.447 * 9) / 2} ${bankY - 170} Td`));
+    assert.ok(pdf.includes('(Thank you for your prompt payment.)'));
+    assert.ok(pdf.includes('(GRAND TOTAL)') && pdf.includes('(1657.00)'));
   }
 }
 const viewSource = fs.readFileSync(new URL('../src/app/internet/internet-customer-view/internet-customer-view.ts', import.meta.url), 'utf8');

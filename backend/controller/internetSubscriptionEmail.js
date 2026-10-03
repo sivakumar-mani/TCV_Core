@@ -22,7 +22,7 @@ module.exports = (connection, ensureSchema, mailer = nodemailer, env = process.e
   async function details(req) {
     const db = connection.promise();
     await ensureSchema(db);
-    const [[row]] = await db.query(`SELECT c.email, c.additional_emails, s.start_date, s.end_date
+    const [[row]] = await db.query(`SELECT c.full_name, c.email, c.additional_emails, s.start_date, s.end_date
       FROM internet_subscriptions s JOIN internet_customers c ON c.internet_customer_id=s.internet_customer_id
       WHERE s.internet_subscription_id=? AND s.internet_customer_id=?`, [Number(req.params.subscriptionId), Number(req.params.id)]);
     if (!row) throw Object.assign(new Error('Internet subscription not found'), { status: 404 });
@@ -32,7 +32,11 @@ module.exports = (connection, ensureSchema, mailer = nodemailer, env = process.e
     const start = dateLabel(row.start_date), end = dateLabel(row.end_date);
     if (!start || !end) throw Object.assign(new Error('Subscription billing dates are required'), { status: 400 });
     const period = `${start} to ${end}`;
-    return { from: sender, to, period, subject: `TIME CABLE VISION - Internet Invoice - ${period}`,
+    const shortName = (String(row.full_name || '').trim().split(/\s+/)[0] || 'Customer')
+      .replace(/[<>:"/\\|?*\x00-\x1F]/g, '').replace(/[. ]+$/g, '').slice(0, 40) || 'Customer';
+    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Number(start.slice(3, 5)) - 1];
+    const filename = `${shortName}_Invoice_${month ? month + start.slice(6) : 'Undated'}.pdf`;
+    return { from: sender, to, period, filename, subject: `TIME CABLE VISION - Internet Invoice - ${period}`,
       text: `Dear Sir/Madam,\n\nGreetings from TIME CABLE VISION\n\nPlease find attached the invoice for the period ${period}.\n\nKindly review the attached invoice and let us know any queries.\n\nPlease feel free to contact us if you require any Complaints, clarification or additional information.\nCall us : 9962543540 / 9884543540\n\nThank you for your continued support and business.\n\nBest Regards,\nSivakumar M` };
   }
   return {
@@ -58,7 +62,7 @@ module.exports = (connection, ensureSchema, mailer = nodemailer, env = process.e
           auth: { user, pass }, connectionTimeout: 15000, socketTimeout: 30000 });
         const result = await transport.sendMail({ from: { name: 'TIME CABLE VISION', address: sender }, to: email.to,
           subject: email.subject, text: email.text,
-          attachments: [{ filename: `Internet_Invoice_${Number(req.params.subscriptionId)}.pdf`, content: req.file.buffer, contentType: 'application/pdf' }] });
+          attachments: [{ filename: email.filename, content: req.file.buffer, contentType: 'application/pdf' }] });
         const accepted = new Set((result.accepted || []).map(address => String(address).toLowerCase()));
         if (!email.to.split(', ').every(address => accepted.has(address.toLowerCase()))) throw new Error('Not all recipients accepted');
         return res.json({ message: `Invoice email sent successfully to ${email.to}` });

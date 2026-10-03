@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const factory = require('../controller/internetSubscriptionEmail');
 const sender = 'tcvadmin@timecablevision.in';
-const row = { email: 'customer@example.com', start_date: '2026-10-01', end_date: '2026-10-31' };
+const row = { full_name: 'magnum customer', email: 'customer@example.com', start_date: '2026-10-01', end_date: '2026-10-31' };
 function setup(record = row, env = { INVOICE_EMAIL_USER: sender, INVOICE_EMAIL_PASSWORD: 'test-only' }, failure = false, accepted = [record?.email]) {
   const sent = [], queries = [], transports = [];
   const handler = factory({ promise: () => ({ query: async (sql, params) => { queries.push({ sql, params }); return [record ? [record] : []]; } }) }, async () => {},
@@ -23,6 +23,7 @@ test('send uses registered recipient and attaches exact preview bytes', async ()
   assert.equal(res.code, 200); assert.match(res.body.message, /sent successfully/);
   assert.equal(s.sent[0].to, row.email); assert.equal(s.sent[0].from.address, sender);
   assert.equal(s.sent[0].attachments[0].content, s.req.file.buffer);
+  assert.equal(s.sent[0].attachments[0].filename, 'magnum_Invoice_Oct2026.pdf');
   assert.equal(s.queries.some(q => /UPDATE|INSERT|DELETE/.test(q.sql)), false);
 });
 test('missing customer, invalid email, stale preview, invalid PDF, wrong sender fail without sending', async () => {

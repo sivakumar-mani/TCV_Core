@@ -56,11 +56,12 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
   const taxable = amount / (1 + gstRate / 100);
   const halfTax = (amount - taxable) / 2;
   const invoiceNo = internetSubscriptionInvoiceNumber(kind, customer, subscription);
-  const invoiceDate = subscription?.collect_date || subscription?.created_at || new Date();
-  const generatedAt = new Date();
+  const invoiceDate = subscription?.start_date;
   const shortName = (String(customer?.full_name || '').trim().split(/\s+/)[0] || 'Customer')
     .replace(/[<>:"/\\|?*\x00-\x1F]/g, '').replace(/[. ]+$/g, '').slice(0, 40) || 'Customer';
-  const downloadName = `${shortName}_Invoice_${String(generatedAt.getMonth() + 1).padStart(2, '0')}${generatedAt.getFullYear()}.pdf`;
+  const periodParts = displayDate(subscription?.start_date).split('-');
+  const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Number(periodParts[1]) - 1];
+  const downloadName = `${shortName}_Invoice_${month ? month + periodParts[2] : 'Undated'}.pdf`;
   const packageName = packageRow?.package_name || 'Internet Subscription';
   let railwireLogo: Uint8Array | null = null;
   if (!isKrishi) {
@@ -173,15 +174,9 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
   text(300, tableTop - 84, 8, `SGST @ ${gstRate / 2}%`, true); rightText(549, tableTop - 84, 8, money(halfTax));
   text(300, tableTop - 101, 8, 'GRAND TOTAL', true); rightText(549, tableTop - 101, 8, money(amount), true);
 
-  const paymentY = tableTop - 135;
-  text(left, paymentY, 9, 'Payment Details', true);
-  text(left, paymentY - 18, 8, `Status: ${subscription?.payment_status || 'PENDING'}`);
-  text(210, paymentY - 18, 8, `Paid: ${money(subscription?.paid_amount)}`);
-  text(360, paymentY - 18, 8, `Balance: ${money(subscription?.balance_amount)}`);
-  line(left, paymentY - 32, right, paymentY - 32);
-
   // Shared payment instructions for both provider and TCV invoice downloads.
-  const bankY = paymentY - 52;
+  const bankY = tableTop - 135;
+  line(left, bankY + 16, right, bankY + 16);
   text(left, bankY, 10, 'Please transfer the amount:', true);
   [
     'CA No: 510909010042677',
@@ -195,8 +190,9 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
   ].forEach((value, index) => text(left, bankY - 18 - index * 14, 9, value, index === 0 || index === 7));
 
   line(left, bankY - 132, right, bankY - 132);
-  text(left, bankY - 152, 8, 'This is a computer generated invoice and does not require a signature.');
-  text(190, bankY - 170, 9, 'Thank you for your prompt payment.', true);
+  // Text widths in Helvetica font units keep both footer lines centered.
+  text((left + right - 27.734 * 8) / 2, bankY - 152, 8, '***This is computer generated receipt no signature required ***');
+  text((left + right - 17.447 * 9) / 2, bankY - 170, 9, 'Thank you for your prompt payment.', true);
 
   const encoder = new TextEncoder();
   const encode = (value: string) => encoder.encode(value);
