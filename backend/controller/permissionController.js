@@ -1,7 +1,7 @@
 const connection = require('../connection');
 const { permissionCatalog } = require('../utils/permissionCatalog');
 
-const roles = ['MANAGER', 'EMPLOYEE', 'SALES', 'SERVICE'];
+const roles = ['MANAGER', 'EMPLOYEE', 'SALES', 'SERVICE', 'SENIOR_MANAGER'];
 const query = (sql, params = []) => new Promise((resolve, reject) => {
   connection.query(sql, params, (error, rows) => error ? reject(error) : resolve(rows));
 });

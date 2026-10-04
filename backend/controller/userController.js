@@ -31,7 +31,7 @@ const validateCaptcha = (token, answer) => {
 
 const normalizeRole = (role) => {
   const value = String(role || 'EMPLOYEE').toUpperCase();
-  const allowed = ['ADMIN', 'MANAGER', 'EMPLOYEE', 'SALES', 'SERVICE'];
+  const allowed = ['ADMIN', 'MANAGER', 'EMPLOYEE', 'SALES', 'SERVICE', 'SENIOR_MANAGER'];
   if (value === 'USER' || value === 'STAFF') return 'EMPLOYEE';
   return allowed.includes(value) ? value : 'EMPLOYEE';
 };

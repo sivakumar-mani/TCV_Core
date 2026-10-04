@@ -9,7 +9,7 @@
   </div>
 
   <div class="role-tabs" aria-label="Select role">
-    <button *ngFor="let role of roles" type="button" [class.active]="selectedRole === role" (click)="selectedRole = role; buildMatrix()">{{ role | titlecase }}</button>
+    <button *ngFor="let role of roles" type="button" [class.active]="selectedRole === role" (click)="selectedRole = role; buildMatrix()">{{ role.replace('_', ' ') | titlecase }}</button>
   </div>
 
   <div class="permission-group" *ngFor="let group of groups()">

@@ -36,6 +36,7 @@ export class Signup {
   roleList = [
     { value: 'ADMIN', label: 'Admin' },
     { value: 'MANAGER', label: 'Manager' },
+    { value: 'SENIOR_MANAGER', label: 'Senior Manager' },
     { value: 'EMPLOYEE', label: 'Employee' },
     { value: 'SALES', label: 'Sales' },
     { value: 'SERVICE', label: 'Service' }
