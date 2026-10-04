@@ -12,10 +12,16 @@
         <option *ngFor="let network of lookups.networks || []" [value]="network.network_id">{{ network.network_code || network.network_name }}</option>
       </select>
     </label>
+    <label>CType
+      <select [(ngModel)]="filters.customerType" (ngModelChange)="applyFilters()">
+        <option value="">All Customer Types</option>
+        <option *ngFor="let type of customerTypeOptions" [value]="type">{{ titleCaseText(type) }}</option>
+      </select>
+    </label>
     <label>Status
       <select [(ngModel)]="filters.status" (ngModelChange)="applyFilters()">
         <option value="">All Statuses</option>
-        <option *ngFor="let status of statusOptions" [value]="status">{{ status === 'LEASE_LINE' ? 'Lease Line' : status }}</option>
+        <option *ngFor="let status of availableStatusOptions" [value]="status">{{ status === 'LEASE_LINE' ? 'Lease Line' : status }}</option>
       </select>
     </label>
     <button type="button" class="reset-btn" (click)="resetFilters()">Clear</button>

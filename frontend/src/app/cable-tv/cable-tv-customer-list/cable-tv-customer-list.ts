@@ -1,3 +1,4 @@
+import { CustomerSelectFloatingFilter } from './customer-select-floating-filter';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component, NgZone } from '@angular/core';
@@ -30,8 +31,10 @@ export class CableTvCustomerList {
     mobile: '',
     areaId: '',
     streetId: '',
+    customerType: '',
     status: ''
   };
+  readonly customerTypes = ['REGULAR', 'BUSINESS', 'FREE', 'LEASE_LINE'];
   readonly statusOptions = ['ACTIVE', 'DISCONNECTED', 'FREE', 'LEASE_LINE', 'RETRIEVED', 'INACTIVE', 'SHIFTED', 'TRANSFERRED'];
   readonly customerActions = [
     { label: 'View', action: (row: any) => this.viewCustomer(row) },
@@ -54,11 +57,10 @@ export class CableTvCustomerList {
     { field: 'customer_code', headerName: 'Cust No', width: 92, minWidth: 92, maxWidth: 92, flex: 0 },
     { field: 'legacy_customer_no', headerName: 'Old C No', width: 100, minWidth: 100, maxWidth: 100, flex: 0 },
     { field: 'network_display', headerName: 'Network', width: 100, minWidth: 100, maxWidth: 100, flex: 0, valueFormatter: (params: any) => this.titleCaseText(params.value), filter: 'agTextColumnFilter', filterParams: { filterOptions: ['equals'], defaultOption: 'equals', buttons: ['reset'], maxNumConditions: 1 } },
-    { field: 'customer_type', headerName: 'CType', width: 92, minWidth: 92, maxWidth: 92, flex: 0, valueFormatter: (params: any) => this.titleCaseText(params.value) },
     { field: 'full_name', headerName: 'Full Name', minWidth: 180, valueFormatter: (params: any) => this.titleCaseText(params.value) },
+    { field: 'stb_no', headerName: 'STB Number', width: 150, minWidth: 150, maxWidth: 150, flex: 0, valueFormatter: (params: any) => params.value || '-' },
     { field: 'address_display', headerName: 'Address', minWidth: 240, valueFormatter: (params: any) => this.titleCaseText(params.value) },
     { field: 'mobile_display', headerName: 'Mobile No', minWidth: 180 },
-    { field: 'stb_no', headerName: 'STB Number', width: 150, minWidth: 150, maxWidth: 150, flex: 0, valueFormatter: (params: any) => params.value || '-' },
     { field: 'installed_date', headerName: 'Installed Date', width: 120, minWidth: 120, maxWidth: 120, flex: 0, valueFormatter: (params: any) => this.formatDate(params.value) || '-' },
     {
       headerName: 'Package',
@@ -85,6 +87,7 @@ export class CableTvCustomerList {
         return wrapper;
       }
     },
+    { field: 'customer_type', headerName: 'CType', width: 92, minWidth: 92, maxWidth: 92, flex: 0, filter: 'agTextColumnFilter', filterParams: { filterOptions: ['equals'], defaultOption: 'equals', buttons: ['reset'], maxNumConditions: 1 }, floatingFilterComponent: CustomerSelectFloatingFilter, floatingFilterComponentParams: { options: () => this.customerTypeOptions, formatLabel: (value: string) => this.titleCaseText(value) }, valueFormatter: (params: any) => this.titleCaseText(params.value) },
     {
       field: 'status',
       headerName: 'Status',
@@ -100,6 +103,8 @@ export class CableTvCustomerList {
         return pill;
       },
       filter: 'agTextColumnFilter',
+      floatingFilterComponent: CustomerSelectFloatingFilter,
+      floatingFilterComponentParams: { options: () => this.availableStatusOptions, formatLabel: (value: string) => this.titleCaseText(value) },
       filterParams: { filterOptions: ['equals'], defaultOption: 'equals', buttons: ['reset'], maxNumConditions: 1 }
     }
   ];
@@ -126,6 +131,14 @@ export class CableTvCustomerList {
       this.loadLookups();
       this.loadCustomers();
     });
+  }
+
+  get customerTypeOptions(): string[] {
+    return [...new Set([...this.customerTypes, ...this.allCustomers.map(customer => String(customer.customer_type || '').trim()).filter(Boolean)])];
+  }
+
+  get availableStatusOptions(): string[] {
+    return [...new Set([...this.statusOptions, ...this.allCustomers.map(customer => String(customer.status || '').trim()).filter(Boolean)])];
   }
 
   get streetOptions() {
@@ -172,13 +185,14 @@ export class CableTvCustomerList {
       if (this.filters.customerNo && !text(customer.customer_code).includes(text(this.filters.customerNo))) return false;
       if (this.filters.oldCustomerNo && !text(customer.legacy_customer_no).includes(text(this.filters.oldCustomerNo))) return false;
       if (this.filters.networkId && Number(customer.network_id) !== Number(this.filters.networkId)) return false;
-      if (this.filters.status && text(customer.status) !== text(this.filters.status).replace('_', ' ')) return false;
+      if (this.filters.customerType && text(customer.customer_type) !== text(this.filters.customerType)) return false;
+      if (this.filters.status && text(customer.status).replaceAll('_', ' ') !== text(this.filters.status).replaceAll('_', ' ')) return false;
       return true;
     });
   }
 
   resetFilters() {
-    this.filters = { customerNo: '', oldCustomerNo: '', networkId: '', name: '', mobile: '', areaId: '', streetId: '', status: '' };
+    this.filters = { customerNo: '', oldCustomerNo: '', networkId: '', name: '', mobile: '', areaId: '', streetId: '', customerType: '', status: '' };
     this.applyFilters();
   }
 
