@@ -53,3 +53,41 @@
 .subscription-modal .form-actions { gap: 12px; }
 .invoice-email-message { white-space: pre-wrap; font: inherit; }
 .invoice-email-preview { width: 100%; height: 60vh; border: 1px solid #ddd; }
+
+.tabs, .panel { margin-bottom: 0; }
+.customer-page { padding: 0; }
+
+.customer-name-status {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 8px 0 6px;
+
+  h1 { margin: 0; }
+  // Override shared status-pill !important styles only for this header badge.
+  .summary-status {
+    border: 0 !important;
+    font-size: 11px !important;
+    padding: 6px 18px !important;
+  }
+  .summary-status[data-status='Active'] { background: #58e86d !important; color: #146c32 !important; }
+  .summary-status[data-status='Disconnected'] { background: #fee2e2 !important; color: #b42318 !important; }
+  .summary-status[data-status='Rejected'] { background: #fee2e2 !important; color: #b42318 !important; }
+  .summary-status[data-status='Waiting Approval'],
+  .summary-status[data-status='Pending Payment'] { background: #fff1cc !important; color: #8a5b00 !important; }
+}
+
+.section-header {
+  align-items: center;
+  border-bottom: 1px solid #e3e8ef;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 0 -18px 16px;
+  padding: 12px 18px;
+
+  h2 { border: 0; margin: 0; padding: 0; }
+  .add-history-bar { margin: 0 0 0 auto; }
+}

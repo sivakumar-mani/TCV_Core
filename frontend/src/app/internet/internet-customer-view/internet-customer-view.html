@@ -26,13 +26,15 @@
         <div class="customer-number-line">
           <strong>Cust No : {{ customerNumber() || '-' }}</strong>
         </div>
-        <h1>{{ details.customer?.full_name || 'Internet Customer' }}</h1>
+        <div class="customer-name-status">
+          <h1>{{ details.customer?.full_name || 'Internet Customer' }}</h1>
+          <strong class="summary-status" [attr.data-status]="headerStatus()">{{ headerStatus() }}</strong>
+        </div>
         <p class="address-line">{{ address() || '-' }}</p>
       </div>
       <div class="summary-meta">
         <div><span>Net ID:</span><strong class="copyable-value">{{ details.customer?.net_id || '-' }}</strong></div>
         <div><span>Network Type:</span><strong>{{ details.customer?.network_type || '-' }}</strong></div>
-        <div><span>Status:</span><strong class="summary-status" [attr.data-status]="headerStatus()">{{ headerStatus() }}</strong></div>
         <div><span>Install Date:</span><strong>{{ (details.customer?.installed_date | date: 'dd-MM-yyyy') || '-' }}</strong></div>
       </div>
     </div>
@@ -55,23 +57,28 @@
       Customer Information
     </button>
   </nav>
-  <div class="add-history-bar" *ngIf="activeTab !== 'customer'">
-    <button type="button" [disabled]="!canAddHistory()" (click)="openAdd()">
-      Add
-      {{
-        activeTab === 'subscription'
-          ? 'Subscription'
-          : activeTab === 'router'
-            ? 'Router'
-            : activeTab === 'connection'
-              ? 'Connection Details'
-              : 'Package'
-      }}
-    </button>
-  </div>
+  <ng-template #addHistoryAction>
+    <div class="add-history-bar">
+      <button type="button" [disabled]="!canAddHistory()" (click)="openAdd()">
+        Add
+        {{
+          activeTab === 'subscription'
+            ? 'Subscription'
+            : activeTab === 'router'
+              ? 'Router'
+              : activeTab === 'connection'
+                ? 'Connection Details'
+                : 'Package'
+        }}
+      </button>
+    </div>
+  </ng-template>
 
   <section class="panel" *ngIf="activeTab === 'subscription'">
-    <h2>Subscription Details</h2>
+    <div class="section-header">
+      <h2>Subscription Details</h2>
+      <ng-container *ngTemplateOutlet="addHistoryAction"></ng-container>
+    </div>
     <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <div class="table-wrap">
       <table>
@@ -125,7 +132,10 @@
   </section>
 
   <section class="panel" *ngIf="activeTab === 'router'">
-    <h2>Router Details</h2>
+    <div class="section-header">
+      <h2>Router Details</h2>
+      <ng-container *ngTemplateOutlet="addHistoryAction"></ng-container>
+    </div>
     <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <div class="table-wrap">
       <table>
@@ -176,7 +186,10 @@
   </section>
 
   <section class="panel" *ngIf="activeTab === 'connection'">
-    <h2>Connection Details</h2>
+    <div class="section-header">
+      <h2>Connection Details</h2>
+      <ng-container *ngTemplateOutlet="addHistoryAction"></ng-container>
+    </div>
     <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <div class="table-wrap">
       <table>
@@ -226,7 +239,10 @@
   </section>
 
   <section class="panel" *ngIf="activeTab === 'package'">
-    <h2>Package Details</h2>
+    <div class="section-header">
+      <h2>Package Details</h2>
+      <ng-container *ngTemplateOutlet="addHistoryAction"></ng-container>
+    </div>
     <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <div class="table-wrap">
       <table>
