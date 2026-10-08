@@ -24,6 +24,7 @@ export class NetSubscriptionPending {
   customer: any = null;
   saving = false;
   form: any = {};
+  private customStartDate = false;
   monthNames = [
     'January',
     'February',
@@ -80,6 +81,7 @@ export class NetSubscriptionPending {
     this.load();
   }
   open(c: any, s: any) {
+    this.customStartDate = false;
     this.customer = c;
     const employee = this.lookups.logged_in_employee_id || this.permissions.employeeId();
     const cashAdminLocked = Number(s.cash_admin_locked) === 1;
@@ -155,6 +157,10 @@ export class NetSubscriptionPending {
     this.calculate();
   }
   collectorChanged() { this.form.payment_mapped_employee_id = this.form.collected_by_employee_id; }
+  startDateChanged() {
+    this.customStartDate = true;
+    this.calculate();
+  }
   calculateAssignment() {
     if (!this.selected || !this.form.start_date) return;
     const f=this.form, end=new Date(`${f.start_date}T00:00:00Z`);
@@ -185,13 +191,14 @@ export class NetSubscriptionPending {
       network = String(this.customer?.network_type || '').toUpperCase(),
       value = Math.max(Number(f.period_value) || 1, 1),
       free = Math.max(Number(f.free_period_value) || 0, 0);
-    const start = new Date(
+    const start = this.customStartDate ? new Date(`${f.start_date}T00:00:00Z`) : new Date(
       Date.UTC(
         Number(f.subscription_year),
         Number(f.subscription_month) - 1,
         network === 'KRISHI' ? 16 : 1,
       ),
     );
+    if (!Number.isFinite(start.getTime())) return;
     const daysInMonth = new Date(start.getUTCFullYear(), start.getUTCMonth() + 1, 0).getDate(),
       count =
         f.period_unit === 'YEAR'
@@ -203,7 +210,8 @@ export class NetSubscriptionPending {
     if (f.period_unit === 'DAYS') end.setUTCDate(end.getUTCDate() + value - 1);
     else if (network === 'KRISHI') {
       end.setUTCMonth(end.getUTCMonth() + count);
-      end.setUTCDate(15);
+      if (this.customStartDate) end.setUTCDate(end.getUTCDate() - 1);
+      else end.setUTCDate(15);
     } else end.setUTCDate(end.getUTCDate() + count * 30 - 1);
     if (f.free_period_unit === 'DAYS') end.setUTCDate(end.getUTCDate() + free);
     else if (network === 'KRISHI')
@@ -223,6 +231,8 @@ export class NetSubscriptionPending {
   }
   save() {
     if (this.assignCollector) { this.saveAssignment(); return; }
+    if (this.customStartDate && !Number.isFinite(new Date(`${this.form.start_date}T00:00:00Z`).getTime()))
+      return this.snackbar.openSnackbar('Select a valid Start Date', globalConstants.errorRegex);
     this.calculate();
     const received =
       (Number(this.form.paid_amount) || 0) - (Number(this.selected?.paid_amount) || 0);

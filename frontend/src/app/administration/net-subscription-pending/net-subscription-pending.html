@@ -140,7 +140,7 @@
               <option value="YEAR">Year</option>
             </select>
           </div></label
-        ><label>Start Date<input type="date" [(ngModel)]="form.start_date" [disabled]="!assignCollector" (ngModelChange)="calculateAssignment()" /></label
+        ><label>Start Date<input type="date" [(ngModel)]="form.start_date" required (ngModelChange)="startDateChanged()" /></label
         ><label>End Date<input type="date" [(ngModel)]="form.end_date" disabled /></label
         ><label>Subscription Amount<input type="number" [(ngModel)]="form.amount" disabled /></label
         ><label
