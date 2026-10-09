@@ -1,0 +1,20 @@
+<section class="tracker">
+  <header><div><h1>{{ admin ? 'Employee live tracking' : 'My mobile tracker' }}</h1><p>Work locations, duty sessions and field visits</p></div><button (click)="refresh()">Refresh</button></header>
+  <p class="notice" role="status" *ngIf="message">{{ message }}</p>
+  <div class="duty" *ngIf="!admin">
+    <strong>{{ session ? 'On duty' : 'Off duty' }}</strong>
+    <p>{{ native ? 'Android tracks during duty with an ongoing notification.' : 'Browser tracking works while this page stays active. Use the Android app for tracking with the screen locked.' }}</p>
+    <label *ngIf="!session"><input type="checkbox" [(ngModel)]="consent"> I agree to share my work location with the office during duty.</label>
+    <button *ngIf="!session" [disabled]="!consent || busy" (click)="start()">Start Duty</button>
+    <button *ngIf="session" (click)="resume()">Resume location collection</button>
+    <button *ngIf="session" [disabled]="busy" (click)="stop()">End Duty</button>
+    <div *ngIf="session"><input aria-label="Visit or event remarks" maxlength="1000" [(ngModel)]="remarks" placeholder="Customer / visit remarks"><button (click)="event('CHECK_IN')">Check in</button><button (click)="event('CHECK_OUT')">Check out</button><button (click)="event('VISIT')">Record visit</button><button class="sos" (click)="event('SOS')">SOS</button></div>
+  </div>
+  <div class="live" *ngIf="admin"><div class="employees"><button *ngFor="let e of employees" (click)="select(e)" [class.selected]="selected?.employee_id === e.employee_id"><strong>{{ e.employee_name }}</strong><span>{{ e.tracking_status }} · {{ e.recorded_at ? (e.recorded_at | date:'short') : 'No duty location' }}</span><span *ngIf="e.battery_level != null">Battery {{ e.battery_level }}% · {{ e.network_type }}</span></button><p *ngIf="!employees.length">No employees available.</p></div><div><h2>{{ selected?.employee_name || 'Select an employee' }}</h2><iframe *ngIf="mapUrl" [src]="mapUrl" title="Employee location on OpenStreetMap"></iframe><p *ngIf="!mapUrl">No current duty location available.</p><p>Refreshes every 30 seconds. STALE means no location received in five minutes.</p></div></div>
+  <iframe *ngIf="!admin && mapUrl" [src]="mapUrl" title="My current location"></iframe>
+  <div *ngIf="!admin || selected" class="history"><h2>Duty and route history</h2><label>UTC date <input type="date" [(ngModel)]="date" (change)="loadHistory()"></label><button (click)="exportCsv()" [disabled]="!history.locations.length">Export route CSV</button>
+    <h3>Duty sessions</h3><p *ngFor="let s of history.sessions">{{ s.started_at | date:'medium' }} → {{ s.ended_at ? (s.ended_at | date:'medium') : 'On duty' }}</p><p *ngIf="!history.sessions.length">No duty sessions for this date.</p>
+    <h3>Visits, check-ins and SOS</h3><p *ngFor="let e of history.events"><strong>{{ e.kind }}</strong> · {{ e.created_at | date:'short' }} · {{ e.remarks }}</p>
+    <h3>Route points ({{ history.locations.length }})</h3><div class="table-wrap"><table><thead><tr><th>Time</th><th>Latitude</th><th>Longitude</th><th>Accuracy</th><th>Map</th></tr></thead><tbody><tr *ngFor="let p of history.locations"><td>{{ p.recorded_at | date:'mediumTime' }}</td><td>{{ p.latitude }}</td><td>{{ p.longitude }}</td><td>{{ p.accuracy }} m</td><td><button (click)="showMap(p)">View</button></td></tr></tbody></table></div>
+  </div>
+</section>

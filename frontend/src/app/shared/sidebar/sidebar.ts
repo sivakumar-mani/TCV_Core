@@ -16,6 +16,7 @@ export class Sidebar {
   expandedGroup = '';
   readonly panelOpenState = signal(false);
   readonly groups = [
+    { label: 'Employee Tracking', icon: 'bi-geo-alt', items: [['My Mobile Tracker', '/tracker', 'EMPLOYEE_TRACKER'], ['Live Employee Tracking', '/tracker-admin', 'EMPLOYEE_TRACKER_ADMIN']] },
     { label: 'Business Partners', icon: 'bi-people', items: [['CCTV Customer', '/customers', 'CUSTOMERS'], ['Cable TV Customers', '/cable-tv/customers', 'CABLE_TV_CUSTOMERS'], ['Internet Customers', '/internet/customers', 'INTERNET_CUSTOMERS'], ['Suppliers', '/suppliers', 'SUPPLIERS']] },
     { label: 'Inventory', icon: 'bi-box-seam', items: [['Brands', '/brands', 'BRANDS'], ['Categories', '/categoriesLists', 'CATEGORIES'], ['Products', '/productList', 'PRODUCTS'], ['Stock', '/stock', 'STOCK'], ['Stock Quick View', '/stock-quick-view', 'STOCK'], ['Purchases', '/purchases', 'PURCHASES']] },
     { label: 'Sales', icon: 'bi-receipt', items: [['Quotations', '/quotations', 'QUOTATIONS'], ['Sales Invoices', '/sales', 'SALES'], ['Material Sales', '/material-sales', 'MATERIAL_SALES'], ['Work Orders', '/work-orders', 'WORK_ORDERS'], ['Customer Payments', '/customer-payments', 'CUSTOMER_PAYMENTS'], ['Supplier Payments', '/supplier-payments', 'SUPPLIER_PAYMENTS']] },

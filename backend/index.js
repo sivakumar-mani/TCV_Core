@@ -35,6 +35,9 @@ const app = express()
 app.use(cors());
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
+// Isolated tracker routes authorize themselves; existing API guards are unchanged.
+app.use('/api/tracker', require('./tracker/router').createTrackerRouter(require('./connection')));
+app.use('/api/v1/tracker', require('./tracker/router').createTrackerRouter(require('./connection')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/permissions', permissionRoute);

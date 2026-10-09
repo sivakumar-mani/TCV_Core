@@ -16,6 +16,17 @@ export const routes: Routes = [
         loadComponent: () => import('./layout/layout').then(n =>n.Layout),
        children:[
         {
+            path: 'tracker',
+            loadComponent: () => import('./tracker/tracker').then(m => m.Tracker),
+            canActivate: [RouteGuard]
+        },
+        {
+            path: 'tracker-admin',
+            loadComponent: () => import('./tracker/tracker').then(m => m.Tracker),
+            canActivate: [RouteGuard],
+            data: { trackerAdmin: true }
+        },
+        {
             path:'dashboard',
             loadComponent: ()=> import('./dashboard/dashboard').then(n => n.Dashboard),
             canActivate:[RouteGuard],
