@@ -89,7 +89,12 @@ export class CableTvSubscriptionReport {
   }
   get pageTotal() { return this.pageRows.reduce((sum, row) => sum + Math.round(Number(row.paid_amount) || 0), 0); }
   get paymentModeBreakdown() {
-    const totals = this.rows.reduce((result: Record<string, number>, row: any) => {
+    return this.modeTotals(this.rows);
+  }
+  get pagePaymentModeBreakdown() { return this.modeTotals(this.pageRows); }
+
+  private modeTotals(rows: any[]) {
+    const totals = rows.reduce((result: Record<string, number>, row: any) => {
       const rawMode = String(row.payment_mode || 'CASH').toUpperCase();
       const mode = ['CASH', 'ONLINE', 'OFFICE'].includes(rawMode) ? rawMode : 'OTHER';
       result[mode] = (result[mode] || 0) + Math.round(Number(row.paid_amount) || 0);
@@ -159,24 +164,41 @@ export class CableTvSubscriptionReport {
   printReport() {
     const popup = window.open('', '_blank', 'width=1200,height=800');
     if (!popup) return this.showError('Allow pop-ups to print the report');
-    const rows = this.rows.map((row, index) => `<tr>
-      <td>${index + 1}</td><td>${this.escapeHtml(this.displayDate(row.collect_date))}</td>
+    const renderRows = (pageRows: any[], offset: number) => pageRows.map((row, index) => `<tr>
+      <td>${offset + index + 1}</td><td>${this.escapeHtml(this.displayDate(row.collect_date))}</td>
       <td>${this.escapeHtml(this.customerNumber(row))}</td><td>${this.escapeHtml(row.collected_by_name || '-')}</td><td>${this.escapeHtml(row.full_name)}</td>
       <td>${this.escapeHtml(row.network_code || row.network_name || '-')}</td>
       <td>${this.escapeHtml(this.monthLabel(row))}</td><td>${Math.round(Number(row.number_of_days) || 0)}</td>
-      <td>${this.escapeHtml(this.paymentType(row))}</td><td>${this.escapeHtml(row.mapped_employee_name || '-')}</td><td class="number">${this.count(row.received_count)}</td>
+      <td>${this.escapeHtml(this.paymentType(row))}</td><td class="number">${this.count(row.received_count)}</td>
       <td class="number">${this.amount(row.balance_amount)}</td><td class="number">${this.amount(row.paid_amount)}</td>
     </tr>`).join('');
+    const modeRow = (rows: any[]) => this.modeTotals(rows).map(item =>
+      `<span>${this.escapeHtml(item.label)}: <strong>${this.amount(item.amount)}</strong></span>`
+    ).join('');
+    const pages = Array.from({ length: this.pageCount }, (_, pageIndex) => {
+      const offset = pageIndex * this.pageSize;
+      const pageRows = this.rows.slice(offset, offset + this.pageSize);
+      const total = pageRows.reduce((sum, row) => sum + Math.round(Number(row.paid_amount) || 0), 0);
+      return `<section class="print-page"><h2>Page ${pageIndex + 1} of ${this.pageCount}</h2>
+        <table><thead><tr><th>S.No</th><th>Collected Date</th><th>C No/Old C No</th><th>Collected By</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
+        <tbody>${renderRows(pageRows, offset) || '<tr><td colspan="12">No records found.</td></tr>'}</tbody></table>
+        <div class="totals-row page-totals">${modeRow(pageRows)}<span>Page Total: <strong>${this.amount(total)}</strong></span></div>
+        ${pageIndex === this.pageCount - 1 ? `<div class="report-summary"><h2>Full Report Totals</h2><div class="totals-row">${modeRow(this.rows)}<span>Grand Total: <strong>${this.amount(this.summary.total_amount)}</strong></span><span>Count: <strong>${this.count(this.summary.total_count)}</strong></span></div></div>` : ''}
+      </section>`;
+    }).join('');
     popup.document.write(`<!doctype html><html><head><title>CATV Subscription Report</title><style>
-      body{font-family:Arial,sans-serif;color:#172033;margin:22px}h1{color:#0878ee;font-size:25px}
-      .meta{display:flex;gap:32px;margin:16px 0;font-weight:700}table{border-collapse:collapse;width:100%}
-      th{background:#0878ee;color:#fff}th,td{border:1px solid #b8c1cc;padding:8px;text-align:left}.number{text-align:right}
-      tfoot td{font-weight:700}@media print{button{display:none}}
+      body{font-family:Arial,sans-serif;color:#172033;margin:0}h1{color:#0878ee;font-size:20px}
+      .meta{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0;font-weight:700;font-size:10px}
+      table{border-collapse:collapse;table-layout:auto;width:auto;max-width:100%}
+      th{background:#0878ee;color:#fff}th,td{border:1px solid #b8c1cc;padding:3px 2px;text-align:left;font-size:9px;overflow-wrap:anywhere}
+      th:first-child,td:first-child,.number{white-space:nowrap;width:1%}.number{text-align:right}
+      h2{font-size:12px}.totals-row{display:flex;justify-content:space-between;gap:8px;font-size:10px}
+      .page-totals{padding:12px 0}.report-summary{border:1px solid #b8c1cc;padding:12px;margin-top:16px;break-inside:avoid}
+      @page{size:A4 portrait;margin:8mm}thead{display:table-header-group}tr{break-inside:avoid}
+      @media print{.print-page + .print-page{break-before:page}}
     </style></head><body><h1>CATV Subscription Report</h1>
       <div class="meta"><span>Collected By: ${this.escapeHtml(this.collectorLabel)}</span><span>Network: ${this.escapeHtml(this.networkLabel)}</span><span>Customer Type: ${this.escapeHtml(this.customerTypeLabel)}</span><span>Period: ${this.escapeHtml(this.displayDate(this.filters.start_date))} to ${this.escapeHtml(this.displayDate(this.filters.end_date))}</span></div>
-      <table><thead><tr><th>S.No</th><th>Collected Date</th><th>C No/Old C No</th><th>Collected By</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Mapped</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="13">No records found.</td></tr>'}</tbody>
-      <tfoot>${this.paymentModeBreakdown.map(item => `<tr><td colspan="12">${this.escapeHtml(item.label)}</td><td class="number">${this.amount(item.amount)}</td></tr>`).join('')}<tr><td colspan="9">Total Records: ${this.summary.total_records}</td><td>Grand Total</td><td class="number">${this.summary.total_count}</td><td class="number">${this.amount(this.summary.total_balance)}</td><td class="number">${this.amount(this.summary.total_amount)}</td></tr></tfoot></table>
+      ${pages}
       <script>window.onload=()=>window.print();<\/script></body></html>`);
     popup.document.close();
   }

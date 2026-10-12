@@ -4,6 +4,10 @@
       <p class="eyebrow">Internet Accounts</p>
       <h1>{{ assignCollector ? 'Assign Net Collector' : 'Net Subscription' }}</h1>
     </div>
+    <div class="actions" *ngIf="!assignCollector">
+      <button type="button" class="primary" [disabled]="!customers.length" (click)="exportExcel()">Export Excel</button>
+      <button type="button" [disabled]="!customers.length" (click)="printReport()">Print</button>
+    </div>
   </div>
   <section class="filter-card">
     <label>C No<input [(ngModel)]="filters.customer_no" (keyup.enter)="load()" /></label

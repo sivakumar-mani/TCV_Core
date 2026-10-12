@@ -1,4 +1,5 @@
 import { ApiSelectDirective } from '../../shared/api-select.directive';
+import { printSubscriptionReport } from '../../shared/subscription-report';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -147,6 +148,18 @@ export class CableTvSubscriptionPending {
 
   areaChanged() {
     this.filters.street_id = '';
+  }
+
+  printReport() {
+    const headers = ['S No', 'C No', 'Old C No', 'Customer Name', 'STB Number', 'Package Amount', 'Balance Month'];
+    const rows = this.customers.map((customer, index) => [
+      index + 1, customer.customer_code, customer.legacy_customer_no || '-', customer.full_name,
+      customer.stb_no || '-', Math.round(Number(customer.package_amount) || 0),
+      (customer.pending_months || []).map((month: any) => this.monthLabel(month.subscription_month, month.subscription_year)).join(', ')
+    ]);
+    if (!printSubscriptionReport('CATV Subscription Pending', headers, rows)) {
+      this.snackbar.openSnackbar('Allow pop-ups to print the subscription report', globalConstants.errorRegex);
+    }
   }
 
   resetFilters() {

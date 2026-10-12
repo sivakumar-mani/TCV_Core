@@ -41,10 +41,9 @@
       </select>
     </label>
     <label>Connection Type
-      <select [(ngModel)]="connectionTypeFilter">
-        <option value="">All</option>
-        <option *ngFor="let type of connectionTypeOptions" [value]="type">{{ type }}</option>
-      </select>
+      <mat-select multiple [(ngModel)]="connectionTypeFilter" placeholder="All" aria-label="Connection Type">
+        <mat-option *ngFor="let type of connectionTypeOptions" [value]="type">{{ type }}</mat-option>
+      </mat-select>
     </label>
     <label>Installed By
       <select appApiSelect [(ngModel)]="installedByFilter" [disabled]="!permissions.isAdmin()">

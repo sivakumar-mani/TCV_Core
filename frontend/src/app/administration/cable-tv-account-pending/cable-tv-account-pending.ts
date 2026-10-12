@@ -1,5 +1,6 @@
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +14,7 @@ import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-cable-tv-account-pending',
-  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule],
+  imports: [ApiSelectDirective, MatMenuModule, MatSelectModule, CommonModule, FormsModule],
   templateUrl: './cable-tv-account-pending.html',
   styleUrl: './cable-tv-account-pending.scss'
 })
@@ -21,7 +22,7 @@ export class CableTvAccountPending {
   accounts: any[] = [];
   nameFilter = '';
   statusFilter = 'PENDING';
-  connectionTypeFilter = '';
+  connectionTypeFilter: string[] = [];
   connectionTypeOptions: string[] = [];
   installedByFilter = '';
   startDate = '';
@@ -94,10 +95,10 @@ export class CableTvAccountPending {
         const availableRows = Array.isArray(rows) ? rows : [];
         this.connectionTypeOptions = [...new Set<string>([
           ...availableRows.map((item: any) => this.connectionTypeLabel(item.connection_type)),
-          ...(this.connectionTypeFilter ? [this.connectionTypeFilter] : [])
+          ...this.connectionTypeFilter
         ])].sort();
-        this.accounts = this.connectionTypeFilter
-          ? availableRows.filter((item: any) => this.connectionTypeLabel(item.connection_type) === this.connectionTypeFilter)
+        this.accounts = this.connectionTypeFilter.length
+          ? availableRows.filter((item: any) => this.connectionTypeFilter.includes(this.connectionTypeLabel(item.connection_type)))
           : availableRows;
         const pending = Array.isArray(pendingRows) ? pendingRows : [];
         const partial = Array.isArray(partialRows) ? partialRows : [];
@@ -176,7 +177,7 @@ export class CableTvAccountPending {
   }
 
   resetFilters() {
-    this.connectionTypeFilter = '';
+    this.connectionTypeFilter = [];
     this.nameFilter = '';
     this.statusFilter = 'PENDING';
     this.installedByFilter = this.permissions.isAdmin()
@@ -456,7 +457,7 @@ export class CableTvAccountPending {
         <span>Installed By: ${this.escapeHtml(this.reportInstalledByLabel)}</span>
         <span>Start Date: ${this.escapeHtml(this.reportStartDateLabel)}</span>
         <span>End Date: ${this.escapeHtml(this.reportEndDateLabel)}</span>
-        <span>Connection Type: ${this.escapeHtml(this.connectionTypeFilter || 'All')}</span>
+        <span>Connection Type: ${this.escapeHtml(this.connectionTypeFilter.join(', ') || 'All')}</span>
         <span>Status: ${this.escapeHtml(this.statusFilter || 'ALL')}</span>
         <span>Printed: ${this.displayDate(new Date())}</span>
       </div>

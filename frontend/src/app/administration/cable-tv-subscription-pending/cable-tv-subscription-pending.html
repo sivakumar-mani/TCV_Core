@@ -4,7 +4,10 @@
       <p class="eyebrow">Cable TV Accounts</p>
       <h1>CATV Subscription</h1>
     </div>
-    <button type="button" class="primary" [disabled]="!customers.length" (click)="exportCsv()">Export CSV</button>
+    <div class="report-actions">
+      <button type="button" class="primary" [disabled]="!customers.length" (click)="exportCsv()">Export Excel</button>
+      <button type="button" class="secondary" [disabled]="!customers.length" (click)="printReport()">Print</button>
+    </div>
   </div>
 
   <section class="filter-card">

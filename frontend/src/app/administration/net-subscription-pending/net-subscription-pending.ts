@@ -1,4 +1,5 @@
 import { ApiSelectDirective } from '../../shared/api-select.directive';
+import { downloadSubscriptionReport, printSubscriptionReport } from '../../shared/subscription-report';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Component, inject } from '@angular/core';
@@ -79,6 +80,27 @@ export class NetSubscriptionPending {
   reset() {
     this.filters = { customer_no: '', net_id: '', customer_name: '', area_id: '', street_id: '' };
     this.load();
+  }
+  private readonly reportHeaders = ['S No', 'C No', 'Customer Name', 'Address', 'Network', 'Package Amount', 'Unpaid Subscription'];
+
+  private reportRows() {
+    return this.customers.map((c, index) => [
+      index + 1, c.display_customer_no, c.full_name, this.subscriptionAddress(c), c.network_type,
+      (Number(c.package_price) || 0).toFixed(2),
+      (c.pending_subscriptions || []).map((s: any) => this.monthYear(s)).join(', ')
+    ]);
+  }
+
+  exportExcel() {
+    if (this.assignCollector) return;
+    downloadSubscriptionReport(this.reportHeaders, this.reportRows(), `Net_Pending_Subscriptions_${this.today()}.csv`);
+  }
+
+  printReport() {
+    if (this.assignCollector) return;
+    if (!printSubscriptionReport('Net Subscription Pending', this.reportHeaders, this.reportRows())) {
+      this.snackbar.openSnackbar('Allow pop-ups to print the subscription report', globalConstants.errorRegex);
+    }
   }
   open(c: any, s: any) {
     this.customStartDate = false;

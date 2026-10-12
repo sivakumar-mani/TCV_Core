@@ -1,4 +1,7 @@
 :host { display: block; }
+.totals-row { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; }
+.report-summary { border: 1px solid #b8c1cc; border-radius: 8px; margin: 0 16px 16px; padding: 16px; }
+.report-summary > strong { display: block; margin-bottom: 12px; }
 .report-page { background: #f3f7fd; min-height: 100%; padding: 18px; }
 header h1 { color: #0878ee; font-size: 28px; font-weight: 500; margin: 0 0 16px; }
 .filter-card { align-items: end; background: #fff; border: 1px solid #e3e8ef; border-radius: 10px; display: grid; gap: 16px; grid-template-columns: 1.1fr 1fr .8fr .8fr 1fr 1fr auto; padding: 18px 22px; }
