@@ -1,3 +1,4 @@
+import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -84,7 +85,7 @@ export class StbPaymentReport {
   print() {
     const w = window.open('', '_blank');
     if (!w) return;
-    w.document.write(
+    writePrintDocument(w,
       `<h2>TIME CABLE VISION, Collector: ${this.collectorLabel}, Period: ${this.date(this.filters.start_date)} To ${this.date(this.filters.end_date)}</h2>${document.querySelector('.report-table')?.outerHTML || ''}<script>onload=()=>print()<\/script>`,
     );
     w.document.close();

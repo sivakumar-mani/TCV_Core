@@ -1,3 +1,4 @@
+import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
@@ -447,7 +448,7 @@ export class CableTvAccountPending {
       <td class="number">${this.amountValue(totals.material - totals.materialDiscount)}</td>
       <td class="number">${this.amountValue(totals.balance)}</td>
       <td class="number">${this.amountValue(totals.total)}</td><td></td></tr>`;
-    popup.document.write(`<!doctype html><html><head><title>Pending Account Report</title><style>
+    writePrintDocument(popup, `<!doctype html><html><head><title>Pending Account Report</title><style>
       body{font-family:Arial,sans-serif;color:#111827;margin:24px}h1{text-align:center;font-size:24px}
       .meta{display:flex;flex-wrap:wrap;gap:10px 28px;margin:14px 0;font-weight:700}
       table{border-collapse:collapse;width:100%}th,td{border:1px solid #9ca3af;padding:7px;font-size:11px;text-align:left}
@@ -487,7 +488,7 @@ export class CableTvAccountPending {
     }).join('');
     const grandTotal = items.reduce((sum: number, item: any) => sum + Number(item.grand_total || 0), 0);
     const customerNos = items.map((item: any) => this.customerNumber(item)).join(', ');
-    popup.document.write(`<!doctype html><html><head><title>Payment Invoice</title><style>
+    writePrintDocument(popup, `<!doctype html><html><head><title>Payment Invoice</title><style>
       body{font-family:Arial,sans-serif;color:#111827;margin:32px}h1{text-align:center;font-size:22px;margin:0 0 24px}
       .meta{display:flex;justify-content:space-between;margin-bottom:14px;font-size:14px}table{border-collapse:collapse;width:100%}
       th,td{border:1px solid #6b7280;padding:8px;text-align:right;font-size:12px}th{background:#e5e7eb}

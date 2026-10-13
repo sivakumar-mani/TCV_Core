@@ -1,4 +1,5 @@
 const connection = require('../connection');
+const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 
 const complaintStatuses = ['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
 
@@ -41,4 +42,28 @@ const getDashboardSummary = async (_req, res) => {
   }
 };
 
-module.exports = { getDashboardSummary };
+const getUpcomingExpiries = async (req, res) => {
+  const catv = req.query.type === 'CATV';
+  try {
+    const db = connection.promise();
+    const customerTable = catv ? 'cable_tv_customers' : 'internet_customers';
+    const subscriptionTable = catv ? 'cable_subscriptions' : 'internet_subscriptions';
+    const customerId = catv ? 'cable_customer_id' : 'internet_customer_id';
+    const expiryColumn = catv ? 'expiry_date' : 'end_date';
+    const [rows] = await db.query(`SELECT c.${customerId} AS customer_id, ${catv ? 'c.customer_code' : internetCustomerNumberSql('c')} AS customer_code, c.full_name,
+      DATE_FORMAT(latest.expiry_date, '%Y-%m-%d') AS expiry_date,
+      DATEDIFF(latest.expiry_date, CURDATE()) AS days_remaining
+      FROM ${customerTable} c
+      JOIN (SELECT ${customerId}, MAX(${expiryColumn}) AS expiry_date FROM ${subscriptionTable}
+        WHERE approval_status = 'APPROVED' GROUP BY ${customerId}) latest ON latest.${customerId} = c.${customerId}
+      WHERE c.approval_status = 'APPROVED' AND c.status IN (${catv ? "'ACTIVE', 'FREE', 'LEASE_LINE'" : "'ACTIVE'"})
+        AND latest.expiry_date >= DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+        AND latest.expiry_date < DATE_ADD(CURDATE(), INTERVAL 31 DAY)
+      ORDER BY latest.expiry_date, c.customer_code`);
+    return res.json(rows.map(row => ({ ...row, service: catv ? 'CATV' : 'NET' })));
+  } catch (error) {
+    return res.status(500).json({ message: 'Upcoming expiries could not be loaded' });
+  }
+};
+
+module.exports = { getDashboardSummary, getUpcomingExpiries };

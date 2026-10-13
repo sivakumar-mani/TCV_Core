@@ -465,7 +465,34 @@ const addComplaintAttempt = async (req, res) => {
   }
 };
 
+const deleteComplaint = async (req, res) => {
+  const complaintId = Number(req.params.complaintId);
+  if (!Number.isSafeInteger(complaintId) || complaintId <= 0) {
+    return res.status(400).json({ message: 'Invalid complaint ID' });
+  }
+  const db = connection.promise();
+  let transactionStarted = false;
+  try {
+    await db.beginTransaction();
+    transactionStarted = true;
+    const [rows] = await db.query('SELECT complaint_id FROM cable_tv_complaints WHERE complaint_id = ? FOR UPDATE', [complaintId]);
+    if (!rows.length) {
+      await db.rollback();
+      transactionStarted = false;
+      return res.status(404).json({ message: 'Complaint not found' });
+    }
+    await db.query('DELETE FROM cable_tv_complaint_attempts WHERE complaint_id = ?', [complaintId]);
+    await db.query('DELETE FROM cable_tv_complaints WHERE complaint_id = ?', [complaintId]);
+    await db.commit();
+    transactionStarted = false;
+    return res.json({ message: 'Complaint deleted successfully' });
+  } catch (error) {
+    if (transactionStarted) await db.rollback();
+    return res.status(500).json({ message: 'Complaint deletion failed' });
+  }
+};
+
 module.exports = {
   ensureComplaintTables, getComplaintCustomers, getComplaints,
-  getComplaintReport, getComplaintById, addComplaint, addComplaintAttempt
+  getComplaintReport, getComplaintById, addComplaint, addComplaintAttempt, deleteComplaint
 };

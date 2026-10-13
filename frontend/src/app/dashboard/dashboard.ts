@@ -4,6 +4,7 @@ import { Component, inject, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { appConfig } from '../app-config';
 import { PermissionService } from '../services/permission.service';
+import { forkJoin } from 'rxjs';
 
 interface DashboardSummary {
   workflow_waiting_count: number;
@@ -25,6 +26,11 @@ export class Dashboard implements OnDestroy {
   private refreshTimer?: ReturnType<typeof setInterval>;
   loading = true;
   errorMessage = '';
+  upcomingExpiries: any[] = [];
+  expiryError = '';
+  get canViewExpiries() {
+    return this.permissions.can('CABLE_TV_CUSTOMERS', 'view') || this.permissions.can('INTERNET_CUSTOMERS', 'view');
+  }
   summary: DashboardSummary = {
     workflow_waiting_count: 0,
     catv: { active: 0, deactive: 0 },
@@ -51,6 +57,7 @@ export class Dashboard implements OnDestroy {
   }
 
   loadSummary(showLoading = true) {
+    this.loadExpiries();
     if (showLoading) this.loading = true;
     this.errorMessage = '';
     this.http.get<DashboardSummary>(`${appConfig.apiUrl}/v1/dashboard/summary`).subscribe({
@@ -62,6 +69,19 @@ export class Dashboard implements OnDestroy {
         this.errorMessage = 'Dashboard counts could not be loaded.';
         this.loading = false;
       }
+    });
+  }
+
+  private loadExpiries() {
+    const types = [
+      ...(this.permissions.can('CABLE_TV_CUSTOMERS', 'view') ? ['CATV'] : []),
+      ...(this.permissions.can('INTERNET_CUSTOMERS', 'view') ? ['NET'] : [])
+    ];
+    if (!types.length) { this.upcomingExpiries = []; return; }
+    this.expiryError = '';
+    forkJoin(types.map(type => this.http.get<any[]>(`${appConfig.apiUrl}/v1/dashboard/upcoming-expiries`, { params: { type } }))).subscribe({
+      next: results => this.upcomingExpiries = results.flat().sort((a, b) => Number(a.days_remaining) - Number(b.days_remaining)),
+      error: () => { this.upcomingExpiries = []; this.expiryError = 'Upcoming expiries could not be loaded.'; }
     });
   }
 }

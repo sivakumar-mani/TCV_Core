@@ -1,3 +1,4 @@
+import { writePagedPrintDocument } from '../../shared/paged-print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -164,7 +165,7 @@ export class CableTvSubscriptionReport {
   printReport() {
     const popup = window.open('', '_blank', 'width=1200,height=800');
     if (!popup) return this.showError('Allow pop-ups to print the report');
-    const renderRows = (pageRows: any[], offset: number) => pageRows.map((row, index) => `<tr>
+    const renderRows = (pageRows: any[], offset: number) => pageRows.map((row, index) => `<tr data-paid="${Math.round(Number(row.paid_amount) || 0)}" data-mode="${['CASH', 'ONLINE', 'OFFICE'].includes(this.paymentType(row)) ? this.paymentType(row) : 'OTHER'}">
       <td>${offset + index + 1}</td><td>${this.escapeHtml(this.displayDate(row.collect_date))}</td>
       <td>${this.escapeHtml(this.customerNumber(row))}</td><td>${this.escapeHtml(row.collected_by_name || '-')}</td><td>${this.escapeHtml(row.full_name)}</td>
       <td>${this.escapeHtml(row.network_code || row.network_name || '-')}</td>
@@ -175,18 +176,10 @@ export class CableTvSubscriptionReport {
     const modeRow = (rows: any[]) => this.modeTotals(rows).map(item =>
       `<span>${this.escapeHtml(item.label)}: <strong>${this.amount(item.amount)}</strong></span>`
     ).join('');
-    const pages = Array.from({ length: this.pageCount }, (_, pageIndex) => {
-      const offset = pageIndex * this.pageSize;
-      const pageRows = this.rows.slice(offset, offset + this.pageSize);
-      const total = pageRows.reduce((sum, row) => sum + Math.round(Number(row.paid_amount) || 0), 0);
-      return `<section class="print-page"><h2>Page ${pageIndex + 1} of ${this.pageCount}</h2>
-        <table><thead><tr><th>S.No</th><th>Collected Date</th><th>C No/Old C No</th><th>Collected By</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
-        <tbody>${renderRows(pageRows, offset) || '<tr><td colspan="12">No records found.</td></tr>'}</tbody></table>
-        <div class="totals-row page-totals">${modeRow(pageRows)}<span>Page Total: <strong>${this.amount(total)}</strong></span></div>
-        ${pageIndex === this.pageCount - 1 ? `<div class="report-summary"><h2>Full Report Totals</h2><div class="totals-row">${modeRow(this.rows)}<span>Grand Total: <strong>${this.amount(this.summary.total_amount)}</strong></span><span>Count: <strong>${this.count(this.summary.total_count)}</strong></span></div></div>` : ''}
-      </section>`;
-    }).join('');
-    popup.document.write(`<!doctype html><html><head><title>CATV Subscription Report</title><style>
+    const pages = `<table><thead><tr><th>S.No</th><th>Collected Date</th><th>C No/Old C No</th><th>Collected By</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead>
+      <tbody>${renderRows(this.rows, 0) || '<tr><td colspan="12">No records found.</td></tr>'}</tbody></table>
+      <div class="report-summary"><h2>Full Report Totals</h2><div class="totals-row">${modeRow(this.rows)}<span>Grand Total: <strong>${this.amount(this.summary.total_amount)}</strong></span><span>Count: <strong>${this.count(this.summary.total_count)}</strong></span></div></div>`;
+    writePagedPrintDocument(popup, `<!doctype html><html><head><title>CATV Subscription Report</title><style>
       body{font-family:Arial,sans-serif;color:#172033;margin:0}h1{color:#0878ee;font-size:20px}
       .meta{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0;font-weight:700;font-size:10px}
       table{border-collapse:collapse;table-layout:auto;width:auto;max-width:100%}
@@ -195,11 +188,10 @@ export class CableTvSubscriptionReport {
       h2{font-size:12px}.totals-row{display:flex;justify-content:space-between;gap:8px;font-size:10px}
       .page-totals{padding:12px 0}.report-summary{border:1px solid #b8c1cc;padding:12px;margin-top:16px;break-inside:avoid}
       @page{size:A4 portrait;margin:8mm}thead{display:table-header-group}tr{break-inside:avoid}
-      @media print{.print-page + .print-page{break-before:page}}
     </style></head><body><h1>CATV Subscription Report</h1>
       <div class="meta"><span>Collected By: ${this.escapeHtml(this.collectorLabel)}</span><span>Network: ${this.escapeHtml(this.networkLabel)}</span><span>Customer Type: ${this.escapeHtml(this.customerTypeLabel)}</span><span>Period: ${this.escapeHtml(this.displayDate(this.filters.start_date))} to ${this.escapeHtml(this.displayDate(this.filters.end_date))}</span></div>
       ${pages}
-      <script>window.onload=()=>window.print();<\/script></body></html>`);
+      </body></html>`);
     popup.document.close();
   }
 

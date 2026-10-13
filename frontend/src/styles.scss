@@ -1,5 +1,14 @@
 @use '@angular/material' as mat;
 
+@media print {
+  @page { size: auto; margin: 8mm; }
+  table tbody td { font-size: 9px !important; padding: 7px 3px !important; line-height: 1.4 !important; height: auto !important; }
+  table tbody tr { height: auto !important; break-inside: avoid; }
+  app-material-sales .panel { overflow: visible; break-inside: auto; page-break-inside: auto; }
+  app-material-sales table { min-width: 0; width: 100%; table-layout: auto; }
+  app-material-sales th, app-material-sales td { overflow-wrap: break-word; }
+}
+
 // =====================================================================
 // Design tokens
 // Primary scale mirrors the PrimeNG Aura preset in app-theme.ts so the
@@ -57,6 +66,7 @@
   --tcv-primary-hover: var(--tcv-primary-600);
   --tcv-primary-text: #1c2569;
   --tcv-muted: #667585;
+  --tcv-secondary-button: #2d2b83;
   --tcv-text: #1e2438;
 
   --tcv-shell-bg: #f5f6fb;
@@ -481,6 +491,7 @@ body {
 // Buttons
 // =====================================================================
 button {
+  background-color: var(--tcv-secondary-button);
   border: 0;
   border-radius: var(--tcv-radius-sm) !important;
   box-shadow: none;
@@ -492,7 +503,7 @@ button {
 }
 
 .btn-no {
-  background-color: var(--tcv-muted);
+  background-color: var(--tcv-secondary-button);
 }
 
 // Shared secondary actions used for Close, Cancel and Back controls.
@@ -501,9 +512,10 @@ button.secondary-btn,
 button.back,
 button.close,
 button.btn-secondary,
-button.btn-outline-secondary {
-  background-color: #667585 !important;
-  border-color: #667585 !important;
+button.btn-outline-secondary,
+button.icon-action:not(.excel) {
+  background-color: var(--tcv-secondary-button) !important;
+  border-color: var(--tcv-secondary-button) !important;
   color: #fff !important;
 }
 
@@ -538,7 +550,7 @@ button.btn-outline-secondary {
 }
 
 .mat-mdc-raised-button.btn-no {
-  background-color: var(--tcv-muted) !important;
+  background-color: var(--tcv-secondary-button) !important;
 }
 
 .mat-mdc-raised-button.btn-disabled,

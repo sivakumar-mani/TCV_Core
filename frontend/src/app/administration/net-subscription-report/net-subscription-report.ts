@@ -1,3 +1,4 @@
+import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -192,7 +193,7 @@ export class NetSubscriptionReport {
       const label = item.label.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]!));
       return `<tr><td colspan="12">${label}</td><td>${item.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td></tr>`;
     }).join('');
-    w.document.write(
+    writePrintDocument(w,
       `<html><head><title>Net Subscription Report</title><style>body{font-family:Arial;margin:22px}table{border-collapse:collapse;width:100%}th{background:#0878ee;color:white}th,td{border:1px solid #bbb;padding:7px}</style></head><body><h1>Net Subscription Report</h1><p>Collected By: ${this.collectorLabel} | Network: ${this.filters.network_type || 'ALL'} | Period: ${this.date(this.filters.start_date)} to ${this.date(this.filters.end_date)}</p><table><thead><tr><th>S.No</th><th>Date</th><th>Collected By</th><th>Renewed By</th><th>C No</th><th>Name</th><th>Network</th><th>Month</th><th>Period</th><th>Type</th><th>Count</th><th>Balance</th><th>Amount</th></tr></thead><tbody>${body}</tbody><tfoot>${totals}<tr><td colspan="10">Grand Total</td><td>${this.summary.total_count}</td><td>${this.summary.total_balance}</td><td>${this.summary.total_amount}</td></tr></tfoot></table><script>window.onload=()=>window.print();<\/script></body></html>`,
     );
     w.document.close();

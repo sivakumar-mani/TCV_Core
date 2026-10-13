@@ -709,7 +709,7 @@ export class CableTvCustomerHistory {
         received_count: billingBasis === 'DAY' ? Number(row.received_count) || 1 : Number(row.received_count) || 1,
         start_date: this.dateInputValue(row.start_date),
         expiry_date: this.dateInputValue(row.expiry_date),
-        collect_date: this.today(),
+        collect_date: this.dateInputValue(row.collect_date),
         collected_by_employee_id: row.collected_by_employee_id || null,
         package_amount: packageAmount,
         amount: Number(row.amount) || 0,

@@ -1,3 +1,4 @@
+import { writePrintDocument } from './print-layout';
 export function downloadSubscriptionReport(headers: string[], rows: unknown[][], filename: string) {
   if (!rows.length) return;
   const csv = [headers, ...rows].map(row => row.map(value => {
@@ -20,7 +21,7 @@ export function printSubscriptionReport(title: string, headers: string[], rows: 
   const escape = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, character => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[character]!));
-  popup.document.write(`<!doctype html><html><head><title>${escape(title)}</title><style>
+  writePrintDocument(popup, `<!doctype html><html><head><title>${escape(title)}</title><style>
     body{font-family:Arial,sans-serif;color:#111827;margin:24px}h1{font-size:22px}
     table{border-collapse:collapse;width:100%}th,td{border:1px solid #9ca3af;padding:8px;text-align:left;font-size:12px;overflow-wrap:anywhere}
     th{background:#e5e7eb}thead{display:table-header-group}tr{break-inside:avoid}

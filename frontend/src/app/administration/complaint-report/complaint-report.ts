@@ -1,3 +1,4 @@
+import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -73,7 +74,7 @@ export class ComplaintReport {
       <td>${this.escape(row.complaint_subject || row.nature_of_complaint)}</td>
       <td>${this.escape(row.assigned_employee_name || 'Unassigned')}</td><td>${this.escape(this.statusText(row.status))}</td>
     </tr>`).join('');
-    popup.document.write(`<!doctype html><html><head><title>Complaint Report</title><style>
+    writePrintDocument(popup, `<!doctype html><html><head><title>Complaint Report</title><style>
       @page{size:A4 landscape;margin:8mm}body{font-family:Arial,sans-serif;color:#172033;margin:0}h1{text-align:center;font-size:17px;margin:0 0 7px}.meta{display:flex;gap:18px;margin:0 0 8px;font-size:10px;font-weight:700}table{border-collapse:collapse;width:100%;font-size:9px}th{background:#0878ee;color:#fff}th,td{border:1px solid #333;padding:4px;text-align:left;vertical-align:top}small{color:#475467}
     </style></head><body><h1>Complaint Report</h1><div class="meta"><span>Period: ${this.escape(this.date(this.filters.start_date))} To ${this.escape(this.date(this.filters.end_date))}</span><span>Status: ${this.escape(this.statusLabel)}</span><span>Technician: ${this.escape(this.technicianLabel)}</span></div><table><thead><tr><th>S.No</th><th>Complaint No</th><th>Registered On</th><th>Type</th><th>Customer No</th><th>Customer / Contact</th><th>Complaint</th><th>Technician</th><th>Status</th></tr></thead><tbody>${rows || '<tr><td colspan="9">No complaints found.</td></tr>'}</tbody><tfoot><tr><td colspan="9">Total Records: ${this.rows.length}</td></tr></tfoot></table><script>window.onload=()=>window.print();<\/script></body></html>`);
     popup.document.close();

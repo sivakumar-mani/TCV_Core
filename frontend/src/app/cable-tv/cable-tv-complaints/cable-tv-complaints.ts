@@ -145,6 +145,20 @@ export class CableTvComplaints {
     this.search();
   }
 
+  deleteComplaint(row: any) {
+    if (!this.permissions.isAdmin()) return;
+    if (!confirm(`Delete complaint ${row.complaint_no || row.complaint_id} and its attempt history?`)) return;
+    this.loader.start();
+    this.cableTvService.deleteComplaint(row.complaint_id).subscribe({
+      next: response => {
+        this.loader.stop();
+        this.snackbar.openSnackbar(response?.message || 'Complaint deleted successfully', '');
+        this.search();
+      },
+      error: error => this.handleError(error)
+    });
+  }
+
   openRegister(customerId?: number, customerType: string = 'CATV') {
     this.complaint = this.emptyComplaint();
     this.customerSearch = '';

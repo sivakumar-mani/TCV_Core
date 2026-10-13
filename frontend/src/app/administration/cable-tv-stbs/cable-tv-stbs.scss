@@ -1,4 +1,5 @@
 .page-shell {
+  min-width: 0;
   padding: 0;
 }
 
@@ -23,6 +24,7 @@
 
 .stb-panel,
 .modal-panel {
+  min-width: 0;
   background: #fff;
   border: 1px solid #d7dee8;
   border-radius: 6px;
@@ -156,6 +158,7 @@ button {
 }
 
 table {
+  min-width: 1100px;
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
@@ -163,7 +166,8 @@ table {
 
 .stb-table-scroll {
   max-width: 100%;
-  overflow: visible;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
 }
 
 th,
@@ -276,12 +280,11 @@ th:nth-child(7) { text-align: center; }
 
 @media (max-width: 760px) {
   .stb-count-grid { grid-template-columns: 1fr; }
-  .filter-bar { grid-template-columns: 1fr; }
-  th, td { font-size: 10px; padding: 5px 2px; }
-  .table-icon-btn { width: 24px; }
+  .filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filter-bar label { min-width: 0; }
+  .filter-bar input, .filter-bar select { box-sizing: border-box; min-width: 0; width: 100%; }
   .pagination-bar { align-items: stretch; flex-direction: column; }
   .pagination-controls { flex-wrap: wrap; justify-content: space-between; }
-  .assignment-cell .assignment-control { gap: 4px; grid-template-columns: minmax(70px, .8fr) minmax(95px, 1.2fr); }
 }
 
 @media (min-width: 761px) and (max-width: 1100px) {

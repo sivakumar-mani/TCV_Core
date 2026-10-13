@@ -195,7 +195,7 @@ tbody tr:nth-child(even) { background: #f8fafb; }
 }
 
 @media print {
-  @page { margin: 8mm; size: A4 landscape; }
+  @page { margin: 8mm; size: auto; }
   :host { background: #fff; }
   .no-print { display: none !important; }
   .view-page { background: #fff; min-height: 0; padding: 0; }

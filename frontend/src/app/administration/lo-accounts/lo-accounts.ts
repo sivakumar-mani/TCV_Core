@@ -1,3 +1,4 @@
+import { writePrintDocument } from '../../shared/print-layout';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -66,7 +67,7 @@ export class LoAccounts {
     const popup = window.open('', '_blank', 'width=1200,height=800');
     if (!popup) return;
     const table = document.querySelector('.lo-account-table')?.outerHTML || '';
-    popup.document.write(`<html><head><title>LO Customer Accounts</title><style>body{font-family:Arial;margin:20px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #aaa;padding:6px;font-size:11px}.number{text-align:right}th{background:#eee}</style></head><body><h2>LO Customer Accounts</h2><p>Total Customers: ${this.summary.total_records} | Active: ${this.summary.active_records} | Pending Amount: ${this.summary.total_pending_amount.toFixed(2)}</p>${table}<script>window.onload=()=>window.print()<\/script></body></html>`);
+    writePrintDocument(popup, `<html><head><title>LO Customer Accounts</title><style>body{font-family:Arial;margin:20px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #aaa;padding:6px;font-size:11px}.number{text-align:right}th{background:#eee}</style></head><body><h2>LO Customer Accounts</h2><p>Total Customers: ${this.summary.total_records} | Active: ${this.summary.active_records} | Pending Amount: ${this.summary.total_pending_amount.toFixed(2)}</p>${table}<script>window.onload=()=>window.print()<\/script></body></html>`);
     popup.document.close();
   }
 }

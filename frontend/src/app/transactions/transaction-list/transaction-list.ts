@@ -1,3 +1,4 @@
+import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
@@ -148,7 +149,7 @@ export class TransactionList {
       <td class="number">${this.amount(row.transaction_type === 'DEBIT' ? row.amount : 0)}</td>
       <td class="number">${this.amount(row.transaction_type === 'CREDIT' ? row.amount : 0)}</td>
     </tr>`).join('');
-    popup.document.write(`<!doctype html><html><head><title>Transaction Report</title><style>
+    writePrintDocument(popup, `<!doctype html><html><head><title>Transaction Report</title><style>
       body{font-family:Arial,sans-serif;color:#172033;margin:24px}h1{color:#0878ee}
       .meta{font-weight:700;margin:14px 0}table{border-collapse:collapse;width:100%}
       th{background:#0878ee;color:#fff}th,td{border:1px solid #bac3ce;padding:8px;text-align:left}

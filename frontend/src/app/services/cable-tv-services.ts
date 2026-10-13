@@ -219,6 +219,10 @@ export class CableTvServices {
     return this.http.get(`${this.endpoint}/complaints/${complaintId}`);
   }
 
+  deleteComplaint(complaintId: number) {
+    return this.http.delete<any>(`${this.endpoint}/complaints/${complaintId}`);
+  }
+
   getComplaintCustomers(type: 'CATV' | 'NET' | 'CCTV', customerId?: number) {
     const params: Record<string, string> = { type };
     if (customerId) params['customer_id'] = String(customerId);
