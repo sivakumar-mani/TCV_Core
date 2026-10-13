@@ -4,7 +4,6 @@ import { Component, inject, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { appConfig } from '../app-config';
 import { PermissionService } from '../services/permission.service';
-import { forkJoin } from 'rxjs';
 
 interface DashboardSummary {
   workflow_waiting_count: number;
@@ -28,9 +27,6 @@ export class Dashboard implements OnDestroy {
   errorMessage = '';
   upcomingExpiries: any[] = [];
   expiryError = '';
-  errorMessage = '';
-  upcomingExpiries: any[] = [];
-  expiryError = '';
   reminderMessage = '';
   sendingReminders = new Set<number>();
   reminderPreview: any = null;
@@ -38,7 +34,7 @@ export class Dashboard implements OnDestroy {
   previewLoading = false;
 
   get canViewExpiries() {
-    return this.permissions.can('CABLE_TV_CUSTOMERS', 'view') || this.permissions.can('INTERNET_CUSTOMERS', 'view');
+    return this.permissions.can('INTERNET_CUSTOMERS', 'view');
   }
 
   openReminderPreview(row: any) {
@@ -75,7 +71,6 @@ export class Dashboard implements OnDestroy {
       },
       error: error => { this.sendingReminders.delete(row.customer_id); this.reminderMessage = error?.error?.message || 'Reminder email could not be sent.'; }
     });
-  }
   }
   summary: DashboardSummary = {
     workflow_waiting_count: 0,
@@ -119,27 +114,11 @@ export class Dashboard implements OnDestroy {
   }
 
   private loadExpiries() {
-    const requests: any[] = [];
-    if (this.permissions.can('CABLE_TV_CUSTOMERS', 'view')) {
-      requests.push(this.http.get<any[]>(`${appConfig.apiUrl}/v1/dashboard/upcoming-expiries`, { params: { type: 'CATV' } }));
-    }
-    if (this.permissions.can('INTERNET_CUSTOMERS', 'view')) {
-      requests.push(this.http.get<any[]>(`${appConfig.apiUrl}/v1/dashboard/internet-expiries`));
-    }
-    if (!requests.length) { this.upcomingExpiries = []; return; }
+    if (!this.permissions.can('INTERNET_CUSTOMERS', 'view')) { this.upcomingExpiries = []; return; }
     this.expiryError = '';
-    forkJoin(requests).subscribe({
-      next: results => {
-        const rows = results.flat();
-        this.upcomingExpiries = rows
-          .map(row => ({ ...row, service: row.service || 'NET' }))
-          .sort((a, b) => Number(a.days_remaining) - Number(b.days_remaining));
-      },
-      error: () => {
-        this.upcomingExpiries = [];
-        this.expiryError = 'Upcoming expiries could not be loaded.';
-      }
-    });
+    this.http.get<any[]>(`${appConfig.apiUrl}/v1/dashboard/internet-expiries`).subscribe({
+      next: rows => this.upcomingExpiries = rows,
+      error: () => { this.upcomingExpiries = []; this.expiryError = 'Upcoming Internet expiries could not be loaded.'; }
     });
   }
 }

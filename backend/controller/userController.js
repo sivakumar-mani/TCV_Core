@@ -185,7 +185,8 @@ const getAllUser = async (req, res) => {
   try {
     await ensureUserEmployeeColumn(db);
     const [results] = await db.query(
-      `SELECT u.*, COALESCE(u.employee_code, e.employee_code) AS employee_code, CONCAT_WS(' ', e.first_name, e.last_name) AS employee_name
+      `SELECT u.*, CASE WHEN u.employee_id IS NULL THEN u.email ELSE e.email END AS email,
+       COALESCE(u.employee_code, e.employee_code) AS employee_code, CONCAT_WS(' ', e.first_name, e.last_name) AS employee_name
        FROM users u
        LEFT JOIN employees e ON e.employee_id = u.employee_id
        ORDER BY u.user_id DESC`
@@ -208,7 +209,8 @@ const login = async (req, res) => {
     return res.status(400).json({ message: 'Invalid or expired CAPTCHA. Please try again.' });
   }
 
-  connection.query('SELECT * FROM users WHERE username = ?', [username], (error, results) => {
+  connection.query(`SELECT u.*, CASE WHEN u.employee_id IS NULL THEN u.email ELSE e.email END AS email
+    FROM users u LEFT JOIN employees e ON e.employee_id = u.employee_id WHERE u.username = ?`, [username], (error, results) => {
     if (error) return res.status(500).json({ message: 'Login lookup failed', error: error.message });
 
     if (results.length <= 0 || user.password !== results[0].password) {

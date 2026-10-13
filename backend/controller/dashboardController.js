@@ -1,6 +1,5 @@
 const connection = require('../connection');
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
-const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const { ensureReminderLog } = require('./internetExpiryReminderLog');
 
 const complaintStatuses = ['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
