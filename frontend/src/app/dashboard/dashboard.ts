@@ -25,6 +25,49 @@ export class Dashboard implements OnDestroy {
   private refreshTimer?: ReturnType<typeof setInterval>;
   loading = true;
   errorMessage = '';
+  upcomingExpiries: any[] = [];
+  expiryError = '';
+  reminderMessage = '';
+  sendingReminders = new Set<number>();
+  reminderPreview: any = null;
+  reminderCustomer: any = null;
+  previewLoading = false;
+
+  openReminderPreview(row: any) {
+    if (!this.permissions.can('INTERNET_CUSTOMERS', 'update') || !row.email || this.previewLoading) return;
+    this.previewLoading = true;
+    this.reminderMessage = '';
+    this.http.get<any>(`${appConfig.apiUrl}/v1/dashboard/internet-expiries/${row.customer_id}/reminder-preview`).subscribe({
+      next: preview => { this.previewLoading = false; this.reminderCustomer = row; this.reminderPreview = preview; },
+      error: error => { this.previewLoading = false; this.reminderMessage = error?.error?.message || 'Reminder preview could not be loaded.'; }
+    });
+  }
+
+  closeReminderPreview() {
+    if (this.reminderCustomer && this.sendingReminders.has(this.reminderCustomer.customer_id)) return;
+    this.reminderPreview = null;
+    this.reminderCustomer = null;
+  }
+
+  sendExpiryReminder() {
+    const row = this.reminderCustomer;
+    const preview = this.reminderPreview;
+    if (!row || !preview || !this.permissions.can('INTERNET_CUSTOMERS', 'update') || this.sendingReminders.has(row.customer_id)) return;
+    this.sendingReminders.add(row.customer_id);
+    this.reminderMessage = '';
+    this.http.post<any>(`${appConfig.apiUrl}/v1/dashboard/internet-expiries/${row.customer_id}/reminder`, {
+      preview_email: preview.email, preview_expiry: preview.expiry_date, preview_text: preview.text
+    }).subscribe({
+      next: response => {
+        this.sendingReminders.delete(row.customer_id);
+        row.sent_count = response.sent_count;
+        this.reminderMessage = response.message;
+        this.closeReminderPreview();
+        this.loadExpiries();
+      },
+      error: error => { this.sendingReminders.delete(row.customer_id); this.reminderMessage = error?.error?.message || 'Reminder email could not be sent.'; }
+    });
+  }
   summary: DashboardSummary = {
     workflow_waiting_count: 0,
     catv: { active: 0, deactive: 0 },
@@ -51,6 +94,7 @@ export class Dashboard implements OnDestroy {
   }
 
   loadSummary(showLoading = true) {
+    this.loadExpiries();
     if (showLoading) this.loading = true;
     this.errorMessage = '';
     this.http.get<DashboardSummary>(`${appConfig.apiUrl}/v1/dashboard/summary`).subscribe({
@@ -62,6 +106,15 @@ export class Dashboard implements OnDestroy {
         this.errorMessage = 'Dashboard counts could not be loaded.';
         this.loading = false;
       }
+    });
+  }
+
+  private loadExpiries() {
+    if (!this.permissions.can('INTERNET_CUSTOMERS', 'view')) { this.upcomingExpiries = []; return; }
+    this.expiryError = '';
+    this.http.get<any[]>(`${appConfig.apiUrl}/v1/dashboard/internet-expiries`).subscribe({
+      next: rows => this.upcomingExpiries = rows,
+      error: () => { this.upcomingExpiries = []; this.expiryError = 'Upcoming Internet expiries could not be loaded.'; }
     });
   }
 }
