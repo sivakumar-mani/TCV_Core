@@ -1,4 +1,6 @@
 const permissionCatalog = [
+  ['Employee Tracking', 'EMPLOYEE_TRACKER', 'My Mobile Tracker', '/tracker'],
+  ['Employee Tracking', 'EMPLOYEE_TRACKER_ADMIN', 'Live Employee Tracking', '/tracker-admin'],
   ['General', 'DASHBOARD', 'Dashboard', '/dashboard'],
   ['General', 'NOTIFICATIONS', 'Notifications', '/notifications'],
   ['Business Partners', 'CUSTOMERS', 'Customers', '/customers'],

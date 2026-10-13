@@ -1,7 +1,16 @@
 .dashboard-page { color: #253047; padding: 0; }
 .expiry-widget { min-width: 0; margin-top: 1rem; }
 .expiry-scroll { max-height: 360px; max-width: 100%; overflow: auto; overscroll-behavior: contain; }
-.expiry-table { border-collapse: collapse; width: 100%; min-width: 620px; }
+.expiry-table { border-collapse: collapse; width: 100%; min-width: 850px; }
+.reminder-button { background: #2d2b83; color: #fff; white-space: nowrap; }
+.reminder-button:disabled { opacity: .5; cursor: not-allowed; }
+.reminder-backdrop { position: fixed; inset: 0; z-index: 1200; background: #0f172a94; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.reminder-modal { background: white; border-radius: 12px; padding: 20px; width: min(700px, 100%); max-height: 90vh; overflow: auto; }
+.reminder-modal h2 { font-size: 20px; }
+.reminder-content { border: 1px solid #e4e8f0; padding: 16px; overflow-wrap: anywhere; }
+.reminder-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+.expiry-table th, .expiry-table td { padding: 10px; text-align: left; border-bottom: 1px solid #e4e8f0; }
+.expiry-table th { position: sticky; top: 0; background: #eef2ff; z-index: 1; }
 .expiry-table th, .expiry-table td { padding: 10px; text-align: left; border-bottom: 1px solid #e4e8f0; }
 .expiry-table th { position: sticky; top: 0; background: #eef2ff; z-index: 1; }
 .dashboard-header { align-items: center; display: flex; justify-content: space-between; margin-bottom: 1.4rem; }
