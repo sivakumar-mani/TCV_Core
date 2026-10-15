@@ -4,7 +4,7 @@ import {FormsModule} from '@angular/forms';
 import {InternetCustomerServices} from '../../services/internet-customer-services';
 import {CommonMethods} from '../../shared/common-methods';
 
-@Component({selector:'app-net-subscription-append',imports:[CommonModule,FormsModule],templateUrl:'./net-subscription-append.html',styleUrl:'../cable-tv-subscription-append/cable-tv-subscription-append.scss'})
+@Component({selector:'app-net-subscription-append',imports:[CommonModule,FormsModule],templateUrl:'./net-subscription-append.html',styleUrl:'../cable-tv-subscription-append/cable-tv-subscription-append.scss',styles:['.period-card { grid-template-columns: 1fr 1fr auto; } @media(max-width:600px) { .period-card { grid-template-columns: 1fr 1fr; } .period-card button { grid-column: 1 / -1; } }']})
 export class NetSubscriptionAppend{
   private readonly next=new Date(new Date().getFullYear(),new Date().getMonth()+1,1);
   readonly months=Array.from({length:12},(_,i)=>({value:i+1,label:new Date(2000,i,1).toLocaleString('en-US',{month:'long'})}));

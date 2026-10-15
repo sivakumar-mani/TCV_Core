@@ -151,6 +151,7 @@ const getComplaints = async (req, res) => {
     const filters = [];
     const values = [];
     const status = String(req.query.status || '').toUpperCase();
+    if (status === 'ACTIVE') filters.push("c.status IN ('OPEN', 'IN_PROGRESS')");
     if (allowedStatuses.has(status)) { filters.push('c.status = ?'); values.push(status); }
     if (numberOrNull(req.query.assigned_employee_id)) {
       filters.push('c.assigned_employee_id = ?');
@@ -166,15 +167,7 @@ const getComplaints = async (req, res) => {
     }
     const [rows] = await db.query(
       `${complaintSelect} ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
-       ORDER BY CASE c.status
-                  WHEN 'OPEN' THEN 0
-                  WHEN 'IN_PROGRESS' THEN 1
-                  WHEN 'PENDING' THEN 2
-                  WHEN 'HOLD' THEN 3
-                  WHEN 'COMPLETED' THEN 4
-                  ELSE 5
-                END,
-                c.registered_at DESC, c.complaint_id DESC`,
+       ORDER BY c.registered_at ASC, c.complaint_id ASC`,
       values
     );
     return res.json(rows);

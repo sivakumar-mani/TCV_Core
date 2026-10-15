@@ -32,7 +32,7 @@ export class CableTvComplaints {
   callerType: 'CATV' | 'NET' | 'CCTV' | 'ANONYMOUS' = 'CATV';
   customerSearch = '';
   mapCustomerSearch = '';
-  filters = { search: '', status: '', assigned_employee_id: '' };
+  filters = { search: '', status: 'ACTIVE', assigned_employee_id: '' };
   statuses = ['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
   updateStatuses = ['IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
   readonly complaintSubjects = [
@@ -141,7 +141,7 @@ export class CableTvComplaints {
   }
 
   resetFilters() {
-    this.filters = { search: '', status: '', assigned_employee_id: '' };
+    this.filters = { search: '', status: 'ACTIVE', assigned_employee_id: '' };
     this.search();
   }
 

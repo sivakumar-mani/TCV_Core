@@ -8,6 +8,18 @@ const sources = [
   { table: 'cable_tv_complaints', id: 'complaint_id', time: 'created_at', filter: "status = 'OPEN'", reference: 'complaint_no', title: 'New open complaint', roles: ['ADMIN', 'MANAGER', 'SENIOR_MANAGER'], path: '/cable-tv/complaints' }
 ];
 
+function notificationContent(source, event) {
+  const complaint = source.table === 'cable_tv_complaints';
+  const clean = value => String(value || '-').replace(/[\r\n]+/g, ' ').trim();
+  const reference = clean(event.reference_no);
+  const type = clean(event.event_type);
+  const details = clean(event.details);
+  return {
+    subject: `${reference} - ${type} - ${details}`,
+    text: `${complaint ? 'Complaint No' : 'Approval Reference No'}: ${reference}\nType: ${type}\n${complaint ? 'Registered Date & Time' : 'Requested Date & Time'}: ${clean(event.event_time)}\n${complaint ? 'Nature of Complaint' : 'Approval Details'}: ${details}\n\nPlease log in to the portal to review:\nhttps://timecablevision.in/tcverp\n\nTIME CABLE VISION`
+  };
+}
+
 function createOperationalEmailWorker(connection, mailer = nodemailer, env = process.env, logger = console) {
   let running = false;
   const tick = async () => {
@@ -42,7 +54,16 @@ function createOperationalEmailWorker(connection, mailer = nodemailer, env = pro
       for (const source of sources) {
         let events;
         try {
-          [events] = await db.query(`SELECT ${source.id} AS id, ${source.reference} AS reference_no FROM ${source.table}
+          const fields = {
+            workflow_approvals: ['module_name', 'remarks', 'requested_at'],
+            cable_approval_groups: ['group_type', 'remarks', 'requested_at'],
+            purchase_master: ["'PURCHASE'", "'Purchase approval pending'", 'created_at'],
+            cable_tv_complaints: ['complainant_type', 'nature_of_complaint', 'registered_at']
+          };
+          const [typeColumn, detailsColumn, timeColumn] = fields[source.table];
+          [events] = await db.query(`SELECT ${source.id} AS id, ${source.reference} AS reference_no,
+            ${typeColumn} AS event_type, ${detailsColumn} AS details,
+            DATE_FORMAT(${timeColumn}, '%d-%m-%Y, %h:%i %p') AS event_time FROM ${source.table}
             WHERE ${source.filter} AND ${source.time} >= ? ORDER BY ${source.id}`, [state.activated_at]);
         } catch (error) {
           if (error.code === 'ER_NO_SUCH_TABLE') continue;
@@ -64,8 +85,7 @@ function createOperationalEmailWorker(connection, mailer = nodemailer, env = pro
           sentThisTick++;
           try {
             const result = await transport.sendMail({ from: { name: 'TIME CABLE VISION', address: sender }, to: email,
-              subject: source.title,
-              text: `${source.title}\n\nReference: ${event.reference_no}\n\nPlease open the portal to review:\nhttps://timecablevision.in/tcverp${source.path}\n\nTIME CABLE VISION` });
+              ...notificationContent(source, event) });
             if (!(result.accepted || []).some(value => String(value).toLowerCase() === email)) {
               await db.query("UPDATE operational_email_log SET status = 'FAILED' WHERE delivery_key = ?", [key]);
               continue;
@@ -95,4 +115,4 @@ function startOperationalEmailNotifications(connection) {
   worker.tick();
   return () => clearInterval(timer);
 }
-module.exports = { createOperationalEmailWorker, startOperationalEmailNotifications, sources };
+module.exports = { createOperationalEmailWorker, startOperationalEmailNotifications, sources, notificationContent };

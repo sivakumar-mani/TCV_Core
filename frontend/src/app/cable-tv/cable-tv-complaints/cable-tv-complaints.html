@@ -24,7 +24,7 @@
     </label>
     <label>Status
       <select [(ngModel)]="filters.status">
-        <option value="">All statuses</option>
+        <option value="ACTIVE">Open &amp; In Progress</option>
         <option *ngFor="let status of statuses" [value]="status">{{ statusLabel(status) }}</option>
       </select>
     </label>

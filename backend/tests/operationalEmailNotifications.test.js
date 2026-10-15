@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { createOperationalEmailWorker, sources } = require('../services/operationalEmailNotifications');
+const { createOperationalEmailWorker, sources, notificationContent } = require('../services/operationalEmailNotifications');
 
 function fixture(failSend = false, configured = true) {
   const logs = new Map(), emails = [], queries = [];
@@ -12,7 +12,7 @@ function fixture(failSend = false, configured = true) {
       assert.match(sql, /u.is_active = 1 AND e.is_active = 1/);
       return [args[0].map(role => ({ email: `${role.toLowerCase()}@example.com` })).concat([{ email: 'invalid' }, { email: 'admin@example.com' }])];
     }
-    if (sql.startsWith('SELECT ')) { assert.equal(args[0], '2026-10-13 00:00:00'); return [[{ id: 7, reference_no: 'TEST-7' }]]; }
+    if (sql.startsWith('SELECT ')) { assert.equal(args[0], '2026-10-13 00:00:00'); return [[{ id: 7, reference_no: 'TEST-7', event_type: sql.includes('FROM cable_tv_complaints') ? 'NET' : 'APPROVAL', details: 'not working', event_time: '15-10-2026, 10:36 AM' }]]; }
     if (sql.startsWith('INSERT IGNORE INTO operational_email_log')) { if (!logs.has(args[0])) logs.set(args[0], 'QUEUED'); return [{}]; }
     if (sql.includes("SET status = 'SENDING'")) {
       const eligible = logs.get(args[0]) === 'QUEUED';
@@ -37,10 +37,10 @@ function fixture(failSend = false, configured = true) {
 test('new approval emails target admins; open complaints target admins, managers and senior managers', async () => {
   const f = fixture();
   await f.worker.tick();
-  const approvals = f.emails.filter(mail => mail.subject !== 'New open complaint');
+  const approvals = f.emails.filter(mail => !mail.subject.includes(' - NET - '));
   assert.equal(approvals.length, 3);
   assert(approvals.every(mail => mail.to === 'admin@example.com'));
-  const complaints = f.emails.filter(mail => mail.subject === 'New open complaint');
+  const complaints = f.emails.filter(mail => mail.subject.includes(' - NET - '));
   assert.deepEqual(complaints.map(mail => mail.to).sort(), ['admin@example.com', 'manager@example.com', 'senior_manager@example.com']);
   assert(complaints.every(mail => mail.text.includes('TEST-7')));
   await f.worker.tick();
@@ -63,4 +63,21 @@ test('missing mail configuration sends nothing and keeps the worker available', 
   assert.equal(f.emails.length, 0);
   assert.equal(f.errors.length, 2);
   assert.deepEqual(sources.at(-1).roles, ['ADMIN', 'MANAGER', 'SENIOR_MANAGER']);
+});
+
+test('complaint email uses complaint number, type, nature and registered timestamp', () => {
+  const content = notificationContent(sources.at(-1), { reference_no: 'CMP-000195', event_type: 'NET', details: 'not working', event_time: '15-10-2026, 10:36 AM' });
+  assert.equal(content.subject, 'CMP-000195 - NET - not working');
+  assert.match(content.text, /Complaint No: CMP-000195/);
+  assert.match(content.text, /Registered Date & Time: 15-10-2026, 10:36 AM/);
+  assert.match(content.text, /Nature of Complaint: not working/);
+  assert.match(content.text, /https:\/\/timecablevision.in\/tcverp/);
+});
+
+test('approval email uses its own reference, module and remarks without subject line breaks', () => {
+  const content = notificationContent(sources[0], { reference_no: 'WO-123', event_type: 'WORK_ORDER', details: 'Material approval\r\nrequired', event_time: '15-10-2026, 10:36 AM' });
+  assert.equal(content.subject, 'WO-123 - WORK_ORDER - Material approval required');
+  assert.match(content.text, /Approval Reference No: WO-123/);
+  assert.match(content.text, /Requested Date & Time: 15-10-2026, 10:36 AM/);
+  assert.match(content.text, /Approval Details: Material approval required/);
 });
