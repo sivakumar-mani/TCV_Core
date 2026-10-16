@@ -699,7 +699,13 @@ const cashAdminCorrectionRows=async(db,netIds,monthValue,yearValue)=>{
   const month=Number(monthValue),year=Number(yearValue);
   if(!Number.isInteger(month)||month<1||month>12||!Number.isInteger(year)||year<2000||year>2200)throw Object.assign(new Error('Select a valid subscription month and year'),{status:400});
   const placeholders=netIds.map(()=>'?').join(',');
+  const previousMonth=month===1?12:month-1,previousYear=month===1?year-1:year;
   const [customers]=await db.query(`SELECT c.internet_customer_id,c.net_id,c.full_name,c.network_type,
+    (SELECT DATE_FORMAT(MAX(previous.end_date),'%d-%m-%Y') FROM internet_subscriptions previous
+      WHERE previous.internet_customer_id=c.internet_customer_id AND previous.approval_status<>'REJECTED'
+        AND previous.subscription_month=? AND previous.subscription_year=?) previous_month_expiry_date,
+    GROUP_CONCAT(DISTINCT DATE_FORMAT(s.start_date,'%d-%m-%Y') ORDER BY s.start_date SEPARATOR ', ') selected_month_start_date,
+    GROUP_CONCAT(DISTINCT DATE_FORMAT(s.end_date,'%d-%m-%Y') ORDER BY s.end_date SEPARATOR ', ') selected_month_end_date,
     COUNT(s.internet_subscription_id) subscription_count,
     COALESCE(SUM(s.amount),0) subscription_amount,
     GROUP_CONCAT(DISTINCT s.payment_status ORDER BY s.payment_status SEPARATOR ", ") payment_status,
@@ -709,7 +715,7 @@ const cashAdminCorrectionRows=async(db,netIds,monthValue,yearValue)=>{
     LEFT JOIN internet_subscriptions s ON s.internet_customer_id=c.internet_customer_id
       AND s.approval_status<>'REJECTED' AND s.subscription_month=? AND s.subscription_year=?
     WHERE c.net_id IN (${placeholders})
-    GROUP BY c.internet_customer_id,c.net_id,c.full_name,c.network_type ORDER BY c.net_id`,[month,year,...netIds]);
+    GROUP BY c.internet_customer_id,c.net_id,c.full_name,c.network_type ORDER BY c.net_id`,[previousMonth,previousYear,month,year,...netIds]);
   const found=new Set(customers.map(row=>String(row.net_id).toLowerCase()));
   return {net_ids:netIds,month,year,customers,unmatched_net_ids:netIds.filter(id=>!found.has(id.toLowerCase())),subscription_count:customers.reduce((sum,row)=>sum+Number(row.subscription_count||0),0)};
 };

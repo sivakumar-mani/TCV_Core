@@ -1,5 +1,5 @@
 <div class="append-page">
-  <header><div><h1>Append Net Subscriptions</h1><p>The next billing month is selected automatically. Each renewal starts the day after the previous end date and keeps the previous plan duration.</p></div></header>
+  <header><div><h1>Append Net Subscriptions</h1><p>Each renewal starts the day after the previous end date. Krishi ends on the 15th of the next month; Railwire covers 30 days including the start date.</p></div></header>
   <section class="period-card">
     <label>Billing Month<select [(ngModel)]="subscriptionMonth"><option *ngFor="let x of months" [ngValue]="x.value">{{x.label}}</option></select></label>
     <label>Billing Year<select [(ngModel)]="subscriptionYear"><option *ngFor="let x of years" [ngValue]="x">{{x}}</option></select></label>

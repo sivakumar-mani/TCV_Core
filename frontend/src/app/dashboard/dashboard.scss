@@ -4,8 +4,8 @@
 .expiry-table { border-collapse: collapse; width: 100%; min-width: 850px; }
 .reminder-button { background: #2d2b83; color: #fff; white-space: nowrap; }
 .reminder-button:disabled { opacity: .5; cursor: not-allowed; }
-.reminder-backdrop { position: fixed; inset: 0; z-index: 1200; background: #0f172a94; display: flex; align-items: center; justify-content: center; padding: 16px; }
-.reminder-modal { background: white; border-radius: 12px; padding: 20px; width: min(700px, 100%); max-height: 90vh; overflow: auto; }
+.reminder-backdrop { position: fixed; inset: 60px 0 0; z-index: 1200; background: #0f172a94; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
+.reminder-modal { background: white; border-radius: 12px; padding: 20px; width: min(700px, 100%); max-height: 100%; overflow: auto; box-sizing: border-box; }
 .reminder-modal h2 { font-size: 20px; }
 .reminder-content { border: 1px solid #e4e8f0; padding: 16px; overflow-wrap: anywhere; }
 .reminder-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }

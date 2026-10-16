@@ -1,6 +1,7 @@
 const connection = require('../connection');
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const { ensureReminderLog } = require('./internetExpiryReminderLog');
+const { internetExpiryDateSql } = require('./internetExpiryDate');
 
 const complaintStatuses = ['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
 
@@ -78,12 +79,12 @@ const getUpcomingInternetExpiries = async (_req, res) => {
       (SELECT COUNT(*) FROM internet_expiry_reminder_log log WHERE log.internet_customer_id = c.internet_customer_id
         AND log.expiry_date = latest.expiry_date AND log.status = 'SENT') AS sent_count
       FROM internet_customers c
-      JOIN (SELECT internet_customer_id, MAX(end_date) AS expiry_date FROM internet_subscriptions
-        WHERE approval_status = 'APPROVED' GROUP BY internet_customer_id) latest
+      JOIN (SELECT s.internet_customer_id, ${internetExpiryDateSql} AS expiry_date FROM internet_subscriptions s
+        WHERE s.approval_status = 'APPROVED' GROUP BY s.internet_customer_id) latest
         ON latest.internet_customer_id = c.internet_customer_id
       WHERE c.approval_status = 'APPROVED' AND c.status = 'ACTIVE'
         AND latest.expiry_date >= DATE_ADD(CURDATE(), INTERVAL 1 DAY)
-        AND latest.expiry_date < DATE_ADD(CURDATE(), INTERVAL 31 DAY)
+        AND latest.expiry_date < DATE_ADD(CURDATE(), INTERVAL 11 DAY)
       ORDER BY latest.expiry_date, c.customer_code`);
     return res.json(rows);
   } catch (error) {

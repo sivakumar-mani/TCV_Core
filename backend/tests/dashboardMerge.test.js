@@ -10,6 +10,7 @@ function controller(db) {
     if (name === '../connection') return { promise: () => db };
     if (name === './internetCustomerNumber') return { internetCustomerNumberSql };
     if (name === './internetExpiryReminderLog') return { ensureReminderLog: async () => {} };
+    if (name === './internetExpiryDate') return require('../controller/internetExpiryDate');
     throw new Error(`Unexpected dependency ${name}`);
   } };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../controller/dashboardController.js'), 'utf8'), context);
@@ -34,7 +35,11 @@ test('merged dashboard keeps generic expiry APIs and reminder-aware Internet exp
   assert.equal(body[0].sent_count, 2);
   assert.match(queries.at(-1), /log\.status = 'SENT'/);
   assert.match(queries.at(-1), /INTERVAL 1 DAY/);
-  assert.match(queries.at(-1), /INTERVAL 31 DAY/);
+  assert.match(queries.at(-1), /INTERVAL 11 DAY/);
+  assert.match(queries.at(-1), /s.subscription_month = MONTH\(CURDATE\(\)\)/);
+  assert.match(queries.at(-1), /s.subscription_year = YEAR\(CURDATE\(\)\)/);
+  assert.match(queries.at(-1), /THEN s.start_date END\), INTERVAL 1 DAY\)/);
+  assert.match(queries.at(-1), /MAX\(s.end_date\)/);
 });
 
 test('existing dashboard summary still returns its original counts', async () => {

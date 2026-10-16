@@ -43,3 +43,26 @@ test('correction selects individual or all checked customers only',async()=>{
  const one=await correction(true,'PAID',[8]);assert.deepEqual(Array.from(one.calls[0].params).slice(5),[8,9,2026]);
  const all=await correction(true,'PAID',[7,8,7]);assert.deepEqual(Array.from(all.calls[0].params).slice(5),[7,8,9,2026]);
 });
+
+test('correction preview binds previous and selected billing periods, including January rollover', async () => {
+ for (const [month, year, previousMonth, previousYear] of [[10, 2026, 9, 2026], [1, 2027, 12, 2026]]) {
+  const customer = { internet_customer_id: 7, net_id: 'net1', subscription_count: 1,
+   previous_month_expiry_date: '15-10-2026', selected_month_start_date: '16-10-2026', selected_month_end_date: '15-11-2026' };
+  const db = { query: async (sql, params) => {
+   assert.deepEqual(Array.from(params), [previousMonth, previousYear, month, year, 'net1', 'missing']);
+   assert.match(sql, /previous\.subscription_month=\? AND previous\.subscription_year=\?/);
+   assert.match(sql, /previous\.approval_status<>'REJECTED'/);
+   assert.match(sql, /DATE_FORMAT\(MAX\(previous\.end_date\)/);
+   assert.match(sql, /GROUP_CONCAT\(DISTINCT DATE_FORMAT\(s\.start_date/);
+   assert.match(sql, /GROUP_CONCAT\(DISTINCT DATE_FORMAT\(s\.end_date/);
+   assert.doesNotMatch(sql, /INSERT|UPDATE|DELETE/);
+   return [[customer]];
+  } };
+  const ctx = vm.createContext({});
+  vm.runInContext(source.slice(source.indexOf('const cashAdminCorrectionRows='), source.indexOf('const previewCashAdminCorrection=')) + ';this.rows=cashAdminCorrectionRows;', ctx);
+  const result = await ctx.rows(db, ['net1', 'missing'], month, year);
+  assert.equal(result.customers[0], customer);
+  assert.equal(result.subscription_count, 1);
+  assert.deepEqual(Array.from(result.unmatched_net_ids), ['missing']);
+ }
+});

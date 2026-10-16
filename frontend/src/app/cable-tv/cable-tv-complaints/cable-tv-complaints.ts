@@ -39,7 +39,7 @@ export class CableTvComplaints {
     'Accessories Required', 'CCTV Not Working', 'Channel Problem/Package Change',
     'Disconnection', 'Internet Not Working', 'Location Change', 'New Connection /Enquiry',
     'Other CATV Issue', 'Picture Not Clear', 'Recharge / Payment Collection', 'Reconnection',
-    'Signal Issue/ Bad Signal', 'Slow Internet', 'STB Problem', 'Subscription Failure',
+    'Retrieve Box', 'Signal Issue/ Bad Signal', 'Slow Internet', 'STB Problem', 'Subscription Failure',
     'Wire Cut / Cable Fault'
   ];
   complaint = this.emptyComplaint();

@@ -6,6 +6,17 @@ function internetAppendDates(row, fallbackStart) {
   const start = new Date(`${previous || fallbackStart}T00:00:00Z`);
   if (!Number.isFinite(start.getTime())) throw new Error('Invalid previous subscription end date');
   if (previous) start.setUTCDate(start.getUTCDate() + 1);
+  const network = String(row.network_type).toUpperCase();
+  if (network === 'KRISHI' || network === 'RAILWIRE') {
+    const end = new Date(start);
+    if (network === 'KRISHI') {
+      end.setUTCDate(15);
+      end.setUTCMonth(end.getUTCMonth() + 1);
+    } else end.setUTCDate(end.getUTCDate() + 29);
+    return { start_date: dateOnly(start), end_date: dateOnly(end), billing_basis: 'MONTH', period_value: 1,
+      period_count: 1, free_period_value: 0, free_period_unit: 'MONTH',
+      number_of_days: Math.round((end - start) / day) + 1 };
+  }
   const basis = String(row.previous_billing_basis || 'MONTH').toUpperCase();
   const value = Math.max(Number(row.previous_period_value) || 1, 1);
   const count = basis === 'YEAR' ? value * 12 : ['DAY', 'DAYS'].includes(basis)

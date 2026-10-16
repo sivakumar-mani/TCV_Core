@@ -27,7 +27,8 @@ test('reminder preview personalizes saved customer details and never sends', asy
   assert.equal(res.body.subject, 'Internet subscription expiry reminder');
   assert.match(res.body.text, /14 October 2026 \(1 day remaining\)/);
   assert.match(res.body.text, /official WhatsApp and call numbers/);
-  assert.match(res.body.html, /Customer &lt;Name&gt;/);
+  assert.match(res.body.text, /Dear CUSTOMER <NAME>,/);
+  assert.match(res.body.html, /Dear CUSTOMER &lt;NAME&gt;,/);
 });
 
 for (const fail of [false, true]) test(`reminder ${fail ? 'failure does not increment' : 'success persists'} sent count`, async () => {
