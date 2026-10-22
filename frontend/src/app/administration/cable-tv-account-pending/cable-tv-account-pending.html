@@ -87,7 +87,7 @@
         <td><input type="checkbox" [checked]="isReportRowSelected(item)" (change)="toggleReportRow(item, $any($event.target).checked)" aria-label="Select row for payment invoice"></td>
         <td>{{ installUpdateDate(item) | date:'dd-MM-yyyy' }}</td>
         <td>{{ customerNumber(item) }}</td>
-        <td>{{ item.full_name || '-' }}</td>
+        <td><div>{{ item.full_name || '-' }}</div><small class="customer-address" *ngIf="customerAddress(item)">{{ customerAddress(item) }}</small></td>
         <td>{{ item.installed_by_name || '-' }}</td>
         <td class="account-connection-type-cell">{{ connectionTypeLabel(item.connection_type) }}</td>
         <td>{{ item.stb_amount }}</td>
@@ -169,7 +169,7 @@
               <td>{{ index + 1 }}</td>
               <td>{{ installUpdateDate(item) | date:'dd-MM-yyyy' }}</td>
               <td>{{ customerNumber(item) }}</td>
-              <td>{{ item.full_name || '-' }}</td>
+              <td><div>{{ item.full_name || '-' }}</div><small class="customer-address" *ngIf="customerAddress(item)">{{ customerAddress(item) }}</small></td>
               <td>{{ item.installed_by_name || '-' }}</td>
               <td class="account-connection-type-cell">{{ connectionTypeLabel(item.connection_type) }}</td>
               <td>{{ item.stb_amount | number:'1.2-2' }}</td>

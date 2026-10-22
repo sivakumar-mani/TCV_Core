@@ -1860,7 +1860,7 @@ const getPendingAccounts = async (req, res) => {
                 WHEN ${receivedSql} > 0 THEN 'PARTIAL'
                 ELSE 'PENDING'
               END AS calculated_account_status,
-              c.customer_code, c.legacy_customer_no, c.full_name, c.mobile_no, n.network_name,
+              c.customer_code, c.legacy_customer_no, c.full_name, c.door_no, c.mobile_no, n.network_name,
               l.location_name, a.area_name, s.street_name,
               ${installUpdateDateSql} AS install_update_date,
               ${installUpdateDateSql} AS account_date,

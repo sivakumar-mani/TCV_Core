@@ -436,3 +436,11 @@ input[type='checkbox'] {
 :host td.account-connection-type-cell {
   font-weight: 700 !important;
 }
+
+.customer-address {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.8em;
+  line-height: 1.4;
+  color: #667085;
+}

@@ -66,6 +66,11 @@ export class CableTvAccountPending {
     this.loadAccounts();
   }
 
+  customerAddress(item: any): string {
+    return [item?.door_no, item?.street_name, item?.area_name]
+      .map(value => String(value ?? '').trim()).filter(Boolean).join(', ');
+  }
+
   loadEmployees() {
     this.cableTvService.getLookups().subscribe({
       next: (response: any) => {
@@ -423,7 +428,7 @@ export class CableTvAccountPending {
       <td>${index + 1}</td>
       <td>${this.escapeHtml(this.displayDate(this.installUpdateDate(item)))}</td>
       <td>${this.escapeHtml(this.customerNumber(item))}</td>
-      <td>${this.escapeHtml(item.full_name || '-')}</td>
+      <td>${this.escapeHtml(item.full_name || '-')}${this.customerAddress(item) ? `<div style="font-size: 0.8em; color: #667085; margin-top: 3px;">${this.escapeHtml(this.customerAddress(item))}</div>` : ''}</td>
       <td>${this.escapeHtml(item.installed_by_name || '-')}</td>
       <td>${this.escapeHtml(this.connectionTypeLabel(item.connection_type))}</td>
       <td class="number">${this.amountValue(item.stb_amount)}</td>
