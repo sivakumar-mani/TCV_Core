@@ -1553,11 +1553,15 @@ const addStreet = async (req, res) => {
 
 const addPackage = async (req, res) => {
   try {
+    const active = req.body.is_active === undefined ? 1 : req.body.is_active;
+    if (![0, 1].includes(active)) return res.status(400).json({ message: 'Select a valid package status' });
     const packageName = String(req.body.package_name || '').trim();
     const packageType = req.body.package_type || 'MSO_PACKAGE';
     const serviceCategory = String(req.body.service_category || 'CATV').toUpperCase() === 'INTERNET' ? 'INTERNET' : 'CATV';
     const internetNetworkType = String(req.body.internet_network_type || '').toUpperCase();
     const basePrice = money(req.body.price);
+    const msoPrice = serviceCategory === 'CATV' ? Number(req.body.mso_price ?? 0) : 0;
+    if (!Number.isFinite(msoPrice) || msoPrice < 0) return res.status(400).json({ message: 'Enter a valid non-negative MSO price' });
     const gstPercent = serviceCategory === 'INTERNET' ? 18 : 0;
     const priceIncludingGst = serviceCategory === 'INTERNET'
       ? money(basePrice + (basePrice * gstPercent / 100))
@@ -1572,9 +1576,9 @@ const addPackage = async (req, res) => {
     );
     if (existing) return res.status(409).json({ message: 'Package already exists for selected type' });
     await db.query(
-      `INSERT INTO cable_package_master (package_name, package_type, service_category, internet_network_type, price, gst_percent, price_including_gst, description)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [packageName, packageType, serviceCategory, serviceCategory === 'INTERNET' ? internetNetworkType : null, basePrice, gstPercent, priceIncludingGst, nullable(req.body.description)]
+      `INSERT INTO cable_package_master (package_name, package_type, service_category, internet_network_type, price, gst_percent, price_including_gst, description, mso_price, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [packageName, packageType, serviceCategory, serviceCategory === 'INTERNET' ? internetNetworkType : null, basePrice, gstPercent, priceIncludingGst, nullable(req.body.description), money(msoPrice), active]
     );
     return res.status(201).json({ message: 'Package saved successfully' });
   } catch (error) {
@@ -1584,6 +1588,9 @@ const addPackage = async (req, res) => {
 
 const updatePackage = async (req, res) => {
   try {
+    const hasStatus = req.body.is_active !== undefined;
+    const active = req.body.is_active;
+    if (hasStatus && ![0, 1].includes(active)) return res.status(400).json({ message: 'Select a valid package status' });
     const id = Number(req.params.packageId);
     const name = String(req.body.package_name || '').trim();
     const price = Number(req.body.price);
@@ -1595,6 +1602,8 @@ const updatePackage = async (req, res) => {
     await ensureCableTvExtendedTables(db);
     const [[existing]] = await db.query('SELECT * FROM cable_package_master WHERE package_id = ?', [id]);
     if (!existing) return res.status(404).json({ message: 'Package not found' });
+    const msoPrice = existing.service_category === 'INTERNET' ? 0 : Number(req.body.mso_price ?? existing.mso_price ?? 0);
+    if (!Number.isFinite(msoPrice) || msoPrice < 0) return res.status(400).json({ message: 'Enter a valid non-negative MSO price' });
     const [[duplicate]] = await db.query(
       'SELECT package_id FROM cable_package_master WHERE package_name = ? AND package_type = ? AND service_category = ? AND package_id <> ? LIMIT 1',
       [name, existing.package_type, existing.service_category, id]
@@ -1604,12 +1613,29 @@ const updatePackage = async (req, res) => {
     const gst = existing.service_category === 'INTERNET' ? 18 : 0;
     // Classification and customer billing snapshots remain unchanged.
     await db.query(
-      'UPDATE cable_package_master SET package_name = ?, price = ?, gst_percent = ?, price_including_gst = ?, description = ? WHERE package_id = ?',
-      [name, basePrice, gst, gst ? money(basePrice * 1.18) : 0, nullable(req.body.description), id]
+      `UPDATE cable_package_master SET package_name = ?, price = ?, gst_percent = ?, price_including_gst = ?, description = ?, mso_price = ?${hasStatus ? ', is_active = ?' : ''} WHERE package_id = ?`,
+      [name, basePrice, gst, gst ? money(basePrice * 1.18) : 0, nullable(req.body.description), money(msoPrice), ...(hasStatus ? [active] : []), id]
     );
     return res.json({ message: 'Package updated successfully' });
   } catch (error) {
     return res.status(error.code === 'ER_DUP_ENTRY' ? 409 : 500).json({ message: error.code === 'ER_DUP_ENTRY' ? 'Package already exists for selected type' : 'Cable TV package update failed' });
+  }
+};
+
+const deletePackage = async (req, res) => {
+  try {
+    const id = Number(req.params.packageId);
+    if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ message: 'Select a valid package' });
+    const db = connection.promise();
+    // The package foreign keys restrict deletion of customer-linked records.
+    const [result] = await db.query('DELETE FROM cable_package_master WHERE package_id = ?', [id]);
+    if (!result.affectedRows) return res.status(404).json({ message: 'Package not found' });
+    return res.json({ message: 'Package deleted successfully' });
+  } catch (error) {
+    if (['ER_ROW_IS_REFERENCED', 'ER_ROW_IS_REFERENCED_2'].includes(error.code)) {
+      return res.status(409).json({ message: 'Package is linked to customer records and cannot be deleted. Set its status to Inactive instead.' });
+    }
+    return res.status(500).json({ message: 'Cable TV package delete failed' });
   }
 };
 
@@ -5036,6 +5062,7 @@ module.exports = {
   deleteLocationInfo,
   addPackage,
   updatePackage,
+  deletePackage,
   addStbMaster,
   updateStbMaster,
   deleteStbMaster,

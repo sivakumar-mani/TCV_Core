@@ -12,7 +12,7 @@ function fixture(failSend = false, configured = true) {
       assert.match(sql, /u.is_active = 1 AND e.is_active = 1/);
       return [args[0].map(role => ({ email: `${role.toLowerCase()}@example.com` })).concat([{ email: 'invalid' }, { email: 'admin@example.com' }])];
     }
-    if (sql.startsWith('SELECT ')) { assert.equal(args[0], '2026-10-13 00:00:00'); return [[{ id: 7, reference_no: 'TEST-7', event_type: sql.includes('FROM cable_tv_complaints') ? 'NET' : 'APPROVAL', details: 'not working', event_time: '15-10-2026, 10:36 AM' }]]; }
+    if (sql.startsWith('SELECT ')) { assert.equal(args[0], '2026-10-13 00:00:00'); return [[{ id: 7, reference_no: 'TEST-7', event_type: sql.includes('FROM cable_tv_complaints') ? 'NET' : 'APPROVAL', details: 'not working', event_time: '15-10-2026, 10:36 AM', customer_name: 'Test Caller', customer_code: 'C123', customer_mobile: '9876543210', registered_by_name: 'Test Employee' }]]; }
     if (sql.startsWith('INSERT IGNORE INTO operational_email_log')) { if (!logs.has(args[0])) logs.set(args[0], 'QUEUED'); return [{}]; }
     if (sql.includes("SET status = 'SENDING'")) {
       const eligible = logs.get(args[0]) === 'QUEUED';
@@ -43,6 +43,15 @@ test('new approval emails target admins; open complaints target admins, managers
   const complaints = f.emails.filter(mail => mail.subject.includes(' - NET - '));
   assert.deepEqual(complaints.map(mail => mail.to).sort(), ['admin@example.com', 'manager@example.com', 'senior_manager@example.com']);
   assert(complaints.every(mail => mail.text.includes('TEST-7')));
+  assert(complaints.every(mail => mail.text.includes('Customer / Caller: Test Caller') && mail.text.includes('Registered By: Test Employee')));
+  const complaintQuery = f.queries.find(q => q.sql.includes('FROM cable_tv_complaints'));
+  for (const table of ['cable_tv_customers', 'internet_customers', 'customers', 'employees', 'users']) {
+    assert(complaintQuery.sql.includes(`LEFT JOIN ${table} `));
+  }
+  assert.match(complaintQuery.sql, /COALESCE\(NULLIF\(TRIM\(c.reported_mobile\)/);
+  assert.match(complaintQuery.sql, /c.anonymous_name/);
+  assert.match(complaintQuery.sql, /c.anonymous_mobile/);
+  assert.match(complaintQuery.sql, /registered_user.username/);
   await f.worker.tick();
   assert.equal(f.emails.length, 6, 'Repeat scan must not send the same event again');
 });
@@ -80,4 +89,24 @@ test('approval email uses its own reference, module and remarks without subject 
   assert.match(content.text, /Approval Reference No: WO-123/);
   assert.match(content.text, /Requested Date & Time: 15-10-2026, 10:36 AM/);
   assert.match(content.text, /Approval Details: Material approval required/);
+});
+
+test('complaint email includes caller contact and registrar details without changing subject', () => {
+  const content = notificationContent(sources.at(-1), {
+    reference_no: 'CMP-1', event_type: 'ANONYMOUS', details: 'Signal issue',
+    customer_name: 'Caller\r\nName', customer_mobile: '9876543210', registered_by_name: 'Staff One'
+  });
+  assert.equal(content.subject, 'CMP-1 - ANONYMOUS - Signal issue');
+  assert.match(content.text, /Customer \/ Caller: Caller Name/);
+  assert.match(content.text, /Customer Code: -/);
+  assert.match(content.text, /Contact Number: 9876543210/);
+  assert.match(content.text, /Registered By: Staff One/);
+});
+
+test('missing complaint details use placeholders and approval emails omit complaint fields', () => {
+  const complaint = notificationContent(sources.at(-1), {});
+  assert.match(complaint.text, /Customer \/ Caller: -/);
+  assert.match(complaint.text, /Registered By: -/);
+  const approval = notificationContent(sources[0], { customer_name: 'Ignored', registered_by_name: 'Ignored' });
+  assert.doesNotMatch(approval.text, /Customer \/ Caller|Customer Code|Contact Number|Registered By/);
 });

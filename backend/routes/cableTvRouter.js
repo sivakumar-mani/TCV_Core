@@ -36,6 +36,7 @@ const {
   addLocationInfo,
   addPackage,
   updatePackage,
+  deletePackage,
   addStbMaster,
   updateStbMaster,
   deleteStbMaster,
@@ -112,6 +113,7 @@ router.patch('/masters/location-info/:streetId', auth.requirePermission('CABLE_T
 router.delete('/masters/location-info/:streetId', auth.requirePermission('CABLE_TV_MASTERS'), deleteLocationInfo);
 router.post('/masters/packages', auth.requirePermission('CABLE_TV_PACKAGES'), addPackage);
 router.patch('/masters/packages/:packageId', auth.requirePermission('CABLE_TV_PACKAGES'), updatePackage);
+router.delete('/masters/packages/:packageId', auth.requirePermission('CABLE_TV_PACKAGES'), deletePackage);
 router.post('/masters/stbs', auth.requirePermission('CABLE_TV_STBS'), addStbMaster);
 router.patch('/masters/stbs/:stbMasterId', auth.requirePermission('CABLE_TV_STBS'), updateStbMaster);
 router.delete('/masters/stbs/:stbMasterId', auth.requirePermission('CABLE_TV_STBS'), deleteStbMaster);

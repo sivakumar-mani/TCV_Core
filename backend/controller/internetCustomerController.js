@@ -153,6 +153,8 @@ const initializeInternetSchema = async (db) => {
   for (const [table, column, definition] of [
     ['internet_subscriptions', 'initial_account_id', 'BIGINT NULL'],
     ['internet_subscriptions', 'invoice_no', 'VARCHAR(100) NULL'],
+    ['internet_customers', 'customer_type', "ENUM('B2C','B2B') NOT NULL DEFAULT 'B2C'"],
+    ['internet_customers', 'gstin', 'VARCHAR(15) NULL'],
     ['internet_customers', 'email', 'VARCHAR(254) NULL'],
     ['internet_customers', 'additional_emails', 'TEXT NULL'],
     ['internet_connection_materials', 'discount', 'DECIMAL(12,2) NOT NULL DEFAULT 0'],
@@ -394,6 +396,12 @@ const saveInternetCustomer = async (req, res) => {
   if (!Number(req.params.id || 0)) return saveEnrollment(req, res, { db, ensureInternetSchema, isAdmin, resolveLoggedInEmployeeId, validateAddress, userId, subscriptionRenewal });
   try {
     await ensureInternetSchema(db); await db.beginTransaction(); const payload=req.body||{}; const id=Number(req.params.id||0);
+    const hasCustomerType = Object.prototype.hasOwnProperty.call(payload, 'customer_type');
+    const customerType = String(payload.customer_type || 'B2C').trim().toUpperCase() || 'B2C';
+    const hasGstin = Object.prototype.hasOwnProperty.call(payload, 'gstin') || (hasCustomerType && customerType === 'B2C');
+    const gstin = hasCustomerType && customerType === 'B2C' ? null : String(payload.gstin || '').trim().toUpperCase() || null;
+    if (hasCustomerType && !['B2C', 'B2B'].includes(customerType)) throw Object.assign(new Error('Select a valid Customer Type'), {status:400});
+    if (gstin && gstin.length > 15) throw Object.assign(new Error('GSTIN must contain at most 15 characters'), {status:400});
     const network=String(payload.network_type||'').toUpperCase();
     const netId=textOrNull(payload.net_id);
     const loggedInEmployeeId=await resolveLoggedInEmployeeId(db,req);
@@ -409,7 +417,7 @@ const saveInternetCustomer = async (req, res) => {
     const [[netDuplicate]]=await db.query('SELECT internet_customer_id FROM internet_customers WHERE net_id=? AND internet_customer_id<>? LIMIT 1',[netId,id]); if(netDuplicate) throw Object.assign(new Error('Netid already exists'),{status:409});
     let customerId=id;
     const approvalStatus='PENDING';
-    if(id){ await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,door_no=?,location_id=?,area_id=?,street_id=?,state=?,city=?,pincode=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,installed_date=?,status=?,approval_status=?,updated_at=NOW() WHERE internet_customer_id=?`,[network,payload.full_name,netId,textOrNull(payload.network_password),payload.door_no,payload.location_id,payload.area_id,payload.street_id,payload.state||'Tamil Nadu',payload.city||address.city,textOrNull(payload.pincode)||address.pincode,payload.mobile_no,textOrNull(payload.alternate_mobile_no),textOrNull(payload.aadhaar_no),payload.source_name||'Direct',installedByEmployeeId,installedDate,payload.status||'ACTIVE',approvalStatus,id]); for(const table of ['internet_subscriptions','internet_customer_packages','internet_customer_routers','internet_connections','internet_connection_materials','internet_customer_accounts']) await db.query(`DELETE FROM ${table} WHERE internet_customer_id=?`,[id]); }
+    if(id){ await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,door_no=?,location_id=?,area_id=?,street_id=?,state=?,city=?,pincode=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,installed_date=?,status=?,approval_status=?,${hasCustomerType ? 'customer_type=?,' : ''}${hasGstin ? 'gstin=?,' : ''}updated_at=NOW() WHERE internet_customer_id=?`,[network,payload.full_name,netId,textOrNull(payload.network_password),payload.door_no,payload.location_id,payload.area_id,payload.street_id,payload.state||'Tamil Nadu',payload.city||address.city,textOrNull(payload.pincode)||address.pincode,payload.mobile_no,textOrNull(payload.alternate_mobile_no),textOrNull(payload.aadhaar_no),payload.source_name||'Direct',installedByEmployeeId,installedDate,payload.status||'ACTIVE',approvalStatus,...(hasCustomerType ? [customerType] : []),...(hasGstin ? [gstin] : []),id]); for(const table of ['internet_subscriptions','internet_customer_packages','internet_customer_routers','internet_connections','internet_connection_materials','internet_customer_accounts']) await db.query(`DELETE FROM ${table} WHERE internet_customer_id=?`,[id]); }
     else { const [[next]]=await db.query('SELECT COALESCE(MAX(customer_code),2000)+1 next_code FROM internet_customers'); const [result]=await db.query(`INSERT INTO internet_customers(customer_code,network_type,full_name,net_id,network_password,door_no,location_id,area_id,street_id,state,city,pincode,mobile_no,alternate_mobile_no,aadhaar_no,source_name,installed_by_employee_id,installed_date,status,created_by_user_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,[next.next_code,network,payload.full_name,netId,textOrNull(payload.network_password),payload.door_no,payload.location_id,payload.area_id,payload.street_id,payload.state||'Tamil Nadu',payload.city||address.city,textOrNull(payload.pincode)||address.pincode,payload.mobile_no,textOrNull(payload.alternate_mobile_no),textOrNull(payload.aadhaar_no),payload.source_name||'Direct',installedByEmployeeId,installedDate,'ACTIVE',userId(req)]); customerId=result.insertId; }
     await db.query('UPDATE internet_customers SET approval_status=? WHERE internet_customer_id=?',[approvalStatus,customerId]);
     let subscriptionTotal=0;
@@ -431,6 +439,12 @@ const updateInternetCustomerInformation = async (req,res) => {
     if(!isAdmin(req)) return res.status(403).json({message:'Administrator permission is required'});
     const db=connection.promise(); await ensureInternetSchema(db); const id=Number(req.params.id); const payload=req.body||{};
     const network=String(payload.network_type||'').toUpperCase(), fullName=String(payload.full_name||'').trim(), netId=String(payload.net_id||'').trim();
+    const hasCustomerType = Object.prototype.hasOwnProperty.call(payload, 'customer_type');
+    const customerType = String(payload.customer_type || 'B2C').trim().toUpperCase() || 'B2C';
+    const hasGstin = Object.prototype.hasOwnProperty.call(payload, 'gstin') || (hasCustomerType && customerType === 'B2C');
+    const gstin = hasCustomerType && customerType === 'B2C' ? null : String(payload.gstin || '').trim().toUpperCase() || null;
+    if (hasCustomerType && !['B2C', 'B2B'].includes(customerType)) return res.status(400).json({message:'Select a valid Customer Type'});
+    if (gstin && gstin.length > 15) return res.status(400).json({message:'GSTIN must contain at most 15 characters'});
     const password=String(payload.network_password||'').trim();
     const mobile=String(payload.mobile_no||'').trim(), alternate=String(payload.alternate_mobile_no||'').trim();
     const hasEmail = Object.prototype.hasOwnProperty.call(payload, 'email');
@@ -460,7 +474,7 @@ const updateInternetCustomerInformation = async (req,res) => {
     if(duplicateNetId) return res.status(409).json({message:'Net ID is already assigned to another Internet customer'});
     const [[employee]]=await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1',[installedBy]);
     if(!employee) return res.status(400).json({message:'Select an active Installed By employee'});
-    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,${hasEmail ? 'email=?,' : ''}${hasAdditionalEmails ? 'additional_emails=?,' : ''}updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,password,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,...(hasEmail ? [email || null] : []),...(hasAdditionalEmails ? [additionalEmails.filter(Boolean).join(', ') || null] : []),id]);
+    const [result]=await db.query(`UPDATE internet_customers SET network_type=?,full_name=?,net_id=?,network_password=?,mobile_no=?,alternate_mobile_no=?,aadhaar_no=?,source_name=?,installed_by_employee_id=?,${hasCustomerType ? 'customer_type=?,' : ''}${hasGstin ? 'gstin=?,' : ''}${hasEmail ? 'email=?,' : ''}${hasAdditionalEmails ? 'additional_emails=?,' : ''}updated_at=NOW() WHERE internet_customer_id=?`,[network,fullName,netId,password,mobile,textOrNull(alternate),textOrNull(aadhaar),source,installedBy,...(hasCustomerType ? [customerType] : []),...(hasGstin ? [gstin] : []),...(hasEmail ? [email || null] : []),...(hasAdditionalEmails ? [additionalEmails.filter(Boolean).join(', ') || null] : []),id]);
     if(!result.affectedRows) return res.status(404).json({message:'Internet customer not found'});
     return res.json({message:'Internet customer information updated successfully'});
   } catch(error){return res.status(500).json({message:'Internet customer information update failed',error:error.message});}

@@ -9,17 +9,22 @@
       <input type="search" [value]="packageSearch" (input)="updatePackageSearch($event)" placeholder="Search by package name">
     </label>
     <table>
-      <tr><th>Package</th><th>Category</th><th>Type</th><th>Price</th><th>Description</th><th>Action</th></tr>
+      <tr><th>Package</th><th>Category</th><th>Type</th><th>Price</th><th>MSO Price</th><th>LCO Share</th><th>Status</th><th>Description</th><th>Action</th></tr>
       <tr *ngFor="let item of filteredPackages">
         <td>{{ item.package_name }}</td>
         <td>{{ item.service_category || 'CATV' }}</td>
         <td>{{ item.service_category === 'INTERNET' ? (item.internet_network_type === 'KRISHI' ? 'Krishi Package' : item.internet_network_type || 'Internet') : item.package_type }}</td>
         <td>{{ item.price }}</td>
+        <td>{{ item.service_category === 'INTERNET' ? '?' : item.mso_price }}</td>
+        <td>{{ item.service_category === 'INTERNET' ? '?' : item.lco_share }}</td>
+        <td>{{ +item.is_active === 1 ? 'Active' : 'Inactive' }}</td>
         <td>{{ item.description }}</td>
-        <td><button *ngIf="permissions.can('CABLE_TV_PACKAGES', 'update')" type="button" (click)="openPackageModal(item)">Edit</button></td>
+        <td><button *ngIf="permissions.can('CABLE_TV_PACKAGES', 'update')" type="button" (click)="openPackageModal(item)">Edit</button>
+          <button *ngIf="permissions.can('CABLE_TV_PACKAGES', 'delete')" type="button" (click)="deletePackage(item)" [disabled]="deletingPackageId !== null || saving">{{ deletingPackageId === +item.package_id ? 'Deleting...' : 'Delete' }}</button>
+        </td>
       </tr>
       <tr *ngIf="!filteredPackages.length">
-        <td colspan="6" class="empty-row">{{ packages.length ? 'No matching packages found.' : 'No packages added yet.' }}</td>
+        <td colspan="9" class="empty-row">{{ packages.length ? 'No matching packages found.' : 'No packages added yet.' }}</td>
       </tr>
     </table>
   </section>
@@ -42,6 +47,14 @@
             <option *ngFor="let type of packageTypes" [ngValue]="type">{{ type }}</option>
           </select>
         </label>
+        <ng-container *ngIf="packageForm.get('service_category')?.value !== 'INTERNET'">
+          <label>MSO Price
+            <input type="number" formControlName="mso_price" min="0" step="0.01">
+          </label>
+          <label>LCO Share
+            <input type="number" formControlName="lco_share" readonly>
+          </label>
+        </ng-container>
         <label>Price
           <input type="number" formControlName="price">
         </label>
@@ -56,6 +69,9 @@
             <input type="number" formControlName="price_including_gst" readonly>
           </label>
         </ng-container>
+        <label>Status
+          <select formControlName="is_active"><option [ngValue]="1">Active</option><option [ngValue]="0">Inactive</option></select>
+        </label>
         <label>Description
           <input type="text" formControlName="description">
         </label>

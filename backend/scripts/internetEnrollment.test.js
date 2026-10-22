@@ -168,3 +168,29 @@ test('approving enrollment approves its components without marking office paymen
    assert.deepEqual(query.args,[77,9,20]);
    const used=await save(false,p,{allocated:1});assert.equal(used.res.code,400);assert.ok(used.rolledBack);
  });
+
+test('enrollment defaults optional customer type to B2C and only stores GSTIN for B2B', async () => {
+  for (const [fields, expectedType, expectedGstin] of [
+    [{}, 'B2C', null],
+    [{ customer_type: '', gstin: '' }, 'B2C', null],
+    [{ customer_type: 'B2B', gstin: '' }, 'B2B', null],
+    [{ customer_type: 'B2B', gstin: ' 33abcde1234f1z5 ' }, 'B2B', '33ABCDE1234F1Z5'],
+    [{ customer_type: 'B2C', gstin: '33ABCDE1234F1Z5' }, 'B2C', null]
+  ]) {
+    const result = await save(true, Object.assign(payload(), fields));
+    assert.equal(result.res.code, 201);
+    assert.ok(result.committed);
+    const customer = result.inserted('internet_customers')[0];
+    assert.equal(customer.customer_type, expectedType);
+    assert.equal(customer.gstin, expectedGstin);
+  }
+});
+
+test('invalid customer type and overlong GSTIN roll back enrollment', async () => {
+  for (const fields of [{ customer_type: 'OTHER' }, { customer_type: 'B2B', gstin: 'X'.repeat(16) }]) {
+    const result = await save(true, Object.assign(payload(), fields));
+    assert.equal(result.res.code, 400);
+    assert.ok(result.rolledBack);
+    assert.equal(result.inserted('internet_customers').length, 0);
+  }
+});

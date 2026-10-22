@@ -10,6 +10,8 @@
     <section>
       <h2>Customer Details</h2>
       <div class="grid">
+        <label>Customer Type<select formControlName="customer_type"><option value="B2C">B2C</option><option value="B2B">B2B</option></select></label>
+        <label *ngIf="form.get('customer_type')?.value === 'B2B'">GSTIN<input formControlName="gstin" maxlength="15" /></label>
         <label
           >Network<select formControlName="network_type">
             <option *ngFor="let n of lookups.networks" [value]="n">{{ n }}</option>

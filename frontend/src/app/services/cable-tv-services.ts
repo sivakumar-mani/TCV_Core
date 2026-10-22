@@ -121,6 +121,10 @@ export class CableTvServices {
     return this.http.patch(`${this.endpoint}/masters/packages/${packageId}`, data, { headers: this.jsonHeaders });
   }
 
+  deletePackage(packageId: number) {
+    return this.http.delete(`${this.endpoint}/masters/packages/${packageId}`);
+  }
+
   addStbMaster(data: any) {
     return this.http.post(`${this.endpoint}/masters/stbs`, data, { headers: this.jsonHeaders });
   }

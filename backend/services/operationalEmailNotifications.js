@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const { internetCustomerNumberSql } = require('../controller/internetCustomerNumber');
 
 const sources = [
   { table: 'workflow_approvals', id: 'workflow_id', time: 'created_at', filter: "workflow_status = 'PENDING'", reference: 'reference_no', title: 'New workflow approval pending', roles: ['ADMIN'], path: '/workflow-approval' },
@@ -14,9 +15,12 @@ function notificationContent(source, event) {
   const reference = clean(event.reference_no);
   const type = clean(event.event_type);
   const details = clean(event.details);
+  const complaintDetails = complaint
+    ? `\nCustomer / Caller: ${clean(event.customer_name)}\nCustomer Code: ${clean(event.customer_code)}\nContact Number: ${clean(event.customer_mobile)}\nRegistered By: ${clean(event.registered_by_name)}`
+    : '';
   return {
     subject: `${reference} - ${type} - ${details}`,
-    text: `${complaint ? 'Complaint No' : 'Approval Reference No'}: ${reference}\nType: ${type}\n${complaint ? 'Registered Date & Time' : 'Requested Date & Time'}: ${clean(event.event_time)}\n${complaint ? 'Nature of Complaint' : 'Approval Details'}: ${details}\n\nPlease log in to the portal to review:\nhttps://timecablevision.in/tcverp\n\nTIME CABLE VISION`
+    text: `${complaint ? 'Complaint No' : 'Approval Reference No'}: ${reference}\nType: ${type}\n${complaint ? 'Registered Date & Time' : 'Requested Date & Time'}: ${clean(event.event_time)}\n${complaint ? 'Nature of Complaint' : 'Approval Details'}: ${details}${complaintDetails}\n\nPlease log in to the portal to review:\nhttps://timecablevision.in/tcverp\n\nTIME CABLE VISION`
   };
 }
 
@@ -61,7 +65,27 @@ function createOperationalEmailWorker(connection, mailer = nodemailer, env = pro
             cable_tv_complaints: ['complainant_type', 'nature_of_complaint', 'registered_at']
           };
           const [typeColumn, detailsColumn, timeColumn] = fields[source.table];
-          [events] = await db.query(`SELECT ${source.id} AS id, ${source.reference} AS reference_no,
+          if (source.table === 'cable_tv_complaints') {
+            [events] = await db.query(`SELECT c.complaint_id AS id, c.complaint_no AS reference_no,
+              c.complainant_type AS event_type, c.nature_of_complaint AS details,
+              DATE_FORMAT(c.registered_at, '%d-%m-%Y, %h:%i %p') AS event_time,
+              COALESCE(customer.full_name, internet_customer.full_name,
+                NULLIF(TRIM(CONCAT_WS(' ', service_customer.salutation, service_customer.customer_name)), ''),
+                NULLIF(TRIM(c.anonymous_name), ''), 'Anonymous') AS customer_name,
+              COALESCE(CAST(customer.customer_code AS CHAR), ${internetCustomerNumberSql('internet_customer')},
+                CAST(service_customer.customer_id AS CHAR)) AS customer_code,
+              COALESCE(NULLIF(TRIM(c.reported_mobile), ''), customer.mobile_no, internet_customer.mobile_no,
+                service_customer.phone, c.anonymous_mobile) AS customer_mobile,
+              COALESCE(NULLIF(TRIM(CONCAT_WS(' ', registered.first_name, registered.last_name)), ''),
+                registered.employee_code, registered_user.username) AS registered_by_name
+              FROM cable_tv_complaints c
+              LEFT JOIN cable_tv_customers customer ON customer.cable_customer_id = c.cable_customer_id
+              LEFT JOIN internet_customers internet_customer ON internet_customer.internet_customer_id = c.internet_customer_id
+              LEFT JOIN customers service_customer ON service_customer.customer_id = c.service_customer_id
+              LEFT JOIN employees registered ON registered.employee_id = c.registered_by_employee_id
+              LEFT JOIN users registered_user ON registered_user.user_id = c.registered_by_user_id
+              WHERE c.status = 'OPEN' AND c.created_at >= ? ORDER BY c.complaint_id`, [state.activated_at]);
+          } else [events] = await db.query(`SELECT ${source.id} AS id, ${source.reference} AS reference_no,
             ${typeColumn} AS event_type, ${detailsColumn} AS details,
             DATE_FORMAT(${timeColumn}, '%d-%m-%Y, %h:%i %p') AS event_time FROM ${source.table}
             WHERE ${source.filter} AND ${source.time} >= ? ORDER BY ${source.id}`, [state.activated_at]);

@@ -20,6 +20,7 @@ export class CableTvPackages {
   showPackageModal = false;
   editingPackageId: number | null = null;
   saving = false;
+  deletingPackageId: number | null = null;
   packageTypes = ['MSO_PACKAGE', 'ADDON', 'ALACARTE', 'BROADCAST'];
 
   constructor(
@@ -37,11 +38,18 @@ export class CableTvPackages {
       service_category: ['CATV', Validators.required],
       internet_network_type: [null],
       price: [0, [Validators.required, Validators.min(0)]],
+      mso_price: [0, [Validators.required, Validators.min(0)]],
+      lco_share: [0],
       gst_percent: [0, [Validators.min(0), Validators.max(100)]],
       price_including_gst: [0, [Validators.min(0)]],
+      is_active: [1, Validators.required],
       description: ['']
     });
-    this.packageForm.get('price')?.valueChanges.subscribe(() => this.calculateInternetPackagePrice());
+    this.packageForm.get('price')?.valueChanges.subscribe(() => {
+      this.calculateInternetPackagePrice();
+      this.calculateLcoShare();
+    });
+    this.packageForm.get('mso_price')?.valueChanges.subscribe(() => this.calculateLcoShare());
     this.packageForm.get('gst_percent')?.valueChanges.subscribe(() => this.calculateInternetPackagePrice());
     this.packageForm.get('service_category')?.valueChanges.subscribe(category => {
       this.packageForm.patchValue({ package_type: 'MSO_PACKAGE', internet_network_type: category === 'INTERNET' ? 'KRISHI' : null, gst_percent: category === 'INTERNET' ? 18 : 0 }, { emitEvent: false });
@@ -73,11 +81,12 @@ export class CableTvPackages {
 
   openPackageModal(item?: any) {
     this.editingPackageId = item?.package_id ?? null;
-    this.packageForm.reset(item ? { ...item, price: Number(item.price) } : { package_type: 'MSO_PACKAGE', service_category: 'CATV', internet_network_type: null, price: 0, gst_percent: 0, price_including_gst: 0 }, { emitEvent: false });
+    this.packageForm.reset(item ? { ...item, price: Number(item.price), mso_price: Number(item.mso_price ?? 0), is_active: Number(item.is_active ?? 1) } : { is_active: 1, package_type: 'MSO_PACKAGE', service_category: 'CATV', internet_network_type: null, price: 0, mso_price: 0, lco_share: 0, gst_percent: 0, price_including_gst: 0 }, { emitEvent: false });
     for (const field of ['package_type', 'service_category', 'internet_network_type']) {
       if (item) this.packageForm.get(field)?.disable({ emitEvent: false });
       else this.packageForm.get(field)?.enable({ emitEvent: false });
     }
+    this.calculateLcoShare();
     this.showPackageModal = true;
   }
 
@@ -108,6 +117,29 @@ export class CableTvPackages {
       },
       error: (error: any) => this.handleError(error)
     });
+  }
+
+  deletePackage(item: any) {
+    if (this.deletingPackageId !== null || this.saving ||
+        !confirm(`Delete package "${item.package_name}"? Packages linked to customers cannot be deleted.`)) return;
+    this.deletingPackageId = Number(item.package_id);
+    this.cableTvService.deletePackage(item.package_id).subscribe({
+      next: (response: any) => {
+        this.deletingPackageId = null;
+        this.snackbar.openSnackbar(response?.message || 'Package deleted successfully', '');
+        this.loadPackages();
+      },
+      error: (error: any) => {
+        this.deletingPackageId = null;
+        this.handleError(error);
+      }
+    });
+  }
+
+  private calculateLcoShare() {
+    const price = Number(this.packageForm.get('price')?.value) || 0;
+    const msoPrice = Number(this.packageForm.get('mso_price')?.value) || 0;
+    this.packageForm.get('lco_share')?.setValue(Number((price - msoPrice).toFixed(2)), { emitEvent: false });
   }
 
   private calculateInternetPackagePrice() {

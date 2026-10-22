@@ -299,6 +299,8 @@
     <h2>Customer Information</h2>
     <ng-container *ngTemplateOutlet="approvalAction"></ng-container>
     <fieldset class="edit-grid" [disabled]="details.customer?.approval_status !== 'APPROVED'">
+      <label>Customer Type<select [(ngModel)]="customerForm.customer_type"><option value="B2C">B2C</option><option value="B2B">B2B</option></select></label>
+      <label *ngIf="customerForm.customer_type === 'B2B'">GSTIN<input maxlength="15" [(ngModel)]="customerForm.gstin" /></label>
       <label
         >Network<select [(ngModel)]="customerForm.network_type">
           <option *ngFor="let x of lookups.networks" [value]="x">{{ x }}</option>

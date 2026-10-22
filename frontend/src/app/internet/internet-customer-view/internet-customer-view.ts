@@ -142,6 +142,8 @@ export class InternetCustomerView {
         this.customerSearchNo = '';
         this.netIdSearch = '';
         this.customerForm = {
+          customer_type: r.customer?.customer_type || 'B2C',
+          gstin: r.customer?.gstin || '',
           network_type: r.customer?.network_type,
           full_name: r.customer?.full_name,
           net_id: r.customer?.net_id,

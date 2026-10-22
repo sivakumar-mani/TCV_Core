@@ -86,3 +86,28 @@ test('invalid additional recipients are rejected without writes', async () => {
     assert.equal(result.res.code, 400); assert.equal(result.writes.length, 0);
   }
 });
+
+test('B2B information saves optional GSTIN and B2C clears it for the selected customer only', async () => {
+  for (const [body, expected] of [
+    [{ customer_type: 'B2B', gstin: ' 33abcde1234f1z5 ' }, ['B2B', '33ABCDE1234F1Z5', 799]],
+    [{ customer_type: 'B2B', gstin: '' }, ['B2B', null, 799]],
+    [{ customer_type: 'B2C', gstin: '33ABCDE1234F1Z5' }, ['B2C', null, 799]],
+    [{ customer_type: '', gstin: '' }, ['B2C', null, 799]]
+  ]) {
+    const { res, writes } = await run(body);
+    assert.equal(res.code, 200);
+    assert.equal(writes.length, 1);
+    assert.deepEqual(Array.from(writes[0].params).slice(-3), expected);
+    assert.match(writes[0].sql, /customer_type=\?,gstin=\?,updated_at=NOW\(\) WHERE internet_customer_id=\?/);
+    assert.doesNotMatch(writes[0].sql, /approval_status=|account|subscription/);
+  }
+  assert.doesNotMatch((await run()).writes[0].sql, /customer_type=|gstin=/);
+});
+
+test('invalid customer type or overlong GSTIN does not write', async () => {
+  for (const body of [{ customer_type: 'OTHER' }, { customer_type: 'B2B', gstin: 'X'.repeat(16) }]) {
+    const { res, writes } = await run(body);
+    assert.equal(res.code, 400);
+    assert.equal(writes.length, 0);
+  }
+});

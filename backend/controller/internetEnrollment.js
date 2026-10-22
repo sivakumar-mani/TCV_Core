@@ -52,6 +52,10 @@ async function saveEnrollment(req, res, deps) {
     await ensureRouterIssues(db);
     await db.beginTransaction();
     const p = req.body || {}, admin = isAdmin(req), network = text(p.network_type).toUpperCase();
+    const customerType = text(p.customer_type).toUpperCase() || 'B2C';
+    const gstin = customerType === 'B2B' ? text(p.gstin).toUpperCase() : '';
+    if (!['B2C', 'B2B'].includes(customerType)) fail('Select a valid Customer Type');
+    if (gstin.length > 15) fail('GSTIN must contain at most 15 characters');
     const email = text(p.email);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fail('A valid email ID is required');
     if (!['KRISHI','RAILWIRE','DMNET'].includes(network) || !text(p.full_name) || !text(p.net_id) || !text(p.door_no) || !/^\d{10}$/.test(text(p.mobile_no))) fail('Network, name, Net ID, address and a valid mobile number are required');
@@ -84,8 +88,8 @@ async function saveEnrollment(req, res, deps) {
     if (duplicate) throw Object.assign(new Error('Net ID already exists'), { status: 409 });
     let approval = admin ? 'APPROVED' : 'PENDING';
     const [[next]] = await db.query('SELECT COALESCE(MAX(customer_code),2000)+1 next_code FROM internet_customers');
-    const [created] = await db.query(`INSERT INTO internet_customers(customer_code,network_type,full_name,net_id,network_password,door_no,location_id,area_id,street_id,state,city,pincode,mobile_no,alternate_mobile_no,aadhaar_no,source_name,installed_by_employee_id,installed_date,status,created_by_user_id,email,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [next.next_code,network,text(p.full_name),text(p.net_id),text(p.network_password)||null,p.door_no,p.location_id,p.area_id,p.street_id,p.state||'Tamil Nadu',p.city||address.city,p.pincode||address.pincode,p.mobile_no,text(p.alternate_mobile_no)||null,text(p.aadhaar_no)||null,p.source_name||'Direct',employee,installedDate,'ACTIVE',userId(req),email,approval]);
+    const [created] = await db.query(`INSERT INTO internet_customers(customer_code,network_type,full_name,net_id,network_password,door_no,location_id,area_id,street_id,state,city,pincode,mobile_no,alternate_mobile_no,aadhaar_no,source_name,installed_by_employee_id,installed_date,status,created_by_user_id,email,approval_status,customer_type,gstin) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [next.next_code,network,text(p.full_name),text(p.net_id),text(p.network_password)||null,p.door_no,p.location_id,p.area_id,p.street_id,p.state||'Tamil Nadu',p.city||address.city,p.pincode||address.pincode,p.mobile_no,text(p.alternate_mobile_no)||null,text(p.aadhaar_no)||null,p.source_name||'Direct',employee,installedDate,'ACTIVE',userId(req),email,approval,customerType,gstin || null]);
     const customerId = created.insertId;
     let subscriptionTotal = 0;
     const selectedPackages = [];
