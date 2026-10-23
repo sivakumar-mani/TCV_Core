@@ -110,3 +110,19 @@ test('missing complaint details use placeholders and approval emails omit compla
   const approval = notificationContent(sources[0], { customer_name: 'Ignored', registered_by_name: 'Ignored' });
   assert.doesNotMatch(approval.text, /Customer \/ Caller|Customer Code|Contact Number|Registered By/);
 });
+
+test('complaint email includes the customer address and separate reported mobile from the complaint screen', () => {
+  const content = notificationContent(sources.at(-1), {
+    customer_code: '5163', customer_name: 'Unimon Kshemendran',
+    customer_address: '43 1st Floor, 4th Street, Ranga Nagar, Chromepet, Chennai, 600044',
+    reported_mobile: '8508107352', customer_mobile: '8508107352'
+  });
+  assert.match(content.text, /Customer Code: 5163/);
+  assert.match(content.text, /Customer \/ Caller: Unimon Kshemendran/);
+  assert.match(content.text, /Address: 43 1st Floor, 4th Street, Ranga Nagar, Chromepet, Chennai, 600044/);
+  assert.match(content.text, /Reported Mobile: 8508107352/);
+  const missing = notificationContent(sources.at(-1), {});
+  assert.match(missing.text, /Address: -/);
+  assert.match(missing.text, /Reported Mobile: -/);
+  assert.doesNotMatch(notificationContent(sources[0], {}).text, /Address:|Reported Mobile:/);
+});

@@ -16,7 +16,7 @@ function notificationContent(source, event) {
   const type = clean(event.event_type);
   const details = clean(event.details);
   const complaintDetails = complaint
-    ? `\nCustomer / Caller: ${clean(event.customer_name)}\nCustomer Code: ${clean(event.customer_code)}\nContact Number: ${clean(event.customer_mobile)}\nRegistered By: ${clean(event.registered_by_name)}`
+    ? `\nCustomer / Caller: ${clean(event.customer_name)}\nCustomer Code: ${clean(event.customer_code)}\nAddress: ${clean(event.customer_address)}\nReported Mobile: ${clean(event.reported_mobile)}\nContact Number: ${clean(event.customer_mobile)}\nRegistered By: ${clean(event.registered_by_name)}`
     : '';
   return {
     subject: `${reference} - ${type} - ${details}`,
@@ -74,13 +74,27 @@ function createOperationalEmailWorker(connection, mailer = nodemailer, env = pro
                 NULLIF(TRIM(c.anonymous_name), ''), 'Anonymous') AS customer_name,
               COALESCE(CAST(customer.customer_code AS CHAR), ${internetCustomerNumberSql('internet_customer')},
                 CAST(service_customer.customer_id AS CHAR)) AS customer_code,
+              CASE WHEN c.cable_customer_id IS NOT NULL
+                THEN CONCAT_WS(', ', customer.door_no, street.street_name, area.area_name, location.location_name, customer.city, customer.pincode)
+                WHEN c.internet_customer_id IS NOT NULL
+                THEN CONCAT_WS(', ', internet_customer.door_no, internet_street.street_name, internet_area.area_name, internet_location.location_name, internet_customer.city, internet_customer.pincode)
+                WHEN c.service_customer_id IS NOT NULL
+                THEN CONCAT_WS(', ', service_customer.address, service_customer.city_district, service_customer.state, service_customer.pincode)
+                ELSE c.anonymous_address END AS customer_address,
+              c.reported_mobile,
               COALESCE(NULLIF(TRIM(c.reported_mobile), ''), customer.mobile_no, internet_customer.mobile_no,
                 service_customer.phone, c.anonymous_mobile) AS customer_mobile,
               COALESCE(NULLIF(TRIM(CONCAT_WS(' ', registered.first_name, registered.last_name)), ''),
                 registered.employee_code, registered_user.username) AS registered_by_name
               FROM cable_tv_complaints c
               LEFT JOIN cable_tv_customers customer ON customer.cable_customer_id = c.cable_customer_id
+              LEFT JOIN cable_streets street ON street.street_id = customer.street_id
+              LEFT JOIN cable_areas area ON area.area_id = customer.area_id
+              LEFT JOIN cable_locations location ON location.location_id = customer.location_id
               LEFT JOIN internet_customers internet_customer ON internet_customer.internet_customer_id = c.internet_customer_id
+              LEFT JOIN cable_streets internet_street ON internet_street.street_id = internet_customer.street_id
+              LEFT JOIN cable_areas internet_area ON internet_area.area_id = internet_customer.area_id
+              LEFT JOIN cable_locations internet_location ON internet_location.location_id = internet_customer.location_id
               LEFT JOIN customers service_customer ON service_customer.customer_id = c.service_customer_id
               LEFT JOIN employees registered ON registered.employee_id = c.registered_by_employee_id
               LEFT JOIN users registered_user ON registered_user.user_id = c.registered_by_user_id
