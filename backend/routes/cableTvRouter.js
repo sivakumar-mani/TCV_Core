@@ -1,6 +1,7 @@
 const express = require('express');
 const auth = require('../services/authendication');
 const router = express.Router();
+const { getCatvCustomerPackageReport } = require('../controller/catvCustomerPackageReport');
 const {
   correctIssuedMaterial,
   getMaterialSalesLookups,
@@ -128,6 +129,7 @@ router.get('/subscriptions/generation-preview', auth.requireAdmin, previewSubscr
 router.post('/subscriptions/generate', auth.requireAdmin, generateMonthlySubscriptions);
 router.patch('/subscriptions/:subscriptionId/receive', auth.requirePermissionAction('CABLE_TV_SUBSCRIPTION_DUES', 'can_view'), receiveSubscriptionPayment);
 router.get('/reports/subscriptions', auth.requirePermission('CABLE_TV_SUBSCRIPTION_REPORT'), getCableSubscriptionReport);
+router.get('/reports/customer-packages', auth.requirePermission('CATV_CUSTOMER_LIST_REPORT'), getCatvCustomerPackageReport);
 router.get('/reports/customers', auth.requirePermission('CATV_CUSTOMER_LIST_REPORT'), getCableCustomerListReport);
 router.get('/reports/stb-payments', auth.requirePermission('STB_PAYMENT_REPORT'), getStbPaymentReport);
 router.get('/customers', auth.requirePermission('CABLE_TV_CUSTOMERS'), getCableCustomers);

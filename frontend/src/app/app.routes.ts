@@ -160,6 +160,12 @@ export const routes: Routes = [
             data:{ expectedRole:['admin','user'] }
          },
          {
+            path:'catv-customer-package-report',
+            loadComponent: ()=> import('./administration/catv-customer-package-report/catv-customer-package-report').then(n => n.CatvCustomerPackageReport),
+            canActivate:[RouteGuard],
+            data:{ expectedRole:['admin','user'] }
+         },
+         {
             path:'catv-customer-list-report',
             loadComponent: ()=> import('./administration/catv-customer-list-report/catv-customer-list-report').then(n => n.CatvCustomerListReport),
             canActivate:[RouteGuard],

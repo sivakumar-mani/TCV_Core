@@ -186,6 +186,10 @@ export class CableTvServices {
     });
     return this.http.get(`${this.endpoint}/reports/subscriptions`, { params });
   }
+  getCatvCustomerPackageReport(filters: any) {
+    return this.http.get(`${this.endpoint}/reports/customer-packages`, { params: filters });
+  }
+
   getCableCustomerListReport(filters: { network_id?: string; area_id?: string; street_id?: string; status?: string }) {
     const params: Record<string, string> = {};
     Object.entries(filters || {}).forEach(([key, value]) => { if (value) params[key] = value; });

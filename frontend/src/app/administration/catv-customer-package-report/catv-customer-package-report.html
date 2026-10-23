@@ -1,0 +1,15 @@
+<div class="report-page">
+  <header class="page-header"><h1>CATV Customer Package Report</h1></header>
+  <section class="filter-card">
+    <label>Network<p-select [(ngModel)]="filters.network_id" [options]="networks" optionLabel="network_name" optionValue="network_id" placeholder="All Networks" [filter]="true" [showClear]="true" appendTo="body"></p-select></label>
+    <label>Package Name<p-select [(ngModel)]="filters.package_id" [options]="packages" optionLabel="package_name" optionValue="package_id" placeholder="All Packages" [filter]="true" [showClear]="true" appendTo="body"></p-select></label>
+    <label>Customer Status<select [(ngModel)]="filters.status"><option value="">All Statuses</option><option *ngFor="let status of statuses" [value]="status">{{ status.replace('_', ' ') | titlecase }}</option></select></label>
+    <div class="filter-actions"><button type="button" class="primary" (click)="loadReport()" [disabled]="loading">{{ loading ? 'Loading...' : 'Search' }}</button><button type="button" class="secondary" (click)="clearFilters()" [disabled]="loading">Clear</button></div>
+  </section>
+  <section class="report-card">
+    <div class="report-toolbar"><div><strong>{{ filterDescription }}</strong><span>Customers: {{ totalCustomers }} | Package rows: {{ rows.length }}</span></div><div class="export-actions"><button type="button" class="icon-action excel" (click)="exportExcel()" [disabled]="loading || !loaded">Excel</button><button type="button" class="icon-action" title="Choose Save as PDF in the print dialog" (click)="exportPdf()" [disabled]="loading || !loaded">PDF</button></div></div>
+    <p>Current approved package assignments; customer prices are shown. Customers without a current package have blank package details. PDF: choose ?Save as PDF? in the print dialog.</p>
+    <div class="table-scroll"><table><thead><tr><th *ngFor="let header of headers">{{ header }}</th></tr></thead><tbody><tr *ngFor="let row of pageRows"><td *ngFor="let value of values(row)">{{ value }}</td></tr><tr *ngIf="!pageRows.length"><td colspan="7">{{ loading ? 'Loading report...' : 'No matching customers.' }}</td></tr></tbody></table></div>
+    <footer class="pagination"><label>Rows <select [(ngModel)]="pageSize" (change)="page = 1"><option [ngValue]="25">25</option><option [ngValue]="50">50</option><option [ngValue]="100">100</option></select></label><div class="page-buttons"><button type="button" [disabled]="page <= 1" (click)="page = page - 1">Previous</button><span>Page {{ page }} of {{ pageCount }}</span><button type="button" [disabled]="page >= pageCount" (click)="page = page + 1">Next</button></div></footer>
+  </section>
+</div>
