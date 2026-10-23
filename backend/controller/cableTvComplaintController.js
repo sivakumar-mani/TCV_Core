@@ -117,6 +117,7 @@ const resolveEmployeeId = async (db, req, requestedId) => {
 
 const complaintSelect = `
   SELECT c.*,
+         GREATEST(0, DATEDIFF(COALESCE(c.completed_at, NOW()), c.registered_at)) AS age_days,
          COALESCE(CAST(customer.customer_code AS CHAR), ${internetCustomerNumberSql('internet_customer')}, CAST(service_customer.customer_id AS CHAR)) AS customer_code,
          COALESCE(customer.full_name, internet_customer.full_name,
            NULLIF(TRIM(CONCAT_WS(' ', service_customer.salutation, service_customer.customer_name)), '')) AS customer_name,
@@ -167,7 +168,7 @@ const getComplaints = async (req, res) => {
     }
     const [rows] = await db.query(
       `${complaintSelect} ${filters.length ? `WHERE ${filters.join(' AND ')}` : ''}
-       ORDER BY c.registered_at ASC, c.complaint_id ASC`,
+       ORDER BY age_days DESC, c.registered_at ASC, c.complaint_id ASC`,
       values
     );
     return res.json(rows);
@@ -345,6 +346,25 @@ const addComplaint = async (req, res) => {
       `SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(complaint_no, '-', -1) AS UNSIGNED)), 0) + 1 AS next_no
        FROM cable_tv_complaints FOR UPDATE`
     );
+    // Check inside the registration transaction, after the existing numbering lock.
+    const customerColumn = customerId ? 'cable_customer_id'
+      : internetCustomerId ? 'internet_customer_id' : serviceCustomerId ? 'service_customer_id' : null;
+    if (customerColumn) {
+      const [[pending]] = await db.query(
+        `SELECT complaint_id, complaint_no, status FROM cable_tv_complaints
+         WHERE ${customerColumn} = ? AND status <> 'COMPLETED'
+         ORDER BY registered_at DESC, complaint_id DESC LIMIT 1 FOR UPDATE`,
+        [customerId || internetCustomerId || serviceCustomerId]
+      );
+      if (pending) {
+        await db.rollback();
+        transactionStarted = false;
+        return res.status(409).json({
+          message: `This customer already has a pending complaint (${pending.complaint_no}, ${pending.status.replaceAll('_', ' ')}). Complete it before registering another complaint.`,
+          code: 'CUSTOMER_COMPLAINT_PENDING', complaint_id: pending.complaint_id
+        });
+      }
+    }
     const complaintNo = `CMP-${String(next.next_no).padStart(6, '0')}`;
     const [result] = await db.query(
       `INSERT INTO cable_tv_complaints

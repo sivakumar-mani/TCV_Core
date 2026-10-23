@@ -387,6 +387,10 @@ export class CableTvComplaints {
 
   private handleError(error: any) {
     this.loader.stop();
+    if (error?.error?.code === 'CUSTOMER_COMPLAINT_PENDING') {
+      window.alert(error.error.message);
+      return;
+    }
     this.showError(error?.error?.message || globalConstants.genericError);
   }
 }

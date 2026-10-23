@@ -43,7 +43,7 @@
       <table>
         <thead>
           <tr>
-            <th>Complaint No</th><th>Type</th><th>Registered</th><th>Customer / Caller</th>
+            <th>Complaint No</th><th>Type</th><th>Registered</th><th>Days Ago</th><th>Customer / Caller</th>
             <th>Nature of Complaint</th><th>Assigned To</th><th>Status</th><th>Action</th>
           </tr>
         </thead>
@@ -52,6 +52,7 @@
             <td><strong>{{ row.complaint_no }}</strong></td>
             <td>{{ row.complainant_type }}</td>
             <td>{{ row.registered_at | date:'dd-MM-yyyy, h:mm a' }}<small>{{ row.registered_by_name || '-' }}</small></td>
+            <td>{{ row.age_days ?? 0 }}</td>
             <td>
               {{ displayCustomer(row) }}
               <small *ngIf="row.customer_address || row.anonymous_address">{{ row.customer_address || row.anonymous_address }}</small>
@@ -66,7 +67,7 @@
               <button mat-menu-item *ngIf="permissions.isAdmin()" type="button" (click)="deleteComplaint(row)">Delete complaint</button>
             </mat-menu></td>
           </tr>
-          <tr *ngIf="!complaints.length"><td colspan="8" class="empty">No complaints found.</td></tr>
+          <tr *ngIf="!complaints.length"><td colspan="9" class="empty">No complaints found.</td></tr>
         </tbody>
       </table>
     </div>
