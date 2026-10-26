@@ -72,8 +72,11 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
       railwireLogo = null;
     }
   }
+  // Customer GSTIN is printed only for B2B customers that have one saved.
+  const customerGstin = String(customer?.customer_type || '').toUpperCase() === 'B2B'
+    ? String(customer?.gstin || '').trim().toUpperCase() : '';
   const commands: string[] = [];
-  const text = (x: number, y: number, size: number, value: unknown, bold = false, color = '0 0 0') =>
+  const text =(x: number, y: number, size: number, value: unknown, bold = false, color = '0 0 0') =>
     commands.push(`BT ${color} rg /${bold ? 'F2' : 'F1'} ${size} Tf ${x} ${y} Td (${escapePdf(value)}) Tj ET`);
   const rightText = (rightX: number, y: number, size: number, value: unknown, bold = false) => {
     const content = String(value ?? '-');
@@ -111,6 +114,7 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
     text(219, 680, 9, customerName, true);
     multiText(219, 665, 8, data.address, 34);
     text(219, 625, 8, `Registered Mobile: ${customer?.mobile_no || '-'}`, true);
+    if (customerGstin) text(219, 611, 8, `GSTIN: ${customerGstin}`, true);
     [['Customer No', customer?.display_customer_no], ['User Name', customer?.net_id], ['Invoice No', invoiceNo],
       ['Billing Date', displayDate(invoiceDate)], ['Billing Period', `${displayDate(subscription?.start_date)} To`],
       ['', displayDate(subscription?.end_date)]].forEach(([label, value], index) => {
@@ -135,6 +139,7 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
     text(left, 524, 8, `Username: ${customer?.net_id || '-'}`, true);
     text(left, 510, 8, `Subscriber ID: ${customer?.display_customer_no || '-'}`);
     multiText(left, 496, 8, `Package: ${packageName}`, 62, 2);
+    if (customerGstin) text(left, 472, 8, `Customer GSTIN: ${customerGstin}`, true);
     [['Invoice No.', invoiceNo], ['Invoice Date', displayDate(invoiceDate)],
       ['Reference', subscription?.internet_subscription_id],
       ['Billing Period', `${displayDate(subscription?.start_date)} - ${displayDate(subscription?.end_date)}`]]
@@ -155,6 +160,7 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
     text(left, 721, 10, customerName, true);
     multiText(left, 706, 8, data.address, 58, 2);
     text(left, 674, 8, `Registered Mobile: ${customer?.mobile_no || '-'}`);
+    if (customerGstin) text(left, 660, 8, `Customer GSTIN: ${customerGstin}`);
     [['Invoice No', invoiceNo], ['Invoice Date', displayDate(invoiceDate)],
       ['Invoice Period', `${displayDate(subscription?.start_date)} to ${displayDate(subscription?.end_date)}`]]
       .forEach(([label, value], index) => { text(350, 721 - index * 18, 8, label); text(420, 721 - index * 18, 8, value); });
