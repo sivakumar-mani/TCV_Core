@@ -12,7 +12,9 @@ if (missingEnvironmentVariables.length) {
   throw new Error(`Missing database environment variables: ${missingEnvironmentVariables.join(', ')}`);
 }
 
-const configuredPort = Number(process.env.DB_PORT || 3306);
+const APP_TIME_ZONE = process.env.DB_TIME_ZONE || '+05:30';
+
+const configuredPort =Number(process.env.DB_PORT || 3306);
 if (!Number.isInteger(configuredPort) || configuredPort < 1 || configuredPort > 65535) {
   throw new Error('DB_PORT must be a valid TCP port number');
 }
@@ -31,6 +33,13 @@ const pool = mysql.createPool({
   enableKeepAlive: true,
   keepAliveInitialDelay: Number(process.env.DB_KEEPALIVE_DELAY_MS || 10000),
   connectTimeout: Number(process.env.DB_CONNECT_TIMEOUT_MS || 10000),
+  // DATETIME values are read/written as IST regardless of the Node host timezone.
+  timezone: APP_TIME_ZONE,
+});
+
+// Make CURRENT_TIMESTAMP/NOW() and DATE_FORMAT (emails, reports) use IST too.
+pool.on('connection', (dbConnection) => {
+  dbConnection.query(`SET time_zone = '${APP_TIME_ZONE}'`);
 });
 
 // Keep the existing connection.promise() contract. Once beginTransaction is
