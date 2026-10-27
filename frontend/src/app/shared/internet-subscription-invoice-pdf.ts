@@ -139,7 +139,7 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
     text(left, 524, 8, `Username: ${customer?.net_id || '-'}`, true);
     text(left, 510, 8, `Subscriber ID: ${customer?.display_customer_no || '-'}`);
     multiText(left, 496, 8, `Package: ${packageName}`, 62, 2);
-    if (customerGstin) text(left, 472, 8, `Customer GSTIN: ${customerGstin}`, true);
+    if (customerGstin) text(left, 472, 8, `GSTIN: ${customerGstin}`, true);
     [['Invoice No.', invoiceNo], ['Invoice Date', displayDate(invoiceDate)],
       ['Reference', subscription?.internet_subscription_id],
       ['Billing Period', `${displayDate(subscription?.start_date)} - ${displayDate(subscription?.end_date)}`]]
@@ -160,7 +160,7 @@ export async function buildInternetSubscriptionInvoicePdf(data: {
     text(left, 721, 10, customerName, true);
     multiText(left, 706, 8, data.address, 58, 2);
     text(left, 674, 8, `Registered Mobile: ${customer?.mobile_no || '-'}`);
-    if (customerGstin) text(left, 660, 8, `Customer GSTIN: ${customerGstin}`);
+    if (customerGstin) text(left, 660, 8, `GSTIN: ${customerGstin}`);
     [['Invoice No', invoiceNo], ['Invoice Date', displayDate(invoiceDate)],
       ['Invoice Period', `${displayDate(subscription?.start_date)} to ${displayDate(subscription?.end_date)}`]]
       .forEach(([label, value], index) => { text(350, 721 - index * 18, 8, label); text(420, 721 - index * 18, 8, value); });
