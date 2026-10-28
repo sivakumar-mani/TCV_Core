@@ -179,3 +179,12 @@ textarea { resize: vertical; }
 }
 
 .package-row-remove { display: block; border: 0; background: transparent; color: #b42318; padding: 0 4px; cursor: pointer; font-size: 12px; }
+
+td.subscription-period,
+span.subscription-payment-pill {
+  background: #fff3cd !important;
+
+  &.paid {
+    background: #58e86d !important;
+  }
+}

@@ -191,7 +191,7 @@
             <td *ngIf="section === 'packages'">{{ row.end_date | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'packages'">{{ row.updated_by_name || '-' }}</td>
             <td *ngIf="section === 'packages'">{{ row.approval_status }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ subscriptionPeriodLabel(row) }}</td>
+            <td *ngIf="section === 'subscriptions'" class="subscription-period" [class.paid]="subscriptionStatusLabel(row) === 'Paid'">{{ subscriptionPeriodLabel(row) }}</td>
             <td *ngIf="section === 'subscriptions'">{{ (row.collect_date || row.created_at) | date:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ subscriptionCollectedByLabel(row) }}</td>
             <td *ngIf="section === 'subscriptions'">{{ noOfPeriodLabel(row.number_of_days_or_months, row.billing_basis, row.start_date) }}</td>
@@ -200,7 +200,7 @@
             <td *ngIf="section === 'subscriptions'">{{ row.amount }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.balance_amount }}</td>
             <td>
-              <span [ngClass]="section === 'subscriptions' ? subscriptionStatusClass(row) : ''">
+              <span [class.subscription-payment-pill]="section === 'subscriptions'" [ngClass]="section === 'subscriptions' ? subscriptionStatusClass(row) : ''">
                 {{ section === 'subscriptions'
                   ? subscriptionStatusLabel(row)
                   : section === 'stbs'
