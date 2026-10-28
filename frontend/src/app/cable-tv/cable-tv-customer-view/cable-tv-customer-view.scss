@@ -214,3 +214,13 @@ tbody tr:nth-child(even) { background: #f8fafb; }
   tbody tr:nth-child(even) { background: #f6f7f8 !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .status-cell, .status-cell.paid { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
+
+// Payment colors apply only to subscription Period cells and Status pills.
+td.subscription-payment-cell,
+span.subscription-payment-pill {
+  background: #fff3cd !important;
+
+  &.subscription-paid {
+    background: #58e86d !important;
+  }
+}

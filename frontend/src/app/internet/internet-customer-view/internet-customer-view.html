@@ -99,7 +99,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let x of details.subscriptions">
-            <td>{{ monthName(x.subscription_month) }} - {{ x.subscription_year }}</td>
+            <td class="subscription-payment-cell" [class.subscription-paid]="x.payment_status === 'PAID'">{{ monthName(x.subscription_month) }} - {{ x.subscription_year }}</td>
             <td class="subscription-date">{{ x.collect_date | date: 'dd-MM-yyyy' }}</td>
             <td>{{ x.collected_by_name || '-' }}</td>
             <td>{{ subscriptionDays(x.start_date, x.end_date) }} Days</td>
@@ -108,7 +108,7 @@
             <td>{{ x.amount | number: '1.0-0' }}</td>
             <td>{{ x.balance_amount | number: '1.2-2' }}</td>
             <td>
-              <span class="pill" [class.unpaid]="x.payment_status !== 'PAID'">{{ subscriptionStatusLabel(x) }}</span>
+              <span class="pill subscription-payment-pill" [class.subscription-paid]="x.payment_status === 'PAID'" [class.unpaid]="x.payment_status !== 'PAID'">{{ subscriptionStatusLabel(x) }}</span>
             </td>
             <td>
               <select class="invoice-select" #invoiceType (change)="openSubscriptionInvoice(x, invoiceType.value); invoiceType.value = ''">

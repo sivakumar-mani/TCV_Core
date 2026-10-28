@@ -126,11 +126,11 @@
           <thead><tr><th>Period</th><th>Package</th><th>Collected Date</th><th>Collected By</th><th>Start Date</th><th>Expiry Date</th><th>No. of Period</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Payment</th><th>Status</th><th>Remarks</th></tr></thead>
           <tbody>
             <tr *ngFor="let row of subscriptions">
-              <td>{{ subscriptionPeriod(row) }}</td><td>{{ row.package_name || '-' }}</td><td>{{ row.collect_date ? (row.collect_date | date:'dd-MM-yyyy') : '-' }}</td>
+              <td class="subscription-payment-cell" [class.subscription-paid]="row.approval_status !== 'PENDING' && row.payment_status === 'PAID'">{{ subscriptionPeriod(row) }}</td><td>{{ row.package_name || '-' }}</td><td>{{ row.collect_date ? (row.collect_date | date:'dd-MM-yyyy') : '-' }}</td>
               <td>{{ row.collected_by_display || row.collected_by_name || '-' }}</td><td>{{ row.start_date ? (row.start_date | date:'dd-MM-yyyy') : '-' }}</td>
               <td>{{ row.expiry_date ? (row.expiry_date | date:'dd-MM-yyyy') : '-' }}</td><td>{{ periodCount(row) }}</td><td>{{ row.amount | number:'1.2-2' }}</td>
               <td>{{ row.paid_amount | number:'1.2-2' }}</td><td>{{ row.balance_amount | number:'1.2-2' }}</td><td>{{ row.payment_mode || '-' }}</td>
-              <td><span class="status-cell" [class.paid]="row.approval_status !== 'PENDING' && row.payment_status === 'PAID'">{{ subscriptionStatus(row) }}</span></td><td>{{ row.remarks || '-' }}</td>
+              <td><span class="status-cell subscription-payment-pill" [class.subscription-paid]="row.approval_status !== 'PENDING' && row.payment_status === 'PAID'" [class.paid]="row.approval_status !== 'PENDING' && row.payment_status === 'PAID'">{{ subscriptionStatus(row) }}</span></td><td>{{ row.remarks || '-' }}</td>
             </tr>
             <tr *ngIf="!subscriptions.length"><td colspan="13" class="empty-row">No subscription records found.</td></tr>
           </tbody>
