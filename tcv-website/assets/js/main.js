@@ -22,3 +22,5 @@ if (form) form.addEventListener('submit', event => {
 });
 
 if (form) form.querySelectorAll('input[required]').forEach(input => input.addEventListener('input', () => input.setCustomValidity('')));
+const year = document.querySelector('#year');
+if (year) year.textContent = String(new Date().getFullYear());
