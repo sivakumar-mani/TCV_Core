@@ -1,0 +1,25 @@
+.channel-filters{display:flex;flex-wrap:wrap;gap:16px;align-items:end;padding:24px;background:var(--soft);border:1px solid var(--line);border-radius:12px}
+.channel-filters label{display:flex;flex:1 1 180px;flex-direction:column;gap:8px;font-size:14px;font-weight:700}
+.channel-filters label:first-child{flex-grow:2}
+.channel-filters input,.channel-filters select{width:100%;min-height:48px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;color:var(--navy);background:#fff}
+.channel-filters .button{min-height:48px}
+.channel-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.channel-table{width:100%;border-collapse:collapse;text-align:left;font-size:15px}
+.channel-table caption{caption-side:top;padding:16px;color:var(--navy);font-weight:700}
+.channel-table th,.channel-table td{padding:14px 18px;border-top:1px solid var(--line)}
+.channel-table thead{background:var(--blue);color:#fff}
+.channel-table tbody tr:nth-child(even){background:var(--soft)}
+.channel-table tbody th{font-weight:600}
+.channel-table td:last-child{font-variant-numeric:tabular-nums;font-weight:700}
+.dm-directory :focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+#channel-empty{padding:24px;background:var(--soft);border-radius:8px}
+@media(max-width:600px){.channel-filters{padding:16px}.channel-filters label,.channel-filters .button{flex-basis:100%}.channel-table th,.channel-table td{padding:12px 10px}.channel-table{font-size:14px}}
+
+/* Match the Alacarte directory with a compact, scrollable channel list. */
+.channel-table-wrap{max-height:70vh}
+.channel-table{font-size:13px;border-collapse:separate;border-spacing:0}
+.channel-table th,.channel-table td{padding:13px 16px}
+.channel-table thead th{position:sticky;top:0;z-index:1;background:#edf4ff;color:var(--navy)}
+.channel-table tbody td:last-child{color:var(--blue)}
+.channel-filters .button{background:transparent;border-color:var(--blue);color:var(--blue)}
+.channel-filters .button:hover,.channel-filters .button:focus-visible{background:var(--blue);color:#fff}

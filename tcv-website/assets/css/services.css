@@ -1,0 +1,6 @@
+/* Service pages share the homepage shell and visual language. */
+.page-hero{padding:36px 0 48px;background:radial-gradient(ellipse at 85% 25%,#deedff 0,transparent 50%),var(--soft);border-bottom:1px solid var(--line)}
+.breadcrumbs{font-size:13px;color:var(--muted);margin-bottom:24px}.breadcrumbs a{color:var(--blue)}
+.page-hero h1{font-size:clamp(30px,3.8vw,48px);max-width:900px}.page-hero p{max-width:760px;font-size:16px}.page-hero .outline{color:var(--blue);border-color:var(--blue)}.page-hero .outline:hover{background:#e5efff}
+.detail-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr);gap:64px;align-items:start}.detail-grid h2{font-size:clamp(26px,3vw,36px);margin:10px 0 24px}.detail-grid h3{font-size:21px;margin:26px 0 12px}.detail-grid aside{padding:28px;background:var(--soft);border:1px solid var(--line);border-radius:14px}.detail-grid aside h3{margin-top:18px}.service-points{padding:0;list-style:none}.service-points li{padding:10px 0 10px 26px;position:relative;border-bottom:1px solid var(--line)}.service-points li::before{content:'\2713';position:absolute;left:0;color:var(--blue)}
+@media(max-width:800px){.detail-grid{grid-template-columns:1fr;gap:28px}.page-hero{padding:26px 0 34px}.hero-actions{flex-wrap:wrap}.detail-grid aside{padding:22px}}

@@ -3,6 +3,13 @@ const toggle = document.querySelector('.menu-toggle');
 const nav = document.querySelector('.nav-links');
 function closeMenu() { nav.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); toggle.setAttribute('aria-label', 'Open navigation'); }
 if (toggle && nav) {
+ const closeButton = document.createElement('button');
+ closeButton.type = 'button';
+ closeButton.className = 'menu-close';
+ closeButton.setAttribute('aria-label', 'Close navigation');
+ closeButton.innerHTML = '<span aria-hidden="true">&times;</span>';
+ closeButton.addEventListener('click', () => { closeMenu(); toggle.focus(); });
+ nav.prepend(closeButton);
  toggle.addEventListener('click', () => { const open = nav.classList.toggle('open'); toggle.setAttribute('aria-expanded', String(open)); toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation'); });
  nav.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
  document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeMenu(); toggle.focus(); } });
