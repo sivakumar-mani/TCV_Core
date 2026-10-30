@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /tools/
-Disallow: /deployment/
-Sitemap: https://timecablevision.in/sitemap.xml
