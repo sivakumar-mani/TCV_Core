@@ -73,7 +73,7 @@ const getUpcomingInternetExpiries = async (_req, res) => {
     const db = connection.promise();
     await ensureReminderLog(db);
     const [rows] = await db.query(`SELECT c.internet_customer_id AS customer_id,
-      ${internetCustomerNumberSql('c')} AS customer_code, c.full_name, TRIM(c.email) AS email,
+      ${internetCustomerNumberSql('c')} AS customer_code, c.full_name, c.net_id, TRIM(c.email) AS email,
       DATE_FORMAT(latest.expiry_date, '%Y-%m-%d') AS expiry_date,
       DATEDIFF(latest.expiry_date, CURDATE()) AS days_remaining,
       (SELECT COUNT(*) FROM internet_expiry_reminder_log log WHERE log.internet_customer_id = c.internet_customer_id
