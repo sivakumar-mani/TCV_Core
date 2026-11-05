@@ -26,12 +26,21 @@
         <option *ngFor="let area of areas" [value]="area.area_id">{{ area.area_name }}</option>
       </select>
     </label>
-    <label>Street Name
-      <select appApiSelect [(ngModel)]="filters.street_id">
-        <option value="">All Streets</option>
-        <option *ngFor="let street of streets" [value]="street.street_id">{{ street.street_name }}</option>
-      </select>
-    </label>
+    <div class="street-filter">
+      <span>Street Name</span>
+      <details class="street-multiselect">
+        <summary>{{ selectedStreetName || 'All Streets' }}</summary>
+        <div class="street-options" role="group" aria-label="Street Name">
+          <button type="button" class="secondary" (click)="filters.street_ids = []">All Streets</button>
+          <label *ngFor="let street of streets">
+            <input type="checkbox" [checked]="filters.street_ids.includes(+street.street_id)"
+              (change)="toggleStreet(street.street_id, $any($event.target).checked)">
+            {{ street.street_name }}
+          </label>
+          <span *ngIf="!streets.length">No streets found.</span>
+        </div>
+      </details>
+    </div>
     <div class="filter-actions">
       <button type="button" class="primary" (click)="loadPendingSubscriptions()">Search</button>
       <button type="button" class="secondary" title="Reset filters" (click)="resetFilters()">Reset</button>

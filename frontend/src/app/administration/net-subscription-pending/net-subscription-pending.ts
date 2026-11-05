@@ -81,11 +81,11 @@ export class NetSubscriptionPending {
     this.filters = { customer_no: '', net_id: '', customer_name: '', area_id: '', street_id: '' };
     this.load();
   }
-  private readonly reportHeaders = ['S No', 'C No', 'Customer Name', 'Address', 'Network', 'Package Amount', 'Unpaid Subscription'];
+  private readonly reportHeaders = ['S No', 'C No', 'Net ID', 'Customer Name', 'Address', 'Network', 'Amount', 'Unpaid Subscription'];
 
   private reportRows() {
     return this.customers.map((c, index) => [
-      index + 1, c.display_customer_no, c.full_name, this.subscriptionAddress(c), c.network_type,
+      index + 1, c.display_customer_no, c.net_id || '-', c.full_name, this.subscriptionAddress(c), c.network_type,
       (Number(c.package_price) || 0).toFixed(2),
       (c.pending_subscriptions || []).map((s: any) => this.monthYear(s)).join(', ')
     ]);

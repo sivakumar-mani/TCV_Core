@@ -34,14 +34,15 @@
       Total Net Subscription Customers: <strong>{{ customers.length }}</strong>
     </div>
     <div class="scroll">
-      <table>
+      <table class="pending-table">
         <thead>
           <tr>
             <th>S No</th>
             <th>C No</th>
+            <th>Net ID</th>
             <th>Customer Name</th>
             <th>Network</th>
-            <th>Package Amount</th>
+            <th>Amount</th>
             <th>Unpaid Subscription</th>
           </tr>
         </thead>
@@ -49,6 +50,7 @@
           <tr *ngFor="let c of customers; let i = index">
             <td>{{ i + 1 }}</td>
             <td>{{ c.display_customer_no }}</td>
+            <td>{{ c.net_id || '-' }}</td>
             <td>
               <div>{{ c.full_name }}</div>
               <div class="customer-address">{{ subscriptionAddress(c) }}</div>
@@ -67,7 +69,7 @@
             </td>
           </tr>
           <tr *ngIf="!customers.length">
-            <td colspan="6" class="empty">No unpaid Internet subscriptions found.</td>
+            <td colspan="7" class="empty">No unpaid Internet subscriptions found.</td>
           </tr>
         </tbody>
       </table>

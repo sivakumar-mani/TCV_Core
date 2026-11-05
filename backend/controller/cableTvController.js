@@ -2110,7 +2110,8 @@ const getPendingSubscriptions = async (req, res) => {
     const oldCustomerNo = String(req.query.old_customer_no || '').trim();
     const customerName = String(req.query.customer_name || '').trim();
     const areaId = intOrNull(req.query.area_id);
-    const streetId = intOrNull(req.query.street_id);
+    const streetIds = [...new Set(String(req.query.street_ids || req.query.street_id || '').split(',')
+      .map(Number).filter(id => Number.isSafeInteger(id) && id > 0))];
     const filters = [
       "sub.approval_status IN ('PENDING','APPROVED')",
       "sub.payment_status IN ('PENDING','PARTIAL')",
@@ -2134,9 +2135,9 @@ const getPendingSubscriptions = async (req, res) => {
       filters.push('c.area_id = ?');
       values.push(areaId);
     }
-    if (streetId) {
-      filters.push('c.street_id = ?');
-      values.push(streetId);
+    if (streetIds.length) {
+      filters.push(`c.street_id IN (${streetIds.map(() => '?').join(',')})`);
+      values.push(...streetIds);
     }
 
     const [rows] = await db.query(

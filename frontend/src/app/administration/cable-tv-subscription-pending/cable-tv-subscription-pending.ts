@@ -19,7 +19,7 @@ export class CableTvSubscriptionPending {
   customers: any[] = [];
   totalCustomers = 0;
   lookups: any = {};
-  filters = { customer_no: '', old_customer_no: '', customer_name: '', area_id: '', street_id: '' };
+  filters = { customer_no: '', old_customer_no: '', customer_name: '', area_id: '', street_ids: [] as number[] };
   selectedCustomer: any = null;
   selectedSubscription: any = null;
   showPaymentModal = false;
@@ -114,7 +114,7 @@ export class CableTvSubscriptionPending {
 
   loadPendingSubscriptions() {
     this.loader.start();
-    this.cableTvService.getPendingSubscriptions(this.filters).subscribe({
+    this.cableTvService.getPendingSubscriptions({ ...this.filters, street_ids: this.filters.street_ids.join(',') }).subscribe({
       next: (response: any) => {
         this.loader.stop();
         this.customers = response?.customers || [];
@@ -146,8 +146,15 @@ export class CableTvSubscriptionPending {
     URL.revokeObjectURL(url);
   }
 
+  toggleStreet(streetId: number, checked: boolean) {
+    const id = Number(streetId);
+    this.filters.street_ids = checked
+      ? [...this.filters.street_ids, id]
+      : this.filters.street_ids.filter(value => value !== id);
+  }
+
   areaChanged() {
-    this.filters.street_id = '';
+    this.filters.street_ids = [];
   }
 
   printReport() {
@@ -163,7 +170,7 @@ export class CableTvSubscriptionPending {
   }
 
   resetFilters() {
-    this.filters = { customer_no: '', old_customer_no: '', customer_name: '', area_id: '', street_id: '' };
+    this.filters = { customer_no: '', old_customer_no: '', customer_name: '', area_id: '', street_ids: [] as number[] };
     this.loadPendingSubscriptions();
   }
 
@@ -243,7 +250,8 @@ export class CableTvSubscriptionPending {
   }
 
   get selectedStreetName() {
-    return (this.lookups.streets || []).find((item: any) => Number(item.street_id) === Number(this.filters.street_id))?.street_name || '';
+    return this.streets.filter((item: any) => this.filters.street_ids.includes(Number(item.street_id)))
+      .map((item: any) => item.street_name).join(', ');
   }
 
   address(customer: any) {
