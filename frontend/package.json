@@ -6,6 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "build:tcverp": "ng build --base-href /tcverp/",
+    "build:subdomain": "ng build --configuration production --base-href / --output-path dist/tcv-erp-root && node -e \"require('node:fs').copyFileSync('.htaccess-root.txt','dist/tcv-erp-root/browser/.htaccess')\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

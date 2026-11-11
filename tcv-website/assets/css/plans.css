@@ -31,3 +31,49 @@
 .plans-channel-links .button{background:transparent;border:1px solid var(--blue);color:var(--blue);white-space:nowrap}
 .plans-channel-links .button:hover,.plans-channel-links .button:focus-visible{background:var(--blue);color:#fff}
 @media(max-width:700px){.plans-channel-links{max-width:none;justify-content:flex-start}.plans-channel-links .button{white-space:normal}}
+
+/* Internet catalogue reuses the CATV card layout. */
+.internet-group-links{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px}.internet-group-links a{padding:10px 16px;border:1px solid var(--blue);border-radius:8px;color:var(--blue);font-size:14px;font-weight:600}.internet-group-links a:hover,.internet-group-links a:focus-visible{background:var(--blue);color:#fff}.internet-plan-group{margin-bottom:40px;scroll-margin-top:100px}.internet-plan-group>.plans-heading h3{font-size:24px;margin:0}.internet-plan-group .rate-label{font-size:12px;line-height:1.5}.internet-plan-group .plan-highlights{overflow-wrap:anywhere}
+.ott-apps-button{width:100%;background:#f4f8ff;cursor:pointer;margin-top:16px;font-family:inherit}
+.ott-modal{width:min(620px,calc(100% - 32px))}
+.ott-modal .channel-modal-header h2{white-space:normal;overflow-wrap:anywhere}
+#ott-modal-content{overflow-y:auto;padding:0 20px 20px;min-height:0;overscroll-behavior:contain}
+.ott-app-summary{font-size:13px;line-height:1.6;margin:18px 0}
+.ott-app-grid{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ott-app-grid li{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px 8px;border:1px solid var(--line);border-radius:10px;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.ott-app-grid img{display:block;width:48px;height:48px;object-fit:contain;border-radius:8px}
+@media(max-width:420px){.ott-app-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Keep the five package categories readable on compact screens. */
+.plan-tabs .plan-tab{white-space:normal;min-width:0}
+@media(max-width:900px){.plan-tabs .plan-tab{flex:none;white-space:nowrap}}
+/* Standalone package pages and service directory. */
+.package-page-content{padding-top:32px}.package-directory h2{font-size:22px;line-height:1.3;letter-spacing:-.025em}.package-directory .coming-icon{width:54px;height:54px;font-size:26px;margin-bottom:18px}.package-directory p{font-size:14px}.package-directory .plan-card{height:100%;display:flex;flex-direction:column}.package-directory .choose-plan{margin-top:auto}
+
+/* Consistent page heading size across package screens and viewport widths. */
+.plans-hero h1{font-size:24px}
+/* Package heading actions and full-width Bootstrap info banners. */
+.package-header-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px 28px;align-items:center}
+.package-header-copy{min-width:0}.package-header-copy h1,.package-header-copy p{white-space:normal}
+.package-header-aside{min-width:0;text-align:right}
+.package-header-actions,.package-header-aside .catv-plan-actions{display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:14px}
+.package-header-aside .package-count{margin-top:0}
+.package-header-aside:empty{display:none}
+.price-note{color:#055160;background:#cff4fc;border-color:#b6effb}
+.price-note p{color:inherit}
+.package-header-row>.price-note{grid-column:1 / -1;width:100%;min-width:0;margin:0;justify-content:flex-start;text-align:left;align-items:flex-start}
+.package-header-row>.price-note p{white-space:normal;overflow-wrap:anywhere;min-width:0;margin:0;font-size:13px;line-height:1.7}
+.package-header-row>.price-note i{flex-shrink:0}
+@media(max-width:800px){.package-header-row{grid-template-columns:minmax(0,1fr);gap:18px}.package-header-aside{justify-self:end;max-width:100%}}
+/* Krishi package type tabs. */
+.internet-tabs{display:flex;flex-wrap:wrap;gap:10px;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:28px}
+.internet-tab{padding:10px 18px;border:1px solid #d8e5f6;border-radius:8px;background:#f4f8ff;color:var(--navy);cursor:pointer;font:inherit;font-size:14px;font-weight:600}
+.internet-tab:hover{background:#e6efff}.internet-tab[aria-selected=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+@media(max-width:480px){.internet-tab{flex:1 1 calc(50% - 10px);padding:10px 12px}}
+/* Initial tiles keep additional Railwire app names readable when no logo is supplied. */
+.ott-app-initial{display:grid;place-items:center;width:48px;height:48px;border-radius:8px;background:#edf4ff;color:var(--blue);font-size:18px;font-weight:700}
+
+/* Single-line CATV annual-subscription offer at the foot of every card. */
+#catv-packages .plan-card{container-type:inline-size}
+.catv-stb-offer{margin:16px 0 0;padding:9px 4px;border:1px solid #ffecb5;border-radius:6px;background:#fff3cd;color:#664d03;font-size:12px;font-weight:700;line-height:1.5;text-align:center;white-space:nowrap;letter-spacing:0}
+
+.catv-offer-asterisk{color:#dc3545;margin-left:2px}

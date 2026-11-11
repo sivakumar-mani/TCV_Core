@@ -10,9 +10,8 @@
         content="Time Cable Vision: cable TV, internet, solar, CCTV and website enquiries. One local team for your home and business.">
     <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="assets/vendor/bootstrap-icons/bootstrap-icons.css">
-    <link rel="stylesheet" href="assets/css/homepage.css">
-    <script src="assets/js/main.js" defer></script>
-    <script src="assets/js/homepage.js" defer></script>
+    <link rel="stylesheet" href="assets/css/homepage.css?v=package-pages-1">
+    <script src="assets/js/main.js?v=email-enquiry-1" defer></script>
 </head>
 
 <body><a class="skip-link" href="#main">Skip to content</a>
@@ -22,8 +21,7 @@
                 class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false"
                 aria-controls="main-nav"><i class="bi bi-list" aria-hidden="true"></i></button>
             <nav class="nav-links" id="main-nav" aria-label="Main navigation"><a href="index.html"
-                    aria-current="page">Home</a><a href="#about">About Us</a><a href="#services">Services</a><a
-                    href="plans.html">Plans</a><a href="#applications">Solutions</a><a href="#faq">Support</a><a
+                    aria-current="page">Home</a><a href="#about">About Us</a><a href="#services">Services</a><details class="plans-nav"><summary>Plans <i class="bi bi-chevron-down" aria-hidden="true"></i></summary><div class="plans-submenu"><a href="catv-packages.html">CATV Packages</a><a href="internet-krishi-packages.html">Internet Krishi Packages</a><a href="internet-railwire-packages.html">Internet Railwire packages</a><a href="cctv-packages.html">CCTV Packages</a><a href="solar-packages.html">Solar Packages</a><a href="not-active-plans.html">Not Active Plans</a></div></details><a href="#applications">Solutions</a><a href="#faq">Support</a><a
                     href="#contact">Contact</a></nav>
             <div class="nav-actions"><a class="whatsapp-small" href="https://wa.me/919962543540" target="_blank"
                     rel="noopener noreferrer" aria-label="Chat on WhatsApp"><i class="bi bi-whatsapp"></i></a><a
@@ -48,7 +46,7 @@
                                 class="bi bi-arrow-right"></i></a><a class="button outline" href="#contact">Contact
                             Us</a></div>
                 </div>
-                <form id="quick-enquiry" class="consultation"><span class="form-kicker">LET?S GET YOU CONNECTED</span>
+                <form id="quick-enquiry" class="consultation" action="send-enquiry.php" method="post"><input type="text" name="website" hidden tabindex="-1" autocomplete="off"><span class="form-kicker">LET?S GET YOU CONNECTED</span>
                     <h2>Start with a conversation.</h2>
                     <p>Tell us what you need. We?ll help you explore your options.</p><label>Your name<input name="name"
                             autocomplete="name" placeholder="Enter your name" required
@@ -62,11 +60,9 @@
                             <option>CCTV & Security</option>
                             <option>Website Development</option>
                             <option>Existing service support</option>
-                        </select></label><button class="button" type="submit">Prepare my enquiry <i
+                        </select></label><button class="button" type="submit">Send my enquiry <i
                             class="bi bi-arrow-right"></i></button>
-                    <p class="form-note">Review and send your enquiry in WhatsApp.</p><a id="quick-link" hidden
-                        target="_blank" rel="noopener noreferrer">Open WhatsApp to send <i
-                            class="bi bi-whatsapp"></i></a>
+                    <p class="form-note">Your enquiry will be emailed to tcvadmin@timecablevision.in.</p>
                     <p id="quick-status" role="status"></p>
                 </form>
             </div>
@@ -114,7 +110,7 @@
                                 <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Home & business
                                     connections</li>
                                 <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i>Connection support</li>
-                            </ul><a class="button service-button" href="plans.html#internet">Explore internet <i
+                            </ul><a class="button service-button" href="internet-krishi-packages.html">Explore internet <i
                                     class="bi bi-arrow-right" aria-hidden="true"></i></a>
                         </div>
                     </article>
@@ -256,7 +252,7 @@
                                     class="bi bi-arrow-up-right" aria-hidden="true"></i></span></div>
                         <h3>Cable TV</h3>
                         <p>Entertainment for everyone.</p>
-                    </a><a class="project" href="plans.html#internet">
+                    </a><a class="project" href="internet-krishi-packages.html">
                         <div><img src="assets/img/internet.svg" width="600" height="400"
                                 alt="Illustrative Internet (FTTH) application" loading="lazy"><span><i
                                     class="bi bi-arrow-up-right" aria-hidden="true"></i></span></div>
@@ -336,11 +332,11 @@
                                 href="mailto:tcvadmin@timecablevision.in">tcvadmin@timecablevision.in</a></p>
                     </div>
                 </div>
-                <form id="enquiry-form" class="contact-form">
+                <form id="enquiry-form" class="contact-form" action="send-enquiry.php" method="post"><input type="text" name="website" hidden tabindex="-1" autocomplete="off">
                     <h3>Let&#8217;s start a conversation.</h3>
-                    <p>Prepare your enquiry and send it through WhatsApp.</p><label>Your name<input name="name" required
+                    <p>Send your enquiry to our team by email.</p><label>Your name<input name="name" required
                             maxlength="100" autocomplete="name"
-                            placeholder="How should we address you?"></label><label>I&#8217;m interested in<select
+                            placeholder="How should we address you?"></label><label>Mobile number<input name="phone" type="tel" autocomplete="tel" required maxlength="18" pattern="[0-9 +()\-]{10,18}" placeholder="Your mobile number"></label><label>I&#8217;m interested in<select
                             name="service" required>
                             <option value="">Choose a service</option>
                             <option>Cable TV</option>
@@ -353,13 +349,10 @@
                             autocomplete="address-level2" placeholder="Area / locality"></label><label>How can we
                         help?<textarea name="message" maxlength="1000"
                             placeholder="Tell us a little about your requirement"></textarea></label><button
-                        class="button" type="submit">Prepare WhatsApp enquiry <i class="bi bi-arrow-right"
+                        class="button" type="submit">Send my enquiry <i class="bi bi-arrow-right"
                             aria-hidden="true"></i></button>
-                    <p class="form-note">Nothing is sent automatically. You review and send the message in WhatsApp.
-                        Your entries are not stored on this website.</p>
-                    <p id="enquiry-status" role="status"></p><a id="prepared-enquiry" class="text-link" hidden
-                        target="_blank" rel="noopener noreferrer">Open WhatsApp to send <i class="bi bi-whatsapp"
-                            aria-hidden="true"></i></a>
+                    <p class="form-note">Your enquiry will be emailed to tcvadmin@timecablevision.in.</p>
+                    <p id="enquiry-status" role="status"></p>
                 </form>
             </div>
         </section>
@@ -376,7 +369,7 @@
                         href="#faq">Support</a><a href="https://timecablevision.in/tcverp/">Customer Portal</a>
                 </nav>
                 <nav aria-label="Our services">
-                    <h3>Our services</h3><a href="catv.html">Cable TV</a><a href="plans.html#internet">Internet
+                    <h3>Our services</h3><a href="catv.html">Cable TV</a><a href="internet-krishi-packages.html">Internet
                         (FTTH)</a><a href="solar.html">Solar Solutions</a><a href="cctv.html">CCTV & Security</a><a
                         href="#contact">Website Development</a>
                 </nav>
