@@ -1,4 +1,7 @@
 /node_modules
+**/.wwebjs_auth/
+**/.wwebjs_cache/
+**/.npm-cache/
 backend/backend.
 backend/.env
 backend/backend-28Aug.zip

@@ -6,4 +6,6 @@ const server = http.createServer(app);
 server.listen(process.env.PORT, () => {
   const stopEmailNotifications = require('./services/operationalEmailNotifications').startOperationalEmailNotifications(require('./connection'));
   server.on('close', stopEmailNotifications);
+  const stopWhatsAppNotifications = require('./services/catvWhatsAppNotifications').startCatvWhatsAppNotifications(require('./connection'));
+  server.on('close', stopWhatsAppNotifications);
 });
