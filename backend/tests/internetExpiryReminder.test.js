@@ -29,6 +29,13 @@ test('reminder preview personalizes saved customer details and never sends', asy
   assert.match(res.body.text, /official WhatsApp and call numbers/);
   assert.match(res.body.text, /Dear CUSTOMER <NAME>,/);
   assert.match(res.body.html, /Dear CUSTOMER &lt;NAME&gt;,/);
+  assert.match(res.body.text, /VISIT OUR WEBSITE TO FIND OUT MORE: https:\/\/timecablevision\.in\//);
+  assert.match(res.body.html, /text-align:center;padding:16px 0/);
+  assert.match(res.body.html, /target="_blank" rel="noopener noreferrer"/);
+  assert.match(res.body.html, /border:1px solid #493754;border-radius:28px/);
+  assert.match(res.body.html, />VISIT OUR WEBSITE TO FIND OUT MORE : https:\/\/timecablevision\.in\/<\/a>/);
+  assert.doesNotMatch(res.body.html, /Explore TIME CABLE VISION/);
+  assert.match(res.body.html, /href="https:\/\/timecablevision\.in\/"/);
 });
 
 for (const fail of [false, true]) test(`reminder ${fail ? 'failure does not increment' : 'success persists'} sent count`, async () => {
@@ -40,6 +47,8 @@ for (const fail of [false, true]) test(`reminder ${fail ? 'failure does not incr
   } }, res);
   assert.equal(f.messages.length, 1);
   assert.equal(f.messages[0].to, 'saved@example.com');
+  assert.equal(f.messages[0].text, preview.body.text);
+  assert.equal(f.messages[0].html, preview.body.html);
   assert.equal(f.queries.some(sql => sql.includes("status = 'SENT',")), !fail);
   if (fail) assert.equal(res.code, 502);
   else assert.equal(res.body.sent_count, 2);
