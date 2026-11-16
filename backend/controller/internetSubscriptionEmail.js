@@ -12,7 +12,12 @@ const smtpErrorMessage = error => {
   return 'Unable to confirm invoice email delivery. Check the mail server delivery logs before retrying.';
 };
 const dateLabel = value => {
-  if (value instanceof Date) return `${String(value.getDate()).padStart(2, '0')}-${String(value.getMonth() + 1).padStart(2, '0')}-${value.getFullYear()}`;
+  if (value instanceof Date || /T.*(?:Z|[+-]\d{2}:?\d{2})$/i.test(String(value || ''))) {
+    const date = value instanceof Date ? value : new Date(value);
+    if (!Number.isNaN(date.getTime())) return new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric'
+    }).format(date).replace(/\//g, '-');
+  }
   const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
   return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
 };
@@ -22,7 +27,8 @@ module.exports = (connection, ensureSchema, mailer = nodemailer, env = process.e
   async function details(req) {
     const db = connection.promise();
     await ensureSchema(db);
-    const [[row]] = await db.query(`SELECT c.full_name, c.email, c.additional_emails, s.start_date, s.end_date
+    const [[row]] = await db.query(`SELECT c.full_name, c.email, c.additional_emails,
+      DATE_FORMAT(s.start_date, '%Y-%m-%d') AS start_date, DATE_FORMAT(s.end_date, '%Y-%m-%d') AS end_date
       FROM internet_subscriptions s JOIN internet_customers c ON c.internet_customer_id=s.internet_customer_id
       WHERE s.internet_subscription_id=? AND s.internet_customer_id=?`, [Number(req.params.subscriptionId), Number(req.params.id)]);
     if (!row) throw Object.assign(new Error('Internet subscription not found'), { status: 404 });

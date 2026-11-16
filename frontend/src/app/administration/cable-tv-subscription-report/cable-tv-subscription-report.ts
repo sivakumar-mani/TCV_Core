@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { writePagedPrintDocument } from '../../shared/paged-print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
@@ -219,10 +220,7 @@ export class CableTvSubscriptionReport {
   amount(value: any) { return Math.round(Number(value) || 0).toLocaleString('en-IN'); }
   count(value: any) { return Number(Number(value || 0).toFixed(2)).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
   displayDate(value: any) {
-    if (!value) return '-';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return String(value);
-    return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+    return formatIndianDate(value, '-');
   }
 
   private titleCase(value: any) { const text = String(value || '').toLowerCase(); return text ? text[0].toUpperCase() + text.slice(1) : ''; }

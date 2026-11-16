@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
@@ -15,7 +16,7 @@ type Section = 'customer' | 'connections' | 'stbs' | 'packages' | 'subscriptions
 
 @Component({
   selector: 'app-cable-tv-customer-history',
-  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [IndiaDatePipe, ApiSelectDirective, MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './cable-tv-customer-history.html',
   styleUrl: './cable-tv-customer-history.scss'
 })

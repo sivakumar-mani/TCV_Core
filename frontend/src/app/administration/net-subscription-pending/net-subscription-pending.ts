@@ -1,3 +1,5 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
+import { formatIndianDate } from '../../shared/india-date';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { downloadSubscriptionReport, printSubscriptionReport } from '../../shared/subscription-report';
 import { CommonModule } from '@angular/common';
@@ -12,7 +14,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-net-subscription-pending',
-  imports: [ApiSelectDirective, CommonModule, FormsModule],
+  imports: [IndiaDatePipe, ApiSelectDirective, CommonModule, FormsModule],
   templateUrl: './net-subscription-pending.html',
   styleUrl: './net-subscription-pending.scss',
 })
@@ -300,9 +302,7 @@ export class NetSubscriptionPending {
     return `${this.date(s.start_date)} to ${this.date(s.end_date)}`;
   }
   date(v: any) {
-    if (!v) return '-';
-    const d = new Date(v);
-    return Number.isNaN(d.getTime()) ? String(v).slice(0, 10) : d.toLocaleDateString('en-GB');
+    return formatIndianDate(v, '-');
   }
   private inputDate(v: any) {
     if (!v) return '';

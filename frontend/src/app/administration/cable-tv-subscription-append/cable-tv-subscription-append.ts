@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -84,10 +85,7 @@ export class CableTvSubscriptionAppend {
   }
 
   displayDate(value: any) {
-    if (!value) return '-';
-    const text = String(value).slice(0, 10);
-    const [year, month, day] = text.split('-');
-    return year && month && day ? `${day}-${month}-${year}` : String(value);
+    return formatIndianDate(value, '-');
   }
 
   private showError(message: string) { this.snackbar.openSnackbar(message, globalConstants.errorRegex); }

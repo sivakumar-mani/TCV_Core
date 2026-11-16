@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../shared/india-date';
 import { CommonModule } from '@angular/common';
 import { Component, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -216,9 +217,7 @@ export class Sales {
   }
 
   displayDate(value: string | Date) {
-    if (!value) return '';
-    const date = new Date(value);
-    return `${`${date.getDate()}`.padStart(2, '0')}/${`${date.getMonth() + 1}`.padStart(2, '0')}/${date.getFullYear()}`;
+    return formatIndianDate(value, '');
   }
 
   money(value: any) {

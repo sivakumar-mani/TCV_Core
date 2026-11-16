@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
@@ -126,11 +127,7 @@ export class NetSubscriptionReport {
     return `${new Date(2000, Number(row.subscription_month) - 1, 1).toLocaleString('en-US', { month: 'long' })} ${row.subscription_year}`;
   }
   date(v: any) {
-    if (!v) return '-';
-    const d = new Date(v);
-    return Number.isNaN(d.getTime())
-      ? String(v)
-      : d.toLocaleDateString('en-GB').replaceAll('/', '-');
+    return formatIndianDate(v, '-');
   }
   exportExcel() {
     const lines = [

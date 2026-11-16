@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../shared/india-date.pipe';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnDestroy } from '@angular/core';
@@ -16,7 +17,7 @@ interface DashboardSummary {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, RouterLink],
+  imports: [IndiaDatePipe, CommonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

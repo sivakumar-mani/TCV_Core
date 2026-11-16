@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
@@ -164,10 +165,7 @@ export class TransactionList {
   }
 
   displayDate(value: any) {
-    const text = String(value || '').slice(0, 10);
-    if (!text) return '-';
-    const [year, month, day] = text.split('-');
-    return `${day}-${month}-${year}`;
+    return formatIndianDate(value, '-');
   }
   amount(value: any) { return Number(value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   private emptyForm() {

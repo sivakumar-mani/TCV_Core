@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
@@ -77,7 +78,7 @@ export class StbPaymentReport {
     this.summary = { total_records: 0, total_amount: 0, total_balance: 0 };
   }
   date(v: any) {
-    return v ? new Date(v).toLocaleDateString('en-GB').replaceAll('/', '-') : '-';
+    return formatIndianDate(v, '-');
   }
   payment(r: any) {
     return `${r.payment_mode}: ${r.received_by_name || '-'}`;

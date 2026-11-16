@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ColDef } from 'ag-grid-community';
@@ -120,11 +121,6 @@ export class PurchaseList {
   }
 
   displayDate(value: string | Date) {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return String(value);
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    return `${day}/${month}/${date.getFullYear()}`;
+    return formatIndianDate(value, '');
   }
 }

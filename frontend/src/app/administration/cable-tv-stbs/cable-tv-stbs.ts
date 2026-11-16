@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
@@ -12,7 +13,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-cable-tv-stbs',
-  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [IndiaDatePipe, ApiSelectDirective, MatMenuModule, CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './cable-tv-stbs.html',
   styleUrl: './cable-tv-stbs.scss'
 })

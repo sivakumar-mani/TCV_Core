@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
@@ -9,7 +10,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-material-sales-report',
-  imports: [ApiSelectDirective, CommonModule, FormsModule],
+  imports: [IndiaDatePipe, ApiSelectDirective, CommonModule, FormsModule],
   templateUrl: './material-sales-report.html',
   styleUrl: '../cable-tv-subscription-report/cable-tv-subscription-report.scss'
 })

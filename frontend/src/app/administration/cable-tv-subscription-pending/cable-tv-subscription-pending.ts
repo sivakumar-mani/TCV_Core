@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { printSubscriptionReport } from '../../shared/subscription-report';
 import { CommonModule } from '@angular/common';
@@ -11,7 +12,7 @@ import { globalConstants } from '../../services/global-constants';
 
 @Component({
   selector: 'app-cable-tv-subscription-pending',
-  imports: [ApiSelectDirective, CommonModule, FormsModule],
+  imports: [IndiaDatePipe, ApiSelectDirective, CommonModule, FormsModule],
   templateUrl: './cable-tv-subscription-pending.html',
   styleUrl: './cable-tv-subscription-pending.scss'
 })

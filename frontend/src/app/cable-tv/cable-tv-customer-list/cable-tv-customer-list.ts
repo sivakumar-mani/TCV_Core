@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { CustomerSelectFloatingFilter } from './customer-select-floating-filter';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
@@ -255,9 +256,7 @@ export class CableTvCustomerList {
   }
 
   formatDate(value: any) {
-    if (!value) return '';
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('en-GB').replaceAll('/', '-');
+    return formatIndianDate(value, '');
   }
 
   formatMoney(value: any) {

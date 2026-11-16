@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
@@ -10,7 +11,7 @@ import { Snackbar } from '../../services/snackbar';
 import { globalConstants } from '../../services/global-constants';
 import { PermissionService } from '../../services/permission.service';
 
-@Component({ selector: 'app-material-sales', imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule], templateUrl: './material-sales.html', styleUrl: './material-sales.scss' })
+@Component({ selector: 'app-material-sales', imports: [IndiaDatePipe, ApiSelectDirective, MatMenuModule, CommonModule, FormsModule], templateUrl: './material-sales.html', styleUrl: './material-sales.scss' })
 export class MaterialSales {
   products: any[] = []; employees: any[] = []; technicianStock: any[] = [];
   issuedMaterials: any[] = []; adjustments: any[] = [];

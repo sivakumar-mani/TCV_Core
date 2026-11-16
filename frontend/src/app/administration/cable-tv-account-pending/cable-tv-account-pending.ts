@@ -1,3 +1,5 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
+import { formatIndianDate } from '../../shared/india-date';
 import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
@@ -15,7 +17,7 @@ import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-cable-tv-account-pending',
-  imports: [ApiSelectDirective, MatMenuModule, MatSelectModule, CommonModule, FormsModule],
+  imports: [IndiaDatePipe, ApiSelectDirective, MatMenuModule, MatSelectModule, CommonModule, FormsModule],
   templateUrl: './cable-tv-account-pending.html',
   styleUrl: './cable-tv-account-pending.scss'
 })
@@ -486,7 +488,7 @@ export class CableTvAccountPending {
     const installedNames = [...new Set(items.map((item: any) => item.installed_by_name || '-'))].join(', ');
     const invoiceRows = items.map((item: any) => {
       const installUpdateDate = this.installUpdateDate(item);
-      const date = installUpdateDate ? new Date(installUpdateDate).toLocaleDateString('en-GB').replaceAll('/', '-') : '-';
+      const date = installUpdateDate ? formatIndianDate(installUpdateDate, '-') : '-';
       const type = this.escapeHtml(this.connectionTypeLabel(item.connection_type));
       const customerNo = this.escapeHtml(this.customerNumber(item));
       return `<tr><td>${date}</td><td>${customerNo}</td><td>${type}</td><td>${amount(item.stb_amount)}</td><td>${amount(item.connection_amount)}</td><td>${amount(item.labor_amount)}</td><td>${amount(item.subscription_amount)}</td><td>${amount(item.customer_paid_amount)}</td><td>${this.materialAmountValue(item)}</td><td>${amount(this.reportBalance(item))}</td><td>${amount(item.grand_total)}</td></tr>`;
@@ -500,7 +502,7 @@ export class CableTvAccountPending {
       th:nth-child(-n+3),td:nth-child(-n+3){text-align:left}
       .grand td{font-weight:700;background:#f3f4f6}.note{font-size:11px;margin-top:18px;color:#4b5563}
       @media print{body{margin:12mm}.no-print{display:none}}
-    </style></head><body><h1>Payment Invoice</h1><div class="meta"><strong>Installed by: ${this.escapeHtml(installedNames)}</strong><span>Printed: ${new Date().toLocaleDateString('en-GB').replaceAll('/', '-')}</span></div>
+    </style></head><body><h1>Payment Invoice</h1><div class="meta"><strong>Installed by: ${this.escapeHtml(installedNames)}</strong><span>Printed: ${formatIndianDate(new Date())}</span></div>
     <table><thead><tr><th>Date</th><th>Cust No</th><th>Type</th><th>STB</th><th>Connection</th><th>Labor</th><th>Subscription</th><th>Customer Paid</th><th>Materials</th><th>Balance</th><th>Total Office</th></tr></thead><tbody>
     ${invoiceRows}<tr class="grand"><td colspan="10">Grand Total</td><td>${amount(grandTotal)}</td></tr>
     </tbody></table><p class="note">Selected customers: ${this.escapeHtml(customerNos)}</p>
@@ -547,9 +549,7 @@ export class CableTvAccountPending {
   }
 
   private displayDate(value: any) {
-    if (!value) return '-';
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString('en-GB').replaceAll('/', '-');
+    return formatIndianDate(value, '-');
   }
 
   private csvValue(value: any) {

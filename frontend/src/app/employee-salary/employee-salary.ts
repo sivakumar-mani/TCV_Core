@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../shared/india-date';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -478,10 +479,6 @@ export class EmployeeSalary {
   }
 
   displayDate(value: string | Date) {
-    if (!value) return '';
-    const date = value instanceof Date ? value : new Date(value);
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    const day = `${date.getDate()}`.padStart(2, '0');
-    return `${day}/${month}/${date.getFullYear()}`;
+    return formatIndianDate(value, '');
   }
 }

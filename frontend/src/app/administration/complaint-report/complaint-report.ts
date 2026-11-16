@@ -1,3 +1,4 @@
+import { formatIndianDate, formatIndianDateTime } from '../../shared/india-date';
 import { writePrintDocument } from '../../shared/print-layout';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
@@ -58,8 +59,12 @@ export class ComplaintReport {
   }
 
   get statusLabel() { return this.filters.status ? this.statusText(this.filters.status) : 'All Statuses'; }
-  date(value: any) { return value ? new Date(value).toLocaleDateString('en-GB').replaceAll('/', '-') : '-'; }
-  dateTime(value: any) { return value ? new Date(value).toLocaleString('en-GB') : '-'; }
+  date(value: any) {
+    return formatIndianDate(value, '-');
+  }
+  dateTime(value: any) {
+    return formatIndianDateTime(value, '-');
+  }
   statusText(value: any) { return String(value || '').replaceAll('_', ' '); }
   customer(row: any) { return row.customer_name || row.anonymous_name || 'Anonymous'; }
   contact(row: any) { return row.reported_mobile || row.customer_mobile || row.anonymous_mobile || '-'; }

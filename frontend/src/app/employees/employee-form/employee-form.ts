@@ -10,12 +10,17 @@ import { InputFormField } from '../../shared/input-form-field/input-form-field';
 import { SelectFormField } from '../../shared/select-form-field/select-form-field';
 import { TextareaFormField } from '../../shared/textarea-form-field/textarea-form-field';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, MatNativeDateModule } from '@angular/material/core';
+import { IndiaDateAdapter, INDIA_DATE_FORMATS } from '../../shared/india-date-adapter';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-employee-form',
+  providers: [
+    { provide: DateAdapter, useClass: IndiaDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: INDIA_DATE_FORMATS }
+  ],
   imports: [
     CommonModule,
     RouterLink,

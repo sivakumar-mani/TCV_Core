@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import {CommonModule} from '@angular/common';
 import {Component} from '@angular/core';
 import {FormsModule} from '@angular/forms';
@@ -19,5 +20,7 @@ export class NetSubscriptionAppend{
   toggleAll(checked:boolean){this.selectedIds=checked?new Set(this.rows.map(x=>Number(x.internet_customer_id))):new Set<number>();}
   toggleRow(id:number,checked:boolean){const next=new Set(this.selectedIds);checked?next.add(Number(id)):next.delete(Number(id));this.selectedIds=next;}
   append(){if(!this.selectedIds.size)return;if(!confirm(`Append ${this.selectedIds.size} Net subscription(s)?`))return;this.loading=true;this.api.appendSubscriptions({subscription_month:Number(this.subscriptionMonth),subscription_year:Number(this.subscriptionYear),customer_ids:[...this.selectedIds]}).subscribe({next:r=>{this.loading=false;this.common.handleTokenAndMessage(r);this.preview();},error:e=>{this.loading=false;this.common.handleError(e);}});}
-  displayDate(value:any){if(!value)return'-';const [y,m,d]=String(value).slice(0,10).split('-');return y&&m&&d?`${d}-${m}-${y}`:String(value);}
+  displayDate(value:any){
+    return formatIndianDate(value, '-');
+  }
 }

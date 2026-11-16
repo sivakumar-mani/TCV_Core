@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { Component, inject } from '@angular/core';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
 import { Router } from '@angular/router';
@@ -138,12 +139,7 @@ export class CategoriesList {
   }
 
   formatIndiaDate(value: string) {
-    if (!value) return '';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return String(value);
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    return `${day}/${month}/${date.getFullYear()}`;
+    return formatIndianDate(value, '');
   }
 
   private handleTokenAndMessage(response: any) {

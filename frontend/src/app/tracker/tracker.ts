@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../shared/india-date.pipe';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +11,7 @@ declare global {
   interface Window { NativeTracker?: { postMessage(message: string): void }; }
 }
 @Component({
-  selector: 'app-tracker', standalone: true, imports: [CommonModule, FormsModule],
+  selector: 'app-tracker', standalone: true, imports: [IndiaDatePipe, CommonModule, FormsModule],
   templateUrl: './tracker.html', styleUrl: './tracker.scss'
 })
 export class Tracker implements OnInit, OnDestroy {

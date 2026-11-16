@@ -1,3 +1,4 @@
+import { formatIndianDateTime } from '../../shared/india-date';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -79,7 +80,6 @@ export class NotificationList {
   }
 
   displayDateTime(value: string | Date) {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('en-IN');
+    return formatIndianDateTime(value, '');
   }
 }

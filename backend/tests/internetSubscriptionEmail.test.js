@@ -18,6 +18,21 @@ test('preview resolves customer email and actual period without sending', async 
   assert.match(res.body.text, /9962543540 \/ 9884543540/); assert.match(res.body.text, /Sivakumar M/);
   assert.equal(s.sent.length, 0); assert.deepEqual(s.queries[0].params, [12, 480]);
 });
+
+test('email period uses saved India dates for UTC timestamps and Date values', async () => {
+  for (const [start_date, end_date] of [
+    ['2026-11-16', '2026-12-15'],
+    ['2026-11-15T18:30:00.000Z', '2026-12-14T18:30:00.000Z'],
+    [new Date('2026-11-15T18:30:00.000Z'), new Date('2026-12-14T18:30:00.000Z')]
+  ]) {
+    const s = setup({ ...row, start_date, end_date }), res = s.res();
+    await s.handler.preview(s.req, res);
+    assert.equal(res.body.period, '16-11-2026 to 15-12-2026');
+    assert.match(s.queries[0].sql, /DATE_FORMAT\(s.start_date, '%Y-%m-%d'\)/);
+    assert.match(s.queries[0].sql, /DATE_FORMAT\(s.end_date, '%Y-%m-%d'\)/);
+    assert.equal(s.sent.length, 0);
+  }
+});
 test('send uses registered recipient and attaches exact preview bytes', async () => {
   const s = setup(), res = s.res(); await s.handler.send(s.req, res);
   assert.equal(res.code, 200); assert.match(res.body.message, /sent successfully/);

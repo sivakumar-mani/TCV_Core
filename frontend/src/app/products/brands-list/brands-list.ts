@@ -1,3 +1,4 @@
+import { formatIndianDate } from '../../shared/india-date';
 import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -154,14 +155,7 @@ export class BrandsList {
     headerClass: 'ag-header-style',
   };
 
-  formatIndiaDate = (params: any) => {
-    if (!params.value) return '';
-    const date = new Date(params.value);
-    if (Number.isNaN(date.getTime())) return String(params.value);
-    const day = `${date.getDate()}`.padStart(2, '0');
-    const month = `${date.getMonth() + 1}`.padStart(2, '0');
-    return `${day}/${month}/${date.getFullYear()}`;
-  };
+  formatIndiaDate = (params: any) => { return formatIndianDate(params.value); };
 
   colDefs: ColDef[] = [
     { headerName: 'S.No', maxWidth: 70, valueGetter: (params: any) => params.node.rowIndex + 1 },

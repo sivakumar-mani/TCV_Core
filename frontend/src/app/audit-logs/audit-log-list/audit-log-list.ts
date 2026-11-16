@@ -1,3 +1,4 @@
+import { formatIndianDateTime } from '../../shared/india-date';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -38,7 +39,7 @@ export class AuditLogList {
     { field: 'table_name', headerName: 'Table' },
     { field: 'record_id', headerName: 'Record ID', maxWidth: 130 },
     { field: 'ip_address', headerName: 'IP Address' },
-    { field: 'created_at', headerName: 'Created At' },
+    { field: 'created_at', headerName: 'Created At', valueFormatter: params => formatIndianDateTime(params.value) },
     {
       headerName: 'Action',
       maxWidth: 130,

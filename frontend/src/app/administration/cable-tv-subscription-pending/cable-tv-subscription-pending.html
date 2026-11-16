@@ -100,7 +100,7 @@
         </div>
         <div class="summary-service-details">
           <span><strong>Status:</strong><b class="customer-status-pill" [class.active]="selectedCustomer?.customer_status === 'ACTIVE'">{{ selectedCustomer?.customer_status || '-' }}</b></span>
-          <span><strong>Install Date:</strong><b>{{ selectedCustomer?.installed_date ? (selectedCustomer.installed_date | date:'dd-MM-yyyy') : '-' }}</b></span>
+          <span><strong>Install Date:</strong><b>{{ selectedCustomer?.installed_date ? (selectedCustomer.installed_date | indiaDate:'dd-MM-yyyy') : '-' }}</b></span>
         </div>
         </div>
 

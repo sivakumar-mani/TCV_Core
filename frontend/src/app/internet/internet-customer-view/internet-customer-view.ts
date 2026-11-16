@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
@@ -13,7 +14,7 @@ import { buildInternetSubscriptionInvoicePdf, internetSubscriptionInvoiceNumber,
 
 @Component({
   selector: 'app-internet-customer-view',
-  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule],
+  imports: [IndiaDatePipe, ApiSelectDirective, MatMenuModule, CommonModule, FormsModule],
   templateUrl: './internet-customer-view.html',
   styleUrl: './internet-customer-view.scss',
 })

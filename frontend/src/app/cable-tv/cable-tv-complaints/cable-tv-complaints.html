@@ -47,7 +47,7 @@
           <tr *ngFor="let row of complaints">
             <td><strong>{{ row.complaint_no }}</strong></td>
             <td>{{ row.complainant_type }}</td>
-            <td>{{ row.registered_at | date:'dd-MM-yyyy, h:mm a' }}<small>{{ row.registered_by_name || '-' }}</small></td>
+            <td>{{ row.registered_at | indiaDate:'dd-MM-yyyy, h:mm a' }}<small>{{ row.registered_by_name || '-' }}</small></td>
             <td>{{ row.age_days ?? 0 }}</td>
             <td>
               {{ displayCustomer(row) }}
@@ -183,9 +183,9 @@
           <thead><tr><th>Attempt</th><th>Status</th><th>Entered Date</th><th>Assigned</th><th>Entered By</th><th>Start</th><th>End</th><th>Description</th></tr></thead>
           <tbody>
             <tr *ngFor="let item of selectedComplaint.attempts">
-              <td>{{ item.attempt_no }}</td><td>{{ statusLabel(item.status) }}</td><td>{{ item.entered_at | date:'dd-MM-yyyy, h:mm a' }}</td>
+              <td>{{ item.attempt_no }}</td><td>{{ statusLabel(item.status) }}</td><td>{{ item.entered_at | indiaDate:'dd-MM-yyyy, h:mm a' }}</td>
               <td>{{ item.assigned_employee_name || '-' }}</td><td>{{ item.entered_by_name || '-' }}</td>
-              <td>{{ item.start_time ? (item.start_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</td><td>{{ item.end_time ? (item.end_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</td>
+              <td>{{ item.start_time ? (item.start_time | indiaDate:'dd-MM-yyyy, h:mm a') : '-' }}</td><td>{{ item.end_time ? (item.end_time | indiaDate:'dd-MM-yyyy, h:mm a') : '-' }}</td>
               <td>{{ item.notes || '-' }}</td>
             </tr>
             <tr *ngIf="!selectedComplaint.attempts?.length"><td colspan="8" class="empty">No complaint history.</td></tr>
@@ -201,7 +201,7 @@
     <div class="modal-header">
       <div>
         <h2 id="complaint-card-title">{{ viewedComplaint.complaint_no }} Â· {{ viewedComplaint.complainant_type }}</h2>
-        <p>Registered {{ viewedComplaint.registered_at | date:'dd-MM-yyyy, h:mm a' }}</p>
+        <p>Registered {{ viewedComplaint.registered_at | indiaDate:'dd-MM-yyyy, h:mm a' }}</p>
       </div>
       <button type="button" class="close" (click)="closeView()">Close</button>
     </div>
@@ -223,9 +223,9 @@
           <thead><tr><th>Attempt</th><th>Status</th><th>Entered Date</th><th>Assigned</th><th>Entered By</th><th>Start</th><th>End</th><th>Description</th></tr></thead>
           <tbody>
             <tr *ngFor="let item of viewedComplaint.attempts">
-              <td>{{ item.attempt_no }}</td><td>{{ statusLabel(item.status) }}</td><td>{{ item.entered_at | date:'dd-MM-yyyy, h:mm a' }}</td>
+              <td>{{ item.attempt_no }}</td><td>{{ statusLabel(item.status) }}</td><td>{{ item.entered_at | indiaDate:'dd-MM-yyyy, h:mm a' }}</td>
               <td>{{ item.assigned_employee_name || '-' }}</td><td>{{ item.entered_by_name || '-' }}</td>
-              <td>{{ item.start_time ? (item.start_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</td><td>{{ item.end_time ? (item.end_time | date:'dd-MM-yyyy, h:mm a') : '-' }}</td>
+              <td>{{ item.start_time ? (item.start_time | indiaDate:'dd-MM-yyyy, h:mm a') : '-' }}</td><td>{{ item.end_time ? (item.end_time | indiaDate:'dd-MM-yyyy, h:mm a') : '-' }}</td>
               <td>{{ item.notes || '-' }}</td>
             </tr>
             <tr *ngIf="!viewedComplaint.attempts?.length"><td colspan="8" class="empty">No complaint history.</td></tr>

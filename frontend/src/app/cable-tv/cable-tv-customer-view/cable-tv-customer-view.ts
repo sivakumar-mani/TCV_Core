@@ -1,3 +1,4 @@
+import { IndiaDatePipe } from '../../shared/india-date.pipe';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -12,7 +13,7 @@ type ViewSection = 'customer' | 'connections' | 'stbs' | 'packages' | 'subscript
 
 @Component({
   selector: 'app-cable-tv-customer-view',
-  imports: [CommonModule, RouterLink],
+  imports: [IndiaDatePipe, CommonModule, RouterLink],
   templateUrl: './cable-tv-customer-view.html',
   styleUrl: './cable-tv-customer-view.scss'
 })

@@ -34,6 +34,26 @@ for (const network_type of ['KRISHI', 'RAILWIRE', 'DMNET']) {
     assert.ok(pdf.includes('(GRAND TOTAL)') && pdf.includes('(1657.00)'));
   }
 }
+// SQL midnight in India is serialized as 18:30 UTC on the previous day.
+for (const kind of ['PROVIDER', 'TCV']) {
+  for (const [start_date, end_date] of [
+    ['2026-11-16', '2026-12-15'],
+    ['2026-11-15T18:30:00.000Z', '2026-12-14T18:30:00.000Z'],
+    [new Date('2026-11-15T18:30:00.000Z'), new Date('2026-12-14T18:30:00.000Z')]
+  ]) {
+    await download({ kind, customer: { network_type: 'KRISHI', full_name: 'Customer' },
+      subscription: { start_date, end_date, amount: 1180 }, package: {}, address: '' });
+    const pdf = await blob.text();
+    assert.ok(pdf.includes('16-11-2026'), 'Invoice must retain the displayed subscription start date');
+    assert.ok(pdf.includes('15-12-2026'), 'Invoice must retain the displayed subscription end date');
+    assert.ok(!pdf.includes('15-11-2026') && !pdf.includes('14-12-2026'));
+    assert.equal(downloadedName, 'Customer_Invoice_Nov2026.pdf');
+  }
+}
+await download({ kind: 'TCV', customer: { network_type: 'KRISHI', full_name: 'Customer' },
+  subscription: { start_date: '2026-10-31T18:30:00.000Z', end_date: '2026-11-29T18:30:00.000Z', amount: 1180 }, package: {}, address: '' });
+assert.equal(downloadedName, 'Customer_Invoice_Nov2026.pdf');
+assert.ok((await blob.text()).includes('01-11-2026 to 30-11-2026'));
 const viewSource = fs.readFileSync(new URL('../src/app/internet/internet-customer-view/internet-customer-view.ts', import.meta.url), 'utf8');
 context.internetSubscriptionInvoiceNumber = number;
 vm.runInContext(ts.transpileModule('class View {' + viewSource.slice(viewSource.indexOf('  subscriptionEditPayload()'), viewSource.indexOf('  canEditSubscription(')) + '} globalThis.View=View;', { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, context);

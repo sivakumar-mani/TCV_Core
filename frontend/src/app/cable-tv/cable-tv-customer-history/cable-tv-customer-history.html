@@ -30,7 +30,7 @@
       </div>
       <div class="summary-service-details">
         <span><strong>Status:</strong><b class="summary-status" [class.success]="headerStatus === 'ACTIVE'">{{ headerStatus }}</b></span>
-        <span><strong>Install Date:</strong><b>{{ headerDate ? (headerDate | date:'dd-MM-yyyy') : '-' }}</b></span>
+        <span><strong>Install Date:</strong><b>{{ headerDate ? (headerDate | indiaDate:'dd-MM-yyyy') : '-' }}</b></span>
       </div>
     </div>
   </section>
@@ -159,14 +159,14 @@
         </thead>
         <tbody>
           <tr *ngFor="let row of rows">
-            <td *ngIf="section === 'connections'">{{ row.connection_date | date:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'connections'">{{ row.connection_date | indiaDate:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'connections'">{{ connectionTypeLabel(row) }}</td>
             <td *ngIf="section === 'connections'">{{ row.installed_by_name || row.entered_by_name || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.old_address || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.new_address || '-' }}</td>
             <td *ngIf="section === 'connections'">{{ row.connection_charge }}</td>
             <td *ngIf="section === 'connections'">{{ row.labour_service_charge }}</td>
-            <td *ngIf="section === 'stbs'">{{ (row.updated_date || row.installed_date) | date:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'stbs'">{{ (row.updated_date || row.installed_date) | indiaDate:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'stbs'">{{ reasonLabel(row.stb_type || '-') }}</td>
             <td *ngIf="section === 'stbs'">{{ reasonLabel(row.update_reason || '-') }}</td>
             <td *ngIf="section === 'stbs'">{{ row.reason_remarks || row.remarks || '-' }}</td>
@@ -187,16 +187,16 @@
             <td *ngIf="section === 'packages'">{{ packageTypeLabel(row.package_type) }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_name || row.package_id }}</td>
             <td *ngIf="section === 'packages'">{{ row.package_price }}</td>
-            <td *ngIf="section === 'packages'">{{ row.start_date | date:'dd-MM-yyyy' }}</td>
-            <td *ngIf="section === 'packages'">{{ row.end_date | date:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'packages'">{{ row.start_date | indiaDate:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'packages'">{{ row.end_date | indiaDate:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'packages'">{{ row.updated_by_name || '-' }}</td>
             <td *ngIf="section === 'packages'">{{ row.approval_status }}</td>
             <td *ngIf="section === 'subscriptions'" class="subscription-period" [class.paid]="subscriptionStatusLabel(row) === 'Paid'">{{ subscriptionPeriodLabel(row) }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ (row.collect_date || row.created_at) | date:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ (row.collect_date || row.created_at) | indiaDate:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ subscriptionCollectedByLabel(row) }}</td>
             <td *ngIf="section === 'subscriptions'">{{ noOfPeriodLabel(row.number_of_days_or_months, row.billing_basis, row.start_date) }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ row.start_date | date:'dd-MM-yyyy' }}</td>
-            <td *ngIf="section === 'subscriptions'">{{ row.expiry_date | date:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ row.start_date | indiaDate:'dd-MM-yyyy' }}</td>
+            <td *ngIf="section === 'subscriptions'">{{ row.expiry_date | indiaDate:'dd-MM-yyyy' }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.amount }}</td>
             <td *ngIf="section === 'subscriptions'">{{ row.balance_amount }}</td>
             <td>
@@ -424,7 +424,7 @@
                 <td><select aria-label="Package type" formControlName="package_type"><option *ngFor="let type of packageTypes" [ngValue]="type" [disabled]="type === 'ADDON' && addonSelectedElsewhere(i)">{{ packageTypeLabel(type) }}</option></select></td>
                 <td><select appApiSelect aria-label="Package name" formControlName="package_id" (change)="selectExtraPackage(i)"><option [ngValue]="null">Select package</option><option *ngFor="let item of packagesForType(row.get('package_type')?.value)" [ngValue]="item.package_id" [disabled]="packageAlreadySelected(item.package_id, i)">{{ item.package_name }}</option></select></td>
                 <td><input aria-label="Rate" type="number" formControlName="package_price"></td>
-                <td>{{ form.get('updated_date')?.value | date:'dd-MM-yyyy' }}</td>
+                <td>{{ form.get('updated_date')?.value | indiaDate:'dd-MM-yyyy' }}</td>
                 <td>Same as first row</td>
                 <td><select aria-label="Status" formControlName="is_active"><option [ngValue]="1">Active</option><option [ngValue]="0">Deactivate</option></select></td>
                 <td><button type="button" class="package-row-remove" (click)="removeUnsavedPackage(i)">Delete</button></td>

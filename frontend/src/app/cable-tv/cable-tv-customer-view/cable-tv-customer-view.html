@@ -67,7 +67,7 @@
           <thead><tr><th>Date</th><th>Type</th><th>Installed By</th><th>Connection Charge</th><th>Discount</th><th>Service Charge</th><th>Materials</th><th>Status</th><th>Remarks</th></tr></thead>
           <tbody>
             <tr *ngFor="let row of connections">
-              <td>{{ row.connection_date | date:'dd-MM-yyyy' }}</td><td>{{ row.connection_type || '-' }}</td>
+              <td>{{ row.connection_date | indiaDate:'dd-MM-yyyy' }}</td><td>{{ row.connection_type || '-' }}</td>
               <td>{{ row.installed_by_name || row.entered_by_name || '-' }}</td><td>{{ row.connection_charge | number:'1.2-2' }}</td>
               <td>{{ row.connection_discount | number:'1.2-2' }}</td><td>{{ row.labour_service_charge | number:'1.2-2' }}</td>
               <td>{{ materialsFor(row) }}</td><td>{{ row.approval_status === 'PENDING' ? 'Pending' : (row.status || '-') }}</td><td>{{ row.remarks || '-' }}</td>
@@ -87,7 +87,7 @@
           <thead><tr><th>Updated Date</th><th>STB No</th><th>Type</th><th>Installed MSO</th><th>Installed / Attended By</th><th>STB Amount</th><th>Discount</th><th>Service Charge</th><th>Accessories</th><th>Reason / Remarks</th><th>Status</th></tr></thead>
           <tbody>
             <tr *ngFor="let row of stbs">
-              <td>{{ (row.updated_date || row.installed_date) | date:'dd-MM-yyyy' }}</td><td>{{ row.stb_no || '-' }}</td><td>{{ row.stb_type || '-' }}</td>
+              <td>{{ (row.updated_date || row.installed_date) | indiaDate:'dd-MM-yyyy' }}</td><td>{{ row.stb_no || '-' }}</td><td>{{ row.stb_type || '-' }}</td>
               <td>{{ row.installed_mso_name || '-' }}</td><td>{{ row.installed_by_name || row.entered_by_name || '-' }}</td>
               <td>{{ row.stb_amount | number:'1.2-2' }}</td><td>{{ row.stb_discount | number:'1.2-2' }}</td><td>{{ row.labour_service_charge | number:'1.2-2' }}</td>
               <td>{{ accessoriesFor(row) }}</td><td>{{ row.update_reason || '-' }}<span *ngIf="row.reason_remarks"> â€” {{ row.reason_remarks }}</span></td><td>{{ row.approval_status === 'PENDING' ? 'Pending' : (row.status || '-') }}</td>
@@ -107,7 +107,7 @@
           <thead><tr><th>Start Date</th><th>End Date</th><th>Package Type</th><th>Package Name</th><th>Updated By</th><th>Price</th><th>Status</th><th>Approval</th></tr></thead>
           <tbody>
             <tr *ngFor="let row of packages">
-              <td>{{ row.start_date | date:'dd-MM-yyyy' }}</td><td>{{ row.end_date ? (row.end_date | date:'dd-MM-yyyy') : '-' }}</td>
+              <td>{{ row.start_date | indiaDate:'dd-MM-yyyy' }}</td><td>{{ row.end_date ? (row.end_date | indiaDate:'dd-MM-yyyy') : '-' }}</td>
               <td>{{ row.package_type || row.master_package_type || '-' }}</td><td>{{ row.package_name || '-' }}</td><td>{{ row.updated_by_name || '-' }}</td>
               <td>{{ row.package_price | number:'1.2-2' }}</td><td>{{ packageStatus(row) }}</td><td>{{ row.approval_status || '-' }}</td>
             </tr>
@@ -126,9 +126,9 @@
           <thead><tr><th>Period</th><th>Package</th><th>Collected Date</th><th>Collected By</th><th>Start Date</th><th>Expiry Date</th><th>No. of Period</th><th>Amount</th><th>Paid</th><th>Balance</th><th>Payment</th><th>Status</th><th>Remarks</th></tr></thead>
           <tbody>
             <tr *ngFor="let row of subscriptions">
-              <td class="subscription-payment-cell" [class.subscription-paid]="row.approval_status !== 'PENDING' && row.payment_status === 'PAID'">{{ subscriptionPeriod(row) }}</td><td>{{ row.package_name || '-' }}</td><td>{{ row.collect_date ? (row.collect_date | date:'dd-MM-yyyy') : '-' }}</td>
-              <td>{{ row.collected_by_display || row.collected_by_name || '-' }}</td><td>{{ row.start_date ? (row.start_date | date:'dd-MM-yyyy') : '-' }}</td>
-              <td>{{ row.expiry_date ? (row.expiry_date | date:'dd-MM-yyyy') : '-' }}</td><td>{{ periodCount(row) }}</td><td>{{ row.amount | number:'1.2-2' }}</td>
+              <td class="subscription-payment-cell" [class.subscription-paid]="row.approval_status !== 'PENDING' && row.payment_status === 'PAID'">{{ subscriptionPeriod(row) }}</td><td>{{ row.package_name || '-' }}</td><td>{{ row.collect_date ? (row.collect_date | indiaDate:'dd-MM-yyyy') : '-' }}</td>
+              <td>{{ row.collected_by_display || row.collected_by_name || '-' }}</td><td>{{ row.start_date ? (row.start_date | indiaDate:'dd-MM-yyyy') : '-' }}</td>
+              <td>{{ row.expiry_date ? (row.expiry_date | indiaDate:'dd-MM-yyyy') : '-' }}</td><td>{{ periodCount(row) }}</td><td>{{ row.amount | number:'1.2-2' }}</td>
               <td>{{ row.paid_amount | number:'1.2-2' }}</td><td>{{ row.balance_amount | number:'1.2-2' }}</td><td>{{ row.payment_mode || '-' }}</td>
               <td><span class="status-cell subscription-payment-pill" [class.subscription-paid]="row.approval_status !== 'PENDING' && row.payment_status === 'PAID'" [class.paid]="row.approval_status !== 'PENDING' && row.payment_status === 'PAID'">{{ subscriptionStatus(row) }}</span></td><td>{{ row.remarks || '-' }}</td>
             </tr>
@@ -150,7 +150,7 @@
               <td>{{ row.stb_amount | number:'1.2-2' }}</td><td>{{ row.connection_amount | number:'1.2-2' }}</td><td>{{ row.labor_amount | number:'1.2-2' }}</td>
               <td>{{ row.material_cost | number:'1.2-2' }}</td><td>{{ row.material_discount | number:'1.2-2' }}</td><td>{{ row.subscription_amount | number:'1.2-2' }}</td>
               <td>{{ row.overall_discount | number:'1.2-2' }}</td><td>{{ row.grand_total | number:'1.2-2' }}</td><td>{{ row.customer_paid_amount | number:'1.2-2' }}</td>
-              <td>{{ row.balance_amount | number:'1.2-2' }}</td><td>{{ row.due_date ? (row.due_date | date:'dd-MM-yyyy') : '-' }}</td><td>{{ row.account_status || '-' }}</td>
+              <td>{{ row.balance_amount | number:'1.2-2' }}</td><td>{{ row.due_date ? (row.due_date | indiaDate:'dd-MM-yyyy') : '-' }}</td><td>{{ row.account_status || '-' }}</td>
             </tr>
             <tr *ngIf="!accounts.length"><td colspan="12" class="empty-row">No account records found.</td></tr>
           </tbody>

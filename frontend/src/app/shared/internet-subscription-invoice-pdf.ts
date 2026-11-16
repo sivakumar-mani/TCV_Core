@@ -16,6 +16,15 @@ const escapePdf = (value: unknown) => String(value ?? '-')
 const money = (value: unknown) => (Number(value) || 0).toFixed(2);
 const displayDate = (value: unknown) => {
   if (!value) return '-';
+  // SQL DATE values may arrive as midnight IST serialized to the previous UTC day.
+  // Preserve date-only strings, but display timestamp/Date values in business time.
+  if (Object.prototype.toString.call(value) === '[object Date]' || /T.*(?:Z|[+-]\d{2}:?\d{2})$/i.test(String(value))) {
+    const date = Object.prototype.toString.call(value) === '[object Date]'
+      ? new Date((value as Date).getTime()) : new Date(String(value));
+    if (!Number.isNaN(date.getTime())) return new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric'
+    }).format(date).replace(/\//g, '-');
+  }
   const text = String(value).slice(0, 10);
   const match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   return match ? `${match[3]}-${match[2]}-${match[1]}` : text;
