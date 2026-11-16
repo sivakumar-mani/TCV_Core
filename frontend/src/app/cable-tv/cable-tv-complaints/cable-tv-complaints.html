@@ -11,10 +11,7 @@
     <h2><i class="bi bi-megaphone"></i> Complaints by Status</h2>
     <div class="summary-grid">
       <article class="summary-card open"><span>Open</span><strong>{{ statusCount('OPEN') }}</strong></article>
-      <article class="summary-card progress"><span>In Progress</span><strong>{{ statusCount('IN_PROGRESS') }}</strong></article>
-      <article class="summary-card hold"><span>Hold</span><strong>{{ statusCount('HOLD') }}</strong></article>
-      <article class="summary-card pending"><span>Pending</span><strong>{{ statusCount('PENDING') }}</strong></article>
-      <article class="summary-card completed"><span>Completed</span><strong>{{ statusCount('COMPLETED') }}</strong></article>
+      <article class="summary-card completed"><span>Complete</span><strong>{{ statusCount('COMPLETED') }}</strong></article>
     </div>
   </section>
 
@@ -24,7 +21,6 @@
     </label>
     <label>Status
       <select [(ngModel)]="filters.status">
-        <option value="ACTIVE">Open &amp; In Progress</option>
         <option *ngFor="let status of statuses" [value]="status">{{ statusLabel(status) }}</option>
       </select>
     </label>
@@ -60,12 +56,12 @@
             </td>
             <td>{{ row.nature_of_complaint }}</td>
             <td>{{ row.assigned_employee_name || 'Unassigned' }}</td>
-            <td><span class="status" [attr.data-status]="row.status">{{ statusLabel(row.status) }}</span></td>
-            <td><button type="button" class="app-action-trigger" [matMenuTriggerFor]="rowActionMenu1" aria-label="Open row actions">Action<span class="app-action-caret" aria-hidden="true"></span></button><mat-menu #rowActionMenu1="matMenu" class="app-row-action-menu">
-              <button mat-menu-item type="button" title="View complaint" (click)="viewComplaint(row)">View complaint</button>
-              <button mat-menu-item type="button" title="Open complaint" (click)="openComplaint(row)">Open complaint</button>
-              <button mat-menu-item *ngIf="permissions.isAdmin()" type="button" (click)="deleteComplaint(row)">Delete complaint</button>
-            </mat-menu></td>
+            <td><span class="status" [attr.data-status]="row.status === 'COMPLETED' ? 'COMPLETED' : 'OPEN'">{{ statusLabel(row.status) }}</span></td>
+            <td><div class="complaint-actions">
+              <button type="button" class="view-button" (click)="viewComplaint(row)">View</button>
+              <button type="button" class="done-button" *ngIf="row.status !== 'COMPLETED' && permissions.can('CABLE_TV_COMPLAINTS', 'update')" [disabled]="completingId !== null" (click)="completeComplaint(row)">Done</button>
+              <button type="button" class="delete-button" *ngIf="permissions.isAdmin()" (click)="deleteComplaint(row)">Delete</button>
+            </div></td>
           </tr>
           <tr *ngIf="!complaints.length"><td colspan="9" class="empty">No complaints found.</td></tr>
         </tbody>
@@ -201,10 +197,10 @@
 </div>
 
 <div class="modal-backdrop" *ngIf="showViewModal && viewedComplaint">
-  <section class="modal-panel complaint-modal">
+  <section class="modal-panel complaint-modal business-card" role="dialog" aria-modal="true" aria-labelledby="complaint-card-title">
     <div class="modal-header">
       <div>
-        <h2>{{ viewedComplaint.complaint_no }} Â· {{ viewedComplaint.complainant_type }}</h2>
+        <h2 id="complaint-card-title">{{ viewedComplaint.complaint_no }} Â· {{ viewedComplaint.complainant_type }}</h2>
         <p>Registered {{ viewedComplaint.registered_at | date:'dd-MM-yyyy, h:mm a' }}</p>
       </div>
       <button type="button" class="close" (click)="closeView()">Close</button>
@@ -220,8 +216,8 @@
       <div><span>Registered By</span><strong>{{ viewedComplaint.registered_by_name || '-' }}</strong></div>
       <div><span>Assigned To</span><strong>{{ viewedComplaint.assigned_employee_name || 'Unassigned' }}</strong></div>
     </section>
-    <section class="history">
-      <h3>Complaint History</h3>
+    <details class="history">
+      <summary>Complaint History</summary>
       <div class="history-table-scroll">
         <table class="history-table">
           <thead><tr><th>Attempt</th><th>Status</th><th>Entered Date</th><th>Assigned</th><th>Entered By</th><th>Start</th><th>End</th><th>Description</th></tr></thead>
@@ -236,6 +232,6 @@
           </tbody>
         </table>
       </div>
-    </section>
+    </details>
   </section>
 </div>

@@ -575,7 +575,8 @@ export class CableTvCustomerForm {
       BATTERY: (value) => value.includes('aaa battery'),
       REMOTE: (value) => value.includes('remote') && value.includes('rr blue')
     };
-    const categoryProducts = products.filter((item: any) => this.stbAccessoryCategory(item.product_name) === category);
+    const categoryProducts = products.filter((item: any) =>
+      this.stbAccessoryCategory(item.product_name) === category && Number(item.available_qty) >= 1);
     const preferredProduct = categoryProducts.find((item: any) => preferred[category](String(item.product_name || '').toLowerCase()))
       || categoryProducts[0];
     return Number(preferredProduct?.product_id) === Number(product.product_id);
@@ -592,12 +593,13 @@ export class CableTvCustomerForm {
 
   stbAccessoryProducts() {
     const explicitAccessories = this.lookups.stbAccessories || [];
-    if (explicitAccessories.length) return explicitAccessories;
     const accessoryPatterns = ['stb accessories', 'hdmi', 'remote', '3pin av', '3 pin av', '1pin av', '1 pin av', 'adaptor 12v', 'adapter 12v', 'aaa battery', 'aa battery'];
-    return (this.lookups.products || []).filter((product: any) => {
+    const products = explicitAccessories.length ? explicitAccessories : (this.lookups.products || []).filter((product: any) => {
       const name = String(product.product_name || '').toLowerCase();
       return accessoryPatterns.some((pattern) => name.includes(pattern));
     });
+    return products.filter((product: any) => this.isEditMode ||
+      !/\b(?:adaptor|adapter)\s*12\s*v\s*2\s*(?:amps?|a)\b/i.test(String(product.product_name || '')));
   }
 
   accessoryDisplayName(name: string) {

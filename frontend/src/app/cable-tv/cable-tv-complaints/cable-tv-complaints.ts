@@ -1,5 +1,4 @@
 import { ApiSelectDirective } from '../../shared/api-select.directive';
-import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +12,7 @@ import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-complaints',
-  imports: [ApiSelectDirective, MatMenuModule, CommonModule, FormsModule],
+  imports: [ApiSelectDirective, CommonModule, FormsModule],
   templateUrl: './cable-tv-complaints.html',
   styleUrl: './cable-tv-complaints.scss'
 })
@@ -32,9 +31,9 @@ export class CableTvComplaints {
   callerType: 'CATV' | 'NET' | 'CCTV' | 'ANONYMOUS' = 'CATV';
   customerSearch = '';
   mapCustomerSearch = '';
-  filters = { search: '', status: 'ACTIVE', assigned_employee_id: '' };
-  statuses = ['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
-  updateStatuses = ['IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'];
+  filters = { search: '', status: 'OPEN', assigned_employee_id: '' };
+  statuses = ['OPEN', 'COMPLETED'];
+  updateStatuses = ['COMPLETED'];
   readonly complaintSubjects = [
     'Accessories Required', 'CCTV Not Working', 'Channel Problem/Package Change',
     'Disconnection', 'Internet Not Working', 'Location Change', 'New Connection /Enquiry',
@@ -77,14 +76,14 @@ export class CableTvComplaints {
 
   emptyAttempt(): any {
     return {
-      status: 'IN_PROGRESS', assigned_employee_id: null, mapping_type: 'CATV',
+      status: 'COMPLETED', assigned_employee_id: null, mapping_type: 'CATV',
       cable_customer_id: null, internet_customer_id: null, service_customer_id: null,
       start_time: '', end_time: '', description: ''
     };
   }
 
   get availableUpdateStatuses() {
-    return this.selectedComplaint?.status === 'OPEN' ? ['IN_PROGRESS'] : this.updateStatuses;
+    return this.updateStatuses;
   }
 
   get registrationCustomers() {
@@ -141,8 +140,26 @@ export class CableTvComplaints {
   }
 
   resetFilters() {
-    this.filters = { search: '', status: 'ACTIVE', assigned_employee_id: '' };
+    this.filters = { search: '', status: 'OPEN', assigned_employee_id: '' };
     this.search();
+  }
+
+  completingId: number | null = null;
+
+  completeComplaint(row: any) {
+    if (row.status === 'COMPLETED' || this.completingId !== null || !this.permissions.can('CABLE_TV_COMPLAINTS', 'update')) return;
+    if (!confirm(`Mark complaint ${row.complaint_no} complete?`)) return;
+    this.completingId = Number(row.complaint_id);
+    this.loader.start();
+    this.cableTvService.completeComplaint(this.completingId).subscribe({
+      next: response => {
+        this.completingId = null;
+        this.loader.stop();
+        this.snackbar.openSnackbar(response?.message || 'Complaint completed successfully', '');
+        this.search();
+      },
+      error: error => { this.completingId = null; this.handleError(error); }
+    });
   }
 
   deleteComplaint(row: any) {
@@ -364,11 +381,11 @@ export class CableTvComplaints {
   }
 
   statusLabel(status: string) {
-    return String(status || '').replaceAll('_', ' ');
+    return status === 'COMPLETED' ? 'Complete' : 'Open';
   }
 
   statusCount(status: string) {
-    return this.summaryComplaints.filter(row => row.status === status).length;
+    return this.summaryComplaints.filter(row => status === 'OPEN' ? row.status !== 'COMPLETED' : row.status === status).length;
   }
 
   localDateTime() {

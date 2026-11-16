@@ -24,6 +24,7 @@ const {
   getComplaintById,
   addComplaint,
   addComplaintAttempt,
+  completeComplaint,
   deleteComplaint
 } = require('../controller/cableTvComplaintController');
 const {
@@ -103,7 +104,8 @@ router.get('/reports/complaints', auth.requirePermission('CABLE_TV_COMPLAINT_REP
 router.get('/complaints/customers/lookup', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintCustomers);
 router.get('/complaints/:complaintId', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintById);
 router.post('/complaints', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_create'), addComplaint);
-router.post('/complaints/:complaintId/attempts', addComplaintAttempt);
+router.post('/complaints/:complaintId/attempts', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), addComplaintAttempt);
+router.patch('/complaints/:complaintId/complete', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), completeComplaint);
 router.delete('/complaints/:complaintId', auth.requireAdmin, deleteComplaint);
 router.get('/masters', auth.requireAnyPermission(['CABLE_TV_MASTERS', 'CABLE_TV_PACKAGES', 'CABLE_TV_STBS']), getMasters);
 router.post('/masters/locations', auth.requirePermission('CABLE_TV_MASTERS'), addLocation);

@@ -3341,9 +3341,9 @@ const getCableCustomerById = async (req, res) => {
     );
     const [subscriptions] = await db.query(
       `SELECT sub.*,
-              CASE WHEN sub.payment_status = 'PENDING' THEN ROUND(COALESCE((SELECT SUM(active_cp.package_price) FROM cable_customer_packages active_cp WHERE active_cp.cable_customer_id = sub.cable_customer_id AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0) * (CASE WHEN sub.billing_basis = 'DAY' THEN sub.number_of_days_or_months / DAY(LAST_DAY(sub.start_date)) ELSE COALESCE(NULLIF(sub.received_count, 0), 1) END), 0)
+              CASE WHEN sub.payment_status = 'PENDING' AND COALESCE(sub.approval_status, '') <> 'PENDING' THEN ROUND(COALESCE((SELECT SUM(active_cp.package_price) FROM cable_customer_packages active_cp WHERE active_cp.cable_customer_id = sub.cable_customer_id AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0) * (CASE WHEN sub.billing_basis = 'DAY' THEN sub.number_of_days_or_months / DAY(LAST_DAY(sub.start_date)) ELSE COALESCE(NULLIF(sub.received_count, 0), 1) END), 0)
                 ELSE sub.amount END AS amount,
-              CASE WHEN sub.payment_status = 'PENDING' THEN GREATEST(ROUND(COALESCE((SELECT SUM(active_cp.package_price) FROM cable_customer_packages active_cp WHERE active_cp.cable_customer_id = sub.cable_customer_id AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0) * (CASE WHEN sub.billing_basis = 'DAY' THEN sub.number_of_days_or_months / DAY(LAST_DAY(sub.start_date)) ELSE COALESCE(NULLIF(sub.received_count, 0), 1) END), 0) - COALESCE(sub.paid_amount, 0), 0)
+              CASE WHEN sub.payment_status = 'PENDING' AND COALESCE(sub.approval_status, '') <> 'PENDING' THEN GREATEST(ROUND(COALESCE((SELECT SUM(active_cp.package_price) FROM cable_customer_packages active_cp WHERE active_cp.cable_customer_id = sub.cable_customer_id AND active_cp.is_active = 1 AND active_cp.approval_status = 'APPROVED'), 0) * (CASE WHEN sub.billing_basis = 'DAY' THEN sub.number_of_days_or_months / DAY(LAST_DAY(sub.start_date)) ELSE COALESCE(NULLIF(sub.received_count, 0), 1) END), 0) - COALESCE(sub.paid_amount, 0), 0)
                 WHEN sub.payment_status = 'PAID' THEN 0
                 ELSE sub.balance_amount END AS balance_amount,
               CASE WHEN sub.payment_status = 'PAID' AND COALESCE(sub.paid_amount, 0) <= 0

@@ -227,6 +227,10 @@ export class CableTvServices {
     return this.http.get(`${this.endpoint}/complaints/${complaintId}`);
   }
 
+  completeComplaint(complaintId: number) {
+    return this.http.patch<any>(`${this.endpoint}/complaints/${complaintId}/complete`, {});
+  }
+
   deleteComplaint(complaintId: number) {
     return this.http.delete<any>(`${this.endpoint}/complaints/${complaintId}`);
   }

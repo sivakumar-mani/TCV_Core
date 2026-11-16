@@ -1,7 +1,7 @@
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const connection = require('../connection');
 
-const allowedStatuses = new Set(['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED']);
+const allowedStatuses = new Set(['OPEN', 'COMPLETED']);
 const allowedComplainantTypes = new Set(['CATV', 'NET', 'CCTV', 'ANONYMOUS']);
 const numberOrNull = value => Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null;
 const textOrNull = value => String(value ?? '').trim() || null;
@@ -153,7 +153,8 @@ const getComplaints = async (req, res) => {
     const values = [];
     const status = String(req.query.status || '').toUpperCase();
     if (status === 'ACTIVE') filters.push("c.status IN ('OPEN', 'IN_PROGRESS')");
-    if (allowedStatuses.has(status)) { filters.push('c.status = ?'); values.push(status); }
+    if (status === 'OPEN') filters.push("c.status <> 'COMPLETED'");
+    else if (allowedStatuses.has(status)) { filters.push('c.status = ?'); values.push(status); }
     if (numberOrNull(req.query.assigned_employee_id)) {
       filters.push('c.assigned_employee_id = ?');
       values.push(numberOrNull(req.query.assigned_employee_id));
@@ -417,10 +418,6 @@ const addComplaintAttempt = async (req, res) => {
       await db.rollback(); transactionStarted = false;
       return res.status(409).json({ message: 'Completed complaints cannot be updated' });
     }
-    if (complaint.status === 'OPEN' && status !== 'IN_PROGRESS') {
-      await db.rollback(); transactionStarted = false;
-      return res.status(400).json({ message: 'The first assignment must change the complaint status to In Progress' });
-    }
     const mappingType = String(payload.mapping_type || complaint.complainant_type || 'ANONYMOUS').toUpperCase();
     const customerId = mappingType === 'CATV'
       ? numberOrNull(payload.cable_customer_id) || complaint.cable_customer_id
@@ -478,6 +475,33 @@ const addComplaintAttempt = async (req, res) => {
   }
 };
 
+const completeComplaint = async (req, res) => {
+  const id = Number(req.params.complaintId);
+  if (!Number.isSafeInteger(id) || id <= 0) return res.status(400).json({ message: 'Invalid complaint ID' });
+  const db = connection.promise();
+  let started = false;
+  try {
+    await db.beginTransaction(); started = true;
+    const [[complaint]] = await db.query('SELECT * FROM cable_tv_complaints WHERE complaint_id = ? FOR UPDATE', [id]);
+    if (!complaint || complaint.status === 'COMPLETED') {
+      await db.rollback(); started = false;
+      return res.status(complaint ? 409 : 404).json({ message: complaint ? 'Complaint is already completed' : 'Complaint not found' });
+    }
+    const employeeId = await resolveEmployeeId(db, req);
+    const [[next]] = await db.query('SELECT COALESCE(MAX(attempt_no), 0) + 1 AS attempt_no FROM cable_tv_complaint_attempts WHERE complaint_id = ?', [id]);
+    await db.query(`INSERT INTO cable_tv_complaint_attempts
+      (complaint_id, attempt_no, status, assigned_employee_id, notes, entered_by_user_id, entered_by_employee_id)
+      VALUES (?, ?, 'COMPLETED', ?, 'Marked complete using Done', ?, ?)`,
+      [id, next.attempt_no, complaint.assigned_employee_id, userId(req), employeeId]);
+    await db.query("UPDATE cable_tv_complaints SET status = 'COMPLETED', completed_at = NOW() WHERE complaint_id = ?", [id]);
+    await db.commit(); started = false;
+    return res.json({ message: 'Complaint completed successfully' });
+  } catch {
+    if (started) await db.rollback();
+    return res.status(500).json({ message: 'Complaint completion failed' });
+  }
+};
+
 const deleteComplaint = async (req, res) => {
   const complaintId = Number(req.params.complaintId);
   if (!Number.isSafeInteger(complaintId) || complaintId <= 0) {
@@ -507,5 +531,5 @@ const deleteComplaint = async (req, res) => {
 
 module.exports = {
   ensureComplaintTables, getComplaintCustomers, getComplaints,
-  getComplaintReport, getComplaintById, addComplaint, addComplaintAttempt, deleteComplaint
+  getComplaintReport, getComplaintById, addComplaint, addComplaintAttempt, completeComplaint, deleteComplaint
 };

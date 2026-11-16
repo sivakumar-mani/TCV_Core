@@ -86,3 +86,20 @@ td small { color: #667085; display: block; margin-top: 4px; }
   .attempt-form-grid > .attempt-note { grid-column: 1 / -1; }
   .caller-types { align-items: flex-start; flex-direction: column; }
 }
+
+.complaint-actions { display: flex; gap: 6px; flex-wrap: wrap; min-width: 165px; }
+.complaint-actions button { padding: 6px 10px; min-height: 32px; font-size: 12px; }
+.complaint-actions .view-button { background: #edf3ff; color: #175cd3; }
+.complaint-actions .done-button { background: #087443; color: #fff; }
+.complaint-actions .delete-button { background: #fff0ef; color: #b42318; }
+.complaint-actions button:disabled { opacity: .5; cursor: wait; }
+.summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.business-card { width: min(660px, 96vw); border-top: 5px solid #175cd3; border-radius: 16px; box-shadow: 0 20px 60px #0f172a40; padding: 22px; }
+.business-card > .modal-header { background: #edf3ff; margin: -22px -22px 16px; padding: 20px 22px; top: -22px; }
+.business-card .complaint-view { background: #fff; border: 0; padding: 0; gap: 18px 24px; }
+.business-card .complaint-view > div { border-bottom: 1px solid #edf0f5; padding-bottom: 12px; min-width: 0; overflow-wrap: anywhere; }
+.business-card .complaint-view span { text-transform: uppercase; font-size: 10px; letter-spacing: .08em; color: #667085; }
+.business-card .complaint-view strong { font-weight: 600; }
+.business-card .history { border-top: 1px solid #e4e9f0; padding-top: 14px; margin-top: 18px; }
+.business-card summary { cursor: pointer; color: #175cd3; font-weight: 600; margin-bottom: 10px; }
+@media (max-width: 480px) { .business-card .complaint-view { grid-template-columns: 1fr; } }
