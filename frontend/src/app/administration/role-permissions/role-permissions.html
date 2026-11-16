@@ -14,15 +14,17 @@
 
   <div class="permission-group" *ngFor="let group of groups()">
     <h2>{{ group }}</h2>
-    <div class="permission-row header-row"><span>Screen Name</span><span>View</span><span>Create</span><span>Edit</span><span>Delete</span></div>
-    <div class="permission-row" *ngFor="let item of screens(group)">
-      <span class="screen"><strong>{{ item.label }}</strong><small>{{ item.route }}</small></span>
-      <label *ngIf="!item.createOnly"><input type="checkbox" [ngModel]="matrix[item.key].can_view" (ngModelChange)="setAction(item, 'can_view', $event)"><span>View</span></label>
+    <p class="widget-help" *ngIf="group === 'Dashboard Widgets'">Control each dashboard widget separately. Keep General → Dashboard → View enabled to allow access to the dashboard page.</p>
+    <p class="widget-warning" role="alert" *ngIf="group === 'Dashboard Widgets' && widgetCatalogMissing">The connected backend does not support all dashboard widget permissions yet. Deploy the updated backend files and restart it, then reload this page. Unsupported widget controls are disabled.</p>
+    <div class="permission-row header-row" [class.widget-row]="group === 'Dashboard Widgets'"><span>{{ group === 'Dashboard Widgets' ? 'Widget Name' : 'Screen Name' }}</span><span>View</span><ng-container *ngIf="group !== 'Dashboard Widgets'"><span>Create</span><span>Edit</span><span>Delete</span></ng-container></div>
+    <div class="permission-row" *ngFor="let item of screens(group)" [class.widget-row]="isWidget(item)">
+      <span class="screen"><strong>{{ item.label }}</strong><small>{{ isWidget(item) ? 'Dashboard widget' : item.route }}</small></span>
+      <label *ngIf="!item.createOnly"><input type="checkbox" [disabled]="isWidget(item) && !supportedWidgetKeys.has(item.key)" [ngModel]="matrix[item.key].can_view" (ngModelChange)="setAction(item, 'can_view', $event)"><span>View</span></label>
       <label *ngIf="item.createOnly"><input type="checkbox" checked disabled><span>View included</span></label>
-      <label><input type="checkbox" [ngModel]="matrix[item.key].can_create" (ngModelChange)="setAction(item, 'can_create', $event)"><span>Create</span></label>
-      <label *ngIf="!item.createOnly"><input type="checkbox" [ngModel]="matrix[item.key].can_update" (ngModelChange)="setAction(item, 'can_update', $event)"><span>Edit</span></label>
+      <label *ngIf="!isWidget(item)"><input type="checkbox" [ngModel]="matrix[item.key].can_create" (ngModelChange)="setAction(item, 'can_create', $event)"><span>Create</span></label>
+      <label *ngIf="!item.createOnly && !isWidget(item)"><input type="checkbox" [ngModel]="matrix[item.key].can_update" (ngModelChange)="setAction(item, 'can_update', $event)"><span>Edit</span></label>
       <label *ngIf="item.createOnly"><input type="checkbox" disabled><span>Admin only</span></label>
-      <label *ngIf="!item.createOnly"><input type="checkbox" [ngModel]="matrix[item.key].can_delete" (ngModelChange)="setAction(item, 'can_delete', $event)"><span>Delete</span></label>
+      <label *ngIf="!item.createOnly && !isWidget(item)"><input type="checkbox" [ngModel]="matrix[item.key].can_delete" (ngModelChange)="setAction(item, 'can_delete', $event)"><span>Delete</span></label>
       <label *ngIf="item.createOnly"><input type="checkbox" disabled><span>Admin only</span></label>
     </div>
   </div>

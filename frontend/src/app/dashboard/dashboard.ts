@@ -6,6 +6,7 @@ import { appConfig } from '../app-config';
 import { PermissionService } from '../services/permission.service';
 
 interface DashboardSummary {
+  widgets?: Record<string, boolean>;
   workflow_waiting_count: number;
   catv: { active: number; deactive: number };
   internet: { active: number; deactive: number };
@@ -34,11 +35,38 @@ export class Dashboard implements OnDestroy {
   previewLoading = false;
 
   get canViewExpiries() {
-    return this.permissions.can('INTERNET_CUSTOMERS', 'view');
+    return this.canWidget('expiries') && this.permissions.can('INTERNET_CUSTOMERS', 'view');
+  }
+
+  readonly widgetPermissions: Record<string, string> = {
+    complaints: 'DASHBOARD_COMPLAINTS', workflow: 'DASHBOARD_WORKFLOW', fault: 'DASHBOARD_FAULT_BOXES',
+    catv: 'DASHBOARD_CATV_CUSTOMERS', internet: 'DASHBOARD_INTERNET_CUSTOMERS',
+    expiries: 'DASHBOARD_INTERNET_EXPIRIES', catvUnpaid: 'DASHBOARD_CATV_UNPAID', internetUnpaid: 'DASHBOARD_INTERNET_UNPAID'
+  };
+  unpaid: Record<string, any> = { CATV: null, NET: null };
+  unpaidErrors: Record<string, string> = { CATV: '', NET: '' };
+  readonly unpaidServices = [
+    { type: 'CATV', label: 'CATV', permission: 'catvUnpaid' },
+    { type: 'NET', label: 'Internet', permission: 'internetUnpaid' }
+  ];
+
+  canWidget(name: string) {
+    return this.permissions.can(this.widgetPermissions[name], 'view') && this.summary.widgets?.[name] !== false;
+  }
+
+  private loadUnpaid() {
+    for (const service of this.unpaidServices) {
+      if (!this.canWidget(service.permission)) { this.unpaid[service.type] = null; continue; }
+      this.unpaidErrors[service.type] = '';
+      this.http.get<any>(`${appConfig.apiUrl}/v1/dashboard/subscription-unpaid`, { params: { type: service.type } }).subscribe({
+        next: response => { this.unpaid[service.type] = response; },
+        error: () => { this.unpaid[service.type] = null; this.unpaidErrors[service.type] = 'Unpaid subscription counts could not be loaded.'; }
+      });
+    }
   }
 
   openReminderPreview(row: any) {
-    if (!this.permissions.can('INTERNET_CUSTOMERS', 'update') || !row.email || this.previewLoading) return;
+    if (!this.canViewExpiries || !this.permissions.can('INTERNET_CUSTOMERS', 'update') || !row.email || this.previewLoading) return;
     this.previewLoading = true;
     this.reminderMessage = '';
     this.http.get<any>(`${appConfig.apiUrl}/v1/dashboard/internet-expiries/${row.customer_id}/reminder-preview`).subscribe({
@@ -56,7 +84,7 @@ export class Dashboard implements OnDestroy {
   sendExpiryReminder() {
     const row = this.reminderCustomer;
     const preview = this.reminderPreview;
-    if (!row || !preview || !this.permissions.can('INTERNET_CUSTOMERS', 'update') || this.sendingReminders.has(row.customer_id)) return;
+    if (!row || !preview || !this.canViewExpiries || !this.permissions.can('INTERNET_CUSTOMERS', 'update') || this.sendingReminders.has(row.customer_id)) return;
     this.sendingReminders.add(row.customer_id);
     this.reminderMessage = '';
     this.http.post<any>(`${appConfig.apiUrl}/v1/dashboard/internet-expiries/${row.customer_id}/reminder`, {
@@ -99,6 +127,7 @@ export class Dashboard implements OnDestroy {
 
   loadSummary(showLoading = true) {
     this.loadExpiries();
+    this.loadUnpaid();
     if (showLoading) this.loading = true;
     this.errorMessage = '';
     this.http.get<DashboardSummary>(`${appConfig.apiUrl}/v1/dashboard/summary`).subscribe({
@@ -114,7 +143,7 @@ export class Dashboard implements OnDestroy {
   }
 
   private loadExpiries() {
-    if (!this.permissions.can('INTERNET_CUSTOMERS', 'view')) { this.upcomingExpiries = []; return; }
+    if (!this.canViewExpiries) { this.upcomingExpiries = []; return; }
     this.expiryError = '';
     this.http.get<any[]>(`${appConfig.apiUrl}/v1/dashboard/internet-expiries`).subscribe({
       next: rows => this.upcomingExpiries = rows,

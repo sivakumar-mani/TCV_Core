@@ -8,6 +8,7 @@ const { internetCustomerNumberSql } = require('../controller/internetCustomerNum
 function controller(db) {
   const context = { module: { exports: {} }, console, require(name) {
     if (name === '../connection') return { promise: () => db };
+    if (name === './dashboardWidgets') return require('../controller/dashboardWidgets');
     if (name === './internetCustomerNumber') return { internetCustomerNumberSql };
     if (name === './internetExpiryReminderLog') return { ensureReminderLog: async () => {} };
     if (name === './internetExpiryDate') return require('../controller/internetExpiryDate');
@@ -51,10 +52,27 @@ test('existing dashboard summary still returns its original counts', async () =>
     return [[{ status: 'OPEN', count: 6 }]];
   } });
   let body;
-  await api.getDashboardSummary({}, { json(value) { body = value; }, status() { throw new Error('Unexpected failure'); } });
+  await api.getDashboardSummary({}, { locals: { role: 'ADMIN' }, json(value) { body = value; }, status() { throw new Error('Unexpected failure'); } });
   assert.equal(body.workflow_waiting_count, 3);
   assert.equal(body.internet.active, 5);
   assert.equal(body.catv.active, 4);
   assert.equal(body.complaints.OPEN, 6);
   assert.equal(body.complaints.COMPLETED, 0);
+});
+
+test('dashboard summary queries only explicitly granted widget data', async () => {
+  const queries = [];
+  const api = controller({ query: async sql => {
+    queries.push(sql);
+    if (sql.includes('FROM role_permissions')) return [[{ permission_key: 'DASHBOARD_CATV_CUSTOMERS' }]];
+    if (sql.includes('FROM cable_tv_customers')) return [[{ active_count: 8, deactive_count: 1 }]];
+    throw new Error('Unauthorized widget query');
+  } });
+  let body;
+  await api.getDashboardSummary({}, { locals: { role: 'EMPLOYEE' }, json(value) { body = value; }, status() { throw new Error('Unexpected failure'); } });
+  assert.equal(body.catv.active, 8);
+  assert.equal(body.widgets.catv, true);
+  assert.equal(body.widgets.workflow, false);
+  assert.equal(body.workflow_waiting_count, 0);
+  assert.equal(queries.length, 2);
 });

@@ -1,3 +1,4 @@
+const { dashboardAccess } = require('./dashboardWidgets');
 const connection = require('../connection');
 const { internetCustomerNumberSql } = require('./internetCustomerNumber');
 const { ensureReminderLog } = require('./internetExpiryReminderLog');
@@ -8,20 +9,50 @@ const complaintStatuses = ['OPEN', 'IN_PROGRESS', 'HOLD', 'PENDING', 'COMPLETED'
 const getDashboardSummary = async (_req, res) => {
   try {
     const db = connection.promise();
+    const access = await dashboardAccess(db, res.locals?.role);
+    const widgetQuery = (key, sql) => access[key] ? db.query(sql) : Promise.resolve([[]]);
     const [workflowResult, catvResult, internetResult, faultResult, complaintResult] = await Promise.all([
-      db.query(`SELECT
-        (SELECT COUNT(*) FROM workflow_approvals WHERE workflow_status = 'PENDING') +
-        (SELECT COUNT(*) FROM purchase_master WHERE approval_status = 'PENDING' AND purchase_status <> 'CANCELLED') +
-        (SELECT COUNT(*) FROM cable_approval_groups WHERE approval_status = 'PENDING' AND group_type <> 'SUBSCRIPTION_UPDATE') AS waiting_count`),
-      db.query(`SELECT
+      widgetQuery('workflow', `SELECT
+        (SELECT COUNT(*) FROM workflow_approvals wa
+         LEFT JOIN work_orders wo ON wo.work_order_id = wa.reference_id
+         LEFT JOIN customers work_customer ON work_customer.customer_id = wo.customer_id
+         WHERE wa.workflow_status = 'PENDING' AND (
+           wa.module_name = 'QUOTATION'
+           OR (wa.module_name = 'WORK_ORDER' AND work_customer.customer_id IS NOT NULL)
+           OR (wa.module_name = 'MATERIAL_ISSUE' AND work_customer.customer_id IS NOT NULL
+               AND EXISTS (SELECT 1 FROM work_order_material_issues mi
+                 WHERE mi.work_order_id = wo.work_order_id AND mi.approval_status = 'PENDING'))
+           OR (wa.module_name = 'CCTV_CUSTOMER' AND EXISTS
+               (SELECT 1 FROM customers c WHERE c.customer_id = wa.reference_id))
+           OR (wa.module_name IN ('INTERNET_CUSTOMER', 'INTERNET_CUSTOMER_UPDATE') AND EXISTS
+               (SELECT 1 FROM internet_customers ic WHERE ic.internet_customer_id = wa.reference_id))
+         )) +
+        (SELECT COUNT(*) FROM purchase_master pm
+         JOIN suppliers s ON s.supplier_id = pm.supplier_id
+         WHERE pm.approval_status = 'PENDING' AND pm.purchase_status <> 'CANCELLED') +
+        (SELECT COUNT(*) FROM cable_approval_groups cag
+         JOIN (
+           SELECT approval_group_id, MAX(cable_customer_id) AS cable_customer_id
+           FROM (
+             SELECT approval_group_id, cable_customer_id FROM cable_tv_customers WHERE approval_group_id IS NOT NULL
+             UNION ALL SELECT approval_group_id, cable_customer_id FROM cable_connections WHERE approval_group_id IS NOT NULL
+             UNION ALL SELECT approval_group_id, cable_customer_id FROM cable_customer_stbs WHERE approval_group_id IS NOT NULL
+             UNION ALL SELECT approval_group_id, cable_customer_id FROM cable_customer_packages WHERE approval_group_id IS NOT NULL
+             UNION ALL SELECT approval_group_id, cable_customer_id FROM cable_subscriptions WHERE approval_group_id IS NOT NULL
+             UNION ALL SELECT approval_group_id, cable_customer_id FROM cable_customer_accounts WHERE approval_group_id IS NOT NULL
+           ) cable_group_references GROUP BY approval_group_id
+         ) cgr ON cgr.approval_group_id = cag.approval_group_id
+         JOIN cable_tv_customers c ON c.cable_customer_id = cgr.cable_customer_id
+         WHERE cag.approval_status = 'PENDING' AND cag.group_type <> 'SUBSCRIPTION_UPDATE') AS waiting_count`),
+      widgetQuery('catv', `SELECT
         SUM(status IN ('ACTIVE', 'FREE', 'LEASE_LINE')) AS active_count,
         SUM(status NOT IN ('ACTIVE', 'FREE', 'LEASE_LINE')) AS deactive_count
         FROM cable_tv_customers WHERE approval_status = 'APPROVED'`),
-      db.query(`SELECT SUM(status = 'ACTIVE') AS active_count, SUM(status = 'INACTIVE') AS deactive_count
+      widgetQuery('internet', `SELECT SUM(status = 'ACTIVE') AS active_count, SUM(status = 'INACTIVE') AS deactive_count
         FROM internet_customers WHERE approval_status = 'APPROVED'`),
-      db.query(`SELECT COUNT(*) AS fault_in_service_count FROM cable_stb_master
+      widgetQuery('fault', `SELECT COUNT(*) AS fault_in_service_count FROM cable_stb_master
         WHERE is_active = 1 AND stock_type IN ('FAULT', 'DAMAGED', 'BURNT')`),
-      db.query('SELECT status, COUNT(*) AS count FROM cable_tv_complaints GROUP BY status')
+      widgetQuery('complaints', 'SELECT status, COUNT(*) AS count FROM cable_tv_complaints GROUP BY status')
     ]);
 
     const complaintCounts = Object.fromEntries(complaintStatuses.map(status => [status, 0]));
@@ -32,6 +63,7 @@ const getDashboardSummary = async (_req, res) => {
     });
 
     return res.json({
+      widgets: access,
       workflow_waiting_count: Number(workflowResult[0][0]?.waiting_count) || 0,
       catv: { active: Number(catvResult[0][0]?.active_count) || 0, deactive: Number(catvResult[0][0]?.deactive_count) || 0 },
       internet: { active: Number(internetResult[0][0]?.active_count) || 0, deactive: Number(internetResult[0][0]?.deactive_count) || 0 },
