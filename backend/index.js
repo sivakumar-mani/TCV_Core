@@ -35,6 +35,8 @@ const app = express()
 app.use(cors());
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
+// Complaint-specific expiring links authorize themselves; portal guards remain unchanged.
+app.use('/api/public/catv-complaints', require('./routes/catvComplaintCompletionRouter').createCompletionRouter(require('./connection')));
 // Isolated tracker routes authorize themselves; existing API guards are unchanged.
 app.use('/api/tracker', require('./tracker/router').createTrackerRouter(require('./connection')));
 app.use('/api/v1/tracker', require('./tracker/router').createTrackerRouter(require('./connection')));

@@ -1,4 +1,5 @@
 const path = require('node:path');
+const { completionConfig, ensureCompletionLinks, issueCompletionLink } = require('./catvComplaintCompletionLinks');
 
 function config(env) {
   const enabled = env.CATV_WHATSAPP_ENABLED === 'true';
@@ -29,15 +30,17 @@ function createWhatsAppClient(env = process.env, logger = console, { protocolTim
   return { client, isReady: () => ready };
 }
 
-function complaintMessage(row) {
+function complaintMessage(row, completionLink = '') {
   const clean = value => String(value ?? '').replace(/[\r\n]+/g, ' ').trim() || '-';
-  return `*NEW CATV COMPLAINT*\nComplaint No: ${clean(row.complaint_no)}\nRegistered: ${clean(row.registered_time)}\nCustomer: ${clean(row.full_name)}\nCustomer ID: ${clean(row.customer_code)}\nContact: ${clean(row.mobile_no)}\nReported Mobile: ${clean(row.reported_mobile)}\nAddress: ${clean(row.customer_address)}\nSubject: ${clean(row.complaint_subject)}\nIssue: ${clean(row.nature_of_complaint)}\nDetails: ${clean(row.notes)}\nStatus: ${clean(row.status)}\n\nTIME CABLE VISION\nhttps://timecablevision.in/tcverp`;
+  return `*NEW CATV COMPLAINT*\nComplaint No: ${clean(row.complaint_no)}\nRegistered: ${clean(row.registered_time)}\nCustomer: ${clean(row.full_name)}\nCustomer ID: ${clean(row.customer_code)}\nContact: ${clean(row.mobile_no)}\nReported Mobile: ${clean(row.reported_mobile)}\nAddress: ${clean(row.customer_address)}\nSubject: ${clean(row.complaint_subject)}\nIssue: ${clean(row.nature_of_complaint)}\nDetails: ${clean(row.notes)}\nStatus: ${clean(row.status)}${completionLink ? `\n\n*MARK AS DONE*\n${completionLink}\nOpen the link and press Confirm Done. Valid for 72 hours.` : ''}\n\nTIME CABLE VISION\nhttps://timecablevision.in/tcverp`;
 }
 
-function createWorker(connection, transport, groupId, logger = console) {
+function createWorker(connection, transport, groupId, logger = console, env = process.env) {
   const db = connection.promise();
+  const linkSettings = completionConfig(env);
   let running = false;
   async function setup() {
+    if (linkSettings) await ensureCompletionLinks(db);
     await db.query(`CREATE TABLE IF NOT EXISTS catv_whatsapp_state (
       group_id VARCHAR(80) PRIMARY KEY, start_after_id BIGINT NOT NULL,
       activated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
@@ -83,8 +86,17 @@ function createWorker(connection, transport, groupId, logger = console) {
         const [claim] = await db.query(`UPDATE catv_whatsapp_delivery SET status = 'SENDING'
           WHERE group_id = ? AND complaint_id = ? AND status = 'QUEUED'`, [groupId, row.complaint_id]);
         if (claim.affectedRows !== 1) continue;
+        let completionLink = '';
+        if (linkSettings && row.status !== 'COMPLETED') {
+          try { completionLink = await issueCompletionLink(db, row.complaint_id, groupId, linkSettings); }
+          catch {
+            await db.query("UPDATE catv_whatsapp_delivery SET status = 'QUEUED' WHERE group_id = ? AND complaint_id = ?", [groupId, row.complaint_id]);
+            logger.error('CATV WhatsApp completion link could not be created; notification remains queued.');
+            break;
+          }
+        }
         try {
-          const sent = await chat.sendMessage(complaintMessage(row));
+          const sent = await chat.sendMessage(complaintMessage(row, completionLink));
           if (!sent?.id?._serialized) throw new Error('Message acceptance unconfirmed');
           await db.query(`UPDATE catv_whatsapp_delivery SET status = 'SENT', message_id = ?
             WHERE group_id = ? AND complaint_id = ?`, [sent.id._serialized, groupId, row.complaint_id]);
@@ -111,7 +123,7 @@ function startCatvWhatsAppNotifications(connection, env = process.env, logger = 
   (async () => {
     try {
       transport = createWhatsAppClient(env, logger);
-      const worker = createWorker(connection, transport, settings.groupId, logger);
+      const worker = createWorker(connection, transport, settings.groupId, logger, env);
       await worker.setup();
       if (stopped) return;
       timer = setInterval(() => { void worker.tick(); }, 5000);

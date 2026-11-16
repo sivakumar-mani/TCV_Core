@@ -3,19 +3,21 @@ const assert = require('node:assert/strict');
 const { config, createWorker, complaintMessage, startCatvWhatsAppNotifications } = require('../services/catvWhatsAppNotifications');
 
 const groupId = '123456789@g.us';
-function fixture({ ready = true, failSend = false, failDb = false, claim = 1, isGroup = true } = {}) {
+function fixture({ ready = true, failSend = false, failDb = false, claim = 1, isGroup = true, env = {}, rowStatus = 'OPEN', failLink = false } = {}) {
   const queries = [], messages = [], errors = [];
   let status = 'QUEUED';
   const row = { complaint_id: 42, complaint_no: 'CMP-000042', full_name: 'Customer', customer_code: 'C123',
     mobile_no: '9999999999', customer_address: '1, Main Street', nature_of_complaint: 'No signal',
-    complaint_subject: 'TV signal', reported_mobile: '8888888888', notes: 'Since morning', status: 'OPEN' };
+    complaint_subject: 'TV signal', reported_mobile: '8888888888', notes: 'Since morning', status: rowStatus };
   const db = { query: async (sql, args) => {
     queries.push({ sql, args });
     if (failDb) throw new Error('DB unavailable');
+    if (failLink && sql.startsWith('INSERT INTO catv_whatsapp_completion_links')) throw new Error('Link insert failed');
     if (sql.startsWith('SELECT c.')) return [status === 'QUEUED' ? [row] : []];
     if (sql.includes("SET status = 'SENDING'")) { if (claim) status = 'SENDING'; return [{ affectedRows: claim }]; }
     if (sql.includes("SET status = 'SENT'")) status = 'SENT';
     if (sql.includes("SET status = 'REVIEW'")) status = 'REVIEW';
+    if (sql.includes("SET status = 'QUEUED'")) status = 'QUEUED';
     return [{}];
   } };
   const transport = { isReady: () => ready, client: { getChatById: async id => {
@@ -26,7 +28,7 @@ function fixture({ ready = true, failSend = false, failDb = false, claim = 1, is
       return { id: { _serialized: 'message-42' } };
     } };
   } } };
-  return { worker: createWorker({ promise: () => db }, transport, groupId, { error: error => errors.push(error) }),
+  return { worker: createWorker({ promise: () => db }, transport, groupId, { error: error => errors.push(error) }, env),
     queries, messages, errors, status: () => status };
 }
 
@@ -93,4 +95,32 @@ test('database and group errors are contained without sending customer data', as
 
 test('message formatting keeps customer fields on separate labelled lines', () => {
   assert.match(complaintMessage({ full_name: 'Name\nInjected line' }), /Customer: Name Injected line\nCustomer ID: -/);
+});
+
+const completionEnv = { CATV_WHATSAPP_DONE_ENABLED: 'true', CATV_WHATSAPP_PUBLIC_URL: 'https://api.example.com' };
+test('enabled worker includes a complaint-specific completion link after saving its hash', async () => {
+  const f = fixture({ env: completionEnv });
+  await f.worker.setup();
+  await f.worker.tick();
+  assert.equal(f.messages.length, 1);
+  assert.match(f.messages[0], /\*MARK AS DONE\*/);
+  assert.match(f.messages[0], /https:\/\/api\.example\.com\/api\/public\/catv-complaints\/done#[a-f0-9]{64}/);
+  const insert = f.queries.find(q => q.sql.startsWith('INSERT INTO catv_whatsapp_completion_links'));
+  assert.equal(insert.args[1], 42);
+  assert.equal(insert.args[2], groupId);
+  assert.equal(f.status(), 'SENT');
+});
+test('already completed queued complaints have no new completion link', async () => {
+  const f = fixture({ env: completionEnv, rowStatus: 'COMPLETED' });
+  await f.worker.tick();
+  assert.equal(f.messages.length, 1);
+  assert.doesNotMatch(f.messages[0], /MARK AS DONE/);
+  assert(!f.queries.some(q => q.sql.startsWith('INSERT INTO catv_whatsapp_completion_links')));
+});
+test('link creation failure retains a queued notification without sending or marking it delivered', async () => {
+  const f = fixture({ env: completionEnv, failLink: true });
+  await f.worker.tick();
+  assert.equal(f.messages.length, 0);
+  assert.equal(f.status(), 'QUEUED');
+  assert.equal(f.errors.length, 1);
 });
