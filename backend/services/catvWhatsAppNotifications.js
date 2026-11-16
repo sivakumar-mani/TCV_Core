@@ -9,12 +9,13 @@ function config(env) {
   return { enabled, groupId };
 }
 
-function createWhatsAppClient(env = process.env, logger = console) {
+function createWhatsAppClient(env = process.env, logger = console, { protocolTimeout } = {}) {
   const { Client, LocalAuth } = require('whatsapp-web.js');
   const client = new Client({
     authStrategy: new LocalAuth({ clientId: 'catv-complaints',
       dataPath: env.CATV_WHATSAPP_AUTH_PATH || path.join(__dirname, '..', '.wwebjs_auth') }),
     puppeteer: { headless: true,
+      ...(protocolTimeout ? { protocolTimeout } : {}),
       ...(env.CATV_WHATSAPP_CHROME_PATH ? { executablePath: env.CATV_WHATSAPP_CHROME_PATH } : {}) }
   });
   let ready = false;
