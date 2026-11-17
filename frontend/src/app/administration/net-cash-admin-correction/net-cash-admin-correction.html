@@ -48,7 +48,7 @@
             <td><input type="checkbox" [attr.aria-label]="'Select ' + row.net_id" [checked]="selectedIds.has(+row.internet_customer_id)" [disabled]="applying || !+row.subscription_count" (change)="toggleCustomer(row, $any($event.target).checked)" /></td>
             <td>{{ row.net_id }}</td><td class="title-case">{{ row.full_name }}</td><td>{{ row.network_type }}</td>
             <td>{{ row.previous_month_expiry_date || '-' }}</td><td>{{ row.selected_month_start_date || '-' }}</td><td>{{ row.selected_month_end_date || '-' }}</td>
-            <td>{{ row.subscription_count }}</td><td>{{ row.subscription_amount | number:'1.2-2' }}</td><td>{{ row.payment_status || 'No subscriptions' }}</td><td>{{ row.payment_mode || '-' }}</td><td>{{ row.locked_count }}</td>
+            <td>{{ row.subscription_count }}</td><td>{{ row.subscription_amount | number:'1.2-2' }}</td><td>{{ row.payment_status || 'No subscriptions' }}</td><td>{{ row.payment_mode || '-' }}</td><td>{{ row.locked_count > 0 ? 'Yes' : 'No' }}</td>
           </tr>
           <tr *ngIf="!preview.customers?.length"><td colspan="12" class="empty">No matching customers found.</td></tr>
         </tbody>

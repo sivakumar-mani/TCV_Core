@@ -14,12 +14,12 @@ test('non-admin payload cannot override Admin/Cash', () => {
  const result=context().renewal(false,{renewed_by_value:'CUSTOMER',payment_mode:'ACCOUNT'});
  assert.equal(result.renewedBy,'ADMIN');assert.equal(result.paymentMode,'CASH');
 });
-async function correction(admin, status='PAID', customerIds=[7]) {
+async function correction(admin, status='PAID', customerIds=[7], options={renewed_by_value:'ADMIN',payment_mode:'ACCOUNT'}) {
  const calls=[]; const db={beginTransaction:async()=>{},commit:async()=>{},rollback:async()=>{},query:async(sql,params)=>{calls.push({sql,params});return [{affectedRows:1}];}};
- const ctx=context({connection:{promise:()=>db},isAdmin:()=>admin,ensureInternetSchema:async()=>{},parseNetIds:()=>['net1'],cashAdminCorrectionRows:async()=>({customers:[{internet_customer_id:7,subscription_count:1},{internet_customer_id:8,subscription_count:1}],month:9,year:2026,unmatched_net_ids:[]})});
+ const ctx=context({connection:{promise:()=>db},isAdmin:()=>admin,ensureInternetSchema:async()=>{},parseNetIds:()=>['net1'],cashAdminCorrectionRows:async()=>({customers:[{internet_customer_id:7,subscription_count:1},{internet_customer_id:8,subscription_count:1}],month:options.subscription_month||9,year:options.subscription_year||2026,unmatched_net_ids:[]})});
  vm.runInContext(source.slice(source.indexOf('const applyCashAdminCorrection='),source.indexOf('const getInternetSubscriptionReport ='))+';this.apply=applyCashAdminCorrection;',ctx);
  const res={status(code){this.code=code;return this;},json(body){this.body=body;return this;}};
- await ctx.apply({body:{renewed_by_value:'ADMIN',payment_mode:'ACCOUNT',payment_status:status,customer_ids:customerIds}},res);
+ await ctx.apply({body:{...options,payment_status:status,customer_ids:customerIds}},res);
  return {calls,res};
 }
 test('bulk correction updates only matched existing subscriptions in selected period and preserves collector',async()=>{
@@ -28,7 +28,7 @@ test('bulk correction updates only matched existing subscriptions in selected pe
  const {sql,params}=calls[0];assert.match(sql,/WHERE internet_customer_id IN \(\?\) AND subscription_month=\? AND subscription_year=\? AND approval_status<>'REJECTED'/);
  assert.doesNotMatch(sql,/collected_by_employee_id=|INSERT|DELETE/);
  assert.match(sql,/paid_amount=CASE WHEN \?='PAID' THEN amount ELSE 0 END/);assert.match(sql,/balance_amount=CASE WHEN \?='PAID' THEN 0 ELSE amount END/);
- assert.deepEqual(Array.from(params),['ACCOUNT','ADMIN',status,status,status,7,9,2026]);
+ assert.deepEqual(Array.from(params),['ACCOUNT','ADMIN',0,status,status,status,7,9,2026]);
  }
 });
 test('bulk correction rejects non-admin and missing status without writes',async()=>{
@@ -40,8 +40,8 @@ test('correction rejects missing, empty and out-of-preview selection without wri
  for(const ids of [null,[],[99],[7,99]]){const r=await correction(true,'PAID',ids);assert.equal(r.res.code,400);assert.equal(r.calls.length,0);}
 });
 test('correction selects individual or all checked customers only',async()=>{
- const one=await correction(true,'PAID',[8]);assert.deepEqual(Array.from(one.calls[0].params).slice(5),[8,9,2026]);
- const all=await correction(true,'PAID',[7,8,7]);assert.deepEqual(Array.from(all.calls[0].params).slice(5),[7,8,9,2026]);
+ const one=await correction(true,'PAID',[8]);assert.deepEqual(Array.from(one.calls[0].params).slice(6),[8,9,2026]);
+ const all=await correction(true,'PAID',[7,8,7]);assert.deepEqual(Array.from(all.calls[0].params).slice(6),[7,8,9,2026]);
 });
 
 test('correction preview binds previous and selected billing periods, including January rollover', async () => {
@@ -65,4 +65,19 @@ test('correction preview binds previous and selected billing periods, including 
   assert.equal(result.subscription_count, 1);
   assert.deepEqual(Array.from(result.unmatched_net_ids), ['missing']);
  }
+});
+
+
+test('Admin/Cash correction persists the lock for paid and unpaid without changing selection scope', async () => {
+ for (const status of ['PAID','PENDING']) {
+  const result=await correction(true,status,[7],{renewed_by_value:'ADMIN',payment_mode:'CASH',subscription_month:11,subscription_year:2026});
+  assert.equal(result.res.body.updated_subscriptions,1);
+  assert.match(result.calls[0].sql,/cash_admin_locked=\?/);
+  assert.deepEqual(Array.from(result.calls[0].params),['CASH','ADMIN',1,status,status,status,7,11,2026]);
+ }
+});
+
+test('Online/Dashboard correction retains unlocked behavior', async () => {
+ const result=await correction(true,'PENDING',[8],{renewed_by_value:'CUSTOMER',payment_mode:'DASHBOARD'});
+ assert.deepEqual(Array.from(result.calls[0].params),['DASHBOARD','CUSTOMER',0,'PENDING','PENDING','PENDING',8,9,2026]);
 });
