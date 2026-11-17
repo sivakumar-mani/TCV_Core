@@ -17,8 +17,7 @@ async function diagnose(connection, env = process.env, logger = console) {
   logger.table(deliveries);
   const [complaints] = await db.query(`SELECT c.complaint_id, c.complaint_no, c.complainant_type,
     DATE_FORMAT(c.registered_at, '%d-%m-%Y %H:%i:%s') AS registered_at,
-    CASE WHEN c.complainant_type <> 'CATV' THEN 'NOT_CATV'
-      WHEN s.group_id IS NULL THEN 'NOT_ACTIVATED'
+    CASE WHEN s.group_id IS NULL THEN 'NOT_ACTIVATED'
       WHEN c.complaint_id <= s.start_after_id THEN 'BEFORE_ACTIVATION'
       ELSE COALESCE(d.status, 'NOT_QUEUED') END AS delivery_state,
     DATE_FORMAT(d.updated_at, '%d-%m-%Y %H:%i:%s') AS delivery_update

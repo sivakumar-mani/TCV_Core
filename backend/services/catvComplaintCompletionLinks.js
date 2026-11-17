@@ -39,8 +39,7 @@ function completionHandlers(connection, env = process.env) {
       if (!hash) return unavailable(res);
       const [[row]] = await connection.promise().query(`SELECT c.complaint_no, c.status
         FROM catv_whatsapp_completion_links l JOIN cable_tv_complaints c ON c.complaint_id = l.complaint_id
-        WHERE l.token_hash = ? AND l.used_at IS NULL AND l.expires_at > UTC_TIMESTAMP()
-          AND c.complainant_type = 'CATV'`, [hash]);
+        WHERE l.token_hash = ? AND l.used_at IS NULL AND l.expires_at > UTC_TIMESTAMP()`, [hash]);
       if (!row) return unavailable(res);
       return res.json({ complaint_no: row.complaint_no, completed: row.status === 'COMPLETED' });
     } catch { return res.status(503).json({ message: 'Complaint confirmation is temporarily unavailable' }); }
@@ -57,7 +56,7 @@ function completionHandlers(connection, env = process.env) {
         WHERE token_hash = ? AND used_at IS NULL AND expires_at > UTC_TIMESTAMP() FOR UPDATE`, [hash]);
       if (!link) { await db.rollback(); started = false; return unavailable(res); }
       const [[complaint]] = await db.query('SELECT complaint_id, complaint_no, status, complainant_type, assigned_employee_id FROM cable_tv_complaints WHERE complaint_id = ? FOR UPDATE', [link.complaint_id]);
-      if (!complaint || complaint.complainant_type !== 'CATV') {
+      if (!complaint) {
         await db.rollback(); started = false; return unavailable(res);
       }
       if (complaint.status === 'COMPLETED') {

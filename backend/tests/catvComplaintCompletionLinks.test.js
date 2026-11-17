@@ -93,12 +93,12 @@ test('replay, expired and forged tokens cannot create completion history', async
   assert.equal(forged.queries.length, 0);
 });
 
-test('confirmation flag is mandatory and completed/non-CATV complaints are not modified', async () => {
+test('confirmation flag is mandatory and completed complaints are not modified', async () => {
   const f = fixture(), res = f.response();
   await f.handlers.confirm({ body: { token } }, res);
   assert.equal(res.code, 410);
   assert.equal(f.queries.length, 0);
-  for (const options of [{ status: 'COMPLETED' }, { type: 'NET' }]) {
+  for (const options of [{ status: 'COMPLETED' }]) {
     const g = fixture(options), result = g.response();
     await g.handlers.confirm({ body: { token, confirm: true } }, result);
     assert.equal(g.state().history, 0);
@@ -150,3 +150,16 @@ test('GET and link preview never complete a complaint; only a button click sends
   assert.equal(requests[1].body.confirm, true);
   assert.equal(elements.done.disabled, true);
 });
+
+for (const type of ['CATV', 'NET', 'CCTV', 'ANONYMOUS']) {
+  test(type + ' token allows preview and explicit completion', async () => {
+    const f = fixture({ type }), preview = f.response(), confirm = f.response();
+    await f.handlers.preview({ body: { token } }, preview);
+    assert.equal(preview.code, 200);
+    assert.doesNotMatch(f.queries[0].sql, /complainant_type = 'CATV'/);
+    await f.handlers.confirm({ body: { token, confirm: true } }, confirm);
+    assert.equal(confirm.code, 200);
+    assert.equal(f.state().committed, 1);
+    assert.equal(f.state().history, 1);
+  });
+}

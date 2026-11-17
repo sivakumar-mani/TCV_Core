@@ -1,4 +1,5 @@
 const path = require('node:path');
+const { internetCustomerNumberSql } = require('../controller/internetCustomerNumber');
 const { completionConfig, ensureCompletionLinks, issueCompletionLink } = require('./catvComplaintCompletionLinks');
 let manualWorker = null;
 const deliveryError = (status, message) => Object.assign(new Error(message), { status });
@@ -40,7 +41,7 @@ function createWhatsAppClient(env = process.env, logger = console, { protocolTim
 
 function complaintMessage(row, completionLink = '') {
   const clean = value => String(value ?? '').replace(/[\r\n]+/g, ' ').trim() || '-';
-  return `*NEW CATV COMPLAINT*\nComplaint No: ${clean(row.complaint_no)}\nRegistered: ${clean(row.registered_time)}\nCustomer: ${clean(row.full_name)}\nCustomer ID: ${clean(row.customer_code)}\nContact: ${clean(row.mobile_no)}\nReported Mobile: ${clean(row.reported_mobile)}\nAddress: ${clean(row.customer_address)}\nSubject: ${clean(row.complaint_subject)}\nIssue: ${clean(row.nature_of_complaint)}\nDetails: ${clean(row.notes)}\nStatus: ${clean(row.status)}${completionLink ? `\n\n*MARK AS DONE*\n${completionLink}\nOpen the link and press Confirm Done. Valid for 72 hours.` : ''}`;
+  return `*NEW ${clean(row.complainant_type || 'CATV')} COMPLAINT*\nComplaint No: ${clean(row.complaint_no)}\nRegistered: ${clean(row.registered_time)}\nCustomer: ${clean(row.full_name)}\nCustomer ID: ${clean(row.customer_code)}\nContact: ${clean(row.mobile_no)}\nReported Mobile: ${clean(row.reported_mobile)}\nAddress: ${clean(row.customer_address)}\nSubject: ${clean(row.complaint_subject)}\nIssue: ${clean(row.nature_of_complaint)}\nDetails: ${clean(row.notes)}\nStatus: ${clean(row.status)}${completionLink ? `\n\n*MARK AS DONE*\n${completionLink}\nOpen the link and press Confirm Done. Valid for 72 hours.` : ''}`;
 }
 
 function createWorker(connection, transport, groupId, logger = console, env = process.env) {
@@ -73,7 +74,6 @@ function createWorker(connection, transport, groupId, logger = console, env = pr
       if (manual) {
         const [[complaint]] = await db.query('SELECT complainant_type FROM cable_tv_complaints WHERE complaint_id = ?', [complaintId]);
         if (!complaint) throw deliveryError(404, 'Complaint not found');
-        if (complaint.complainant_type !== 'CATV') throw deliveryError(400, 'WhatsApp notifications are available only for CATV complaints');
         await db.query('INSERT IGNORE INTO catv_whatsapp_delivery (group_id, complaint_id) VALUES (?, ?)', [groupId, complaintId]);
         const [[delivery]] = await db.query('SELECT status FROM catv_whatsapp_delivery WHERE group_id = ? AND complaint_id = ?', [groupId, complaintId]);
         if (delivery.status === 'SENT') return { message: 'This complaint was already sent to WhatsApp.' };
@@ -81,7 +81,7 @@ function createWorker(connection, transport, groupId, logger = console, env = pr
       } else await db.query(`INSERT IGNORE INTO catv_whatsapp_delivery (group_id, complaint_id)
         SELECT s.group_id, c.complaint_id FROM cable_tv_complaints c
         JOIN catv_whatsapp_state s ON s.group_id = ?
-        WHERE c.complainant_type = 'CATV' AND c.complaint_id > s.start_after_id
+        WHERE c.complaint_id > s.start_after_id
           AND NOT EXISTS (SELECT 1 FROM catv_whatsapp_delivery d
             WHERE d.group_id = s.group_id AND d.complaint_id = c.complaint_id)`, [groupId]);
       if (!transport.isReady()) {
@@ -90,10 +90,19 @@ function createWorker(connection, transport, groupId, logger = console, env = pr
       }
       const chat = await transport.client.getChatById(groupId);
       if (!chat.isGroup || chat.isReadOnly) throw new Error('Configured destination is not a writable group');
-      const [rows] = await db.query(`SELECT c.*, customer.full_name, customer.customer_code, customer.mobile_no,
+      const [rows] = await db.query(`SELECT c.*,
+        COALESCE(customer.full_name, internet_customer.full_name,
+          NULLIF(TRIM(CONCAT_WS(' ', service_customer.salutation, service_customer.customer_name)), ''), c.anonymous_name) AS full_name,
+        COALESCE(CAST(customer.customer_code AS CHAR), ${internetCustomerNumberSql('internet_customer')}, CAST(service_customer.customer_id AS CHAR)) AS customer_code,
+        COALESCE(customer.mobile_no, internet_customer.mobile_no, service_customer.phone, c.anonymous_mobile) AS mobile_no,
         DATE_FORMAT(c.registered_at, '%d-%m-%Y %h:%i %p') AS registered_time,
-        CONCAT_WS(', ', customer.door_no, street.street_name, area.area_name,
-          location.location_name, customer.city, customer.pincode) AS customer_address,
+        CASE WHEN c.cable_customer_id IS NOT NULL
+          THEN CONCAT_WS(', ', customer.door_no, street.street_name, area.area_name, location.location_name, customer.city, customer.pincode)
+          WHEN c.internet_customer_id IS NOT NULL
+          THEN CONCAT_WS(', ', internet_customer.door_no, internet_street.street_name, internet_area.area_name, internet_location.location_name, internet_customer.city, internet_customer.pincode)
+          WHEN c.service_customer_id IS NOT NULL
+          THEN CONCAT_WS(', ', service_customer.address, service_customer.city_district, service_customer.state, service_customer.pincode)
+          ELSE c.anonymous_address END AS customer_address,
         (SELECT a.notes FROM cable_tv_complaint_attempts a WHERE a.complaint_id = c.complaint_id
           AND a.attempt_no = 1 ORDER BY a.complaint_attempt_id LIMIT 1) AS notes
         FROM catv_whatsapp_delivery d
@@ -102,7 +111,12 @@ function createWorker(connection, transport, groupId, logger = console, env = pr
         LEFT JOIN cable_streets street ON street.street_id = customer.street_id
         LEFT JOIN cable_areas area ON area.area_id = customer.area_id
         LEFT JOIN cable_locations location ON location.location_id = customer.location_id
-        WHERE d.group_id = ? AND d.status = 'QUEUED' AND c.complainant_type = 'CATV'
+        LEFT JOIN internet_customers internet_customer ON internet_customer.internet_customer_id = c.internet_customer_id
+        LEFT JOIN cable_streets internet_street ON internet_street.street_id = internet_customer.street_id
+        LEFT JOIN cable_areas internet_area ON internet_area.area_id = internet_customer.area_id
+        LEFT JOIN cable_locations internet_location ON internet_location.location_id = internet_customer.location_id
+        LEFT JOIN customers service_customer ON service_customer.customer_id = c.service_customer_id
+        WHERE d.group_id = ? AND d.status = 'QUEUED'
         ${manual ? 'AND c.complaint_id = ?' : ''}
         ORDER BY c.complaint_id LIMIT 10`, manual ? [groupId, complaintId] : [groupId]);
       for (const row of rows) {
@@ -157,22 +171,30 @@ function startCatvWhatsAppNotifications(connection, env = process.env, logger = 
   let settings;
   try { settings = config(env); } catch (error) { logger.error(error.message); return () => {}; }
   if (!settings.enabled) return () => {};
-  let transport, timer, stopped = false;
+  let transport, timer, stopped = false, stage = 'browser configuration';
   (async () => {
     try {
       transport = createWhatsAppClient(env, logger);
+      stage = 'worker configuration';
       const worker = createWorker(connection, transport, settings.groupId, logger, env);
+      stage = 'database setup';
       await worker.setup();
       if (stopped) return;
       manualWorker = worker;
       timer = setInterval(() => { void worker.tick(); }, 5000);
       timer.unref?.();
       void worker.tick();
+      stage = 'browser initialization';
       await transport.client.initialize();
-    } catch {
+    } catch (error) {
       manualWorker = null;
       clearInterval(timer);
       logger.error('CATV WhatsApp startup failed; check Chrome installation, session path and database. Complaint registration is unaffected.');
+      // Database messages can contain SQL or credentials; log only their error code.
+      const detail = stage === 'database setup'
+        ? error.code || error.name || 'UNKNOWN_ERROR'
+        : String(error.message || error.code || error.name || 'UNKNOWN_ERROR').replace(/[\r\n]+/g, ' ');
+      logger.error(`CATV WhatsApp startup failure (${stage}): ${detail}`);
       await transport?.client.destroy().catch(() => {});
     }
   })();

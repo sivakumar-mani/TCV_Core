@@ -6,7 +6,7 @@ const groupId = '123456789@g.us';
 function fixture({ ready = true, failSend = false, failDb = false, claim = 1, isGroup = true, env = {}, rowStatus = 'OPEN', failLink = false, complaintType = 'CATV', missing = false } = {}) {
   const queries = [], messages = [], errors = [];
   let status = 'QUEUED';
-  const row = { complaint_id: 42, complaint_no: 'CMP-000042', full_name: 'Customer', customer_code: 'C123',
+  const row = { complainant_type: complaintType, complaint_id: 42, complaint_no: 'CMP-000042', full_name: 'Customer', customer_code: 'C123',
     mobile_no: '9999999999', customer_address: '1, Main Street', nature_of_complaint: 'No signal',
     complaint_subject: 'TV signal', reported_mobile: '8888888888', notes: 'Since morning', status: rowStatus };
   const db = { query: async (sql, args) => {
@@ -50,12 +50,12 @@ test('activation persists a boundary instead of broadcasting old complaints', as
   assert.equal(f.messages.length, 0);
 });
 
-test('queues only new CATV complaints, sends details and never resends completed delivery', async () => {
+test('queues only new complaints across categories, sends details and never resends completed delivery', async () => {
   const f = fixture();
   await f.worker.tick();
   await f.worker.tick();
   assert.equal(f.messages.length, 1);
-  assert.match(f.queries[0].sql, /c.complainant_type = 'CATV' AND c.complaint_id > s.start_after_id/);
+  assert.match(f.queries[0].sql, /WHERE c.complaint_id > s.start_after_id/);
   assert.match(f.messages[0], /CMP-000042/);
   assert.match(f.messages[0], /Customer ID: C123/);
   assert.match(f.messages[0], /Address: 1, Main Street/);
@@ -144,8 +144,8 @@ test('manual disconnected send reports failure and preserves the queue', async (
   assert.equal(f.messages.length, 0);
 });
 
-test('manual send rejects missing and non-CATV complaints before queuing', async () => {
-  for (const [options, status] of [[{ missing: true }, 404], [{ complaintType: 'NET' }, 400]]) {
+test('manual send rejects missing complaints before queuing', async () => {
+  for (const [options, status] of [[{ missing: true }, 404]]) {
     const f = fixture(options);
     await assert.rejects(f.worker.tick(42), { status });
     assert(!f.queries.some(q => q.sql.startsWith('INSERT')));
@@ -170,3 +170,21 @@ test('manual link failure stays queued and competing claim never sends', async (
   await assert.rejects(competing.worker.tick(42), { status: 409 });
   assert.equal(competing.messages.length, 0);
 });
+
+for (const complaintType of ['CATV', 'NET', 'CCTV', 'ANONYMOUS']) {
+  test(complaintType + ' supports automatic and manual notification with completion link', async () => {
+    for (const manual of [false, true]) {
+      const f = fixture({ complaintType, env: completionEnv });
+      await f.worker.tick(manual ? 42 : null);
+      assert.equal(f.messages.length, 1);
+      assert.match(f.messages[0], new RegExp('NEW ' + complaintType + ' COMPLAINT'));
+      assert.match(f.messages[0], /MARK AS DONE/);
+      const select = f.queries.find(q => q.sql.startsWith('SELECT c.'));
+      assert.doesNotMatch(select.sql, /c.complainant_type = 'CATV'/);
+      assert.match(select.sql, /LEFT JOIN internet_customers/);
+      assert.match(select.sql, /LEFT JOIN customers service_customer/);
+      assert.match(select.sql, /ELSE c.anonymous_address/);
+      assert.equal(f.status(), 'SENT');
+    }
+  });
+}
