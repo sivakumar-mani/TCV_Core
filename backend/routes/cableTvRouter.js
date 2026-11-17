@@ -107,6 +107,14 @@ router.post('/complaints', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', '
 router.post('/complaints/:complaintId/attempts', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), addComplaintAttempt);
 router.patch('/complaints/:complaintId/complete', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), completeComplaint);
 router.delete('/complaints/:complaintId', auth.requireAdmin, deleteComplaint);
+router.post('/complaints/:complaintId/whatsapp', auth.requireAdmin, async (req, res) => {
+  try {
+    const result = await require('../services/catvWhatsAppNotifications').sendComplaintManually(Number(req.params.complaintId));
+    return res.json(result);
+  } catch (error) {
+    return res.status(error.status || 500).json({ message: error.status ? error.message : 'WhatsApp send failed' });
+  }
+});
 router.get('/masters', auth.requireAnyPermission(['CABLE_TV_MASTERS', 'CABLE_TV_PACKAGES', 'CABLE_TV_STBS']), getMasters);
 router.post('/masters/locations', auth.requirePermission('CABLE_TV_MASTERS'), addLocation);
 router.post('/masters/areas', auth.requirePermission('CABLE_TV_MASTERS'), addArea);

@@ -1,5 +1,13 @@
 const path = require('node:path');
 const { completionConfig, ensureCompletionLinks, issueCompletionLink } = require('./catvComplaintCompletionLinks');
+let manualWorker = null;
+const deliveryError = (status, message) => Object.assign(new Error(message), { status });
+
+async function sendComplaintManually(complaintId) {
+  if (!Number.isSafeInteger(complaintId) || complaintId <= 0) throw deliveryError(400, 'Invalid complaint ID');
+  if (!manualWorker) throw deliveryError(503, 'WhatsApp worker is unavailable. Check that notifications are enabled and restart the backend.');
+  return manualWorker.tick(complaintId);
+}
 
 function config(env) {
   const enabled = env.CATV_WHATSAPP_ENABLED === 'true';
@@ -32,7 +40,7 @@ function createWhatsAppClient(env = process.env, logger = console, { protocolTim
 
 function complaintMessage(row, completionLink = '') {
   const clean = value => String(value ?? '').replace(/[\r\n]+/g, ' ').trim() || '-';
-  return `*NEW CATV COMPLAINT*\nComplaint No: ${clean(row.complaint_no)}\nRegistered: ${clean(row.registered_time)}\nCustomer: ${clean(row.full_name)}\nCustomer ID: ${clean(row.customer_code)}\nContact: ${clean(row.mobile_no)}\nReported Mobile: ${clean(row.reported_mobile)}\nAddress: ${clean(row.customer_address)}\nSubject: ${clean(row.complaint_subject)}\nIssue: ${clean(row.nature_of_complaint)}\nDetails: ${clean(row.notes)}\nStatus: ${clean(row.status)}${completionLink ? `\n\n*MARK AS DONE*\n${completionLink}\nOpen the link and press Confirm Done. Valid for 72 hours.` : ''}\n\nTIME CABLE VISION\nhttps://timecablevision.in/tcverp`;
+  return `*NEW CATV COMPLAINT*\nComplaint No: ${clean(row.complaint_no)}\nRegistered: ${clean(row.registered_time)}\nCustomer: ${clean(row.full_name)}\nCustomer ID: ${clean(row.customer_code)}\nContact: ${clean(row.mobile_no)}\nReported Mobile: ${clean(row.reported_mobile)}\nAddress: ${clean(row.customer_address)}\nSubject: ${clean(row.complaint_subject)}\nIssue: ${clean(row.nature_of_complaint)}\nDetails: ${clean(row.notes)}\nStatus: ${clean(row.status)}${completionLink ? `\n\n*MARK AS DONE*\n${completionLink}\nOpen the link and press Confirm Done. Valid for 72 hours.` : ''}`;
 }
 
 function createWorker(connection, transport, groupId, logger = console, env = process.env) {
@@ -54,17 +62,32 @@ function createWorker(connection, transport, groupId, logger = console, env = pr
     await db.query(`INSERT IGNORE INTO catv_whatsapp_state (group_id, start_after_id)
       SELECT ?, COALESCE(MAX(complaint_id), 0) FROM cable_tv_complaints`, [groupId]);
   }
-  async function tick() {
-    if (running) return;
+  async function tick(complaintId = null) {
+    const manual = complaintId !== null;
+    if (running) {
+      if (manual) throw deliveryError(409, 'WhatsApp worker is busy. Please try again shortly.');
+      return;
+    }
     running = true;
     try {
-      await db.query(`INSERT IGNORE INTO catv_whatsapp_delivery (group_id, complaint_id)
+      if (manual) {
+        const [[complaint]] = await db.query('SELECT complainant_type FROM cable_tv_complaints WHERE complaint_id = ?', [complaintId]);
+        if (!complaint) throw deliveryError(404, 'Complaint not found');
+        if (complaint.complainant_type !== 'CATV') throw deliveryError(400, 'WhatsApp notifications are available only for CATV complaints');
+        await db.query('INSERT IGNORE INTO catv_whatsapp_delivery (group_id, complaint_id) VALUES (?, ?)', [groupId, complaintId]);
+        const [[delivery]] = await db.query('SELECT status FROM catv_whatsapp_delivery WHERE group_id = ? AND complaint_id = ?', [groupId, complaintId]);
+        if (delivery.status === 'SENT') return { message: 'This complaint was already sent to WhatsApp.' };
+        if (delivery.status !== 'QUEUED') throw deliveryError(409, 'Delivery needs review. Check the WhatsApp group before retrying to avoid a duplicate.');
+      } else await db.query(`INSERT IGNORE INTO catv_whatsapp_delivery (group_id, complaint_id)
         SELECT s.group_id, c.complaint_id FROM cable_tv_complaints c
         JOIN catv_whatsapp_state s ON s.group_id = ?
         WHERE c.complainant_type = 'CATV' AND c.complaint_id > s.start_after_id
           AND NOT EXISTS (SELECT 1 FROM catv_whatsapp_delivery d
             WHERE d.group_id = s.group_id AND d.complaint_id = c.complaint_id)`, [groupId]);
-      if (!transport.isReady()) return;
+      if (!transport.isReady()) {
+        if (manual) throw deliveryError(503, 'WhatsApp is disconnected or still connecting. Restart the backend to reconnect; the complaint remains queued.');
+        return;
+      }
       const chat = await transport.client.getChatById(groupId);
       if (!chat.isGroup || chat.isReadOnly) throw new Error('Configured destination is not a writable group');
       const [rows] = await db.query(`SELECT c.*, customer.full_name, customer.customer_code, customer.mobile_no,
@@ -80,18 +103,26 @@ function createWorker(connection, transport, groupId, logger = console, env = pr
         LEFT JOIN cable_areas area ON area.area_id = customer.area_id
         LEFT JOIN cable_locations location ON location.location_id = customer.location_id
         WHERE d.group_id = ? AND d.status = 'QUEUED' AND c.complainant_type = 'CATV'
-        ORDER BY c.complaint_id LIMIT 10`, [groupId]);
+        ${manual ? 'AND c.complaint_id = ?' : ''}
+        ORDER BY c.complaint_id LIMIT 10`, manual ? [groupId, complaintId] : [groupId]);
       for (const row of rows) {
-        if (!transport.isReady()) break;
+        if (!transport.isReady()) {
+          if (manual) throw deliveryError(503, 'WhatsApp disconnected. The complaint remains queued.');
+          break;
+        }
         const [claim] = await db.query(`UPDATE catv_whatsapp_delivery SET status = 'SENDING'
           WHERE group_id = ? AND complaint_id = ? AND status = 'QUEUED'`, [groupId, row.complaint_id]);
-        if (claim.affectedRows !== 1) continue;
+        if (claim.affectedRows !== 1) {
+          if (manual) throw deliveryError(409, 'Another worker has claimed this notification. Please check the group.');
+          continue;
+        }
         let completionLink = '';
         if (linkSettings && row.status !== 'COMPLETED') {
           try { completionLink = await issueCompletionLink(db, row.complaint_id, groupId, linkSettings); }
           catch {
             await db.query("UPDATE catv_whatsapp_delivery SET status = 'QUEUED' WHERE group_id = ? AND complaint_id = ?", [groupId, row.complaint_id]);
             logger.error('CATV WhatsApp completion link could not be created; notification remains queued.');
+            if (manual) throw deliveryError(503, 'Could not create the completion link. The complaint remains queued.');
             break;
           }
         }
@@ -105,10 +136,17 @@ function createWorker(connection, transport, groupId, logger = console, env = pr
           await db.query(`UPDATE catv_whatsapp_delivery SET status = 'REVIEW'
             WHERE group_id = ? AND complaint_id = ?`, [groupId, row.complaint_id]);
           logger.error(`CATV WhatsApp: complaint ${row.complaint_id} needs delivery review; check the group before retrying.`);
+          if (manual) throw deliveryError(409, 'Delivery could not be confirmed. Check the WhatsApp group before retrying.');
           break;
         }
       }
-    } catch {
+      if (manual) {
+        if (!rows.length) throw deliveryError(409, 'The notification is no longer queued. Please check the group.');
+        return { message: 'Complaint sent to the WhatsApp group.' };
+      }
+    } catch (error) {
+      if (manual && !error.status) logger.error('CATV WhatsApp manual send unavailable:', error.code || error.name || 'UNKNOWN_ERROR');
+      if (manual) throw error.status ? error : deliveryError(503, 'WhatsApp send failed. Check backend logs and the linked device before retrying.');
       logger.error('CATV WhatsApp worker unavailable; complaint registration is unaffected. Check database, group and linked-device status.');
     } finally { running = false; }
   }
@@ -126,17 +164,19 @@ function startCatvWhatsAppNotifications(connection, env = process.env, logger = 
       const worker = createWorker(connection, transport, settings.groupId, logger, env);
       await worker.setup();
       if (stopped) return;
+      manualWorker = worker;
       timer = setInterval(() => { void worker.tick(); }, 5000);
       timer.unref?.();
       void worker.tick();
       await transport.client.initialize();
     } catch {
+      manualWorker = null;
       clearInterval(timer);
       logger.error('CATV WhatsApp startup failed; check Chrome installation, session path and database. Complaint registration is unaffected.');
       await transport?.client.destroy().catch(() => {});
     }
   })();
-  return () => { stopped = true; clearInterval(timer); void transport?.client.destroy().catch(() => {}); };
+  return () => { stopped = true; manualWorker = null; clearInterval(timer); void transport?.client.destroy().catch(() => {}); };
 }
 
-module.exports = { config, createWhatsAppClient, complaintMessage, createWorker, startCatvWhatsAppNotifications };
+module.exports = { config, createWhatsAppClient, complaintMessage, createWorker, startCatvWhatsAppNotifications, sendComplaintManually };

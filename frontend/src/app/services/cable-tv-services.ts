@@ -235,6 +235,10 @@ export class CableTvServices {
     return this.http.delete<any>(`${this.endpoint}/complaints/${complaintId}`);
   }
 
+  sendComplaintWhatsApp(complaintId: number) {
+    return this.http.post<{ message: string }>(`${this.endpoint}/complaints/${complaintId}/whatsapp`, {});
+  }
+
   getComplaintCustomers(type: 'CATV' | 'NET' | 'CCTV', customerId?: number) {
     const params: Record<string, string> = { type };
     if (customerId) params['customer_id'] = String(customerId);

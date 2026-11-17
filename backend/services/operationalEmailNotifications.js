@@ -20,7 +20,7 @@ function notificationContent(source, event) {
     : '';
   return {
     subject: `${reference} - ${type} - ${details}`,
-    text: `${complaint ? 'Complaint No' : 'Approval Reference No'}: ${reference}\nType: ${type}\n${complaint ? 'Registered Date & Time' : 'Requested Date & Time'}: ${clean(event.event_time)}\n${complaint ? 'Nature of Complaint' : 'Approval Details'}: ${details}${complaintDetails}\n\nPlease log in to the portal to review:\nhttps://timecablevision.in/tcverp\n\nTIME CABLE VISION`
+    text: `${complaint ? 'Complaint No' : 'Approval Reference No'}: ${reference}\nType: ${type}\n${complaint ? 'Registered Date & Time' : 'Requested Date & Time'}: ${clean(event.event_time)}\n${complaint ? 'Nature of Complaint' : 'Approval Details'}: ${details}${complaintDetails}`
   };
 }
 

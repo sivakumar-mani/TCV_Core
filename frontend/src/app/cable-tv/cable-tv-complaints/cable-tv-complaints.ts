@@ -18,6 +18,23 @@ import { PermissionService } from '../../services/permission.service';
   styleUrl: './cable-tv-complaints.scss'
 })
 export class CableTvComplaints {
+  sendingWhatsAppId: number | null = null;
+
+  sendWhatsApp(row: any) {
+    if (!this.permissions.isAdmin() || row.complainant_type !== 'CATV' || this.sendingWhatsAppId !== null) return;
+    this.sendingWhatsAppId = Number(row.complaint_id);
+    this.cableTvService.sendComplaintWhatsApp(this.sendingWhatsAppId).subscribe({
+      next: (response: any) => {
+        this.sendingWhatsAppId = null;
+        this.snackbar.openSnackbar(response.message, '');
+      },
+      error: (error: any) => {
+        this.sendingWhatsAppId = null;
+        this.showError(error?.error?.message || globalConstants.genericError);
+      }
+    });
+  }
+
   complaints: any[] = [];
   summaryComplaints: any[] = [];
   customers: any[] = [];

@@ -27,6 +27,16 @@ CATV_WHATSAPP_GROUP_ID=REPLACE_WITH_VERIFIED_GROUP_ID
 
 ## Delivery behavior
 
+### Admin manual send
+
+Deploy the updated `backend/routes/cableTvRouter.js` and `backend/services/catvWhatsAppNotifications.js`, restart the backend, and deploy a new frontend build (`npm run build:tcverp` for `/tcverp/` hosting).
+
+Administrators see **Send WhatsApp** in the complaints Action column for CATV complaints. Clicking it immediately attempts to send that complaint to the configured group using the existing linked session, independently of the polling schedule. The API requires an authenticated ADMIN role. It reports busy, disconnected, unavailable, or unconfirmed delivery instead of reporting a successful send. Keep notifications enabled and run one enabled worker process as before.
+
+Already sent complaints are not resent. `SENDING` and `REVIEW` deliveries remain blocked pending review. Explicit manual sends may include a complaint from before initial activation; automatic delivery still excludes historical complaints. Done links and delivery claims follow the existing rules. A disconnected session must be reconnected by restarting the backend or relinking the device; the button cannot send through an offline session.
+
+After deployment, verify the action is visible for an admin and hidden for staff. For a queued CATV complaint, click once and check both the success message and the configured WhatsApp group; click again to verify it reports already sent. A live test sends real complaint information to that group.
+
 - Checks every five seconds for committed CATV complaints; NET, CCTV and anonymous complaints are excluded. Registration, permissions and existing email notifications are unchanged.
 - First activation records the highest existing complaint ID so old complaints are not broadcast. Wait for startup to complete before the first trial registration. The boundary persists across restarts.
 - MySQL tables `catv_whatsapp_state` and `catv_whatsapp_delivery` are created when enabled. The backend DB user needs CREATE privileges. Startup failure is logged and does not block complaint registration.

@@ -80,7 +80,7 @@ test('complaint email uses complaint number, type, nature and registered timesta
   assert.match(content.text, /Complaint No: CMP-000195/);
   assert.match(content.text, /Registered Date & Time: 15-10-2026, 10:36 AM/);
   assert.match(content.text, /Nature of Complaint: not working/);
-  assert.match(content.text, /https:\/\/timecablevision.in\/tcverp/);
+  assert.doesNotMatch(content.text, /timecablevision\.in\/tcverp|TIME CABLE VISION|Please log in to the portal/);
 });
 
 test('approval email uses its own reference, module and remarks without subject line breaks', () => {
