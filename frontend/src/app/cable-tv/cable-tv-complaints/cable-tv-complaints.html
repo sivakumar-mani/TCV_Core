@@ -60,7 +60,7 @@
             <td><div class="complaint-actions">
               <button type="button" class="view-button" (click)="viewComplaint(row)">View</button>
               <button type="button" class="view-button" *ngIf="permissions.isAdmin()" [disabled]="sendingWhatsAppId !== null" (click)="sendWhatsApp(row)"><i class="bi bi-whatsapp"></i> {{ sendingWhatsAppId === row.complaint_id ? 'Sending...' : 'Send WhatsApp' }}</button>
-              <button type="button" class="done-button" *ngIf="row.status !== 'COMPLETED' && permissions.can('CABLE_TV_COMPLAINTS', 'update')" [disabled]="completingId !== null" (click)="completeComplaint(row)">Done</button>
+              <button type="button" class="done-button" *ngIf="row.status !== 'COMPLETED' && permissions.can('CABLE_TV_COMPLAINTS', 'view')" [disabled]="completingId !== null" (click)="completeComplaint(row)">Done</button>
               <button type="button" class="delete-button" *ngIf="permissions.isAdmin()" (click)="deleteComplaint(row)">Delete</button>
             </div></td>
           </tr>

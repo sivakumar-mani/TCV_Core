@@ -165,7 +165,7 @@ export class CableTvComplaints {
   completingId: number | null = null;
 
   completeComplaint(row: any) {
-    if (row.status === 'COMPLETED' || this.completingId !== null || !this.permissions.can('CABLE_TV_COMPLAINTS', 'update')) return;
+    if (row.status === 'COMPLETED' || this.completingId !== null || !this.permissions.can('CABLE_TV_COMPLAINTS', 'view')) return;
     if (!confirm(`Mark complaint ${row.complaint_no} complete?`)) return;
     this.completingId = Number(row.complaint_id);
     this.loader.start();

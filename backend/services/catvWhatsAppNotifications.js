@@ -29,6 +29,12 @@ function createWhatsAppClient(env = process.env, logger = console, { protocolTim
       ...(env.CATV_WHATSAPP_CHROME_PATH ? { executablePath: env.CATV_WHATSAPP_CHROME_PATH } : {}) }
   });
   let ready = false;
+  client.on('loading_screen', percent => {
+    logger.log(`CATV WhatsApp loading: ${Number(percent) || 0}%.`);
+  });
+  client.on('authenticated', () => {
+    logger.log('CATV WhatsApp authenticated; waiting for chats to finish loading.');
+  });
   client.on('qr', qr => {
     logger.log('CATV WhatsApp: scan this QR in WhatsApp > Linked devices (keep this terminal private).');
     require('qrcode-terminal').generate(qr, { small: true });
@@ -185,6 +191,7 @@ function startCatvWhatsAppNotifications(connection, env = process.env, logger = 
       timer.unref?.();
       void worker.tick();
       stage = 'browser initialization';
+      logger.log('CATV WhatsApp starting browser; waiting for QR, authentication or ready.');
       await transport.client.initialize();
     } catch (error) {
       manualWorker = null;

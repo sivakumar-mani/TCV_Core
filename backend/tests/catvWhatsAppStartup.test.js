@@ -26,7 +26,7 @@ for (const databaseFailure of [false, true]) {
       return [[]];
     } };
     context.module.exports.startCatvWhatsAppNotifications({ promise: () => db },
-      { CATV_WHATSAPP_ENABLED: 'true', CATV_WHATSAPP_GROUP_ID: '123@g.us' }, { error: msg => logs.push(msg) });
+      { CATV_WHATSAPP_ENABLED: 'true', CATV_WHATSAPP_GROUP_ID: '123@g.us' }, { log: msg => logs.push(msg), error: msg => logs.push(msg) });
     await new Promise(setImmediate);
     assert.equal(destroyed, 1);
     assert.equal(cleared, 1);

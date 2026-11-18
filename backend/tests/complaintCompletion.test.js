@@ -47,8 +47,27 @@ test('completion and history roll back together on database failure', async () =
   assert(f.rolledBack);
   assert(!f.committed);
 });
-test('completion requires update permission and deletion remains admin-only', () => {
+test('completion allows complaint viewers and deletion remains admin-only', () => {
   const router = fs.readFileSync(require.resolve('../routes/cableTvRouter'), 'utf8');
-  assert.match(router, /router.patch\('\/complaints\/:complaintId\/complete', auth.requirePermissionAction\('CABLE_TV_COMPLAINTS', 'can_update'\), completeComplaint\)/);
+  assert.match(router, /router.patch\('\/complaints\/:complaintId\/complete', auth.requirePermissionAction\('CABLE_TV_COMPLAINTS', 'can_view'\), completeComplaint\)/);
   assert.match(router, /router.delete\('\/complaints\/:complaintId', auth.requireAdmin, deleteComplaint\)/);
+});
+
+test('Done permits viewers without update access and rejects users without complaint access', () => {
+  const auth = fs.readFileSync(require.resolve('../services/authendication'), 'utf8');
+  for (const [role, canView, expected] of [['STAFF', true, 200], ['TECHNICIAN', true, 200], ['STAFF', false, 403], ['ADMIN', false, 200]]) {
+    let allowed = false;
+    const ctx = { connection: { query(sql, args, callback) {
+      assert.match(sql, /can_view = 1/);
+      assert.doesNotMatch(sql, /can_update/);
+      assert.equal(args[1], 'CABLE_TV_COMPLAINTS');
+      callback(null, canView ? [{}] : []);
+    } } };
+    vm.createContext(ctx);
+    vm.runInContext(auth.slice(auth.indexOf('function requirePermissionAction('), auth.indexOf('function requireAnyPermission(')) + '\nthis.guard = requirePermissionAction;', ctx);
+    const res = { locals: { role }, code: 200, status(code) { this.code = code; return this; }, json() {} };
+    ctx.guard('CABLE_TV_COMPLAINTS', 'can_view')({ method: 'PATCH' }, res, () => { allowed = true; });
+    assert.equal(res.code, expected);
+    assert.equal(allowed, expected === 200);
+  }
 });

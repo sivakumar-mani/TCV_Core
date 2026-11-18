@@ -1,3 +1,4 @@
+.page-hero h1{font-size:24px}
 .channel-filters{display:flex;flex-wrap:wrap;gap:16px;align-items:end;padding:24px;background:var(--soft);border:1px solid var(--line);border-radius:12px}
 .channel-filters label{display:flex;flex:1 1 180px;flex-direction:column;gap:8px;font-size:14px;font-weight:700}
 .channel-filters label:first-child{flex-grow:2}

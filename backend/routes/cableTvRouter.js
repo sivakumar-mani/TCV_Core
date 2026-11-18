@@ -105,7 +105,7 @@ router.get('/complaints/customers/lookup', auth.requirePermission('CABLE_TV_COMP
 router.get('/complaints/:complaintId', auth.requirePermission('CABLE_TV_COMPLAINTS'), getComplaintById);
 router.post('/complaints', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_create'), addComplaint);
 router.post('/complaints/:complaintId/attempts', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), addComplaintAttempt);
-router.patch('/complaints/:complaintId/complete', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), completeComplaint);
+router.patch('/complaints/:complaintId/complete', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_view'), completeComplaint);
 router.delete('/complaints/:complaintId', auth.requireAdmin, deleteComplaint);
 router.post('/complaints/:complaintId/whatsapp', auth.requireAdmin, async (req, res) => {
   try {

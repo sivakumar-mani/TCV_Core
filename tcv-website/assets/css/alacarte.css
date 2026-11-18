@@ -12,3 +12,4 @@
 
 /* Compact raised type badges beside each channel name. */
 .channel-name-badged{display:inline-flex;align-items:center;gap:8px;padding-top:5px}.channel-type-badge{display:inline-flex;justify-content:center;align-items:center;position:relative;top:-5px;min-width:28px;padding:3px 6px;border-radius:10px;color:#fff;font-size:10px;line-height:1;font-weight:700;letter-spacing:.02em;box-shadow:0 0 0 2px #fff}.badge-hd{background:#0866f5}.badge-sd{background:#15803d}.badge-hy{background:#7c3aed}
+.page-hero h1{font-size:24px}
