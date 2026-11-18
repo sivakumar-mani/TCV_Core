@@ -107,7 +107,7 @@ router.post('/complaints', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', '
 router.post('/complaints/:complaintId/attempts', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_update'), addComplaintAttempt);
 router.patch('/complaints/:complaintId/complete', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_view'), completeComplaint);
 router.delete('/complaints/:complaintId', auth.requireAdmin, deleteComplaint);
-router.post('/complaints/:complaintId/whatsapp', auth.requireAdmin, async (req, res) => {
+router.post('/complaints/:complaintId/whatsapp', auth.requirePermissionAction('CABLE_TV_COMPLAINTS', 'can_view'), async (req, res) => {
   try {
     const result = await require('../services/catvWhatsAppNotifications').sendComplaintManually(Number(req.params.complaintId));
     return res.json(result);

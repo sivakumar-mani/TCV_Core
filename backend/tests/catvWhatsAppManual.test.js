@@ -3,11 +3,11 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-test('manual send route authenticates and restricts access to admins', async () => {
+test('manual send route authenticates and requires complaint viewing access', async () => {
   const routes = [];
-  const authenticate = () => {}, admin = () => {};
+  const authenticate = () => {}, admin = () => {}, viewer = () => {};
   const auth = { authendicateToken: authenticate, requireAdmin: admin,
-    requirePermission: () => () => {}, requirePermissionAction: () => () => {}, requireAnyPermission: () => () => {} };
+    requirePermission: () => () => {}, requirePermissionAction: (key, action) => key === 'CABLE_TV_COMPLAINTS' && action === 'can_view' ? viewer : () => {}, requireAnyPermission: () => () => {} };
   const router = new Proxy({}, { get: (_, method) => (...args) => routes.push({ method, args }) });
   let calls = 0;
   const source = fs.readFileSync(require.resolve('../routes/cableTvRouter'), 'utf8');
@@ -23,7 +23,7 @@ test('manual send route authenticates and restricts access to admins', async () 
   } });
   assert.equal(routes[0].args[0], authenticate);
   const route = routes.find(r => r.method === 'post' && r.args[0] === '/complaints/:complaintId/whatsapp');
-  assert.equal(route.args[1], admin);
+  assert.equal(route.args[1], viewer);
   const res = { json(body) { this.body = body; return this; } };
   await route.args[2]({ params: { complaintId: '42' } }, res);
   assert.equal(calls, 1);

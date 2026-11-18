@@ -40,7 +40,7 @@ function createWhatsAppClient(env = process.env, logger = console, { protocolTim
     require('qrcode-terminal').generate(qr, { small: true });
   });
   client.on('ready', () => { ready = true; logger.log('CATV WhatsApp linked and ready.'); });
-  client.on('disconnected', () => { ready = false; logger.error('CATV WhatsApp disconnected; restart the worker to reconnect.'); });
+  client.on('disconnected', () => { ready = false; logger.error('CATV WhatsApp disconnected. Queued complaints will wait for reconnection.'); });
   client.on('auth_failure', () => { ready = false; logger.error('CATV WhatsApp authentication failed; relink using whatsapp:setup.'); });
   return { client, isReady: () => ready };
 }
@@ -91,7 +91,7 @@ function createWorker(connection, transport, groupId, logger = console, env = pr
           AND NOT EXISTS (SELECT 1 FROM catv_whatsapp_delivery d
             WHERE d.group_id = s.group_id AND d.complaint_id = c.complaint_id)`, [groupId]);
       if (!transport.isReady()) {
-        if (manual) throw deliveryError(503, 'WhatsApp is disconnected or still connecting. Restart the backend to reconnect; the complaint remains queued.');
+        if (manual) throw deliveryError(503, 'WhatsApp is connecting or reconnecting. The complaint remains queued and will send when connected. If a login QR is shown in backend logs, an administrator must link the device.');
         return;
       }
       const chat = await transport.client.getChatById(groupId);
@@ -177,10 +177,43 @@ function startCatvWhatsAppNotifications(connection, env = process.env, logger = 
   let settings;
   try { settings = config(env); } catch (error) { logger.error(error.message); return () => {}; }
   if (!settings.enabled) return () => {};
-  let transport, timer, stopped = false, stage = 'browser configuration';
-  (async () => {
+  let transport, timer, retryTimer, stopped = false, starting = false, disposing = false;
+  let restartRequested = false, authRequired = false, retryDelay = 30000;
+  function scheduleRestart() {
+    if (stopped || authRequired) return;
+    manualWorker = null;
+    clearInterval(timer);
+    if (starting) { restartRequested = true; return; }
+    if (retryTimer) return;
+    logger.log(`CATV WhatsApp reconnect scheduled in ${retryDelay / 1000} seconds.`);
+    retryTimer = setTimeout(() => { retryTimer = null; void start(); }, retryDelay);
+    retryTimer.unref?.();
+    retryDelay = Math.min(retryDelay * 2, 300000);
+  }
+  async function dispose() {
+    if (!transport) return;
+    disposing = true;
+    try { await transport.client.destroy(); transport = null; }
+    finally { disposing = false; }
+  }
+  async function start() {
+    if (stopped || starting) return;
+    starting = true;
+    restartRequested = false;
+    let stage = 'browser cleanup';
     try {
+      // Close the previous browser before opening another with the same profile.
+      await dispose();
+      if (stopped) return;
+      stage = 'browser configuration';
       transport = createWhatsAppClient(env, logger);
+      transport.client.on('disconnected', () => { if (!disposing) scheduleRestart(); });
+      transport.client.on('auth_failure', () => {
+        authRequired = true;
+        clearTimeout(retryTimer); retryTimer = null;
+        logger.error('CATV WhatsApp requires relinking; automatic reconnect is paused.');
+      });
+      transport.client.on('ready', () => { retryDelay = 30000; });
       stage = 'worker configuration';
       const worker = createWorker(connection, transport, settings.groupId, logger, env);
       stage = 'database setup';
@@ -202,10 +235,20 @@ function startCatvWhatsAppNotifications(connection, env = process.env, logger = 
         ? error.code || error.name || 'UNKNOWN_ERROR'
         : String(error.message || error.code || error.name || 'UNKNOWN_ERROR').replace(/[\r\n]+/g, ' ');
       logger.error(`CATV WhatsApp startup failure (${stage}): ${detail}`);
-      await transport?.client.destroy().catch(() => {});
+      try { await dispose(); } catch { logger.error('CATV WhatsApp browser cleanup failed; will retry cleanup before reconnecting.'); }
+      if (stage !== 'worker configuration') restartRequested = true;
+    } finally {
+      starting = false;
+      if (stopped) { try { await dispose(); } catch {} }
+      else if (restartRequested) scheduleRestart();
     }
-  })();
-  return () => { stopped = true; manualWorker = null; clearInterval(timer); void transport?.client.destroy().catch(() => {}); };
+  }
+  void start();
+  return () => {
+    stopped = true; manualWorker = null;
+    clearInterval(timer); clearTimeout(retryTimer);
+    if (!starting) void dispose().catch(() => {});
+  };
 }
 
 module.exports = { config, createWhatsAppClient, complaintMessage, createWorker, startCatvWhatsAppNotifications, sendComplaintManually };

@@ -21,7 +21,7 @@ export class CableTvComplaints {
   sendingWhatsAppId: number | null = null;
 
   sendWhatsApp(row: any) {
-    if (!this.permissions.isAdmin() || this.sendingWhatsAppId !== null) return;
+    if (!this.permissions.can('CABLE_TV_COMPLAINTS', 'view') || this.sendingWhatsAppId !== null) return;
     this.sendingWhatsAppId = Number(row.complaint_id);
     this.cableTvService.sendComplaintWhatsApp(this.sendingWhatsAppId).subscribe({
       next: (response: any) => {
