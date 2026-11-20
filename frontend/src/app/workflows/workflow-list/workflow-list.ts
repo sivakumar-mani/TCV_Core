@@ -18,19 +18,23 @@ export class WorkflowList {
 
   defaultColDef: ColDef = {
     resizable: true,
-    minWidth: 120,
+    minWidth: 40,
     flex: 1,
+    wrapText: true,
+    autoHeight: true,
+    wrapHeaderText: true,
+    autoHeaderHeight: true,
     filter: true,
     floatingFilter: true,
     headerClass: 'ag-header-style',
   };
 
   colDefs: ColDef[] = [
-    { headerName: 'S.No', maxWidth: 80, valueGetter: (params: any) => params.node.rowIndex + 1, filter: false, floatingFilter: false, sortable: false },
+    { headerName: 'S.No', minWidth: 40, maxWidth: 55, flex: 0.5, valueGetter: (params: any) => params.node.rowIndex + 1, filter: false, floatingFilter: false, sortable: false },
     { field: 'requested_at', headerName: 'Updated', maxWidth: 150, valueFormatter: (params) => this.displayDateTime(params.value) },
     { headerName: 'Reference No', maxWidth: 190, valueGetter: (params: any) => this.referenceLabel(params.data) },
-    { headerName: 'Party', valueGetter: (params: any) => params.data?.customer_name || params.data?.supplier_name || '' },
-    { field: 'subject', headerName: 'Subject', minWidth: 240, cellRenderer: (params: any) => this.subjectBadges(params.value) },
+    { headerName: 'Party', flex: 1.4, cellClass: 'workflow-party-cell', valueGetter: (params: any) => params.data?.customer_name || params.data?.supplier_name || '' },
+    { field: 'subject', headerName: 'Subject', flex: 1.8, cellRenderer: (params: any) => this.subjectBadges(params.value) },
     { headerName: 'Date', maxWidth: 150, valueGetter: (params: any) => params.data?.quotation_date || params.data?.purchase_date, valueFormatter: (params) => this.displayDate(params.value) },
     { field: 'net_amount', headerName: 'Amount', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
     { field: 'balance_amount', headerName: 'Balance', maxWidth: 140, valueFormatter: (params) => this.money(params.value) },
@@ -38,14 +42,25 @@ export class WorkflowList {
     { field: 'workflow_status', headerName: 'Workflow', maxWidth: 160, cellRenderer: (params: any) => this.statusPill(params.value) },
     {
       headerName: 'Action',
-      maxWidth: 130,
+      cellClass: 'workflow-action-cell',
+      minWidth: 60,
+      maxWidth: 85,
+      flex: 0.6,
       cellRenderer: (params: any) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'btn btn-sm btn-outline-primary';
-        button.innerHTML = ['INTERNET_CUSTOMER','INTERNET_CUSTOMER_UPDATE'].includes(params.data?.module_name)
+        button.style.cssText = 'max-width:100%;white-space:normal;padding-inline:5px;';
+        const isInternetCustomer = ['INTERNET_CUSTOMER','INTERNET_CUSTOMER_UPDATE'].includes(params.data?.module_name);
+        button.innerHTML = isInternetCustomer
           ? '<i class="bi bi-check-circle" aria-hidden="true"></i> Approve'
-          : '<i class="bi bi-eye" aria-hidden="true"></i> Review';
+          : '<i class="bi bi-file-earmark-check" aria-hidden="true"></i>';
+        if (!isInternetCustomer) {
+          button.className = 'workflow-review-icon';
+          button.style.cssText = 'border:0;padding:0;background:transparent;';
+          button.setAttribute('aria-label', 'Review');
+          button.title = 'Review';
+        }
         button.addEventListener('click', () => this.review(params.data));
         return button;
       },
@@ -184,7 +199,7 @@ export class WorkflowList {
     const pill = document.createElement('span');
     pill.className = 'status-pill';
     pill.dataset['status'] = status;
-    pill.textContent = status;
+    pill.textContent = status.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase());
     return pill;
   }
 
@@ -194,7 +209,7 @@ export class WorkflowList {
 
   subjectBadges(value: any) {
     const container = document.createElement('span');
-    container.style.cssText = 'display:flex;align-items:center;gap:5px;flex-wrap:wrap;height:100%;';
+    container.style.cssText = 'display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0;padding-block:5px;';
     const subjects = String(value || 'General').split('•').map(item => item.trim()).filter(item => item && item.toUpperCase() !== 'DISCOUNT');
     subjects.forEach(subject => {
       const badge = document.createElement('span');
@@ -207,7 +222,7 @@ export class WorkflowList {
         : key.includes('NEW') ? ['#dbeafe', '#1d4ed8']
         : ['#eef2f6', '#344054'];
       badge.textContent = subject;
-      badge.style.cssText = `background:${colors[0]};color:${colors[1]};border-radius:999px;font-size:12px;font-weight:750;line-height:1.2;padding:5px 9px;white-space:nowrap;`;
+      badge.style.cssText = `background:${colors[0]};color:${colors[1]};border-radius:999px;font-size:12px;font-weight:750;line-height:1.2;padding:5px 9px;white-space:normal;overflow-wrap:anywhere;max-width:100%;`;
       container.appendChild(badge);
     });
     return container;
