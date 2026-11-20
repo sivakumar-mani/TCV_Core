@@ -44,107 +44,147 @@ export function downloadInvoicePdf(invoice: any, displayDate: (value: string | D
   const left = 40;
   const right = 555;
   const width = right - left;
-
-  text(left, 785, 22, 'TIME CABLE VISON');
-  text(left, 765, 9, 'No:2/3, Second Street, Arkeeswarar Colony');
-  text(left, 751, 9, 'Chrompet, Chennai - 600044');
-  text(left, 737, 9, 'Contact # : 9962543540');
-  text(left, 723, 9, 'GSTIN: 33AYUPM7228A1ZD');
-  line(left, 712, right, 712);
-  text(252, 698, 15, 'Sales Invoice');
-  line(left, 688, right, 688);
-
-  fillRect(left, 600, 248, 84, 241);
-  fillRect(307, 600, 248, 84, 241);
-  text(left + 12, 667, 9, 'To:');
-  text(left + 36, 667, 9, String(invoice.customer_name || '-').slice(0, 32));
-  text(left + 36, 653, 8, String(invoice.address || '-').slice(0, 42));
-  text(left + 36, 639, 8, `Contact #: ${invoice.phone || ''}`.slice(0, 42));
-  text(321, 667, 9, 'Invoice#');
-  text(408, 667, 9, String(invoice.invoice_no || ''));
-  text(321, 651, 9, 'Invoice Date');
-  text(408, 651, 9, displayDate(invoice.invoice_date));
-  text(321, 637, 9, 'Work Order');
-  text(408, 637, 9, String(invoice.work_order_no || '-'));
-  text(321, 621, 9, 'Paid Date');
-  text(408, 621, 9, invoice.paid_date ? displayDate(invoice.paid_date) : '-');
-  text(321, 605, 9, 'Payment Ref');
-  text(408, 605, 9, String(invoice.payment_reference || '-').slice(0, 24));
-
   const tableTop = 584;
   const headerHeight = 24;
-  const rowHeight = 30;
-  const items = (invoice.items || []).slice(0, 10);
-  const tableBottom = tableTop - headerHeight - rowHeight * Math.max(items.length, 1);
-  const serialRight = 70;
-  const descriptionRight = 355;
-  const qtyRight = 405;
-  const rateRight = 475;
-
-  fillRect(left, tableTop - headerHeight, width, headerHeight, 212);
-  rect(left, tableBottom, width, tableTop - tableBottom);
-  [serialRight, descriptionRight, qtyRight, rateRight].forEach((x) => line(x, tableBottom, x, tableTop));
-  line(left, tableTop - headerHeight, right, tableTop - headerHeight);
-  for (let y = tableTop - headerHeight - rowHeight; y >= tableBottom; y -= rowHeight) line(left, y, right, y);
-  text(left + 7, tableTop - 16, 8, 'S.No');
-  text(serialRight + 8, tableTop - 16, 8, 'Description');
-  rightText(qtyRight - 6, tableTop - 16, 8, 'Qty');
-  rightText(rateRight - 6, tableTop - 16, 8, 'Rate');
-  rightText(right - 6, tableTop - 16, 8, 'Amount');
-
-  items.forEach((item: any, index: number) => {
-    const y = tableTop - headerHeight - rowHeight * index - 16;
-    text(left + 10, y, 8, index + 1);
-    wrap([item.item_name, item.description].filter(Boolean).join(' - '), 54).forEach((value, lineIndex) =>
-      text(serialRight + 8, y - lineIndex * 10, 8, value));
-    rightText(qtyRight - 6, y, 8, `${number(item.qty)} ${item.unit || 'PCS'}`);
-    rightText(rateRight - 6, y, 8, number(item.selling_price));
-    rightText(right - 6, y, 8, number(item.amount));
-  });
-
-  const summaryTop = tableBottom;
+  const rowHeight = 22;
   const summaryBottom = 140;
-  const totalsLeft = 330;
-  rect(left, summaryBottom, width, summaryTop - summaryBottom);
-  line(totalsLeft, summaryBottom, totalsLeft, summaryTop);
-  text(left + 10, summaryTop - 18, 10, 'Terms and Conditions');
-  let termsY = summaryTop - 36;
-  [
-    'One Year service warranty from the invoice date for camera, DVR and Hard Disk.',
-    'No burning warranty for any product.',
-    'No replacement. No exchange.',
-    'Free service support during the warranty period.'
-  ].forEach((value, index) => {
-    wrap(`${index + 1}. ${value}`, 64, 2).forEach((termLine) => {
-      text(left + 16, termsY, 7, termLine);
-      termsY -= 10;
+  const totalsHeight = 6 * 18;
+
+  const invoiceItems = invoice.items || [];
+  const rowsPerPage = Math.floor((tableTop - headerHeight - summaryBottom - totalsHeight) / rowHeight);
+  const pageCount = Math.max(1, Math.ceil(invoiceItems.length / rowsPerPage));
+  const pageStreams: string[] = [];
+
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+    const itemOffset = pageIndex * rowsPerPage;
+    if (pageIndex === 0) {
+      text(left, 785, 22, 'TIME CABLE VISON');
+      text(left, 765, 9, 'No:2/3, Second Street, Arkeeswarar Colony');
+      text(left, 751, 9, 'Chrompet, Chennai - 600044');
+      text(left, 737, 9, 'Contact # : 9962543540');
+      text(left, 723, 9, 'GSTIN: 33AYUPM7228A1ZD');
+      line(left, 712, right, 712);
+      text(252, 698, 15, 'Sales Invoice');
+      line(left, 688, right, 688);
+
+      fillRect(left, 600, 248, 84, 241);
+      fillRect(307, 600, 248, 84, 241);
+      text(left + 12, 667, 9, 'To:');
+      text(left + 36, 667, 9, String(invoice.customer_name || '-').slice(0, 32));
+      text(left + 36, 653, 8, String(invoice.address || '-').slice(0, 42));
+      text(left + 36, 639, 8, `Contact #: ${invoice.phone || ''}`.slice(0, 42));
+      text(321, 667, 9, 'Invoice#');
+      text(408, 667, 9, String(invoice.invoice_no || ''));
+      text(321, 651, 9, 'Invoice Date');
+      text(408, 651, 9, displayDate(invoice.invoice_date));
+      text(321, 637, 9, 'Work Order');
+      text(408, 637, 9, String(invoice.work_order_no || '-'));
+      text(321, 621, 9, 'Paid Date');
+      text(408, 621, 9, invoice.paid_date ? displayDate(invoice.paid_date) : '-');
+      text(321, 605, 9, 'Payment Ref');
+      text(408, 605, 9, String(invoice.payment_reference || '-').slice(0, 24));
+    } else {
+      text(left, 621, 15, 'Sales Invoice');
+      rightText(right, 621, 9, String(invoice.invoice_no || ''));
+    }
+
+    const items = invoiceItems.slice(itemOffset, itemOffset + rowsPerPage);
+    const tableBottom = tableTop - headerHeight - rowHeight * Math.max(items.length, 1);
+    const serialRight = 70;
+    const descriptionRight = 355;
+    const qtyRight = 405;
+    const rateRight = 475;
+
+    fillRect(left, tableTop - headerHeight, width, headerHeight, 212);
+    rect(left, tableBottom, width, tableTop - tableBottom);
+    [serialRight, descriptionRight, qtyRight, rateRight].forEach((x) => line(x, tableBottom, x, tableTop));
+    line(left, tableTop - headerHeight, right, tableTop - headerHeight);
+    for (let y = tableTop - headerHeight - rowHeight; y >= tableBottom; y -= rowHeight) line(left, y, right, y);
+    text(left + 7, tableTop - 16, 8, 'S.No');
+    text(serialRight + 8, tableTop - 16, 8, 'Description');
+    rightText(qtyRight - 6, tableTop - 16, 8, 'Qty');
+    rightText(rateRight - 6, tableTop - 16, 8, 'Rate');
+    rightText(right - 6, tableTop - 16, 8, 'Amount');
+
+    items.forEach((item: any, index: number) => {
+      const y = tableTop - headerHeight - rowHeight * index - 9;
+      text(left + 10, y, 8, itemOffset + index + 1);
+      wrap([item.item_name, item.description].filter(Boolean).join(' - '), 54).forEach((value, lineIndex) =>
+        text(serialRight + 8, y - lineIndex * 9, 8, value));
+      rightText(qtyRight - 6, y, 8, `${number(item.qty)} ${item.unit || 'PCS'}`);
+      rightText(rateRight - 6, y, 8, number(item.selling_price));
+      rightText(right - 6, y, 8, number(item.amount));
     });
-    termsY -= 3;
-  });
 
-  [
-    ['Sub Total', invoice.total_amount],
-    ['Discount', invoice.discount_amount],
-    ['Tax', invoice.tax_amount],
-    ['Net Amount', invoice.net_amount],
-    ['Paid', invoice.paid_amount],
-    ['Balance', invoice.balance_amount]
-  ].forEach(([label, value], index) => {
-    const rowBottom = summaryTop - 18 * (index + 1);
-    fillRect(totalsLeft, rowBottom, right - totalsLeft, 18, index === 3 ? 238 : 247);
-    text(totalsLeft + 8, rowBottom + 5, 9, label);
-    rightText(right - 8, rowBottom + 5, 9, number(value));
-  });
-  text(left + 10, summaryBottom + 10, 7, 'Thank you for giving us the opportunity to serve you.');
+    if (pageIndex === pageCount - 1) {
+      const summaryTop = tableBottom;
+      const totalsLeft = 330;
+      rect(left, summaryBottom, width, summaryTop - summaryBottom);
+      line(totalsLeft, summaryBottom, totalsLeft, summaryTop);
+      text(left + 10, summaryTop - 18, 10, 'Terms and Conditions');
+      let termsY = summaryTop - 36;
+      [
+        'One Year service warranty from the invoice date for camera, DVR and Hard Disk.',
+        'No burning warranty for any product.',
+        'No replacement. No exchange.',
+        'Free service support during the warranty period.'
+      ].forEach((value, index) => {
+        wrap(`${index + 1}. ${value}`, 64, 2).forEach((termLine) => {
+          text(left + 16, termsY, 7, termLine);
+          termsY -= 10;
+        });
+        termsY -= 3;
+      });
 
-  const content = `${commands.join('\n')}\n`;
+      [
+        ['Sub Total', invoice.total_amount],
+        ['Discount', invoice.discount_amount],
+        ['Tax', invoice.tax_amount],
+        ['Net Amount', invoice.net_amount],
+        ['Paid', invoice.paid_amount],
+        ['Balance', invoice.balance_amount]
+      ].forEach(([label, value], index) => {
+        const rowBottom = summaryTop - 18 * (index + 1);
+        fillRect(totalsLeft, rowBottom, right - totalsLeft, 18, index === 3 ? 238 : 247);
+        text(totalsLeft + 8, rowBottom + 5, 9, label);
+        rightText(right - 8, rowBottom + 5, 9, number(value));
+      });
+      text(left + 10, summaryBottom + 10, 7, 'Thank you for giving us the opportunity to serve you.');
+
+      text(left + 10, summaryBottom - 16, 10, 'Please transfer the amount:');
+      [
+        'CA No: 510909010042677',
+        'TIME CABLE VISION',
+        'CITY UNION BANK',
+        'IFSC: CIUB0000432',
+        'MICR Code: 600054082',
+        'Branch: New Colony Chrompet',
+        'City: Chennai',
+        'UPI PAYMENT NO.: 9884543540'
+      ].forEach((detail, index) => {
+        text(left + 10, summaryBottom - 29 - index * 10, 8, detail);
+      });
+    }
+
+    pageStreams.push(`${commands.join('\n')}\n`);
+    commands.length = 0;
+  }
+
+  const pageReferences = pageStreams.map((_, index) => `${5 + index * 2} 0 R`).join(' ');
   const objects = [
     '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj',
-    '2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj',
-    '3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj',
-    '4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj',
-    `5 0 obj << /Length ${byteLength(content)} >> stream\n${content}endstream endobj`
+    `2 0 obj << /Type /Pages /Kids [${pageReferences}] /Count ${pageCount} >> endobj`,
+    '3 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj'
   ];
+  pageStreams.forEach((content, index) => {
+    const contentId = 4 + index * 2;
+    const pageId = contentId + 1;
+    objects.push(
+      `${contentId} 0 obj << /Length ${byteLength(content)} >> stream
+${content}endstream endobj`,
+      `${pageId} 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents ${contentId} 0 R >> endobj`
+    );
+  });
   let pdf = '%PDF-1.4\n';
   const offsets: number[] = [];
   objects.forEach((object) => {
