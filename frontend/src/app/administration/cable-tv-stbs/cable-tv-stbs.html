@@ -1,7 +1,10 @@
 <div class="page-shell">
   <div class="page-header">
     <h1>STB Master</h1>
-    <button type="button" (click)="openStbModal()">Add STB</button>
+    <div class="header-actions">
+      <button type="button" class="secondary-btn" [disabled]="!filteredStbs.length" (click)="exportExcel()">Export Excel</button>
+      <button type="button" (click)="openStbModal()">Add STB</button>
+    </div>
   </div>
 
   <section class="stb-count-grid" aria-label="STB inventory counts">

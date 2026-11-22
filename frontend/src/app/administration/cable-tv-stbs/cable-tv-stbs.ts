@@ -1,4 +1,5 @@
 import { IndiaDatePipe } from '../../shared/india-date.pipe';
+import { buildExcelWorkbook } from '../../shared/excel-workbook';
 import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
@@ -49,6 +50,33 @@ export class CableTvStbs {
         unavailable: rows.length - available
       };
     });
+  }
+
+  exportExcel() {
+    const items = this.filteredStbs;
+    if (!items.length) return;
+
+    const datePipe = new IndiaDatePipe();
+    const amount = (value: string | number | null | undefined) =>
+      value != null && value !== '' && Number.isFinite(Number(value)) ? Number(value) : '';
+    const headers = ['Updated Date', 'STB Number', 'Signal', 'Type', 'Box Only', 'Full Set', 'Assigned Employee', 'Status'];
+    const rows = items.map(item => [
+      datePipe.transform(item.updated_date || item.updated_at) || '',
+      String(item.stb_number ?? ''),
+      item.box_type || '',
+      item.stock_type || '',
+      amount(item.stb_amount),
+      amount(item.full_set_amount),
+      item.assigned_employee_name || 'Unassigned',
+      this.statusLabel(item.status)
+    ]);
+    const workbook = buildExcelWorkbook([headers, ...rows], 'STB Master');
+    const blob = new Blob([workbook], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'STB_Master.xlsx';
+    link.click();
+    URL.revokeObjectURL(link.href);
   }
 
   get filteredStbs() {
