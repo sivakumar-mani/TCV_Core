@@ -79,8 +79,8 @@ async function saveEnrollment(req, res, deps) {
     if (!collector) fail('Collected By is required');
     const [[collectorRow]] = await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1', [collector]);
     if (!collectorRow) fail('Select an active collector');
-    const reference = text(s.payment_reference), mappedEmployee = Number(s.payment_mapped_employee_id) || null;
-    if (!reference || !mappedEmployee) fail('Payment reference and payment mapped employee are required');
+    const reference = text(s.payment_reference) || null, mappedEmployee = Number(s.payment_mapped_employee_id) || null;
+    if (!mappedEmployee) fail('Payment mapped employee is required');
     if (!admin && mappedEmployee !== loggedEmployee) fail('Payment mapped employee must be the logged-in employee');
     const [[mapped]] = await db.query('SELECT employee_id FROM employees WHERE employee_id=? AND is_active=1', [mappedEmployee]);
     if (!mapped) fail('Select an active payment mapped employee');
@@ -168,14 +168,15 @@ async function saveEnrollment(req, res, deps) {
     const zeroAccount = [routerTotal,routerDiscount,connectionCharge,connectionDiscount,labor,materialGross,materialDiscount,accountSubscription,overallDiscount,grand,paid].every(value => value === 0);
     const adminSettled = admin && money(grand-paid) === 0;
     const accountStatus = zeroAccount || adminSettled ? 'PAID' : 'PENDING';
-    const officeReceived = adminSettled ? paid : 0;
+    const officeTotal = Math.max(money(grand-labor), 0);
+    const officeReceived = adminSettled ? Math.min(paid, officeTotal) : 0;
     if (zeroAccount) {
       approval = 'APPROVED';
       for (const table of ['internet_customers','internet_customer_packages','internet_customer_routers','internet_connections','internet_subscriptions']) {
         await db.query(`UPDATE ${table} SET approval_status='APPROVED' WHERE internet_customer_id=? AND approval_status='PENDING'`, [customerId]);
       }
     }
-    const [account] = await db.query(`INSERT INTO internet_customer_accounts(internet_customer_id,account_source,router_amount,router_discount,connection_amount,labor_amount,material_cost,material_discount,subscription_amount,overall_discount,grand_total,customer_paid_amount,office_received_amount,office_balance_amount,balance_amount,account_status,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [customerId,'CONNECTION',routerTotal,routerDiscount,connectionCharge,labor,materialGross,materialDiscount,accountSubscription,overallDiscount,grand,paid,officeReceived,money(grand-officeReceived),money(grand-paid),accountStatus,approval]);
+    const [account] = await db.query(`INSERT INTO internet_customer_accounts(internet_customer_id,account_source,router_amount,router_discount,connection_amount,labor_amount,material_cost,material_discount,subscription_amount,overall_discount,grand_total,customer_paid_amount,office_received_amount,office_balance_amount,balance_amount,account_status,approval_status) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [customerId,'CONNECTION',routerTotal,routerDiscount,connectionCharge,labor,materialGross,materialDiscount,accountSubscription,overallDiscount,grand,paid,officeReceived,money(officeTotal-officeReceived),money(grand-paid),accountStatus,approval]);
     for (const table of ['internet_subscriptions','internet_customer_routers','internet_connections','internet_connection_materials']) await db.query(`UPDATE ${table} SET initial_account_id=? WHERE internet_customer_id=? AND initial_account_id IS NULL`, [account.insertId,customerId]);
     if (!admin && !zeroAccount) await db.query(`INSERT INTO workflow_approvals(module_name,reference_id,reference_no,workflow_status,requested_by_employee_id,remarks) VALUES('INTERNET_CUSTOMER',?,?,'PENDING',?,'Internet customer approval')`, [customerId,String(customerId),loggedEmployee]);
     await db.commit();

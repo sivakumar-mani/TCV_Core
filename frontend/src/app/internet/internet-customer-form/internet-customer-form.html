@@ -94,7 +94,7 @@
               <td><input type="number" formControlName="sgst_amount" aria-label="SGST Amount" readonly /></td>
               <td><input type="number" formControlName="cgst_percent" aria-label="CGST %" readonly /></td>
               <td><input type="number" formControlName="cgst_amount" aria-label="CGST Amount" readonly /></td>
-              <td><input type="number" formControlName="package_price" aria-label="Total (Incl. GST)" readonly /></td>
+              <td><input type="text" [value]="row.get('package_price')?.value | number: '1.0-0'" aria-label="Total (Incl. GST)" readonly /></td>
               <td><button type="button" class="remove package-remove" aria-label="Remove package" (click)="remove(packages,i)">&times;</button></td>
             </tr>
           </tbody>
@@ -108,7 +108,7 @@
       </div>
       <div [class.enrollment-router-layout]="!id">
       <div class="router-labels">
-        <span>Type</span><span>Router</span><span>Category</span><span>HSN</span><span>Qty</span
+        <span>Type</span><span>Router</span><span>Router Mode</span><span>HSN</span><span>Qty</span
         ><span>Unit</span><span>Rate</span><span>Discount</span><span>Amount</span
         ><span>Action</span>
       </div>
@@ -125,7 +125,7 @@
           ><p-select formControlName="router_stock_key" [options]="filteredRouters(i)" optionLabel="product_name" optionValue="stock_key" placeholder="Router" [filter]="true" filterBy="product_name,hsn_code" appendTo="body" (onChange)="selectRouter(i)"><ng-template #item let-x><span>{{ x.product_name }} (Stock: {{ x.available_qty }})</span></ng-template></p-select
           ><select formControlName="usage_category" (change)="changeRouterCategory(i)">
             <option value="CUSTOMER_PAID">Customer Paid</option>
-            <option value="FREE_USE">Free Use</option></select
+            <option value="FREE_USE">Free Use (reclaimable)</option></select
           ><input formControlName="hsn_code" placeholder="HSN" readonly /><input
             type="number"
             formControlName="qty"
@@ -255,7 +255,7 @@
         <label>Collected By *<p-select formControlName="collected_by_employee_id" [options]="lookups.employees || []" optionLabel="employee_name" optionValue="employee_id" [disabled]="lookups.is_admin === false" [filter]="true" appendTo="body" placeholder="Select employee"></p-select></label>
         <label>Renewed By *<select formControlName="renewed_by_value" (change)="changeRenewedBy()" [attr.disabled]="lookups.is_admin === false ? true : null"><option value="ADMIN">Admin</option><option value="CUSTOMER">Online</option></select></label>
         <label>Mode Of Payment *<select formControlName="payment_mode" [attr.disabled]="lookups.is_admin === false ? true : null"><ng-container *ngIf="form.get('subscription.renewed_by_value')?.value === 'ADMIN'"><option value="CASH">Cash</option><option value="ACCOUNT">Account</option></ng-container><option *ngIf="form.get('subscription.renewed_by_value')?.value === 'CUSTOMER'" value="DASHBOARD">Dashboard</option></select></label>
-        <label>Payment Reference *<input formControlName="payment_reference" maxlength="150" /></label>
+        <label>Payment Reference<input formControlName="payment_reference" maxlength="150" /></label>
         <label>Payment Mapped Employee *<p-select formControlName="payment_mapped_employee_id" [options]="lookups.employees || []" optionLabel="employee_name" optionValue="employee_id" [disabled]="lookups.is_admin === false" [filter]="true" appendTo="body" placeholder="Select employee"></p-select></label>
       </div>
       <p class="hint">Free periods extend the end date without increasing the amount. Customer payment is included in Account Details; office receipt is tracked in Pending Accounts.</p>
@@ -303,7 +303,8 @@
         </div>
         <div class="account-totals">
           <div class="total-row strong">
-            <span>Office Amount</span><input type="number" formControlName="grand_total" readonly />
+            <span>Office Amount</span><input *ngIf="!id" type="number" [value]="officeAmount" readonly />
+            <input *ngIf="id" type="number" formControlName="grand_total" readonly />
           </div>
           <div class="total-row">
             <span>Over all discount</span
@@ -314,7 +315,7 @@
             ><input type="number" formControlName="customer_paid_amount" (input)="total()" />
           </div>
           <div class="total-row strong">
-            <span>Balance</span><input type="number" formControlName="balance_amount" readonly />
+            <span>{{ id ? 'Balance' : 'Customer Pending Amount' }}</span><input type="number" formControlName="balance_amount" readonly />
           </div>
           <div class="total-row">
             <span>Status</span><input type="text" formControlName="account_status" readonly />

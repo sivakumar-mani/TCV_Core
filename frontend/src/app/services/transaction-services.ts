@@ -23,6 +23,13 @@ export class TransactionServices {
     return this.http.patch(`${this.endpoint}/${transactionId}/approve`, {});
   }
 
+  updateTransactionStatus(transactionId: number, status: string, expectedStatus: string) {
+    return this.http.patch<{ message: string }>(`${this.endpoint}/${transactionId}/status`, {
+      approval_status: status,
+      expected_status: expectedStatus
+    });
+  }
+
   deleteTransaction(transactionId: number) {
     return this.http.delete(`${this.endpoint}/${transactionId}`);
   }

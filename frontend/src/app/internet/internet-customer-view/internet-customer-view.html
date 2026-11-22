@@ -143,6 +143,7 @@
           <tr>
             <th>Updated Date</th>
             <th class="router-name-column">Router Name</th>
+            <th>Router Mode</th>
             <th>Reason Type</th>
             <th>Update Reason</th>
             <th>Remarks</th>
@@ -161,6 +162,7 @@
           <tr *ngFor="let x of details.routers">
             <td>{{ (x.updated_at || x.created_at) | indiaDate: 'dd-MM-yyyy' }}</td>
             <td class="router-name-column">{{ x.product_name || '-' }}</td>
+            <td>{{ x.usage_category === 'FREE_USE' ? 'Free (reclaimable)' : x.usage_category === 'CUSTOMER_PAID' ? 'Paid' : '—' }}</td>
             <td>{{ x.router_type }}</td>
             <td>{{ (x.update_reason || 'INSTALL').replace('_', ' ') }}</td>
             <td>{{ x.reason_remarks || x.remarks || '-' }}</td>
@@ -178,7 +180,7 @@
             </mat-menu></td>
           </tr>
           <tr *ngIf="!details.routers?.length">
-            <td [attr.colspan]="lookups.is_admin ? 14 : 13" class="empty">No router details</td>
+            <td [attr.colspan]="lookups.is_admin ? 15 : 14" class="empty">No router details</td>
           </tr>
         </tbody>
       </table>
@@ -384,9 +386,9 @@
             <option>RETURNED</option>
           </select></label
         ><label *ngIf="historyForm.update_reason === 'REPLACED'"
-          >Category<select [(ngModel)]="historyForm.usage_category" [disabled]="!!editingRouterId">
+          >Router Mode<select [(ngModel)]="historyForm.usage_category" [disabled]="!!editingRouterId">
             <option value="CUSTOMER_PAID">Customer Paid</option>
-            <option value="FREE_USE">Free Use</option>
+            <option value="FREE_USE">Free Use (reclaimable)</option>
           </select></label
         ><label
           >Router<select appApiSelect [(ngModel)]="historyForm.product_id" [disabled]="!!editingRouterId || latestRouter()?.router_status === 'ACTIVE'">

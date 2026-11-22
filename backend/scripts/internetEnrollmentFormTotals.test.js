@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../../frontend/src/app/internet/internet-customer-form/internet-customer-form.ts'),'utf8');
-const method=source.slice(source.indexOf('  total(){'),source.indexOf('  date(v:any)'));
+const method=source.slice(source.indexOf('  total(){'),source.indexOf('  get officeAmount()'));
 const total=vm.runInNewContext(require('node:module').stripTypeScriptTypes('({' + method + '}).total'));
 const group=value=>({value,get(k){return {value:this.value[k]};},patchValue(p){Object.assign(this.value,p);}});
 test('form excludes online paid charge, preserves other receipts, and restores cash totals without drift',()=>{

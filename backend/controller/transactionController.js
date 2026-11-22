@@ -72,58 +72,35 @@ const addTransaction = async (req, res) => {
       return res.status(400).json({ message: 'Amount must be greater than zero' });
     }
     const category = String(req.body.category || '').trim();
-    if (!category) return res.status(400).json({ message: 'Purpose is required' });
-    const paymentMode = String(req.body.payment_mode || 'CASH').toUpperCase();
-    if (!['CASH', 'ONLINE', 'BANK', 'UPI', 'OTHER'].includes(paymentMode)) {
+    if (!['Purchase', 'Refund', 'Sent'].includes(category)) {
+      return res.status(400).json({ message: 'Select Purchase, Refund, or Sent as the purpose' });
+    }
+    const paymentMode = String(req.body.payment_mode || '').trim().toUpperCase();
+    if (!['CASH', 'ONLINE'].includes(paymentMode)) {
       return res.status(400).json({ message: 'Invalid payment mode' });
     }
-    const referenceNo = String(req.body.reference_no || '').trim();
     const description = String(req.body.description || '').trim();
-    if (!referenceNo || !description) {
-      return res.status(400).json({ message: 'Reference No and Description are required' });
+    if (!description || description.length > 500) {
+      return res.status(400).json({ message: 'Transaction Details are required and must be 500 characters or fewer' });
     }
-    const instructedByUserId = Number(req.body.instructed_by_user_id) || null;
-    let instructedBy = null;
-    if (type === 'DEBIT' && instructedByUserId) {
-      const [[selectedUser]] = await db.query(
-        `SELECT u.user_id,
-                COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''),
-                         NULLIF(TRIM(CONCAT_WS(' ', u.first_name, u.last_name)), ''), u.username) AS display_name
-         FROM users u
-         LEFT JOIN employees e ON e.employee_id = u.employee_id
-         WHERE u.user_id = ? AND (UPPER(u.role) = 'ADMIN' OR u.user_id = ?)
-         LIMIT 1`,
-        [instructedByUserId, currentUserId(res) || 0]
-      );
-      instructedBy = selectedUser?.display_name || null;
-    }
-    const billCopyAvailable = String(req.body.bill_copy_available || '').toUpperCase();
-    const itemList = String(req.body.item_list || '').trim() || null;
     const receivedBy = String(req.body.received_by || '').trim() || null;
     const receivedDate = req.body.received_date || null;
-    if (type === 'DEBIT' && (!instructedBy || !['YES', 'NO'].includes(billCopyAvailable) || !itemList)) {
-      return res.status(400).json({ message: 'Instructed By, Bill Copy Yes/No, and Item List/Description are required for Debit' });
-    }
     if (type === 'CREDIT' && (!receivedBy || !receivedDate)) {
       return res.status(400).json({ message: 'Received By and Received Date are required for Credit' });
     }
     const [result] = await db.query(
       `INSERT INTO finance_transactions (
         transaction_date, transaction_type, category, amount, payment_mode,
-        reference_no, description, instructed_by, bill_copy_available, item_list,
+        description,
         received_by, received_date, approval_status, created_by_user_id, created_by_employee_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, ?)`,
       [
         transactionDate,
         type,
         category,
         amount,
         paymentMode,
-        referenceNo,
         description,
-        type === 'DEBIT' ? instructedBy : null,
-        type === 'DEBIT' ? billCopyAvailable : null,
-        type === 'DEBIT' ? itemList : null,
         type === 'CREDIT' ? receivedBy : null,
         type === 'CREDIT' ? receivedDate : null,
         currentUserId(res),
@@ -233,6 +210,34 @@ const approveTransaction = async (req, res) => {
   }
 };
 
+const updateTransactionStatus = async (req, res) => {
+  const transactionId = Number(req.params.transactionId);
+  const { approval_status: status, expected_status: expectedStatus } = req.body || {};
+  const allowedStatuses = ['PENDING', 'APPROVED', 'REJECTED'];
+  if (!Number.isSafeInteger(transactionId) || transactionId <= 0) {
+    return res.status(400).json({ message: 'Valid transaction is required' });
+  }
+  if (!allowedStatuses.includes(status) || !allowedStatuses.includes(expectedStatus) || status === expectedStatus) {
+    return res.status(400).json({ message: 'Select a different valid transaction status' });
+  }
+  try {
+    const db = connection.promise();
+    await ensureTransactionTable(db);
+    const [result] = await db.query(
+      `UPDATE finance_transactions
+       SET approval_status = ?, approved_by_user_id = ?, approved_at = IF(? = 'APPROVED', NOW(), NULL)
+       WHERE finance_transaction_id = ? AND approval_status = ? AND source_module IS NULL`,
+      [status, status === 'APPROVED' ? currentUserId(res) : null, status, transactionId, expectedStatus]
+    );
+    if (!result.affectedRows) {
+      return res.status(409).json({ message: 'Transaction changed or is unavailable for status editing. Refresh the list and try again.' });
+    }
+    return res.json({ message: 'Transaction status updated' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Transaction status update failed', error: error.message });
+  }
+};
+
 const deleteTransaction = async (req, res) => {
   try {
     const db = connection.promise();
@@ -250,4 +255,4 @@ const deleteTransaction = async (req, res) => {
   }
 };
 
-module.exports = { ensureTransactionTable, addTransaction, getTransactions, approveTransaction, deleteTransaction };
+module.exports = { ensureTransactionTable, addTransaction, getTransactions, approveTransaction, updateTransactionStatus, deleteTransaction };

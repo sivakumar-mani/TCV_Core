@@ -53,7 +53,7 @@ export class InternetCustomerForm {
     start_date:[this.today,required],end_date:[this.today,required],collect_date:[this.today,required],
     paid_amount:[0,[...required,Validators.min(0)]],balance_amount:[0],payment_status:['PENDING',required],
     collected_by_employee_id:[null,required],renewed_by_value:['ADMIN',required],payment_mode:['CASH',required],
-    payment_reference:['',required],payment_mapped_employee_id:[null,required]
+    payment_reference:['',Validators.maxLength(150)],payment_mapped_employee_id:[null,required]
   });}
   changePeriodUnit(free=false){this.form.get('subscription')?.patchValue(free?{free_period_value:0}:{period_value:1},{emitEvent:false});this.calculateSubscription();}
   changeSubscriptionMonth(){const s=this.form.get('subscription')!,v=s.value,start=new Date(Date.UTC(Number(v.year),Number(v.month)-1,this.form.get('network_type')?.value==='KRISHI'?16:1));s.patchValue({start_date:this.date(start)},{emitEvent:false});this.calculateSubscription();}
@@ -76,5 +76,11 @@ export class InternetCustomerForm {
     const grand=this.round(Math.max(routerAmount+(Number(c.connection_charge)||0)-(Number(c.connection_discount)||0)+labor+materialCost-materialDiscount+accountSubscription-(Number(a.get('overall_discount')?.value)||0),0)),customerPaid=this.round(Math.min(Math.max((Number(a.get('customer_paid_amount')?.value)||0)+accountSubscriptionPaid-this.previousSubscriptionPaid,accountSubscriptionPaid),grand));this.previousSubscriptionPaid=accountSubscriptionPaid;
     a.patchValue({router_amount:routerAmount,router_discount:routerDiscount,connection_amount:Number(c.connection_charge)||0,connection_discount:Number(c.connection_discount)||0,labor_amount:labor,material_cost:materialCost,material_discount:materialDiscount,subscription_amount:accountSubscription,grand_total:grand,customer_paid_amount:customerPaid,balance_amount:this.round(Math.max(grand-customerPaid,0)),account_status:'PENDING'},{emitEvent:false});
   }
+  get officeAmount(): number {
+    const total = Number(this.form.get('account.grand_total')?.value) || 0;
+    const labour = Number(this.form.get('account.labor_amount')?.value) || 0;
+    return this.round(Math.max(total - labour, 0));
+  }
+
   date(v:any){if(!v)return'';const d=new Date(v);return Number.isNaN(d.getTime())?'':d.toISOString().slice(0,10);}
 }

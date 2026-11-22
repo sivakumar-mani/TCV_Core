@@ -51,8 +51,9 @@ test('days and years match renewal calculations without billing free periods',()
   const f=form(),s=f.form.get('subscription');s.patchValue({start_date:'2026-10-01',period_unit:'DAYS',period_value:15,free_period_value:2,free_period_unit:'DAYS'});f.calculateSubscription();assert.equal(s.get('subscription_amount').value,285);assert.equal(s.get('end_date').value,'2026-10-17');
   f.form.patchValue({network_type:'RAILWIRE'},{emitEvent:false});s.patchValue({start_date:'2026-09-16',period_unit:'YEAR',period_value:1,free_period_value:0});f.calculateSubscription();assert.equal(s.get('subscription_amount').value,7080);assert.equal(s.get('end_date').value,'2027-09-10');
 });
-test('email and all requested subscription input fields are required on enrollment only',()=>{
-  const f=form();for(const name of ['email','subscription.start_date','subscription.end_date','subscription.collect_date','subscription.payment_reference','subscription.payment_mapped_employee_id']){const c=f.form.get(name),v=c.value;c.setValue('');assert.equal(c.valid,false,name);c.setValue(v);}
+test('payment reference is optional and remaining required fields are enforced on enrollment',()=>{
+  const f=form();for(const name of ['email','subscription.start_date','subscription.end_date','subscription.collect_date','subscription.payment_mapped_employee_id']){const c=f.form.get(name),v=c.value;c.setValue('');assert.equal(c.valid,false,name);c.setValue(v);}
+  const reference=f.form.get('subscription.payment_reference');reference.setValue('');assert.equal(reference.valid,true);
   const old=form(1);old.form.get('email').setValue('');assert.equal(old.form.get('email').valid,true);
 });
 

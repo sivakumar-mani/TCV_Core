@@ -74,7 +74,7 @@ test('admin fully collected enrollment is settled immediately without workflow',
   const r=await save(true,p);assert.equal(r.res.code,201);
   const account=r.inserted('internet_customer_accounts')[0];
   assert.equal(account.account_status,'PAID');assert.equal(account.approval_status,'APPROVED');
-  assert.equal(account.office_received_amount,1590);assert.equal(account.office_balance_amount,0);assert.equal(account.balance_amount,0);
+  assert.equal(account.office_received_amount,1540);assert.equal(account.office_balance_amount,0);assert.equal(account.balance_amount,0);
   assert.ok(!r.calls.some(c=>c.sql.includes('INSERT INTO workflow_approvals')));
 });
 test('Online Paid subscription stays paid but is excluded from pending account totals and balances',async()=>{
@@ -87,14 +87,14 @@ test('Online Paid subscription stays paid but is excluded from pending account t
   assert.equal(sub.amount,590);assert.equal(sub.paid_amount,590);assert.equal(sub.balance_amount,0);assert.equal(sub.payment_status,'PAID');
   const account=r.inserted('internet_customer_accounts')[0];
   assert.equal(account.subscription_amount,0);assert.equal(account.grand_total,1000);
-  assert.equal(account.customer_paid_amount,0);assert.equal(account.balance_amount,1000);assert.equal(account.office_balance_amount,1000);
+  assert.equal(account.customer_paid_amount,0);assert.equal(account.balance_amount,1000);assert.equal(account.office_balance_amount,950);
 });
 test('cash Paid and Online Partial subscriptions retain existing account treatment',async()=>{
   for(const online of [false,true]){
     const p=payload();p.subscription.renewed_by_value=online?'CUSTOMER':'ADMIN';p.subscription.payment_mode=online?'DASHBOARD':'CASH';
     p.subscription.paid_amount=online?100:590;p.subscription.payment_status=online?'PARTIAL':'PAID';p.account.customer_paid_amount=p.subscription.paid_amount;
     const r=await save(true,p);assert.equal(r.res.code,201);
-    const account=r.inserted('internet_customer_accounts')[0];assert.equal(account.subscription_amount,590);assert.equal(account.grand_total,1590);assert.equal(account.office_balance_amount,1590);assert.equal(account.balance_amount,1590-p.subscription.paid_amount);
+    const account=r.inserted('internet_customer_accounts')[0];assert.equal(account.subscription_amount,590);assert.equal(account.grand_total,1590);assert.equal(account.office_balance_amount,1540);assert.equal(account.balance_amount,1590-p.subscription.paid_amount);
   }
 });
 test('staff enrollment recomputes prices, saves dates and payments, includes labor/discounts and remains pending office receipt',async()=>{
@@ -105,7 +105,7 @@ test('staff enrollment recomputes prices, saves dates and payments, includes lab
   const sub=r.inserted('internet_subscriptions')[0];assert.equal(sub.amount,590);assert.equal(sub.paid_amount,100);assert.equal(sub.balance_amount,490);assert.equal(sub.end_date,'2026-11-15');assert.equal(sub.collect_date,'2026-09-20');assert.equal(sub.free_period_value,1);assert.equal(sub.approval_status,'PENDING');
   const router=r.inserted('internet_customer_routers')[0];assert.equal(router.rate,1000);assert.equal(router.amount,900);assert.equal(router.discount,100);
   const material=r.inserted('internet_connection_materials')[0];assert.equal(material.unit_rate,50);assert.equal(material.amount,90);
-  const account=r.inserted('internet_customer_accounts')[0];assert.equal(account.grand_total,1790);assert.equal(account.balance_amount,1690);assert.equal(account.office_received_amount,0);assert.equal(account.office_balance_amount,1790);assert.equal(account.account_status,'PENDING');assert.equal(account.material_cost,100);assert.equal(account.material_discount,10);
+  const account=r.inserted('internet_customer_accounts')[0];assert.equal(account.grand_total,1790);assert.equal(account.balance_amount,1690);assert.equal(account.office_received_amount,0);assert.equal(account.office_balance_amount,1740);assert.equal(account.account_status,'PENDING');assert.equal(account.material_cost,100);assert.equal(account.material_discount,10);
   assert.equal(r.calls.filter(x=>x.sql.includes('INSERT INTO workflow_approvals')).length,1);
 });
 test('admin rate override is saved and approval is immediate, but account receipt remains pending',async()=>{
@@ -114,8 +114,15 @@ test('admin rate override is saved and approval is immediate, but account receip
 test('free-use router zeros rate, discount and amount even with a forged payload',async()=>{
   const p=payload();p.routers[0].usage_category='FREE_USE';const r=await save(false,p);const router=r.inserted('internet_customer_routers')[0];assert.equal(router.rate,0);assert.equal(router.discount,0);assert.equal(router.amount,0);assert.equal(r.res.code,201);
 });
+test('enrollment saves an optional payment reference when supplied',async()=>{
+  for(const [value, expected] of [['',null],['   ',null],[' receipt-test ','receipt-test']]){
+    const p=payload();p.subscription.payment_reference=value;
+    const r=await save(false,p);assert.equal(r.res.code,201,r.res.body.message);
+    assert.equal(r.inserted('internet_subscriptions')[0].payment_reference,expected);
+  }
+});
 test('missing required email or payment information, invalid dates, wrong stock type and unavailable stock roll back',async()=>{
-  for(const change of [p=>p.email='',p=>p.subscription.payment_reference='',p=>p.subscription.end_date='2026-09-01',p=>p.subscription.collect_date='2026-02-30',p=>p.subscription.payment_mapped_employee_id=44,p=>p.routers[0].router_type='SERVICED',p=>p.subscription.paid_amount=900,p=>p.routers[0].qty=-1]){
+  for(const change of [p=>p.email='',p=>p.subscription.payment_mapped_employee_id=null,p=>p.subscription.end_date='2026-09-01',p=>p.subscription.collect_date='2026-02-30',p=>p.subscription.payment_mapped_employee_id=44,p=>p.routers[0].router_type='SERVICED',p=>p.subscription.paid_amount=900,p=>p.routers[0].qty=-1]){
     const p=payload();change(p);const r=await save(false,p);assert.equal(r.res.code,400,r.res.body.message);assert.ok(r.rolledBack);assert.ok(!r.committed);
   }
   const r=await save(false,payload(),{noStock:true});assert.equal(r.res.code,400);assert.ok(r.rolledBack);
@@ -137,12 +144,12 @@ test('Pending Accounts exposes workflow separately, preserves paise and retains 
     return [sql.includes('FROM cable_customer_accounts ca')?[cable]:[]];
   }};
   const ctx=vm.createContext({connection:{promise:()=>db},ensureCableTvExtendedTables:async()=>{},reconcileMissingStbAmounts:async()=>{},ensureMaterialSalesTables:async()=>{},isAdmin:()=>true,intOrNull:v=>Number(v)||null,textOrNull:v=>v||null,money:v=>Number(v)||0,internetCustomerNumberSql:()=> 'ic.customer_code'});
-  vm.runInContext(source.slice(source.indexOf('const getPendingAccounts ='),source.indexOf('const getLoAccounts ='))+';this.list=getPendingAccounts;',ctx);
+  vm.runInContext(source.slice(source.indexOf('const internetPendingLaborSql'),source.indexOf('const connection ='))+source.slice(source.indexOf('const getPendingAccounts ='),source.indexOf('const getLoAccounts ='))+';this.list=getPendingAccounts;',ctx);
   const res={status(code){this.code=code;return this;},json(body){this.body=body;return this;}};
   await ctx.list({query:{status:'PENDING'}},res);
   assert.equal(res.body[0].grand_total,1790.55);assert.equal(res.body[0].enrollment_approval_status,'PENDING');assert.equal(res.body[1],cable);
   assert.match(internetQuery.sql,/ia\.approval_status AS enrollment_approval_status/);assert.match(internetQuery.sql,/ia\.router_amount \+ ia\.router_discount AS stb_amount/);
-  assert.match(internetQuery.sql,/GREATEST\(ia.grand_total-COALESCE\(ia.office_received_amount,0\),0\)>0/);
+  assert.match(internetQuery.sql,/THEN COALESCE\(ia.labor_amount,0\) ELSE 0 END/);assert.match(internetQuery.sql,/COALESCE\(ia.office_received_amount,0\),0\)>0/);
 });
 
 test('approving enrollment approves its components without marking office payments received',async()=>{

@@ -32,6 +32,7 @@ td { border: 1px solid #d5dae1; color: #344054; padding: 10px; } tbody tr:nth-ch
 .details-grid > div { background: #f8fafc; border: 1px solid #e1e7ef; border-radius: 7px; display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; }
 .details-grid span { color: #667085; font-size: 12px; font-weight: 650; }
 .details-grid strong { color: #172033; white-space: pre-wrap; word-break: break-word; }
+.transaction-description { white-space: pre-wrap; overflow-wrap: anywhere; }
 .modal-backdrop { align-items: center; background: rgba(16,24,40,.55); display: flex; inset: 0; justify-content: center; overflow-y: auto; padding: 16px; position: fixed; z-index: 1500; }
 .transaction-modal { background: #fff; border-radius: 12px; max-height: calc(100vh - 32px); max-width: 760px; overflow-y: auto; padding: 18px; width: 100%; }
 .transaction-modal header, .transaction-modal footer { align-items: center; display: flex; justify-content: space-between; }

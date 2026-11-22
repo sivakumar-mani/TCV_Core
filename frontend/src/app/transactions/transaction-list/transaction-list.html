@@ -25,15 +25,19 @@
 
   <section class="table-card">
     <table>
-      <thead><tr><th>S.No</th><th>Date</th><th>Type</th><th>Purpose</th><th>Mode</th><th>Reference</th><th>Details</th><th>Entered By</th><th>Status</th><th class="number">Amount</th><th>Action</th></tr></thead>
+      <thead><tr><th>S.No</th><th>Date</th><th>Type</th><th>Purpose</th><th>Payment Mode</th><th>Reference</th><th>Transaction Details</th><th>Entered By</th><th>Status</th><th class="number">Amount</th><th>Action</th></tr></thead>
       <tbody>
         <tr *ngFor="let row of rows; let i = index">
           <td>{{ i + 1 }}</td><td>{{ displayDate(row.transaction_date) }}</td>
           <td><span class="type-pill" [class.credit]="row.transaction_type === 'CREDIT'">{{ row.transaction_type }}</span></td>
           <td>{{ row.category }}</td><td>{{ row.payment_mode }}</td><td>{{ row.reference_no || '-' }}</td>
           <td>
-            <span *ngIf="row.transaction_type === 'DEBIT'">Instructed by: {{ row.instructed_by || '-' }}<br>Bill copy: {{ row.bill_copy_available || '-' }}<br>{{ row.item_list || row.description || '-' }}</span>
-            <span *ngIf="row.transaction_type === 'CREDIT'">Received by: {{ row.received_by || '-' }}<br>Received date: {{ displayDate(row.received_date) }}<br>{{ row.description || '-' }}</span>
+            <div class="transaction-description">{{ row.description || row.item_list || '-' }}</div>
+            <div *ngIf="row.item_list && row.description && row.item_list !== row.description">{{ row.item_list }}</div>
+            <div *ngIf="row.instructed_by">Instructed by: {{ row.instructed_by }}</div>
+            <div *ngIf="row.bill_copy_available">Bill copy: {{ row.bill_copy_available }}</div>
+            <div *ngIf="row.received_by">Received by: {{ row.received_by }}</div>
+            <div *ngIf="row.received_date">Received date: {{ displayDate(row.received_date) }}</div>
           </td><td>{{ row.entered_by_name || '-' }}</td>
           <td><span class="status-pill" [class.approved]="row.approval_status === 'APPROVED'">{{ row.approval_status || 'PENDING' }}</span></td>
           <td class="number">{{ row.amount | number:'1.2-2' }}</td>
@@ -44,6 +48,7 @@
               title="View Transaction"
               aria-label="View Transaction"
               (click)="view(row)">View Transaction</button>
+            <button *ngIf="canEditStatus(row)" mat-menu-item type="button" (click)="openStatusEditor(row)">Edit Status</button>
             <button mat-menu-item
               *ngIf="permissions.isAdmin()"
               type="button"
@@ -80,7 +85,7 @@
       <div *ngIf="selectedTransaction.transaction_type === 'CREDIT'"><span>Received By</span><strong>{{ selectedTransaction.received_by || '-' }}</strong></div>
       <div *ngIf="selectedTransaction.transaction_type === 'CREDIT'"><span>Received Date</span><strong>{{ displayDate(selectedTransaction.received_date) }}</strong></div>
       <div class="wide" *ngIf="selectedTransaction.transaction_type === 'DEBIT'"><span>Item List / Description</span><strong>{{ selectedTransaction.item_list || '-' }}</strong></div>
-      <div class="wide"><span>Description</span><strong>{{ selectedTransaction.description || '-' }}</strong></div>
+      <div class="wide"><span>Transaction Details</span><strong>{{ selectedTransaction.description || '-' }}</strong></div>
     </div>
     <footer>
       <button type="button" class="secondary" (click)="closeDetails()">Close</button>
@@ -98,31 +103,39 @@
   </section>
 </div>
 
+<div class="modal-backdrop" *ngIf="statusTransaction">
+  <section class="transaction-modal details-modal" role="dialog" aria-modal="true" aria-labelledby="transaction-status-title">
+    <header><h2 id="transaction-status-title">Edit Transaction Status</h2></header>
+    <div class="details-grid">
+      <div><span>Purpose</span><strong>{{ statusTransaction.category }}</strong></div>
+      <div><span>Amount</span><strong>{{ statusTransaction.amount | number:'1.2-2' }}</strong></div>
+      <label class="wide">Status
+        <select [(ngModel)]="transactionStatus" [disabled]="savingStatus">
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </label>
+    </div>
+    <footer>
+      <button type="button" class="secondary" (click)="statusTransaction = null" [disabled]="savingStatus">Cancel</button>
+      <button type="button" class="primary" (click)="saveStatus()" [disabled]="savingStatus || transactionStatus === statusTransaction.approval_status">Save Status</button>
+    </footer>
+  </section>
+</div>
+
 <div class="modal-backdrop" *ngIf="showForm">
   <section class="transaction-modal">
     <header><h2>Add Transaction</h2><button type="button" class="close" (click)="showForm = false" aria-label="Close">&times;</button></header>
     <div class="form-grid">
       <label>Date *<input type="date" [(ngModel)]="form.transaction_date" required></label>
       <label>Type *<select [(ngModel)]="form.transaction_type" required><option value="DEBIT">Debit (Expense)</option><option value="CREDIT">Credit (Income)</option></select></label>
-      <label>Purpose *<input type="text" [(ngModel)]="form.category" placeholder="Example: Travel, STB Refund" required></label>
+      <label>Purpose *<select [(ngModel)]="form.category" required><option value="">Select purpose</option><option value="Purchase">Purchase</option><option value="Refund">Refund</option><option value="Sent">Sent</option></select></label>
       <label>Amount *<input type="number" min="0.01" [(ngModel)]="form.amount" required></label>
-      <label>Payment Mode *<select [(ngModel)]="form.payment_mode" required><option value="CASH">Cash</option><option value="ONLINE">Online</option><option value="BANK">Bank</option><option value="UPI">UPI</option><option value="OTHER">Other</option></select></label>
-      <label>Reference No *<input type="text" [(ngModel)]="form.reference_no" required></label>
-      <label *ngIf="form.transaction_type === 'DEBIT'">Instructed By *
-        <select appApiSelect [(ngModel)]="form.instructed_by_user_id" required>
-          <option [ngValue]="null">Select user</option>
-          <option *ngFor="let user of instructedByUsers" [ngValue]="user.user_id">
-            {{ user.user_name }}{{ user.username ? ' (' + user.username + ')' : '' }}{{ user.role === 'ADMIN' ? ' - Admin' : ' - Logged-in User' }}
-          </option>
-        </select>
-      </label>
-      <label *ngIf="form.transaction_type === 'DEBIT'">Bill Copy *
-        <select [(ngModel)]="form.bill_copy_available" required><option value="">Select Yes/No</option><option value="YES">Yes</option><option value="NO">No</option></select>
-      </label>
-      <label *ngIf="form.transaction_type === 'DEBIT'" class="wide">Item List / Description *<textarea rows="4" [(ngModel)]="form.item_list" placeholder="Enter the list of items and description" required></textarea></label>
+      <label>Payment Mode *<select [(ngModel)]="form.payment_mode" required><option value="CASH">Cash</option><option value="ONLINE">Online</option></select></label>
       <label *ngIf="form.transaction_type === 'CREDIT'">Received By *<input type="text" [(ngModel)]="form.received_by" required></label>
       <label *ngIf="form.transaction_type === 'CREDIT'">Received Date *<input type="date" [(ngModel)]="form.received_date" required></label>
-      <label class="wide">Description *<textarea rows="3" maxlength="500" [(ngModel)]="form.description" required></textarea></label>
+      <label class="wide">Transaction Details *<textarea rows="3" maxlength="500" [(ngModel)]="form.description" required></textarea></label>
     </div>
     <footer><button type="button" class="secondary" (click)="showForm = false">Cancel</button><button type="button" class="primary" (click)="save()">Save</button></footer>
   </section>
