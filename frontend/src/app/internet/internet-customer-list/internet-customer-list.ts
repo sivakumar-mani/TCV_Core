@@ -1,6 +1,4 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ColDef } from 'ag-grid-community';
 import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
@@ -8,7 +6,7 @@ import { ActionMenu } from '../../shared/list-action-menu';
 import { InternetCustomerServices } from '../../services/internet-customer-services';
 import { CommonMethods } from '../../shared/common-methods';
 
-@Component({ selector:'app-internet-customer-list', imports:[CommonModule,FormsModule,AgGridList], templateUrl:'./internet-customer-list.html', styleUrl:'./internet-customer-list.scss' })
+@Component({ selector:'app-internet-customer-list', imports:[AgGridList], templateUrl:'./internet-customer-list.html', styleUrl:'./internet-customer-list.scss' })
 export class InternetCustomerList {
   all:any[]=[]; rows:any[]=[];
   filters={customerNo:'',network:'',name:'',mobile:'',status:''};

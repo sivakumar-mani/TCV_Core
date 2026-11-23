@@ -1,9 +1,7 @@
 import { formatIndianDate } from '../../shared/india-date';
 import { CustomerSelectFloatingFilter } from './customer-select-floating-filter';
-import { ApiSelectDirective } from '../../shared/api-select.directive';
 import { CommonModule } from '@angular/common';
 import { Component, NgZone } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ColDef } from 'ag-grid-community';
 import { NgxUiLoaderService } from 'ngx-ui-loader';
@@ -15,7 +13,7 @@ import { PermissionService } from '../../services/permission.service';
 
 @Component({
   selector: 'app-cable-tv-customer-list',
-  imports: [ApiSelectDirective, CommonModule, FormsModule, AgGridList],
+  imports: [CommonModule, AgGridList],
   templateUrl: './cable-tv-customer-list.html',
   styleUrl: './cable-tv-customer-list.scss'
 })
