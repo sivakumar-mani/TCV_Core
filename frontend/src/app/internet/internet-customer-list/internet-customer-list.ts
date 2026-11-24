@@ -5,6 +5,7 @@ import { AgGridList } from '../../shared/ag-grid-list/ag-grid-list';
 import { ActionMenu } from '../../shared/list-action-menu';
 import { InternetCustomerServices } from '../../services/internet-customer-services';
 import { CommonMethods } from '../../shared/common-methods';
+import { CustomerSelectFloatingFilter } from '../../cable-tv/cable-tv-customer-list/customer-select-floating-filter';
 
 @Component({ selector:'app-internet-customer-list', imports:[AgGridList], templateUrl:'./internet-customer-list.html', styleUrl:'./internet-customer-list.scss' })
 export class InternetCustomerList {
@@ -21,13 +22,30 @@ export class InternetCustomerList {
   colDefs:ColDef[]=[
     {headerName:'Serial #',width:92,minWidth:92,maxWidth:92,flex:0,cellRenderer:ActionMenu,cellRendererParams:{showSerial:true,statusAware:true,dropdownMenu:this.customerActions},sortable:false,filter:false,floatingFilter:false},
     {field:'display_customer_no',headerName:'Cust No',width:88,minWidth:88,maxWidth:88,flex:0},
-    {field:'network_type',headerName:'Network',width:100,minWidth:100,maxWidth:100,flex:0},
+    {
+      field: 'network_type', headerName: 'Network', width: 100, minWidth: 100, maxWidth: 100, flex: 0,
+      filterParams: { filterOptions: ['equals'], defaultOption: 'equals', buttons: ['reset'], maxNumConditions: 1 },
+      floatingFilterComponent: CustomerSelectFloatingFilter,
+      floatingFilterComponentParams: {
+        options: () => this.all.map(customer => customer.network_type).filter(Boolean),
+        formatLabel: (value: string) => value
+      }
+    },
     {field:'full_name',headerName:'Full Name',minWidth:180,valueFormatter:(p:any)=>this.titleCaseText(p.value)},
     {field:'net_id',headerName:'Net ID',width:135,minWidth:135,maxWidth:135,flex:0},
     {field:'address',headerName:'Address',minWidth:250,valueFormatter:(p:any)=>this.titleCaseText(p.value)},
     {field:'mobile_no',headerName:'Mobile',width:125,minWidth:125,maxWidth:125,flex:0},
     {field:'package_amount',headerName:'Package',width:105,minWidth:105,maxWidth:105,flex:0,valueFormatter:(p:any)=>String(Math.round(Number(p.value)||0))},
-    {field:'status',headerName:'Status',width:130,minWidth:130,maxWidth:130,flex:0,cellRenderer:(p:any)=>this.statusPill(p.value)}
+    {
+      field: 'status', headerName: 'Status', width: 130, minWidth: 130, maxWidth: 130, flex: 0,
+      cellRenderer: (p: any) => this.statusPill(p.value),
+      filterParams: { filterOptions: ['equals'], defaultOption: 'equals', buttons: ['reset'], maxNumConditions: 1 },
+      floatingFilterComponent: CustomerSelectFloatingFilter,
+      floatingFilterComponentParams: {
+        options: () => this.all.map(customer => customer.status).filter(Boolean),
+        formatLabel: (value: string) => value
+      }
+    }
   ];
   constructor(private api:InternetCustomerServices,private router:Router,private common:CommonMethods){}
   ngOnInit(){this.load();}
